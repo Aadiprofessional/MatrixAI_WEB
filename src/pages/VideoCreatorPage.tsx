@@ -257,8 +257,8 @@ const VideoCreatorPage: React.FC = () => {
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Describe the video you want to create..."
-                  className="w-full p-4 pr-12 border rounded-lg shadow-sm h-32 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Describe the video you want to generate..."
+                  className="w-full p-4 pr-12 border rounded-lg shadow-sm h-24 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   disabled={isGenerating}
                 />
                 <div className="absolute top-2 right-2">
@@ -278,28 +278,28 @@ const VideoCreatorPage: React.FC = () => {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-4 p-4 border rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"
+                  className="mt-4 p-4 border rounded-lg shadow-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                 >
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2 dark:text-gray-300">Video Style</label>
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Style</label>
                       <select 
                         value={style}
                         onChange={(e) => setStyle(e.target.value)}
-                        className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                        className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                         disabled={isGenerating}
                       >
-                        {styleOptions.map(option => (
-                          <option key={option.id} value={option.id}>{option.name}</option>
+                        {styleOptions.map(styleOption => (
+                          <option key={styleOption.id} value={styleOption.id}>{styleOption.name}</option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2 dark:text-gray-300">Resolution</label>
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Resolution</label>
                       <select 
                         value={resolution}
                         onChange={(e) => setResolution(e.target.value)}
-                        className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                        className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                         disabled={isGenerating}
                       >
                         {resolutionOptions.map(option => (
@@ -308,18 +308,20 @@ const VideoCreatorPage: React.FC = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-                        Duration: {duration} seconds
-                      </label>
-                      <input
-                        type="range"
-                        min="3"
-                        max="15"
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Duration (seconds)</label>
+                      <input 
+                        type="number" 
+                        min="3" 
+                        max={isPro ? "60" : "15"}
                         value={duration}
-                        onChange={(e) => setDuration(parseInt(e.target.value))}
-                        className="w-full"
-                        disabled={isGenerating}
+                        onChange={(e) => setDuration(Number(e.target.value))}
+                        className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                       />
+                      {!isPro && (
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Upgrade to Pro for videos up to 60 seconds
+                        </p>
+                      )}
                     </div>
                   </div>
                 </motion.div>

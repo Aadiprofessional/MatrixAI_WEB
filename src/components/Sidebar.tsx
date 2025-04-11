@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   FiHome, 
@@ -12,11 +12,18 @@ import {
   FiLogOut,
   FiChevronLeft,
   FiMenu,
-  FiUser
+  FiUser,
+  FiMic,
+  FiUpload,
+  FiPlay,
+  FiPause,
+  FiX,
+  FiCheck
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {}
 
@@ -28,6 +35,14 @@ const Sidebar: React.FC<SidebarProps> = () => {
   const { signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Speech to text state
+  const [showSpeechToTextModal, setShowSpeechToTextModal] = useState(false);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioPreview, setAudioPreview] = useState<string | null>(null);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const audioPreviewRef = useRef<HTMLAudioElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogout = async () => {
     try {
@@ -50,6 +65,74 @@ const Sidebar: React.FC<SidebarProps> = () => {
     return location.pathname === path;
   };
 
+  // Speech to text functions
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    setAudioFile(file);
+    
+    // Create audio preview
+    createAudioPreview(file);
+  };
+  
+  const createAudioPreview = (file: File) => {
+    const audioURL = URL.createObjectURL(file);
+    setAudioPreview(audioURL);
+    
+    // Clean up the URL when component unmounts
+    return () => {
+      URL.revokeObjectURL(audioURL);
+    };
+  };
+  
+  const toggleAudioPreview = () => {
+    if (audioPreviewRef.current) {
+      if (isAudioPlaying) {
+        audioPreviewRef.current.pause();
+      } else {
+        audioPreviewRef.current.play();
+      }
+      setIsAudioPlaying(!isAudioPlaying);
+    }
+  };
+  
+  const handleFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+  
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      setAudioFile(file);
+      createAudioPreview(file);
+    }
+  };
+  
+  const handleProcessSpeechToText = () => {
+    if (audioFile) {
+      // Navigate to the speech-to-text page
+      navigate('/tools/speech-to-text');
+      setShowSpeechToTextModal(false);
+      setAudioFile(null);
+      setAudioPreview(null);
+    }
+  };
+
+  const openSpeechToTextModal = () => {
+    setShowSpeechToTextModal(true);
+  };
+
   // Navigation items
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: <FiHome className="w-5 h-5" /> },
@@ -58,6 +141,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
     { path: '/tools/video-creator', label: 'Video Creator', icon: <FiVideo className="w-5 h-5" />, pro: true },
     { path: '/tools/content-writer', label: 'Content Writer', icon: <FiFileText className="w-5 h-5" />, pro: true },
     { path: '/tools/presentation-creator', label: 'Presentations', icon: <FiLayers className="w-5 h-5" />, pro: true },
+    { path: '/tools/speech-to-text', label: 'Speech to Text', icon: <FiMic className="w-5 h-5" />, pro: true },
     { path: '/profile', label: 'Profile', icon: <FiUser className="w-5 h-5" /> },
     { path: '/settings', label: 'Settings', icon: <FiSettings className="w-5 h-5" /> },
     { path: '/help', label: 'Help & Support', icon: <FiHelpCircle className="w-5 h-5" /> },
@@ -164,6 +248,26 @@ const Sidebar: React.FC<SidebarProps> = () => {
             ))}
           </ul>
 
+          {/* Quick Speech to Text Button */}
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={openSpeechToTextModal}
+              className={`p-3 rounded-full ${
+                collapsed ? 'mx-auto' : 'w-full'
+              } ${
+                darkMode 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90' 
+                  : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:opacity-90'
+              }`}
+              title="Quick Speech to Text"
+            >
+              <div className={`flex items-center ${collapsed ? 'justify-center' : ''}`}>
+                <FiMic className="w-5 h-5" />
+                {!collapsed && <span className="ml-2">Quick Speech to Text</span>}
+              </div>
+            </button>
+          </div>
+
           <div className="mt-auto pt-4 space-y-2 border-t border-gray-200 absolute bottom-4 left-3 right-3">
             <button
               onClick={handleLogout}
@@ -188,6 +292,143 @@ const Sidebar: React.FC<SidebarProps> = () => {
           </div>
         </div>
       </aside>
+      
+      {/* Speech to Text Modal */}
+      <AnimatePresence>
+        {showSpeechToTextModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-70 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className={`relative rounded-lg shadow-xl max-w-lg w-full ${
+                darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
+              }`}
+            >
+              {/* Close Button */}
+              <button 
+                onClick={() => setShowSpeechToTextModal(false)} 
+                className="absolute top-3 right-3 text-gray-400 hover:text-gray-500 z-10"
+              >
+                <FiX className="w-6 h-6" />
+              </button>
+              
+              {/* Header */}
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-xl font-bold flex items-center">
+                  <FiMic className="mr-2" />
+                  Speech to Text
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">
+                  Convert audio to text quickly and accurately
+                </p>
+              </div>
+              
+              {/* Body */}
+              <div className="p-6">
+                {!audioFile ? (
+                  <div 
+                    className={`border-2 border-dashed rounded-xl p-8 transition-all ${
+                      darkMode ? 'border-gray-700 hover:border-blue-500' : 'border-gray-300 hover:border-blue-500'
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                  >
+                    <div className="text-center">
+                      <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 bg-opacity-10 dark:bg-opacity-20">
+                        <FiUpload className="h-8 w-8 text-blue-500 dark:text-blue-400" />
+                      </div>
+                      <h3 className="text-lg font-medium mb-2">
+                        Drag & drop your audio file here
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
+                        WAV, MP3, MP4, M4A, AAC, OGG, FLAC
+                      </p>
+                      <div>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="audio/*"
+                          onChange={handleFileChange}
+                          className="hidden"
+                          id="speech-file-upload"
+                        />
+                        <label
+                          htmlFor="speech-file-upload"
+                          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:opacity-90 cursor-pointer shadow-md hover:shadow-lg transition-all inline-flex items-center"
+                        >
+                          <FiUpload className="mr-2" />
+                          Browse Files
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+                      <FiCheck className="h-8 w-8 text-green-500" />
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">
+                      File selected
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-3">
+                      {audioFile.name}
+                    </p>
+                    <p className="text-gray-500 dark:text-gray-500 mb-4">
+                      {(audioFile.size / (1024 * 1024)).toFixed(2)} MB
+                    </p>
+                    
+                    {audioPreview && (
+                      <div className="mb-4 flex items-center space-x-3">
+                        <button
+                          onClick={toggleAudioPreview}
+                          className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          {isAudioPlaying ? <FiPause /> : <FiPlay />}
+                        </button>
+                        <span className="text-gray-600 dark:text-gray-400 text-sm">
+                          {isAudioPlaying ? 'Pause preview' : 'Play preview'}
+                        </span>
+                        <audio 
+                          ref={audioPreviewRef}
+                          src={audioPreview} 
+                          onEnded={() => setIsAudioPlaying(false)}
+                          className="hidden" 
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="flex space-x-3 mt-4">
+                      <button
+                        onClick={() => {
+                          setAudioFile(null);
+                          setAudioPreview(null);
+                        }}
+                        className={`px-4 py-2 rounded-md ${
+                          darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+                        }`}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleProcessSpeechToText}
+                        className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-md hover:opacity-90"
+                      >
+                        Process Audio
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

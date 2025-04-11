@@ -313,161 +313,112 @@ ${getContentConclusion()}`;
               <h2 className="text-xl font-medium mb-4">Create Content</h2>
               
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1 dark:text-gray-300">What do you want to write?</label>
-                  <textarea
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Describe what you want to write about..."
-                    className="w-full p-3 border rounded-lg shadow-sm h-24 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={isGenerating}
-                  />
-                </div>
-
-                {/* Content Settings Toggle */}
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="text-sm font-medium dark:text-gray-300">Content Settings</label>
-                    <button 
-                      onClick={() => setShowContentSettings(!showContentSettings)}
-                      className="text-sm text-blue-600 dark:text-blue-400 flex items-center"
+                <div className="flex-1">
+                  <div className="relative">
+                    <textarea
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder="Describe the content you want to generate..."
+                      className="w-full p-4 pr-12 border rounded-lg shadow-sm h-36 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       disabled={isGenerating}
-                    >
-                      <FiSliders className="mr-1" size={14} />
-                      {showContentSettings ? 'Hide' : 'Show'}
-                    </button>
+                    />
+                    <div className="absolute top-2 right-2">
+                      <button 
+                        onClick={() => setShowContentSettings(!showContentSettings)}
+                        className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                        disabled={isGenerating}
+                      >
+                        <FiSliders />
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Content Settings */}
                   {showContentSettings && (
                     <motion.div 
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="space-y-3 mt-2 pt-2 border-t dark:border-gray-700"
+                      className="mt-4 p-4 border rounded-lg shadow-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                     >
-                      <div>
-                        <label className="block text-xs font-medium mb-1 dark:text-gray-400">Content Type</label>
-                        <select
-                          value={contentType}
-                          onChange={(e) => setContentType(e.target.value)}
-                          className="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600"
-                          disabled={isGenerating}
-                        >
-                          {contentTypes.map(type => (
-                            <option key={type.id} value={type.id}>{type.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-xs font-medium mb-1 dark:text-gray-400">Tone</label>
-                        <select
-                          value={tone}
-                          onChange={(e) => setTone(e.target.value)}
-                          className="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600"
-                          disabled={isGenerating}
-                        >
-                          {toneOptions.map(option => (
-                            <option key={option.id} value={option.id}>{option.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-xs font-medium mb-1 dark:text-gray-400">Length</label>
-                        <select
-                          value={contentLength}
-                          onChange={(e) => setContentLength(e.target.value)}
-                          className="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600"
-                          disabled={isGenerating}
-                        >
-                          {lengthOptions.map(option => (
-                            <option key={option.id} value={option.id}>{option.name}</option>
-                          ))}
-                        </select>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Content Type</label>
+                          <select 
+                            value={contentType}
+                            onChange={(e) => setContentType(e.target.value)}
+                            className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
+                            disabled={isGenerating}
+                          >
+                            {contentTypes.map(type => (
+                              <option key={type.id} value={type.id}>{type.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Tone</label>
+                          <select 
+                            value={tone}
+                            onChange={(e) => setTone(e.target.value)}
+                            className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
+                            disabled={isGenerating}
+                          >
+                            {toneOptions.map(option => (
+                              <option key={option.id} value={option.id}>{option.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Length</label>
+                          <select 
+                            value={contentLength}
+                            onChange={(e) => setContentLength(e.target.value)}
+                            className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
+                            disabled={isGenerating}
+                          >
+                            {lengthOptions.map(option => (
+                              <option key={option.id} value={option.id}>{option.name}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     </motion.div>
                   )}
                 </div>
                 
-                <div>
-                  <button
-                    onClick={handleGenerateContent}
-                    disabled={!prompt.trim() || isGenerating}
-                    className={`w-full py-3 rounded-lg font-medium flex items-center justify-center ${
-                      !prompt.trim() || isGenerating
-                        ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-                        : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90'
-                    } transition`}
-                  >
-                    {isGenerating ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <FiZap className="mr-2" />
-                        Generate Content
-                      </>
-                    )}
-                  </button>
-                </div>
+                {history.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Recent Prompts:</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {history.map((item, index) => (
+                        <button
+                          key={index}
+                          className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-800 dark:text-gray-200"
+                          onClick={() => setPrompt(item)}
+                          disabled={isGenerating}
+                        >
+                          {item.length > 25 ? item.substring(0, 25) + '...' : item}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             
-            {/* Recent Prompts */}
-            {history.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 className="font-medium mb-3">Recent Prompts</h3>
-                <div className="space-y-2">
-                  {history.map((item, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setPrompt(item)}
-                      className="w-full text-left p-2 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-start"
-                    >
-                      <FiMessageSquare className="text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
-                      <span className="line-clamp-1">{item}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Saved Content */}
-            {savedContents.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 className="font-medium mb-3">Saved Content</h3>
-                <div className="space-y-2">
-                  {savedContents.map((item) => (
-                    <div 
-                      key={item.id}
-                      className="flex justify-between items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      <button
-                        className="text-left text-sm flex items-center flex-1 truncate mr-2"
-                        onClick={() => handleLoadSaved(item.content)}
-                      >
-                        <FiBookOpen className="text-gray-400 mr-2 flex-shrink-0" />
-                        <span className="truncate">{item.title}</span>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSaved(item.id)}
-                        className="text-gray-400 hover:text-red-500 p-1"
-                        title="Delete"
-                      >
-                        <FiTrash size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div>
+              <button
+                onClick={handleGenerateContent}
+                disabled={isGenerating || !prompt.trim()}
+                className={`px-4 py-4 min-w-24 rounded-lg font-medium shadow-sm transition-all flex items-center justify-center ${
+                  isGenerating || !prompt.trim()
+                    ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                    : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:shadow-md'
+                }`}
+              >
+                {isGenerating ? 'Generating...' : 'Generate'}
+                {!isGenerating && <FiZap className="ml-2" />}
+              </button>
+            </div>
           </div>
         </div>
         
@@ -596,6 +547,86 @@ ${getContentConclusion()}`;
           </div>
         </div>
       </div>
+
+      {/* Generated Content */}
+      {generatedContent && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Generated Content</h2>
+            <div className="flex space-x-2">
+              <button
+                onClick={handleCopyContent}
+                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Copy to clipboard"
+              >
+                <FiCopy />
+              </button>
+              <button
+                onClick={handleDownloadContent}
+                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Download as text file"
+              >
+                <FiDownload />
+              </button>
+              <button
+                onClick={() => setShowTitleEdit(true)}
+                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Save content"
+              >
+                <FiSave />
+              </button>
+            </div>
+          </div>
+          
+          <div className="relative p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mb-4">
+            <textarea
+              ref={contentRef}
+              value={generatedContent}
+              onChange={handleContentChange}
+              className="w-full min-h-[400px] border-0 p-0 bg-transparent resize-none focus:ring-0 focus:outline-none text-gray-800 dark:text-gray-200"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Saved Content */}
+      {savedContents.length > 0 && (
+        <div>
+          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Saved Content</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {savedContents.map((saved) => (
+              <div 
+                key={saved.id}
+                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-medium text-gray-800 dark:text-gray-200">{saved.title}</h3>
+                  <div className="flex space-x-1">
+                    <button
+                      onClick={() => handleLoadSaved(saved.content)}
+                      className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      title="Load"
+                    >
+                      <FiEdit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteSaved(saved.id)}
+                      className="p-1.5 rounded-md text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      title="Delete"
+                    >
+                      <FiTrash className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
+                  {saved.content.replace(/(?:^|[\n\r])\s*#\s*(.*?)[\n\r]/g, '')}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

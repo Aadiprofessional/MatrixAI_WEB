@@ -9,7 +9,8 @@ import {
   FiLogOut,
   FiMoon,
   FiSun,
-  FiCreditCard
+  FiCreditCard,
+  FiMic
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -76,6 +77,19 @@ const Navbar: React.FC<NavbarProps> = () => {
               placeholder="Search..."
             />
           </div>
+          
+          {/* Speech to Text Link */}
+          {/* <Link 
+            to="/speech-to-text" 
+            className={`ml-4 flex items-center px-4 py-2 rounded-lg ${
+              darkMode 
+                ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+            } transition-colors`}
+          >
+            <FiMic className="mr-1.5" />
+            <span className="text-sm font-medium">Speech to Text</span>
+          </Link> */}
         </div>
 
         {/* Right Navigation */}

@@ -150,7 +150,7 @@ const ImageGeneratorPage: React.FC = () => {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Describe the image you want to generate..."
-                className="w-full p-4 pr-12 border rounded-lg shadow-sm h-24 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-4 pr-12 border rounded-lg shadow-sm h-24 dark:bg-gray-800 dark:border-gray-700 bg-white text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <div className="absolute top-2 right-2">
                 <button 
@@ -171,11 +171,11 @@ const ImageGeneratorPage: React.FC = () => {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-gray-300">Style</label>
+                    <label className="block text-sm font-medium mb-2 dark:text-gray-300 text-gray-700">Style</label>
                     <select 
                       value={stylePreset}
                       onChange={(e) => setStylePreset(e.target.value)}
-                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 bg-white text-gray-800 dark:text-gray-200"
                     >
                       {styleOptions.map(style => (
                         <option key={style.id} value={style.id}>{style.name}</option>
@@ -183,11 +183,11 @@ const ImageGeneratorPage: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-gray-300">Aspect Ratio</label>
+                    <label className="block text-sm font-medium mb-2 dark:text-gray-300 text-gray-700">Aspect Ratio</label>
                     <select 
                       value={aspectRatio}
                       onChange={(e) => setAspectRatio(e.target.value)}
-                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 bg-white text-gray-800 dark:text-gray-200"
                     >
                       {ratioOptions.map(ratio => (
                         <option key={ratio.id} value={ratio.id}>{ratio.name}</option>
@@ -195,11 +195,11 @@ const ImageGeneratorPage: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-gray-300">Number of Images</label>
+                    <label className="block text-sm font-medium mb-2 dark:text-gray-300 text-gray-700">Number of Images</label>
                     <select 
                       value={imageCount}
                       onChange={(e) => setImageCount(Number(e.target.value))}
-                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 bg-white text-gray-800 dark:text-gray-200"
                     >
                       {[1, 2, 4].map(count => (
                         <option key={count} value={count}>{count}</option>
@@ -241,7 +241,7 @@ const ImageGeneratorPage: React.FC = () => {
         {/* Saved Prompts */}
         {savedPrompts.length > 0 && (
           <div className="mt-4">
-            <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Recent Prompts</h3>
+            <h3 className="text-sm font-medium mb-2 dark:text-gray-300 text-gray-700">Your recent prompts:</h3>
             <div className="flex flex-wrap gap-2">
               {savedPrompts.map((savedPrompt, index) => (
                 <button
@@ -268,7 +268,7 @@ const ImageGeneratorPage: React.FC = () => {
       {generatedImages.length > 0 && (
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Generated Images</h2>
+            <h2 className="text-xl font-bold mb-4 dark:text-gray-200 text-gray-800">Generated Images</h2>
             {selectedImage && (
               <div className="flex space-x-2">
                 <button 
