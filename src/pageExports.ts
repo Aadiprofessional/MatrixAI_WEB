@@ -14,4 +14,6 @@ export { default as SettingsPage } from './pages/SettingsPage';
 export { default as HelpPage } from './pages/HelpPage';
 export { default as SubscriptionPage } from './pages/SubscriptionPage';
 export { default as TransactionsPage } from './pages/TransactionsPage';
-export { default as ReferralPage } from './pages/ReferralPage'; 
+export { default as ReferralPage } from './pages/ReferralPage';
+export { default as SpeechToTextPage } from './pages/SpeechToTextPage';
+export { default as TranscriptionPage } from './pages/TranscriptionPage'; 

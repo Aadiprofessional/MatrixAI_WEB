@@ -14,7 +14,8 @@ import {
   FiPlus,
   FiUser,
   FiSettings,
-  FiClock
+  FiClock,
+  FiMic
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -290,6 +291,14 @@ const DashboardPage: React.FC = () => {
               description="Create professional presentations from simple text prompts." 
               color="bg-gradient-to-r from-purple-600 to-indigo-600"
               route="/tools/presentation-creator"
+            />
+
+            <AIToolSection 
+              title="Speech to Text" 
+              icon={<FiMic className="text-white text-xl" />} 
+              description="Convert audio files to accurate text transcriptions." 
+              color="bg-gradient-to-r from-pink-500 to-red-600"
+              route="/tools/speech-to-text"
             />
           </div>
         </motion.div>

@@ -18,7 +18,9 @@ import {
   HelpPage,
   SubscriptionPage,
   TransactionsPage,
-  ReferralPage
+  ReferralPage,
+  SpeechToTextPage,
+  TranscriptionPage
 } from './pageExports';
 
 // Import components
@@ -155,6 +157,29 @@ const App: React.FC = () => {
                   <ProFeatureRoute>
                     <Layout>
                       <PresentationCreatorPage />
+                    </Layout>
+                  </ProFeatureRoute>
+                } 
+              />
+
+              {/* Speech to Text routes */}
+              <Route 
+                path="/tools/speech-to-text" 
+                element={
+                  <ProFeatureRoute>
+                    <Layout>
+                      <SpeechToTextPage />
+                    </Layout>
+                  </ProFeatureRoute>
+                } 
+              />
+              
+              <Route 
+                path="/transcription/:audioid" 
+                element={
+                  <ProFeatureRoute>
+                    <Layout>
+                      <TranscriptionPage />
                     </Layout>
                   </ProFeatureRoute>
                 } 
