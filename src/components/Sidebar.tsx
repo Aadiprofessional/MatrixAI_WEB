@@ -15,6 +15,8 @@ import {
   FiUser
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
+import { useUser } from '../context/UserContext';
+import { useAuth } from '../context/AuthContext';
 
 interface SidebarProps {}
 
@@ -22,12 +24,18 @@ const Sidebar: React.FC<SidebarProps> = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { darkMode } = useContext(ThemeContext);
+  const { userData, isPro } = useUser();
+  const { signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const toggleSidebar = () => {
@@ -45,11 +53,11 @@ const Sidebar: React.FC<SidebarProps> = () => {
   // Navigation items
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: <FiHome className="w-5 h-5" /> },
-    { path: '/chat', label: 'AI Chat', icon: <FiMessageSquare className="w-5 h-5" /> },
-    { path: '/tools/image-generator', label: 'Image Generator', icon: <FiImage className="w-5 h-5" /> },
-    { path: '/tools/video-creator', label: 'Video Creator', icon: <FiVideo className="w-5 h-5" /> },
-    { path: '/tools/content-writer', label: 'Content Writer', icon: <FiFileText className="w-5 h-5" /> },
-    { path: '/tools/presentation-creator', label: 'Presentations', icon: <FiLayers className="w-5 h-5" /> },
+    { path: '/chat', label: 'AI Chat', icon: <FiMessageSquare className="w-5 h-5" />, pro: true },
+    { path: '/tools/image-generator', label: 'Image Generator', icon: <FiImage className="w-5 h-5" />, pro: true },
+    { path: '/tools/video-creator', label: 'Video Creator', icon: <FiVideo className="w-5 h-5" />, pro: true },
+    { path: '/tools/content-writer', label: 'Content Writer', icon: <FiFileText className="w-5 h-5" />, pro: true },
+    { path: '/tools/presentation-creator', label: 'Presentations', icon: <FiLayers className="w-5 h-5" />, pro: true },
     { path: '/profile', label: 'Profile', icon: <FiUser className="w-5 h-5" /> },
     { path: '/settings', label: 'Settings', icon: <FiSettings className="w-5 h-5" /> },
     { path: '/help', label: 'Help & Support', icon: <FiHelpCircle className="w-5 h-5" /> },
@@ -99,9 +107,16 @@ const Sidebar: React.FC<SidebarProps> = () => {
                 <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
                   AI
                 </div>
-                <span className="ml-2 self-center text-xl font-semibold whitespace-nowrap bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
-                  MatrixAI
-                </span>
+                <div className="flex flex-col">
+                  <span className="ml-2 self-center text-xl font-semibold whitespace-nowrap bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
+                    MatrixAI
+                  </span>
+                  {isPro && (
+                    <span className="ml-2 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5 -mt-1">
+                      PRO
+                    </span>
+                  )}
+                </div>
               </Link>
             )}
             <button 
@@ -134,7 +149,16 @@ const Sidebar: React.FC<SidebarProps> = () => {
                   }`}
                 >
                   <span className="flex-shrink-0">{item.icon}</span>
-                  {!collapsed && <span className="ml-3">{item.label}</span>}
+                  {!collapsed && (
+                    <div className="flex items-center justify-between w-full">
+                      <span className="ml-3">{item.label}</span>
+                      {item.pro && !isPro && (
+                        <span className="text-xs font-semibold text-yellow-500 border border-yellow-400 rounded-full px-1.5">
+                          PRO
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </Link>
               </li>
             ))}

@@ -16,8 +16,11 @@ import {
   FiRotateCw,
   FiX
 } from 'react-icons/fi';
+import { ProFeatureAlert } from '../components';
+import { useUser } from '../context/UserContext';
 
 const ContentWriterPage: React.FC = () => {
+  const { userData, isPro } = useUser();
   const [prompt, setPrompt] = useState('');
   const [generatedContent, setGeneratedContent] = useState('');
   const [tone, setTone] = useState('professional');
@@ -28,6 +31,8 @@ const ContentWriterPage: React.FC = () => {
   const [editingTitle, setEditingTitle] = useState('');
   const [showTitleEdit, setShowTitleEdit] = useState(false);
   const [showContentSettings, setShowContentSettings] = useState(false);
+  const [showProAlert, setShowProAlert] = useState(false);
+  const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(1);
   const [history, setHistory] = useState<string[]>([
     'Write a blog post about sustainable living practices',
     'Create a product description for a new fitness watch',
@@ -72,6 +77,12 @@ const ContentWriterPage: React.FC = () => {
   const handleGenerateContent = async () => {
     if (!prompt.trim()) return;
     
+    // If user is not pro and has used all free generations, show pro alert
+    if (!isPro && freeGenerationsLeft <= 0) {
+      setShowProAlert(true);
+      return;
+    }
+    
     setIsGenerating(true);
     
     try {
@@ -90,6 +101,11 @@ ${getContentConclusion()}`;
       // Add to history if not already there
       if (!history.includes(prompt)) {
         setHistory(prev => [prompt, ...prev.slice(0, 3)]);
+      }
+      
+      // Decrease free generations left if user is not pro
+      if (!isPro) {
+        setFreeGenerationsLeft(prev => prev - 1);
       }
     } catch (error) {
       console.error('Error generating content:', error);
@@ -248,6 +264,13 @@ ${getContentConclusion()}`;
 
   return (
     <div className="container mx-auto max-w-6xl p-4 py-8">
+      {showProAlert && (
+        <ProFeatureAlert 
+          featureName="Professional Content Writing"
+          onClose={() => setShowProAlert(false)}
+        />
+      )}
+      
       <div className="mb-8">
         <motion.h1 
           initial={{ opacity: 0, y: -10 }}
@@ -262,207 +285,203 @@ ${getContentConclusion()}`;
           transition={{ delay: 0.1 }}
           className="text-gray-500 dark:text-gray-400"
         >
-          Generate high-quality written content for any purpose
+          Create professional content for blogs, emails, social media, and more
         </motion.p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Content Generation Controls */}
-        <div className="space-y-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-medium mb-4 flex items-center">
-              <FiEdit className="mr-2 text-blue-500" />
-              Content Instructions
-            </h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1 dark:text-gray-300">What do you want to write about?</label>
-                <textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Describe what you want to write about..."
-                  className="w-full p-3 border rounded-lg shadow-sm h-32 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isGenerating}
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-sm font-medium dark:text-gray-300">Content Settings</label>
-                  <button 
-                    onClick={() => setShowContentSettings(!showContentSettings)}
-                    className="text-sm text-blue-600 dark:text-blue-400 flex items-center"
-                  >
-                    <FiSliders className="mr-1" size={14} />
-                    {showContentSettings ? 'Hide' : 'Show'}
-                  </button>
-                </div>
-                
-                {showContentSettings && (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-3"
-                  >
-                    <div>
-                      <label className="block text-xs font-medium mb-1 dark:text-gray-400">Content Type</label>
-                      <select 
-                        value={contentType}
-                        onChange={(e) => setContentType(e.target.value)}
-                        className="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600"
-                        disabled={isGenerating}
-                      >
-                        {contentTypes.map(type => (
-                          <option key={type.id} value={type.id}>{type.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-xs font-medium mb-1 dark:text-gray-400">Tone</label>
-                      <select 
-                        value={tone}
-                        onChange={(e) => setTone(e.target.value)}
-                        className="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600"
-                        disabled={isGenerating}
-                      >
-                        {toneOptions.map(option => (
-                          <option key={option.id} value={option.id}>{option.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-xs font-medium mb-1 dark:text-gray-400">Length</label>
-                      <select 
-                        value={contentLength}
-                        onChange={(e) => setContentLength(e.target.value)}
-                        className="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600"
-                        disabled={isGenerating}
-                      >
-                        {lengthOptions.map(option => (
-                          <option key={option.id} value={option.id}>{option.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-              
-              <button
-                onClick={handleGenerateContent}
-                disabled={!prompt.trim() || isGenerating}
-                className={`w-full py-3 rounded-lg font-medium flex items-center justify-center ${
-                  !prompt.trim() || isGenerating
-                    ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-                    : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90'
-                } transition`}
+        
+        {!isPro && (
+          <div className="mt-2 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
+            <FiFileText className="mr-1.5" />
+            <span>{freeGenerationsLeft} free generation{freeGenerationsLeft !== 1 ? 's' : ''} left</span>
+            {freeGenerationsLeft === 0 && (
+              <button 
+                onClick={() => setShowProAlert(true)}
+                className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
               >
-                {isGenerating ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Generating
-                  </>
-                ) : (
-                  <>
-                    <FiZap className="mr-2" />
-                    Generate Content
-                  </>
-                )}
+                Upgrade to Pro
               </button>
-            </div>
-          </div>
-          
-          {/* Previous Prompts */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-medium mb-4 flex items-center">
-              <FiList className="mr-2 text-blue-500" />
-              Previous Prompts
-            </h2>
-            
-            {history.length > 0 ? (
-              <div className="space-y-2">
-                {history.map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setPrompt(item)}
-                    disabled={isGenerating}
-                    className="w-full text-left p-3 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm flex items-start"
-                  >
-                    <FiMessageSquare className="mr-2 mt-0.5 text-blue-500 flex-shrink-0" />
-                    <span className="line-clamp-2">{item}</span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
-                Your prompt history will appear here
-              </p>
             )}
           </div>
-          
-          {/* Saved Content */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-medium mb-4 flex items-center">
-              <FiBookOpen className="mr-2 text-blue-500" />
-              Saved Content
-            </h2>
-            
-            {savedContents.length > 0 ? (
-              <div className="space-y-2">
-                {savedContents.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
-                  >
-                    <div className="flex justify-between items-center mb-1">
-                      <h3 className="font-medium text-sm truncate">{item.title}</h3>
-                      <div className="flex space-x-1">
-                        <button
-                          onClick={() => handleLoadSaved(item.content)}
-                          className="p-1 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400"
-                          title="Load content"
-                        >
-                          <FiRotateCw size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSaved(item.id)}
-                          className="p-1 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400"
-                          title="Delete"
-                        >
-                          <FiTrash size={14} />
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
-                      {item.content.substring(0, 100)}...
-                    </p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {/* Content Generation Form */}
+        <div className="lg:col-span-2 order-2 lg:order-1">
+          <div className="sticky top-6 space-y-6">
+            {/* Prompt Input */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-xl font-medium mb-4">Create Content</h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 dark:text-gray-300">What do you want to write?</label>
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="Describe what you want to write about..."
+                    className="w-full p-3 border rounded-lg shadow-sm h-24 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isGenerating}
+                  />
+                </div>
+
+                {/* Content Settings Toggle */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-sm font-medium dark:text-gray-300">Content Settings</label>
+                    <button 
+                      onClick={() => setShowContentSettings(!showContentSettings)}
+                      className="text-sm text-blue-600 dark:text-blue-400 flex items-center"
+                      disabled={isGenerating}
+                    >
+                      <FiSliders className="mr-1" size={14} />
+                      {showContentSettings ? 'Hide' : 'Show'}
+                    </button>
                   </div>
-                ))}
+
+                  {/* Content Settings */}
+                  {showContentSettings && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-3 mt-2 pt-2 border-t dark:border-gray-700"
+                    >
+                      <div>
+                        <label className="block text-xs font-medium mb-1 dark:text-gray-400">Content Type</label>
+                        <select
+                          value={contentType}
+                          onChange={(e) => setContentType(e.target.value)}
+                          className="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                          disabled={isGenerating}
+                        >
+                          {contentTypes.map(type => (
+                            <option key={type.id} value={type.id}>{type.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-medium mb-1 dark:text-gray-400">Tone</label>
+                        <select
+                          value={tone}
+                          onChange={(e) => setTone(e.target.value)}
+                          className="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                          disabled={isGenerating}
+                        >
+                          {toneOptions.map(option => (
+                            <option key={option.id} value={option.id}>{option.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-medium mb-1 dark:text-gray-400">Length</label>
+                        <select
+                          value={contentLength}
+                          onChange={(e) => setContentLength(e.target.value)}
+                          className="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                          disabled={isGenerating}
+                        >
+                          {lengthOptions.map(option => (
+                            <option key={option.id} value={option.id}>{option.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+                
+                <div>
+                  <button
+                    onClick={handleGenerateContent}
+                    disabled={!prompt.trim() || isGenerating}
+                    className={`w-full py-3 rounded-lg font-medium flex items-center justify-center ${
+                      !prompt.trim() || isGenerating
+                        ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                        : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90'
+                    } transition`}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <FiZap className="mr-2" />
+                        Generate Content
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
-                Save your content for later use
-              </p>
+            </div>
+            
+            {/* Recent Prompts */}
+            {history.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h3 className="font-medium mb-3">Recent Prompts</h3>
+                <div className="space-y-2">
+                  {history.map((item, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setPrompt(item)}
+                      className="w-full text-left p-2 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-start"
+                    >
+                      <FiMessageSquare className="text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="line-clamp-1">{item}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Saved Content */}
+            {savedContents.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h3 className="font-medium mb-3">Saved Content</h3>
+                <div className="space-y-2">
+                  {savedContents.map((item) => (
+                    <div 
+                      key={item.id}
+                      className="flex justify-between items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      <button
+                        className="text-left text-sm flex items-center flex-1 truncate mr-2"
+                        onClick={() => handleLoadSaved(item.content)}
+                      >
+                        <FiBookOpen className="text-gray-400 mr-2 flex-shrink-0" />
+                        <span className="truncate">{item.title}</span>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSaved(item.id)}
+                        className="text-gray-400 hover:text-red-500 p-1"
+                        title="Delete"
+                      >
+                        <FiTrash size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>
         
-        {/* Right Column - Generated Content */}
-        <div className="lg:col-span-2">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 h-full flex flex-col">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium flex items-center">
-                <FiFileText className="mr-2 text-blue-500" />
-                Generated Content
-              </h2>
+        {/* Content Output */}
+        <div className="lg:col-span-3 order-1 lg:order-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {/* Content Header */}
+            <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
+              <div className="flex items-center">
+                <FiFileText className="text-gray-500 dark:text-gray-400 mr-2" />
+                <h2 className="font-medium">{generatedContent ? getContentTitle() : 'Generated Content'}</h2>
+              </div>
               
-              <div className="flex space-x-2">
+              <div className="flex space-x-1">
                 {generatedContent && (
                   <>
                     <button
@@ -470,78 +489,110 @@ ${getContentConclusion()}`;
                       className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                       title="Copy to clipboard"
                     >
-                      <FiCopy size={18} />
+                      <FiCopy />
                     </button>
                     <button
                       onClick={handleDownloadContent}
                       className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                      title="Download as markdown"
+                      title="Download as Markdown"
                     >
-                      <FiDownload size={18} />
+                      <FiDownload />
                     </button>
                     <button
-                      onClick={() => setShowTitleEdit(true)}
+                      onClick={() => setShowTitleEdit(!showTitleEdit)}
                       className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                       title="Save content"
                     >
-                      <FiSave size={18} />
+                      <FiSave />
                     </button>
                   </>
                 )}
               </div>
             </div>
             
+            {/* Save Dialog */}
             {showTitleEdit && (
-              <div className="mb-4 flex items-center space-x-2">
-                <input
-                  type="text"
-                  value={editingTitle}
-                  onChange={(e) => setEditingTitle(e.target.value)}
-                  placeholder="Enter title for saving"
-                  className="flex-1 p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
-                />
-                <button
-                  onClick={handleSaveContent}
-                  className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
-                >
-                  <FiSave size={18} />
-                </button>
-                <button
-                  onClick={() => setShowTitleEdit(false)}
-                  className="bg-gray-300 dark:bg-gray-700 p-2 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600"
-                >
-                  <FiX size={18} />
-                </button>
-              </div>
-            )}
-            
-            {generatedContent ? (
-              <textarea
-                ref={contentRef}
-                value={generatedContent}
-                onChange={handleContentChange}
-                className="w-full flex-1 p-4 border rounded-lg shadow-inner bg-gray-50 dark:bg-gray-900 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm resize-none"
-              />
-            ) : (
-              <div className="flex-1 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center text-center p-6">
-                <FiFileText className="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Your content will appear here</h3>
-                <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
-                  Enter a prompt and click "Generate Content" to create AI-powered content
-                </p>
-                <div className="grid grid-cols-1 gap-4 max-w-md mx-auto text-left">
-                  <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-gray-700 dark:text-gray-300 text-sm">
-                    <p className="font-medium mb-1">Tips for better results:</p>
-                    <ul className="list-disc list-inside space-y-1 text-xs">
-                      <li>Be specific about the topic and purpose</li>
-                      <li>Mention your target audience</li>
-                      <li>Specify the tone and style you prefer</li>
-                      <li>Include key points you want covered</li>
-                    </ul>
-                  </div>
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    placeholder="Enter a title for your saved content"
+                    className="flex-1 p-2 border rounded-md mr-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <button
+                    onClick={handleSaveContent}
+                    className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setShowTitleEdit(false)}
+                    className="p-2 ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                  >
+                    <FiX />
+                  </button>
                 </div>
               </div>
             )}
+            
+            {/* Content Area */}
+            <div className="p-6">
+              {generatedContent ? (
+                <textarea
+                  ref={contentRef}
+                  value={generatedContent}
+                  onChange={handleContentChange}
+                  className="w-full min-h-[600px] p-0 border-0 focus:ring-0 dark:bg-gray-800 dark:text-gray-200 font-mono text-sm resize-none"
+                  spellCheck="false"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center py-16">
+                  <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
+                    <FiEdit className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Content Generated Yet</h3>
+                  <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
+                    Enter your prompt and adjust content settings to generate text for blogs, emails, social media posts, and more.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl">
+                    <div onClick={() => setPrompt('Write a blog post about sustainable living practices')} className="cursor-pointer p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 text-left">
+                      <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 text-sm font-medium">
+                        <FiPlus className="mr-1.5" />
+                        <span>Blog Post</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Write about sustainable living practices</p>
+                    </div>
+                    
+                    <div onClick={() => setPrompt('Create a product description for a new fitness watch')} className="cursor-pointer p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 text-left">
+                      <div className="flex items-center text-green-500 dark:text-green-400 mb-1 text-sm font-medium">
+                        <FiPlus className="mr-1.5" />
+                        <span>Product Description</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Create a description for a fitness watch</p>
+                    </div>
+                    
+                    <div onClick={() => setPrompt('Draft an email announcing a company event')} className="cursor-pointer p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 text-left">
+                      <div className="flex items-center text-purple-500 dark:text-purple-400 mb-1 text-sm font-medium">
+                        <FiPlus className="mr-1.5" />
+                        <span>Email</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Draft an email announcing a company event</p>
+                    </div>
+                    
+                    <div onClick={() => setPrompt('Write a social media post about a new technology launch')} className="cursor-pointer p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 text-left">
+                      <div className="flex items-center text-yellow-500 dark:text-yellow-400 mb-1 text-sm font-medium">
+                        <FiPlus className="mr-1.5" />
+                        <span>Social Media</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Write about a new technology launch</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

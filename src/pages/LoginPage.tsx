@@ -1,17 +1,26 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiMoon, FiSun } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
+  const { signIn, error, setError, user } = useAuth();
+
+  // If user is already logged in, redirect to dashboard
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,19 +29,14 @@ const LoginPage: React.FC = () => {
       setError('Please fill in all fields');
       return;
     }
-    
+
     try {
       setLoading(true);
-      setError('');
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo purposes, allow any login
-      localStorage.setItem('isAuthenticated', 'true');
-        navigate('/dashboard');
+      await signIn(email, password);
+      navigate('/dashboard');
     } catch (err) {
-      setError('Something went wrong. Please try again.');
+      // Error is already set in the auth context
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
@@ -192,6 +196,8 @@ const LoginPage: React.FC = () => {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                     className={`h-4 w-4 rounded border-gray-300 ${darkMode ? 'bg-gray-700 text-purple-500' : 'bg-white text-blue-600'}`}
                   />
                   <label htmlFor="remember-me" className={`ml-2 block text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -251,7 +257,7 @@ const LoginPage: React.FC = () => {
             <Link to="/signup" className={`font-medium ${
               darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-blue-600 hover:text-blue-500'
             }`}>
-              Create an account
+              Sign up
             </Link>
           </motion.p>
         </motion.div>

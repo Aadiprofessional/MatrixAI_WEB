@@ -12,12 +12,15 @@ import {
   FiFile,
   FiPlus,
   FiClock,
-  FiMessageSquare
+  FiMessageSquare,
+  FiLock,
+  FiMenu
 } from 'react-icons/fi';
-import { Navbar, Sidebar } from '../components';
+import { Navbar, Sidebar, ProFeatureAlert } from '../components';
 import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
 import ReactMarkdown from 'react-markdown';
+import { useUser } from '../context/UserContext';
 
 // Define interface for message types
 interface Message {
@@ -54,6 +57,7 @@ const initialMessages: Message[] = [
 ];
 
 const ChatPage: React.FC = () => {
+  const { userData, isPro } = useUser();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +65,9 @@ const ChatPage: React.FC = () => {
   const [showRoleSelector, setShowRoleSelector] = useState(false);
   const { darkMode } = useContext(ThemeContext);
   const [showChatHistory, setShowChatHistory] = useState(false);
+  const [showProAlert, setShowProAlert] = useState(false);
+  const [freeMessagesLeft, setFreeMessagesLeft] = useState(5);
+  const [freeUploadsLeft, setFreeUploadsLeft] = useState(2);
   const [groupedChatHistory, setGroupedChatHistory] = useState<{
     today: { id: string, title: string }[],
     yesterday: { id: string, title: string }[],
@@ -99,6 +106,18 @@ const ChatPage: React.FC = () => {
   const handleSendMessage = async () => {
     if (!inputMessage.trim() && !selectedFile) return;
     
+    // Check if free trial limit is reached for messages
+    if (!isPro && messages.filter(m => m.role === 'user').length >= freeMessagesLeft) {
+      setShowProAlert(true);
+      return;
+    }
+    
+    // Check if free trial limit is reached for uploads
+    if (!isPro && selectedFile && freeUploadsLeft <= 0) {
+      setShowProAlert(true);
+      return;
+    }
+    
     let fileContent = '';
     let userMessageContent = inputMessage;
     
@@ -118,6 +137,11 @@ const ChatPage: React.FC = () => {
       userMessageContent = inputMessage 
         ? `${inputMessage}\n\n[Attached image: ${selectedFile.name}]` 
         : `[Attached image: ${selectedFile.name}]`;
+        
+      // Decrease free uploads left if user is not pro
+      if (!isPro) {
+        setFreeUploadsLeft(prev => prev - 1);
+      }
     }
     
     // Add user message
@@ -242,6 +266,12 @@ const ChatPage: React.FC = () => {
   };
 
   const handleFileUpload = () => {
+    // If user is not pro and has used all free uploads, show pro alert
+    if (!isPro && freeUploadsLeft <= 0) {
+      setShowProAlert(true);
+      return;
+    }
+    
     fileInputRef.current?.click();
   };
 
@@ -252,189 +282,195 @@ const ChatPage: React.FC = () => {
   };
 
   const startNewChat = () => {
-    // Create a new chat ID
-    const newChatId = Date.now().toString();
-    setChatId(newChatId);
-    
-    // Reset messages and history
     setMessages(initialMessages);
     setMessageHistory([]);
-    setSelectedFile(null);
-    
-    // Add a new empty chat to history
-    setGroupedChatHistory(prev => ({
-      ...prev,
-      today: [{ id: newChatId, title: 'New conversation' }, ...prev.today]
-    }));
-    
-    // Close the chat history panel
-    setShowChatHistory(false);
+    setChatId(Date.now().toString());
   };
 
+  // Calculate remaining messages for display
+  const userMessageCount = messages.filter(m => m.role === 'user').length;
+  const remainingMessages = Math.max(0, freeMessagesLeft - userMessageCount);
+
   return (
-    <div className={`flex h-screen ${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
-      <Sidebar />
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <Navbar />
-        <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col h-full relative">
-          {/* Role Selector Header - Sticky */}
-          <div className={`sticky top-0 z-30 py-4 px-4 border-b ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
-            <div className="max-w-3xl mx-auto flex justify-between items-center">
-              <div className="relative">
+    <div className={`flex h-screen flex-col ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      {showProAlert && (
+        <ProFeatureAlert 
+          featureName="Unlimited AI Chat"
+          onClose={() => setShowProAlert(false)}
+        />
+      )}
+      <div className="flex-1 flex h-full overflow-hidden">
+        {/* Chat Sidebar */}
+        <aside className={`w-72 border-r ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} flex-shrink-0 hidden md:flex flex-col`}>
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <button 
+              onClick={startNewChat}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white p-2 rounded-md hover:opacity-90 transition-all"
+            >
+              <FiPlus className="w-4 h-4" />
+              New Chat
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-3">
+            <div className="mb-4">
+              <h3 className="px-3 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Today</h3>
+              {groupedChatHistory.today.map(chat => (
                 <button 
-                  onClick={() => setShowRoleSelector(!showRoleSelector)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
+                  key={chat.id}
+                  className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-2 mb-1 ${
+                    darkMode 
+                      ? 'hover:bg-gray-700 text-gray-200' 
+                      : 'hover:bg-gray-100 text-gray-700'
+                  }`}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'}`}>
-                    <FiCpu />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-medium">{selectedRole.name}</p>
-                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{selectedRole.description}</p>
-                  </div>
-                  <FiChevronDown className={`transform transition-transform ${showRoleSelector ? 'rotate-180' : ''}`} />
+                  <FiMessageSquare className="w-4 h-4 text-gray-400" />
+                  <span className="truncate">{chat.title}</span>
                 </button>
-                
-                <AnimatePresence>
-                  {showRoleSelector && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className={`absolute top-full left-0 mt-1 w-64 rounded-lg shadow-lg z-40 ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} overflow-hidden`}
-                    >
-                      <div className={`py-2 px-3 ${darkMode ? 'border-b border-gray-700' : 'border-b border-gray-200'}`}>
-                        <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Select a role</p>
-                      </div>
-                      <div className="max-h-60 overflow-y-auto">
-                        {roleOptions.map(role => (
-                          <button
-                            key={role.id}
-                            onClick={() => handleRoleChange(role)}
-                            className={`w-full text-left px-3 py-3 flex items-start space-x-3 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors ${selectedRole.id === role.id ? (darkMode ? 'bg-gray-700' : 'bg-gray-100') : ''}`}
-                          >
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'}`}>
-                              <FiCpu />
-                            </div>
-                            <div>
-                              <p className="font-medium">{role.name}</p>
-                              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{role.description}</p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-              
-              <div className="flex items-center space-x-2">
+              ))}
+            </div>
+            
+            <div className="mb-4">
+              <h3 className="px-3 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Yesterday</h3>
+              {groupedChatHistory.yesterday.map(chat => (
                 <button 
-                  onClick={() => setShowChatHistory(!showChatHistory)}
-                  className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'} flex items-center`}
+                  key={chat.id}
+                  className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-2 mb-1 ${
+                    darkMode 
+                      ? 'hover:bg-gray-700 text-gray-200' 
+                      : 'hover:bg-gray-100 text-gray-700'
+                  }`}
                 >
-                  <FiClock className="mr-1" />
-                  <span>History</span>
+                  <FiMessageSquare className="w-4 h-4 text-gray-400" />
+                  <span className="truncate">{chat.title}</span>
                 </button>
-                
-                <button 
-                  onClick={startNewChat}
-                  className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'} flex items-center`}
-                >
-                  <FiPlus className="mr-1" />
-                  <span>New Chat</span>
-                </button>
-              </div>
+              ))}
             </div>
           </div>
           
-          {/* Chat History Dropdown - Fixed below header */}
-          <AnimatePresence>
-            {showChatHistory && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className={`border-b overflow-hidden z-20 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
-              >
-                <div className="max-w-3xl mx-auto p-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-medium">Chat History</h3>
+          <div className="p-3 border-t border-gray-200 dark:border-gray-700">
+            {!isPro && (
+              <div className="mb-3 p-2 rounded-md bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200 dark:border-blue-900">
+                <div className="flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">
+                  <FiMessageSquare className="w-4 h-4" />
+                  <span>Free Trial</span>
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">
+                  <div className="flex justify-between mb-1">
+                    <span>Messages:</span>
+                    <span>{remainingMessages} left</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Image uploads:</span>
+                    <span>{freeUploadsLeft} left</span>
+                  </div>
+                  {(remainingMessages === 0 || freeUploadsLeft === 0) && (
                     <button 
-                      onClick={() => setShowChatHistory(false)}
-                      className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+                      onClick={() => setShowProAlert(true)}
+                      className="mt-2 w-full text-xs bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-md py-1 px-2"
                     >
-                      <FiX />
+                      Upgrade to Pro
                     </button>
-                  </div>
-                  
-                  {/* Today */}
-                  <div className="mb-4">
-                    <h4 className={`text-xs font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Today</h4>
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
-                      {groupedChatHistory.today.map(chat => (
-                        <button
-                          key={chat.id}
-                          className={`w-full text-left px-3 py-2 rounded-lg flex items-center ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} ${chat.id === chatId ? (darkMode ? 'bg-gray-700' : 'bg-gray-100') : ''}`}
-                        >
-                          <FiMessageSquare className="mr-2 flex-shrink-0" />
-                          <span className="truncate">{chat.title}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Yesterday */}
-                  <div className="mb-4">
-                    <h4 className={`text-xs font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Yesterday</h4>
-                    <div className="space-y-1 max-h-24 overflow-y-auto">
-                      {groupedChatHistory.yesterday.map(chat => (
-                        <button
-                          key={chat.id}
-                          className={`w-full text-left px-3 py-2 rounded-lg flex items-center ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-                        >
-                          <FiMessageSquare className="mr-2 flex-shrink-0" />
-                          <span className="truncate">{chat.title}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Last Week */}
-                  <div className="mb-4">
-                    <h4 className={`text-xs font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Last Week</h4>
-                    <div className="space-y-1 max-h-24 overflow-y-auto">
-                      {groupedChatHistory.lastWeek.map(chat => (
-                        <button
-                          key={chat.id}
-                          className={`w-full text-left px-3 py-2 rounded-lg flex items-center ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-                        >
-                          <FiMessageSquare className="mr-2 flex-shrink-0" />
-                          <span className="truncate">{chat.title}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Last Month */}
-                  <div>
-                    <h4 className={`text-xs font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Last Month</h4>
-                    <div className="space-y-1 max-h-24 overflow-y-auto">
-                      {groupedChatHistory.lastMonth.map(chat => (
-                        <button
-                          key={chat.id}
-                          className={`w-full text-left px-3 py-2 rounded-lg flex items-center ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-                        >
-                          <FiMessageSquare className="mr-2 flex-shrink-0" />
-                          <span className="truncate">{chat.title}</span>
-                        </button>
-                      ))}
-                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </aside>
+        
+        {/* Mobile chat history button */}
+        <div className="md:hidden fixed bottom-20 left-4 z-30">
+          <button 
+            onClick={() => setShowChatHistory(!showChatHistory)}
+            className="p-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
+          >
+            <FiMessageSquare className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {/* Mobile chat history sidebar */}
+        {showChatHistory && (
+          <div className="md:hidden fixed inset-0 z-20 flex">
+            <div 
+              className="bg-black bg-opacity-50 flex-1"
+              onClick={() => setShowChatHistory(false)}
+            ></div>
+            <div className={`w-72 ${darkMode ? 'bg-gray-800' : 'bg-white'} flex flex-col`}>
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <h2 className="font-medium">Chat History</h2>
+                <button 
+                  onClick={() => setShowChatHistory(false)}
+                  className="text-gray-500"
+                >
+                  <FiX className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-3">
+                {/* Chat history - same as desktop */}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Main Chat Area */}
+        <main className="flex-1 flex flex-col h-full overflow-hidden">
+          {/* Chat Header */}
+          <div className={`px-4 py-3 border-b flex items-center justify-between ${
+            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <div className="relative">
+              <button 
+                onClick={() => setShowRoleSelector(!showRoleSelector)} 
+                className="flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium border hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600"
+              >
+                <FiCpu className="text-blue-500" />
+                <span>{selectedRole.name}</span>
+                <FiChevronDown className={`transition-transform ${showRoleSelector ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {/* Role Selector Dropdown */}
+              {showRoleSelector && (
+                <div className={`absolute top-full left-0 mt-1 w-64 rounded-md shadow-lg z-10 ${
+                  darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                }`}>
+                  <div className="py-1">
+                    {roleOptions.map(role => (
+                      <button
+                        key={role.id}
+                        className={`w-full text-left px-4 py-2 text-sm ${
+                          darkMode 
+                            ? 'hover:bg-gray-700 text-gray-200' 
+                            : 'hover:bg-gray-100 text-gray-700'
+                        }`}
+                        onClick={() => handleRoleChange(role)}
+                      >
+                        <div className="font-medium">{role.name}</div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {role.description}
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              {!isPro && (
+                <div className="hidden md:flex items-center text-sm text-yellow-600 dark:text-yellow-400 mr-2">
+                  <FiMessageSquare className="mr-1 h-4 w-4" />
+                  <span>{remainingMessages} messages left</span>
+                </div>
+              )}
+              <button 
+                onClick={startNewChat}
+                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                title="New Chat"
+              >
+                <FiPlus className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
           
           {/* Chat Messages - Scrollable with proper padding for input box */}
           <div 
@@ -592,7 +628,7 @@ const ChatPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );

@@ -1,8 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { FiVideo, FiUpload, FiPlay, FiPause, FiDownload, FiSliders, FiPlus, FiTrash, FiX, FiCheck, FiClock } from 'react-icons/fi';
+import { ProFeatureAlert } from '../components';
+import { useUser } from '../context/UserContext';
 
 const VideoCreatorPage: React.FC = () => {
+  const { userData, isPro } = useUser();
   const [prompt, setPrompt] = useState('');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -13,6 +16,8 @@ const VideoCreatorPage: React.FC = () => {
   const [uploadedVideo, setUploadedVideo] = useState<File | null>(null);
   const [style, setStyle] = useState('cinematic');
   const [processingProgress, setProcessingProgress] = useState(0);
+  const [showProAlert, setShowProAlert] = useState(false);
+  const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(1);
   const [presetPrompts, setPresetPrompts] = useState([
     'A timelapse of a bustling city from day to night',
     'A drone shot flying over majestic mountains with snow caps',
@@ -43,6 +48,12 @@ const VideoCreatorPage: React.FC = () => {
   const handleGenerateVideo = async () => {
     if (!prompt.trim()) return;
     
+    // If user is not pro and has used all free generations, show pro alert
+    if (!isPro && freeGenerationsLeft <= 0) {
+      setShowProAlert(true);
+      return;
+    }
+    
     setIsGenerating(true);
     setProcessingProgress(0);
     
@@ -64,6 +75,11 @@ const VideoCreatorPage: React.FC = () => {
       // Add prompt to recent prompts if not already there
       if (!presetPrompts.includes(prompt)) {
         setPresetPrompts(prev => [prompt, ...prev.slice(0, 3)]);
+      }
+      
+      // Decrease free generations left if user is not pro
+      if (!isPro) {
+        setFreeGenerationsLeft(prev => prev - 1);
       }
       
       clearInterval(progressInterval);
@@ -133,6 +149,13 @@ const VideoCreatorPage: React.FC = () => {
 
   return (
     <div className="container mx-auto max-w-6xl p-4 py-8">
+      {showProAlert && (
+        <ProFeatureAlert 
+          featureName="Advanced Video Creation"
+          onClose={() => setShowProAlert(false)}
+        />
+      )}
+      
       <div className="mb-8">
         <motion.h1 
           initial={{ opacity: 0, y: -10 }}
@@ -149,6 +172,21 @@ const VideoCreatorPage: React.FC = () => {
         >
           Transform your ideas into high-quality videos with AI
         </motion.p>
+        
+        {!isPro && (
+          <div className="mt-2 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
+            <FiVideo className="mr-1.5" />
+            <span>{freeGenerationsLeft} free generation{freeGenerationsLeft !== 1 ? 's' : ''} left</span>
+            {freeGenerationsLeft === 0 && (
+              <button 
+                onClick={() => setShowProAlert(true)}
+                className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
+              >
+                Upgrade to Pro
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Video Preview */}

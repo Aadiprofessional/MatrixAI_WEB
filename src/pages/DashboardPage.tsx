@@ -17,6 +17,7 @@ import {
   FiClock
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
+import { useUser } from '../context/UserContext';
 
 // Sample data for the dashboard
 const mockRecentProjects = [
@@ -89,6 +90,7 @@ const AIToolSection = ({ title, icon, description, color, route }: {
 
 const DashboardPage: React.FC = () => {
   const { darkMode } = useContext(ThemeContext);
+  const { userData } = useUser();
   const [currentDate] = useState(new Date().toLocaleDateString('en-US', { 
     weekday: 'long', 
     year: 'numeric', 
@@ -113,7 +115,7 @@ const DashboardPage: React.FC = () => {
               transition={{ duration: 0.5 }}
               className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}
             >
-              Welcome, Aadi
+              Welcome, {userData?.name?.split(' ')[0] || 'User'}
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: -10 }}

@@ -17,6 +17,8 @@ import {
   FiLayout,
   FiList
 } from 'react-icons/fi';
+import { ProFeatureAlert } from '../components';
+import { useUser } from '../context/UserContext';
 
 interface Slide {
   id: string;
@@ -26,6 +28,7 @@ interface Slide {
 }
 
 const PresentationCreatorPage: React.FC = () => {
+  const { userData, isPro } = useUser();
   const [presentationTitle, setPresentationTitle] = useState('');
   const [slides, setSlides] = useState<Slide[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -37,6 +40,8 @@ const PresentationCreatorPage: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewSlideIndex, setPreviewSlideIndex] = useState(0);
+  const [showProAlert, setShowProAlert] = useState(false);
+  const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(1);
 
   // Style options for presentations
   const styleOptions = [
@@ -59,6 +64,12 @@ const PresentationCreatorPage: React.FC = () => {
 
   const handleGeneratePresentation = async () => {
     if (!prompt.trim()) return;
+    
+    // If user is not pro and has used all free generations, show pro alert
+    if (!isPro && freeGenerationsLeft <= 0) {
+      setShowProAlert(true);
+      return;
+    }
     
     setIsGenerating(true);
     
@@ -126,6 +137,11 @@ const PresentationCreatorPage: React.FC = () => {
       
       setSlides(generatedSlides);
       setSelectedSlideId(generatedSlides[0].id);
+      
+      // Decrease free generations left if user is not pro
+      if (!isPro) {
+        setFreeGenerationsLeft(prev => prev - 1);
+      }
       
     } catch (error) {
       console.error('Error generating presentation:', error);
@@ -202,6 +218,13 @@ const PresentationCreatorPage: React.FC = () => {
 
   return (
     <div className="container mx-auto max-w-6xl p-4 py-8">
+      {showProAlert && (
+        <ProFeatureAlert 
+          featureName="Professional Presentation Creator"
+          onClose={() => setShowProAlert(false)}
+        />
+      )}
+      
       <div className="mb-8">
         <motion.h1 
           initial={{ opacity: 0, y: -10 }}
@@ -218,6 +241,21 @@ const PresentationCreatorPage: React.FC = () => {
         >
           Create professional presentations in seconds with AI
         </motion.p>
+        
+        {!isPro && (
+          <div className="mt-2 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
+            <FiLayers className="mr-1.5" />
+            <span>{freeGenerationsLeft} free generation{freeGenerationsLeft !== 1 ? 's' : ''} left</span>
+            {freeGenerationsLeft === 0 && (
+              <button 
+                onClick={() => setShowProAlert(true)}
+                className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
+              >
+                Upgrade to Pro
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Presentation Generation Form - Show only when no slides are created yet */}

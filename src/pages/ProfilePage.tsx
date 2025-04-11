@@ -1,6 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ThemeContext } from '../context/ThemeContext';
+import { useUser } from '../context/UserContext';
 import { Layout } from '../components';
 import { 
   FiEdit2, 
@@ -14,32 +15,16 @@ import {
   FiFileText,
   FiMessageSquare,
   FiUpload,
-  FiSave
+  FiSave,
+  FiPhone,
+  FiGlobe,
+  FiCode
 } from 'react-icons/fi';
+import { updateUserProfile } from '../supabaseClient';
+import { toast } from 'react-hot-toast';
 
-// Mock user data
-const userData = {
-  name: "Aadi Srivastava",
-  email: "aadi@example.com",
-  avatar: "",
-  joinDate: "July 2023",
-  plan: "Pro",
-  usage: {
-    images: 253,
-    videos: 42,
-    documents: 147,
-    chats: 358
-  },
-  activity: [
-    { type: "image", text: "Created an image 'Futuristic city skyline'", time: "2 hours ago" },
-    { type: "chat", text: "Started a new chat about 'Quantum computing'", time: "5 hours ago" },
-    { type: "document", text: "Generated an article about 'AI trends in 2023'", time: "Yesterday" },
-    { type: "video", text: "Created a video explaining 'Neural networks'", time: "2 days ago" },
-    { type: "image", text: "Created an image 'Abstract art in blue'", time: "3 days ago" }
-  ]
-};
-
-const ActivityItem = ({ item }: { item: { type: string, text: string, time: string } }) => {
+// Activity item component definition
+const ActivityItem: React.FC<{ item: { type: string, text: string, time: string } }> = ({ item }) => {
   const { darkMode } = useContext(ThemeContext);
   
   const getIcon = (type: string) => {
@@ -89,25 +74,90 @@ const ActivityItem = ({ item }: { item: { type: string, text: string, time: stri
 
 const ProfilePage: React.FC = () => {
   const { darkMode } = useContext(ThemeContext);
+  const { userData, loading, refreshUserData } = useUser();
   const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    name: userData.name,
-    email: userData.email,
+    name: '',
+    email: '',
+    gender: '',
+    age: '',
+    preferred_language: '',
+    phone: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
+
+  // Load user data into form when it's available
+  useEffect(() => {
+    if (userData) {
+      setFormData({
+        name: userData.name || '',
+        email: userData.email || '',
+        gender: userData.gender || '',
+        age: userData.age ? userData.age.toString() : '',
+        preferred_language: userData.preferred_language || '',
+        phone: userData.phone || '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    }
+  }, [userData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would submit the changes to an API
-    setIsEditing(false);
+    if (!userData?.uid) return;
+    
+    try {
+      setIsSubmitting(true);
+      
+      // Prepare update data - only send what's changed and needed
+      const updateData: any = {};
+      
+      if (formData.name !== userData.name) updateData.name = formData.name;
+      if (formData.gender !== userData.gender) updateData.gender = formData.gender;
+      if (formData.preferred_language !== userData.preferred_language) 
+        updateData.preferred_language = formData.preferred_language;
+      if (formData.phone !== userData.phone) updateData.phone = formData.phone;
+      
+      // Convert age to number if it's changed
+      const numAge = parseInt(formData.age);
+      if (!isNaN(numAge) && numAge !== userData.age) updateData.age = numAge;
+      
+      // If we have changes to update
+      if (Object.keys(updateData).length > 0) {
+        await updateUserProfile(userData.uid, updateData);
+        await refreshUserData();
+        toast.success('Profile updated successfully');
+      }
+      
+      setIsEditing(false);
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      toast.error(error.message || 'Failed to update profile');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className={`py-8 px-4 lg:px-8 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} min-h-screen`}>
+          <div className="max-w-7xl mx-auto flex items-center justify-center">
+            <p className={`text-xl ${darkMode ? 'text-white' : 'text-gray-900'}`}>Loading profile...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -148,9 +198,9 @@ const ProfilePage: React.FC = () => {
             >
               <div className="flex flex-col items-center text-center">
                 <div className="w-24 h-24 relative">
-                  {userData.avatar ? (
+                  {userData?.dp_url ? (
                     <img 
-                      src={userData.avatar} 
+                      src={userData.dp_url} 
                       alt={userData.name} 
                       className="rounded-full object-cover w-full h-full"
                     />
@@ -160,7 +210,7 @@ const ProfilePage: React.FC = () => {
                         ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white' 
                         : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white'
                     }`}>
-                      {userData.name.charAt(0)}
+                      {userData?.name?.charAt(0) || 'U'}
                     </div>
                   )}
                   <button 
@@ -173,10 +223,10 @@ const ProfilePage: React.FC = () => {
                 </div>
 
                 <h2 className={`text-xl font-bold mt-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {userData.name}
+                  {userData?.name}
                 </h2>
                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {userData.email}
+                  {userData?.email}
                 </p>
                 
                 <div className={`mt-2 px-3 py-1 rounded-full text-xs font-medium ${
@@ -184,41 +234,47 @@ const ProfilePage: React.FC = () => {
                     ? 'bg-blue-900/30 text-blue-300' 
                     : 'bg-blue-100 text-blue-600'
                 }`}>
-                  {userData.plan} Plan
+                  {userData?.user_plan || 'Free'} Plan
                 </div>
                 
                 <div className="w-full mt-6 pt-6 border-t border-dashed border-opacity-50 border-gray-500">
-                  <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Member since {userData.joinDate}
-                  </p>
+                  <div className="flex items-center justify-center">
+                    <div className={`px-3 py-2 rounded-lg flex items-center ${
+                      darkMode ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-100 text-amber-600'
+                    }`}>
+                      <FiCode className="w-4 h-4 mr-2" />
+                      <span>Referral Code: {userData?.referral_code}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Usage Stats */}
+              {/* User Stats */}
               <div className="mt-6">
                 <h3 className={`text-md font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  Your Usage
+                  Your Credits
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: 'Images', value: userData.usage.images, icon: <FiImage className="w-4 h-4" /> },
-                    { label: 'Videos', value: userData.usage.videos, icon: <FiVideo className="w-4 h-4" /> },
-                    { label: 'Documents', value: userData.usage.documents, icon: <FiFileText className="w-4 h-4" /> },
-                    { label: 'Chats', value: userData.usage.chats, icon: <FiMessageSquare className="w-4 h-4" /> }
-                  ].map((item, index) => (
-                    <div 
-                      key={index}
-                      className={`p-3 rounded-lg ${
-                        darkMode ? 'bg-gray-700' : 'bg-gray-50'
-                      } flex flex-col`}
-                    >
-                      <div className="flex items-center text-sm text-gray-500 mb-1">
-                        {item.icon}
-                        <span className={`ml-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{item.label}</span>
-                      </div>
-                      <span className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{item.value}</span>
+                <div className={`p-4 rounded-lg ${
+                  darkMode ? 'bg-gray-700' : 'bg-gray-50'
+                } flex items-center justify-between`}>
+                  <div className="flex items-center">
+                    <div className={`p-2 rounded-lg ${
+                      darkMode ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-100 text-amber-600'
+                    }`}>
+                      <FiClock className="w-5 h-5" />
                     </div>
-                  ))}
+                    <div className="ml-3">
+                      <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Available Coins</p>
+                      <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {userData?.user_coins || 0}
+                      </p>
+                    </div>
+                  </div>
+                  <div className={`px-2 py-1 rounded text-xs ${
+                    darkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-700'
+                  }`}>
+                    Expires: {userData?.coins_expiry ? new Date(userData.coins_expiry).toLocaleDateString() : 'N/A'}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -239,17 +295,18 @@ const ProfilePage: React.FC = () => {
                   Account Settings
                 </h2>
                 <button
-                  onClick={() => setIsEditing(!isEditing)}
+                  onClick={() => isEditing ? handleSubmit : setIsEditing(true)}
+                  disabled={isSubmitting}
                   className={`px-4 py-2 rounded-lg flex items-center ${
                     isEditing 
                       ? (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600')
                       : (darkMode ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600' : 'text-white bg-gradient-to-r from-blue-500 to-purple-500')
-                  }`}
+                  } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                   {isEditing ? (
                     <>
                       <FiSave className="mr-2" />
-                      <span>Save</span>
+                      <span>{isSubmitting ? 'Saving...' : 'Save'}</span>
                     </>
                   ) : (
                     <>
@@ -306,115 +363,160 @@ const ProfilePage: React.FC = () => {
                         type="email"
                         id="email"
                         name="email"
-                        disabled={!isEditing}
+                        disabled={true} // Email can't be changed here
                         value={formData.email}
-                        onChange={handleChange}
                         className={`flex-1 p-2 ${
                           darkMode 
                             ? 'bg-gray-700 text-white border-gray-600' 
                             : 'bg-white text-gray-900 border-gray-300'
-                        } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          !isEditing ? (darkMode ? 'opacity-70' : 'bg-gray-50') : ''
-                        }`}
+                        } border rounded-r-lg opacity-70`}
                       />
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label 
+                        htmlFor="gender" 
+                        className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                      >
+                        Gender
+                      </label>
+                      <div className="flex items-center">
+                        <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
+                          <FiUser className="w-5 h-5" />
+                        </span>
+                        <input
+                          type="text"
+                          id="gender"
+                          name="gender"
+                          disabled={!isEditing}
+                          value={formData.gender}
+                          onChange={handleChange}
+                          className={`flex-1 p-2 ${
+                            darkMode 
+                              ? 'bg-gray-700 text-white border-gray-600' 
+                              : 'bg-white text-gray-900 border-gray-300'
+                          } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                            !isEditing ? (darkMode ? 'opacity-70' : 'bg-gray-50') : ''
+                          }`}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label 
+                        htmlFor="age" 
+                        className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                      >
+                        Age
+                      </label>
+                      <div className="flex items-center">
+                        <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
+                          <FiCalendar className="w-5 h-5" />
+                        </span>
+                        <input
+                          type="number"
+                          id="age"
+                          name="age"
+                          disabled={!isEditing}
+                          value={formData.age}
+                          onChange={handleChange}
+                          className={`flex-1 p-2 ${
+                            darkMode 
+                              ? 'bg-gray-700 text-white border-gray-600' 
+                              : 'bg-white text-gray-900 border-gray-300'
+                          } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                            !isEditing ? (darkMode ? 'opacity-70' : 'bg-gray-50') : ''
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label 
+                        htmlFor="preferred_language" 
+                        className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                      >
+                        Preferred Language
+                      </label>
+                      <div className="flex items-center">
+                        <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
+                          <FiGlobe className="w-5 h-5" />
+                        </span>
+                        <input
+                          type="text"
+                          id="preferred_language"
+                          name="preferred_language"
+                          disabled={!isEditing}
+                          value={formData.preferred_language}
+                          onChange={handleChange}
+                          className={`flex-1 p-2 ${
+                            darkMode 
+                              ? 'bg-gray-700 text-white border-gray-600' 
+                              : 'bg-white text-gray-900 border-gray-300'
+                          } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                            !isEditing ? (darkMode ? 'opacity-70' : 'bg-gray-50') : ''
+                          }`}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label 
+                        htmlFor="phone" 
+                        className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                      >
+                        Phone (Optional)
+                      </label>
+                      <div className="flex items-center">
+                        <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
+                          <FiPhone className="w-5 h-5" />
+                        </span>
+                        <input
+                          type="text"
+                          id="phone"
+                          name="phone"
+                          disabled={!isEditing}
+                          value={formData.phone}
+                          onChange={handleChange}
+                          className={`flex-1 p-2 ${
+                            darkMode 
+                              ? 'bg-gray-700 text-white border-gray-600' 
+                              : 'bg-white text-gray-900 border-gray-300'
+                          } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                            !isEditing ? (darkMode ? 'opacity-70' : 'bg-gray-50') : ''
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   {isEditing && (
-                    <>
-                      <div className={`w-full h-px my-6 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
-                      
-                      <div>
-                        <label 
-                          htmlFor="currentPassword" 
-                          className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                        >
-                          Current Password
-                        </label>
-                        <div className="flex items-center">
-                          <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
-                            <FiLock className="w-5 h-5" />
-                          </span>
-                          <input
-                            type="password"
-                            id="currentPassword"
-                            name="currentPassword"
-                            value={formData.currentPassword}
-                            onChange={handleChange}
-                            className={`flex-1 p-2 ${
-                              darkMode 
-                                ? 'bg-gray-700 text-white border-gray-600' 
-                                : 'bg-white text-gray-900 border-gray-300'
-                            } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label 
-                          htmlFor="newPassword" 
-                          className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                        >
-                          New Password
-                        </label>
-                        <div className="flex items-center">
-                          <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
-                            <FiLock className="w-5 h-5" />
-                          </span>
-                          <input
-                            type="password"
-                            id="newPassword"
-                            name="newPassword"
-                            value={formData.newPassword}
-                            onChange={handleChange}
-                            className={`flex-1 p-2 ${
-                              darkMode 
-                                ? 'bg-gray-700 text-white border-gray-600' 
-                                : 'bg-white text-gray-900 border-gray-300'
-                            } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label 
-                          htmlFor="confirmPassword" 
-                          className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                        >
-                          Confirm New Password
-                        </label>
-                        <div className="flex items-center">
-                          <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
-                            <FiLock className="w-5 h-5" />
-                          </span>
-                          <input
-                            type="password"
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            className={`flex-1 p-2 ${
-                              darkMode 
-                                ? 'bg-gray-700 text-white border-gray-600' 
-                                : 'bg-white text-gray-900 border-gray-300'
-                            } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                          />
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {isEditing && (
-                    <button 
-                      type="submit"
-                      className={`w-full py-2.5 rounded-lg mt-6 ${
-                        darkMode
-                          ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white'
-                          : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white'
-                      }`}
-                    >
-                      Save Changes
-                    </button>
+                    <div className="flex justify-end mt-6">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className={`px-4 py-2 rounded-lg mr-3 ${
+                          darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className={`px-4 py-2 rounded-lg ${
+                          darkMode 
+                            ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600' 
+                            : 'text-white bg-gradient-to-r from-blue-500 to-purple-500'
+                        } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                      >
+                        {isSubmitting ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </div>
                   )}
                 </div>
               </form>
@@ -436,10 +538,17 @@ const ProfilePage: React.FC = () => {
                   Recent Activity
                 </h2>
               </div>
-              <div className="divide-y divide-gray-700">
-                {userData.activity.map((item, index) => (
-                  <ActivityItem key={index} item={item} />
-                ))}
+              <div className={`text-md font-medium mt-4 mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                Recent Activity
+              </div>
+              <div className={`${
+                darkMode ? 'bg-gray-800/50 border border-gray-700/50' : 'bg-white border border-gray-100'
+              } rounded-lg overflow-hidden`}>
+                <div className="p-4 text-center">
+                  <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    No recent activity to display
+                  </p>
+                </div>
               </div>
             </motion.div>
 

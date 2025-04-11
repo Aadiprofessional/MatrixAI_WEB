@@ -11,4 +11,7 @@ export { default as ContentWriterPage } from './pages/ContentWriterPage';
 export { default as PresentationCreatorPage } from './pages/PresentationCreatorPage';
 export { default as ProfilePage } from './pages/ProfilePage';
 export { default as SettingsPage } from './pages/SettingsPage';
-export { default as HelpPage } from './pages/HelpPage'; 
+export { default as HelpPage } from './pages/HelpPage';
+export { default as SubscriptionPage } from './pages/SubscriptionPage';
+export { default as TransactionsPage } from './pages/TransactionsPage';
+export { default as ReferralPage } from './pages/ReferralPage'; 

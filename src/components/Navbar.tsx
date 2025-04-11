@@ -8,9 +8,12 @@ import {
   FiUser,
   FiLogOut,
   FiMoon,
-  FiSun
+  FiSun,
+  FiCreditCard
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { useUser } from '../context/UserContext';
 
 interface NavbarProps {}
 
@@ -19,12 +22,34 @@ const Navbar: React.FC<NavbarProps> = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
+  const { user, signOut } = useAuth();
+  const { userData } = useUser();
 
-  const handleLogout = () => {
-    // Clear auth from localStorage
-    localStorage.removeItem('isAuthenticated');
-    // Navigate to login
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  // Get user display name (full name or email)
+  const getUserDisplayName = () => {
+    if (userData?.name) return userData.name;
+    if (!user) return '';
+    
+    // Try to get the full name from metadata
+    const fullName = user.user_metadata?.full_name;
+    
+    // If no full name, use email
+    return fullName || user.email || '';
+  };
+
+  // Get user initial for avatar
+  const getUserInitial = () => {
+    const displayName = getUserDisplayName();
+    return displayName ? displayName.charAt(0).toUpperCase() : '?';
   };
 
   // Render app navbar
@@ -55,6 +80,18 @@ const Navbar: React.FC<NavbarProps> = () => {
 
         {/* Right Navigation */}
         <div className="flex items-center space-x-3">
+          {/* User Coins */}
+          {userData && (
+            <div className={`flex items-center px-3 py-1.5 rounded-lg ${
+              darkMode 
+                ? 'bg-amber-900/30 text-amber-300' 
+                : 'bg-amber-100 text-amber-600'
+            }`}>
+              <FiCreditCard className="w-4 h-4 mr-1.5" />
+              <span className="text-sm font-medium">{userData.user_coins || 0}</span>
+            </div>
+          )}
+
           {/* Dark Mode Toggle */}
           <button 
             onClick={toggleDarkMode}
@@ -143,9 +180,17 @@ const Navbar: React.FC<NavbarProps> = () => {
               className="flex items-center"
             >
               <span className="sr-only">Open user menu</span>
-              <div className="relative w-8 h-8 overflow-hidden rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center">
-                <span className="text-white font-medium">A</span>
-              </div>
+              {userData?.dp_url ? (
+                <img 
+                  src={userData.dp_url} 
+                  alt={userData.name || 'User'} 
+                  className="w-8 h-8 rounded-full object-cover border-2 border-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+                />
+              ) : (
+                <div className="relative w-8 h-8 overflow-hidden rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center">
+                  <span className="text-white font-medium">{getUserInitial()}</span>
+                </div>
+              )}
             </button>
 
             {/* User Menu Dropdown */}
@@ -156,14 +201,33 @@ const Navbar: React.FC<NavbarProps> = () => {
                 <div className={`py-3 px-4 text-sm border-b ${
                   darkMode ? 'text-gray-200 border-gray-700' : 'text-gray-900 border-gray-200'
                 }`}>
-                  <div className="font-medium">Aadi Srivastava</div>
-                  <div className={`truncate ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>aadi@example.com</div>
+                  <div className="font-medium">{getUserDisplayName()}</div>
+                  <div className={`truncate ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {user?.email}
+                  </div>
+                  {userData?.user_plan && (
+                    <div className={`mt-1 px-2 py-0.5 text-xs rounded-full inline-block ${
+                      darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-600'
+                    }`}>
+                      {userData.user_plan} Plan
+                    </div>
+                  )}
                 </div>
                 <ul className="py-1 text-sm">
                   <li>
                     <Link to="/profile" className={`block py-2 px-4 ${
                       darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
                     }`}>Profile</Link>
+                  </li>
+                  <li>
+                    <Link to="/transactions" className={`block py-2 px-4 ${
+                      darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+                    }`}>Transactions</Link>
+                  </li>
+                  <li>
+                    <Link to="/referral" className={`block py-2 px-4 ${
+                      darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+                    }`}>Refer & Earn</Link>
                   </li>
                   <li>
                     <Link to="/settings" className={`block py-2 px-4 ${

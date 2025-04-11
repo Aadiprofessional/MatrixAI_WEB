@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiDownload, FiShare2, FiCopy, FiImage, FiSend, FiSliders, FiPlus, FiTrash, FiCheck } from 'react-icons/fi';
+import { ProFeatureAlert } from '../components';
+import { useUser } from '../context/UserContext';
 
 const ImageGeneratorPage: React.FC = () => {
+  const { userData, isPro } = useUser();
   const [prompt, setPrompt] = useState('');
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -11,6 +14,8 @@ const ImageGeneratorPage: React.FC = () => {
   const [aspectRatio, setAspectRatio] = useState('square');
   const [stylePreset, setStylePreset] = useState('natural');
   const [imageCount, setImageCount] = useState(4);
+  const [showProAlert, setShowProAlert] = useState(false);
+  const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(3);
   const [savedPrompts, setSavedPrompts] = useState<string[]>([
     'A futuristic city with flying cars and neon lights',
     'Underwater scene with colorful coral reef and tropical fish',
@@ -39,6 +44,12 @@ const ImageGeneratorPage: React.FC = () => {
 
   const handleGenerateImages = async () => {
     if (!prompt.trim()) return;
+    
+    // If user is not pro and has used all free generations, show pro alert
+    if (!isPro && freeGenerationsLeft <= 0) {
+      setShowProAlert(true);
+      return;
+    }
 
     setIsGenerating(true);
     
@@ -59,6 +70,11 @@ const ImageGeneratorPage: React.FC = () => {
       // Add the prompt to saved prompts if it's not already there
       if (!savedPrompts.includes(prompt)) {
         setSavedPrompts(prev => [prompt, ...prev].slice(0, 10));
+      }
+      
+      // Decrease free generations left if user is not pro
+      if (!isPro) {
+        setFreeGenerationsLeft(prev => prev - 1);
       }
     } catch (error) {
       console.error('Error generating images:', error);
@@ -85,6 +101,13 @@ const ImageGeneratorPage: React.FC = () => {
 
   return (
     <div className="container mx-auto max-w-6xl p-4 py-8">
+      {showProAlert && (
+        <ProFeatureAlert 
+          featureName="Unlimited Image Generation"
+          onClose={() => setShowProAlert(false)}
+        />
+      )}
+      
       <div className="mb-8">
         <motion.h1 
           initial={{ opacity: 0, y: -10 }}
@@ -101,6 +124,21 @@ const ImageGeneratorPage: React.FC = () => {
         >
           Transform your ideas into stunning images with the power of AI
         </motion.p>
+        
+        {!isPro && (
+          <div className="mt-2 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
+            <FiImage className="mr-1.5" />
+            <span>{freeGenerationsLeft} free generations left today</span>
+            {freeGenerationsLeft === 0 && (
+              <button 
+                onClick={() => setShowProAlert(true)}
+                className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
+              >
+                Upgrade to Pro
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Prompt Input and Generation Controls */}
