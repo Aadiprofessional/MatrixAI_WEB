@@ -96,7 +96,18 @@ const TransactionsPage: React.FC = () => {
       });
       
       if (response.data.success) {
-        const sortedTransactions = response.data.data.sort((a: any, b: any) => 
+        // Map API response to match our Transaction interface
+        const formattedTransactions = response.data.data.map((item: any) => ({
+          id: item.id?.toString() || '',
+          amount: item.coin_amount || 0,
+          // Set a default type based on transaction_name
+          type: 'Debit', // Default type
+          description: item.transaction_name || '',
+          time: item.time || new Date().toISOString(),
+          status: item.status || 'Completed'
+        }));
+        
+        const sortedTransactions = formattedTransactions.sort((a: any, b: any) => 
           new Date(b.time).getTime() - new Date(a.time).getTime()
         );
         setTransactions(sortedTransactions);
@@ -145,7 +156,9 @@ const TransactionsPage: React.FC = () => {
   const filteredTransactions = getFilteredTransactions();
 
   // Get transaction icon based on type
-  const getTransactionIcon = (type: string) => {
+  const getTransactionIcon = (type: string | undefined) => {
+    if (!type) return <FiCreditCard className="h-4 w-4" />;
+    
     switch (type.toLowerCase()) {
       case 'credit':
         return <FiArrowDown className="h-4 w-4" />;
@@ -163,7 +176,9 @@ const TransactionsPage: React.FC = () => {
   };
 
   // Get transaction color based on type
-  const getTransactionColor = (type: string) => {
+  const getTransactionColor = (type: string | undefined) => {
+    if (!type) return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600';
+    
     switch (type.toLowerCase()) {
       case 'credit':
         return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-600';
@@ -425,11 +440,11 @@ const TransactionsPage: React.FC = () => {
                             {transaction.description}
                           </td>
                           <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                            transaction.type.toLowerCase() === 'credit' || transaction.type.toLowerCase() === 'refund'
+                            transaction.type && (transaction.type.toLowerCase() === 'credit' || transaction.type.toLowerCase() === 'refund')
                               ? (darkMode ? 'text-green-400' : 'text-green-600')
                               : (darkMode ? 'text-red-400' : 'text-red-600')
                           }`}>
-                            {transaction.type.toLowerCase() === 'credit' || transaction.type.toLowerCase() === 'refund'
+                            {transaction.type && (transaction.type.toLowerCase() === 'credit' || transaction.type.toLowerCase() === 'refund')
                               ? `+${transaction.amount}`
                               : `-${transaction.amount}`
                             } Coins

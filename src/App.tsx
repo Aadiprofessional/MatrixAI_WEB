@@ -18,6 +18,8 @@ import {
   HelpPage,
   SubscriptionPage,
   TransactionsPage,
+  OrderHistoryPage,
+  PaymentPage,
   ReferralPage,
   SpeechToTextPage,
   TranscriptionPage
@@ -214,6 +216,15 @@ const App: React.FC = () => {
               />
               
               <Route 
+                path="/order-history" 
+                element={
+                  <ProtectedRoute>
+                    <OrderHistoryPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
                 path="/referral" 
                 element={
                   <ProtectedRoute>
@@ -237,6 +248,16 @@ const App: React.FC = () => {
                 element={
                   <ProtectedRoute>
                     <SubscriptionPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Payment route */}
+              <Route 
+                path="/payment" 
+                element={
+                  <ProtectedRoute>
+                    <PaymentPage />
                   </ProtectedRoute>
                 } 
               />

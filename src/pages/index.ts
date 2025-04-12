@@ -8,4 +8,7 @@ export { default as NotFoundPage } from './NotFoundPage';
 export { default as ImageGeneratorPage } from './ImageGeneratorPage';
 export { default as VideoCreatorPage } from './VideoCreatorPage';
 export { default as ContentWriterPage } from './ContentWriterPage';
-export { default as PresentationCreatorPage } from './PresentationCreatorPage'; 
+export { default as PresentationCreatorPage } from './PresentationCreatorPage';
+export { default as OrderHistoryPage } from './OrderHistoryPage';
+export { default as TransactionsPage } from './TransactionsPage';
+export { default as PaymentPage } from './PaymentPage'; 

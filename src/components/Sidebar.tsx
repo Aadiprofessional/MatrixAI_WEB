@@ -18,7 +18,8 @@ import {
   FiPlay,
   FiPause,
   FiX,
-  FiCheck
+  FiCheck,
+  FiShoppingBag
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -143,6 +144,8 @@ const Sidebar: React.FC<SidebarProps> = () => {
     { path: '/tools/presentation-creator', label: 'Presentations', icon: <FiLayers className="w-5 h-5" />, pro: true },
     { path: '/tools/speech-to-text', label: 'Speech to Text', icon: <FiMic className="w-5 h-5" />, pro: true },
     { path: '/profile', label: 'Profile', icon: <FiUser className="w-5 h-5" /> },
+ 
+ 
     { path: '/settings', label: 'Settings', icon: <FiSettings className="w-5 h-5" /> },
     { path: '/help', label: 'Help & Support', icon: <FiHelpCircle className="w-5 h-5" /> },
   ];

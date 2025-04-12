@@ -1,270 +1,608 @@
-import React, { useState, useContext } from 'react';
-import { FiCheck, FiStar, FiArrowLeft } from 'react-icons/fi';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { 
+  FiCheck, 
+  FiStar, 
+  FiArrowLeft, 
+  FiShoppingBag, 
+  FiCalendar, 
+  FiCreditCard,
+  FiInfo,
+  FiPackage
+} from 'react-icons/fi';
 import { Layout } from '../components';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
+import { useAuth } from '../context/AuthContext';
+
+interface PlanProps {
+  name: string;
+  price: string;
+  coins: number;
+  period: string;
+  originalPrice?: string;
+  discount?: string;
+  description: string;
+  selected: boolean;
+  onSelect: () => void;
+}
+
+const PlanCard: React.FC<PlanProps> = ({ 
+  name, 
+  price, 
+  coins, 
+  period, 
+  originalPrice, 
+  discount, 
+  description,
+  selected, 
+  onSelect 
+}) => {
+  const { darkMode } = useContext(ThemeContext);
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.2 }}
+      onClick={onSelect}
+      className={`relative rounded-xl overflow-hidden transition-colors cursor-pointer ${
+        selected 
+          ? 'border-2 border-blue-500 transform scale-[1.01]' 
+          : `border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`
+      } ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm p-6`}
+    >
+      {discount && (
+        <div className="absolute -top-1 -right-1">
+          <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-xs font-semibold px-4 py-1 rounded-bl-lg shadow-md transform rotate-[45deg] translate-x-[25%] translate-y-[-25%] w-36 text-center">
+            {discount}
+          </div>
+        </div>
+      )}
+      
+      <div className="mb-3">
+        <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+          {name}
+        </h3>
+      </div>
+      
+      <div className="flex items-baseline mb-4">
+        <span className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+          {price}
+        </span>
+        <span className={`ml-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+          HKD
+        </span>
+      </div>
+
+      {originalPrice && (
+        <div className="mb-3 flex items-center">
+          <span className={`text-sm line-through mr-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            {originalPrice} HKD
+          </span>
+          <span className="text-xs font-semibold text-green-500">
+            {discount}
+          </span>
+        </div>
+      )}
+      
+      <div className={`flex items-center mb-4 p-3 rounded-lg ${
+        darkMode ? 'bg-gray-700/50' : 'bg-gray-100'
+      }`}>
+        <img 
+          src="https://via.placeholder.com/24?text=$" 
+          alt="Coin" 
+          className="w-6 h-6 mr-2" 
+          onError={(e) => {
+            e.currentTarget.src = 'https://via.placeholder.com/24?text=$';
+            e.currentTarget.onerror = null;
+          }}
+        />
+        <span className={`text-xl font-bold ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+          {coins}
+        </span>
+        {period && (
+          <span className={`ml-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            {period}
+          </span>
+        )}
+      </div>
+
+      <p className={`mb-5 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+        {description}
+      </p>
+      
+      <div className={`w-full h-2 rounded-full mb-4 ${
+        selected 
+          ? 'bg-gradient-to-r from-blue-400 to-purple-500' 
+          : (darkMode ? 'bg-gray-700' : 'bg-gray-200')
+      }`}>
+        <div 
+          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-purple-600" 
+          style={{ width: selected ? '100%' : '0%', transition: 'width 0.3s ease-in-out' }}
+        ></div>
+      </div>
+      
+      <button
+        className={`w-full py-2.5 rounded-lg font-medium text-center transition-colors ${
+          selected
+            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+            : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
+        }`}
+      >
+        {selected ? 'Selected' : 'Select Plan'}
+      </button>
+    </motion.div>
+  );
+};
+
+interface AddonCardProps {
+  price: string;
+  coins: number;
+  description: string;
+  onSelect: () => void;
+}
+
+const AddonCard: React.FC<AddonCardProps> = ({ price, coins, description, onSelect }) => {
+  const { darkMode } = useContext(ThemeContext);
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.2 }}
+      className={`rounded-xl overflow-hidden transition-colors ${
+        darkMode ? 'bg-gradient-to-br from-purple-800/30 to-blue-900/30 backdrop-blur-sm border border-purple-700/50' : 'bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-100'
+      } shadow-md p-6`}
+    >
+      <div className="flex items-center mb-4">
+        <div className={`p-3 rounded-lg mr-4 ${
+          darkMode ? 'bg-purple-900/50 text-purple-400' : 'bg-purple-100 text-purple-600'
+        }`}>
+          <FiPackage className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            Addon Pack
+          </h3>
+          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            Expires at month end
+          </p>
+        </div>
+      </div>
+      
+      <div className="flex items-baseline mb-4">
+        <span className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+          {price}
+        </span>
+        <span className={`ml-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+          HKD
+        </span>
+      </div>
+      
+      <div className={`flex items-center mb-4 p-3 rounded-lg ${
+        darkMode ? 'bg-gray-700/50' : 'bg-gray-100'
+      }`}>
+        <img 
+          src="https://via.placeholder.com/24?text=$" 
+          alt="Coin" 
+          className="w-6 h-6 mr-2" 
+          onError={(e) => {
+            e.currentTarget.src = 'https://via.placeholder.com/24?text=$';
+            e.currentTarget.onerror = null;
+          }}
+        />
+        <span className={`text-xl font-bold ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+          {coins}
+        </span>
+      </div>
+
+      <p className={`mb-5 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+        {description}
+      </p>
+      
+      <button
+        onClick={onSelect}
+        className="w-full py-2.5 rounded-lg font-medium bg-gradient-to-r from-purple-500 to-blue-600 text-white hover:opacity-90 transition-opacity"
+      >
+        Add Coins
+      </button>
+    </motion.div>
+  );
+};
 
 const SubscriptionPage: React.FC = () => {
   const { darkMode } = useContext(ThemeContext);
   const { userData, isPro } = useUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
+  
+  const [selectedPlan, setSelectedPlan] = useState<'Tester' | 'Monthly' | 'Yearly'>('Monthly');
+  const [showTnC, setShowTnC] = useState(false);
+  const [showAddon, setShowAddon] = useState(false);
 
-  // Mock function to handle subscription purchase
-  const handleSubscribe = () => {
-    alert('This would integrate with a payment processor in a real application.');
-    // After successful payment, refresh user data and redirect
-    navigate('/dashboard');
+  useEffect(() => {
+    // Check if user has active subscription to show the addon option
+    if (userData?.user_plan && userData.user_plan !== 'Free') {
+      setShowAddon(true);
+    } else {
+      setShowAddon(false);
+    }
+  }, [userData]);
+
+  const getPlanText = () => {
+    switch (selectedPlan) {
+      case 'Tester':
+        return 'Perfect for those who want to try our service. Get 450 coins valid for 15 days.';
+      case 'Monthly':
+        return 'Ideal for regular users. Get 1380 coins each month.';
+      case 'Yearly':
+        return 'Best value for committed users. Get 1380 coins each month for a full year with 10% discount.';
+      default:
+        return '';
+    }
+  };
+
+  const getButtonPrice = () => {
+    switch (selectedPlan) {
+      case 'Tester':
+        return '$50 HKD';
+      case 'Monthly':
+        return '$138 HKD';
+      case 'Yearly':
+        return '$1490 HKD';
+      default:
+        return '';
+    }
+  };
+
+  const handleSubscribe = (plan: string) => {
+    // Navigate to payment page with plan details
+    navigate('/payment', { 
+      state: { 
+        uid: user?.id,
+        plan: plan,
+        price: plan === 'Tester' ? '50 HKD' : plan === 'Monthly' ? '138 HKD' : '1490 HKD',
+        isAddon: false
+      } 
+    });
+  };
+
+  const handleAddonPurchase = () => {
+    // Navigate to payment page with addon details
+    navigate('/payment', { 
+      state: { 
+        uid: user?.id,
+        plan: 'Addon',
+        price: '50 HKD',
+        isAddon: true
+      } 
+    });
+  };
+
+  const handleTermsAndConditions = () => {
+    setShowTnC(true);
   };
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="mb-8 flex items-center">
-          <Link to="/dashboard" className="mr-4 text-blue-500 hover:text-blue-600">
-            <FiArrowLeft className="w-5 h-5" />
-          </Link>
-          <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Upgrade to MatrixAI Pro
-          </h1>
+      <div className={`py-10 px-4 lg:px-8 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        {/* Background gradient effects */}
+        <div className="fixed inset-0 -z-10 overflow-hidden">
+          <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-pink-500/10 blur-3xl opacity-70"></div>
+          <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-purple-500/10 via-cyan-500/5 to-blue-500/10 blur-3xl opacity-70"></div>
         </div>
 
-        {/* Hero Section */}
-        <div className="relative rounded-2xl overflow-hidden mb-12">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-700"></div>
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_white_0%,_transparent_70%)]"></div>
-          
-          <div className="relative px-8 py-16 md:px-16">
-            <div className="max-w-3xl text-center mx-auto">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                Unlock the Full Power of AI
-              </h2>
-              <p className="text-lg md:text-xl text-white text-opacity-90 mb-8">
-                Join thousands of creators who use MatrixAI Pro to bring their ideas to life with cutting-edge AI tools
-              </p>
-              
-              <div className="inline-flex p-1 bg-white bg-opacity-20 rounded-lg mb-10">
-                <button
-                  onClick={() => setSelectedPlan('monthly')}
-                  className={`px-6 py-2 text-sm font-medium rounded-md transition-colors ${
-                    selectedPlan === 'monthly'
-                      ? 'bg-white text-blue-700 shadow-lg'
-                      : 'text-white hover:bg-white hover:bg-opacity-10'
-                  }`}
-                >
-                  Monthly
-                </button>
-                <button
-                  onClick={() => setSelectedPlan('yearly')}
-                  className={`px-6 py-2 text-sm font-medium rounded-md flex items-center transition-colors ${
-                    selectedPlan === 'yearly'
-                      ? 'bg-white text-blue-700 shadow-lg'
-                      : 'text-white hover:bg-white hover:bg-opacity-10'
-                  }`}
-                >
-                  Yearly
-                  <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-white">
-                    SAVE 20%
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <h1 className={`text-4xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Choose Your Perfect Plan
+            </h1>
+            <p className={`text-lg max-w-3xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              Unlock the full potential of MatrixAI with our flexible subscription options
+            </p>
+          </motion.div>
 
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
-          {/* Free Plan */}
-          <div className={`rounded-xl border ${
-            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          } shadow-sm p-8 relative overflow-hidden`}>
-            <div className="mb-4">
-              <h3 className={`text-xl font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Free
-              </h3>
-              <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                For casual exploration
-              </p>
-            </div>
-            
-            <div className="flex items-baseline mb-6">
-              <span className={`text-5xl font-extrabold ${darkMode ? 'text-white' : 'text-gray-900'}`}>$0</span>
-              <span className={`ml-1 text-xl ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>/forever</span>
-            </div>
-            
-            <ul className="space-y-4 mb-8">
-              <li className="flex items-start">
-                <div className="flex-shrink-0 w-5 h-5 text-green-500 mt-0.5">
-                  <FiCheck className="w-5 h-5" />
-                </div>
-                <span className={`ml-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Basic dashboard access
-                </span>
-              </li>
-              <li className="flex items-start">
-                <div className="flex-shrink-0 w-5 h-5 text-green-500 mt-0.5">
-                  <FiCheck className="w-5 h-5" />
-                </div>
-                <span className={`ml-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Limited image generation (3/day)
-                </span>
-              </li>
-              <li className="flex items-start">
-                <div className="flex-shrink-0 w-5 h-5 text-green-500 mt-0.5">
-                  <FiCheck className="w-5 h-5" />
-                </div>
-                <span className={`ml-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Basic AI assistance
-                </span>
-              </li>
-            </ul>
-            
-            <button
-              disabled={true}
-              className={`w-full py-3 rounded-lg font-medium ${
-                darkMode 
-                  ? 'bg-gray-700 text-gray-400' 
-                  : 'bg-gray-100 text-gray-500'
-              }`}
+          {/* Main Subscription Plans */}
+          {!showAddon && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
             >
-              Current Plan
-            </button>
-          </div>
-          
-          {/* Pro Plan */}
-          <div className="rounded-xl border border-transparent bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 p-0.5 shadow-lg relative overflow-hidden">
-            <div className={`rounded-[10px] h-full p-8 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-              <div className="absolute -top-1 -right-1">
-                <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-xs font-semibold px-4 py-1 rounded-bl-lg shadow-md transform rotate-[45deg] translate-x-[25%] translate-y-[-25%] w-36 text-center">
-                  RECOMMENDED
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                <PlanCard 
+                  name="Tester"
+                  price="50"
+                  coins={450}
+                  period=""
+                  description="Try our service with a small package of coins. Valid for 15 days."
+                  selected={selectedPlan === 'Tester'}
+                  onSelect={() => setSelectedPlan('Tester')}
+                />
+                
+                <PlanCard 
+                  name="Monthly"
+                  price="138"
+                  coins={1380}
+                  period=""
+                  description="Perfect for regular users. Get a monthly allocation of coins."
+                  selected={selectedPlan === 'Monthly'}
+                  onSelect={() => setSelectedPlan('Monthly')}
+                />
+                
+                <PlanCard 
+                  name="Yearly"
+                  price="1490"
+                  coins={1380}
+                  period="/month"
+                  originalPrice="1656"
+                  discount="Save 10%"
+                  description="Our best value plan. 1380 coins delivered every month for a full year."
+                  selected={selectedPlan === 'Yearly'}
+                  onSelect={() => setSelectedPlan('Yearly')}
+                />
+              </div>
+
+              {/* Plan Details */}
+              <div className="bg-gradient-to-br from-blue-600/10 to-purple-600/10 rounded-xl p-6 mb-10 backdrop-blur-sm border border-blue-500/20">
+                <div className="flex items-start space-x-4">
+                  <div className={`p-3 rounded-lg ${
+                    darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-600'
+                  }`}>
+                    <FiInfo className="h-6 w-6" />
+                  </div>
+                  
+                  <div>
+                    <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      Plan Details
+                    </h3>
+                    <p className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-4`}>
+                      {getPlanText()}
+                    </p>
+                    
+                    <div className="flex flex-wrap items-center justify-between">
+                      <button
+                        className="text-sm flex items-center text-blue-500 hover:text-blue-400 mb-4 md:mb-0"
+                        onClick={handleTermsAndConditions}
+                      >
+                        Terms & Conditions Apply
+                        <FiArrowLeft className="ml-1 transform rotate-180 h-4 w-4" />
+                      </button>
+                      
+                      <button
+                        onClick={() => handleSubscribe(selectedPlan)}
+                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
+                      >
+                        Buy Now <span className="ml-1 font-bold">{getButtonPrice()}</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {/* Addon Plan (only shown for users with active subscription) */}
+          {showAddon && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="max-w-2xl mx-auto"
+            >
+              <div className="text-center mb-8">
+                <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Need Extra Coins?
+                </h2>
+                <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Add more coins to your current subscription
+                </p>
+              </div>
               
-              <div className="mb-4">
-                <h3 className={`text-xl font-semibold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500`}>
-                  Pro
+              <AddonCard 
+                price="50"
+                coins={550}
+                description="These coins will be added to your existing balance and expire at the end of this month."
+                onSelect={handleAddonPurchase}
+              />
+              
+              <div className="text-center mt-6">
+                <button
+                  onClick={() => setShowAddon(false)}
+                  className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
+                >
+                  Looking for a different plan? View all plans
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Features Section */}
+          <div className="mt-16">
+            <h2 className={`text-2xl font-bold text-center mb-10 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              What's Included in All Plans
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <motion.div 
+                whileHover={{ y: -5 }}
+                className={`p-6 rounded-xl ${
+                  darkMode ? 'bg-gray-800/50 border border-gray-700' : 'bg-white border border-gray-100'
+                } shadow-sm`}
+              >
+                <div className={`p-3 rounded-lg inline-block mb-4 ${
+                  darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-600'
+                }`}>
+                  <FiStar className="h-6 w-6" />
+                </div>
+                <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Premium AI Features
                 </h3>
                 <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  For serious creators
+                  Access to all our advanced AI tools including image and video generation
                 </p>
-              </div>
+              </motion.div>
               
-              <div className="flex items-baseline mb-2">
-                <span className={`text-5xl font-extrabold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {selectedPlan === 'monthly' ? '$29' : '$279'}
-                </span>
-                <span className={`ml-1 text-xl ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  /{selectedPlan === 'monthly' ? 'month' : 'year'}
-                </span>
-              </div>
-              
-              {selectedPlan === 'yearly' && (
-                <p className="mb-6 text-sm text-green-500 font-medium">
-                  Save $69 with annual billing
-                </p>
-              )}
-              
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start">
-                  <div className="flex-shrink-0 w-5 h-5 text-blue-500 mt-0.5">
-                    <FiCheck className="w-5 h-5" />
-                  </div>
-                  <span className={`ml-2 font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Unlimited image generation
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <div className="flex-shrink-0 w-5 h-5 text-blue-500 mt-0.5">
-                    <FiCheck className="w-5 h-5" />
-                  </div>
-                  <span className={`ml-2 font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Full video creation tools
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <div className="flex-shrink-0 w-5 h-5 text-blue-500 mt-0.5">
-                    <FiCheck className="w-5 h-5" />
-                  </div>
-                  <span className={`ml-2 font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Advanced content writing
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <div className="flex-shrink-0 w-5 h-5 text-blue-500 mt-0.5">
-                    <FiCheck className="w-5 h-5" />
-                  </div>
-                  <span className={`ml-2 font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Priority support and updates
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <div className="flex-shrink-0 w-5 h-5 text-blue-500 mt-0.5">
-                    <FiCheck className="w-5 h-5" />
-                  </div>
-                  <span className={`ml-2 font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    4K resolution outputs
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <div className="flex-shrink-0 w-5 h-5 text-blue-500 mt-0.5">
-                    <FiStar className="w-5 h-5" />
-                  </div>
-                  <span className={`ml-2 font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Exclusive PRO badge
-                  </span>
-                </li>
-              </ul>
-              
-              <button
-                onClick={handleSubscribe}
-                className="w-full py-3 rounded-lg font-medium text-white bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 transition duration-300 transform hover:scale-[1.02]"
+              <motion.div 
+                whileHover={{ y: -5 }}
+                className={`p-6 rounded-xl ${
+                  darkMode ? 'bg-gray-800/50 border border-gray-700' : 'bg-white border border-gray-100'
+                } shadow-sm`}
               >
-                {isPro ? 'Manage Subscription' : 'Upgrade Now'}
-              </button>
+                <div className={`p-3 rounded-lg inline-block mb-4 ${
+                  darkMode ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-100 text-purple-600'
+                }`}>
+                  <FiCreditCard className="h-6 w-6" />
+                </div>
+                <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Flexible Coin System
+                </h3>
+                <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Use coins across any AI service based on your specific needs
+                </p>
+              </motion.div>
+              
+              <motion.div 
+                whileHover={{ y: -5 }}
+                className={`p-6 rounded-xl ${
+                  darkMode ? 'bg-gray-800/50 border border-gray-700' : 'bg-white border border-gray-100'
+                } shadow-sm`}
+              >
+                <div className={`p-3 rounded-lg inline-block mb-4 ${
+                  darkMode ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-100 text-amber-600'
+                }`}>
+                  <FiCalendar className="h-6 w-6" />
+                </div>
+                <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Regular Updates
+                </h3>
+                <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Access to new features and improvements as they're released
+                </p>
+              </motion.div>
             </div>
           </div>
-        </div>
-        
-        {/* FAQ Section */}
-        <div className="max-w-4xl mx-auto">
-          <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Frequently Asked Questions
-          </h2>
-          
-          <div className={`space-y-4 rounded-xl border ${
-            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          } p-6`}>
-            <div>
-              <h3 className={`font-medium text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Can I cancel my subscription anytime?
-              </h3>
-              <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Yes, you can cancel your subscription at any time. Your subscription will remain active until the end of your current billing period.
-              </p>
-            </div>
+
+          {/* FAQ Section */}
+          <div className="mt-20">
+            <h2 className={`text-2xl font-bold text-center mb-10 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Frequently Asked Questions
+            </h2>
             
-            <div>
-              <h3 className={`font-medium text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                How do I get help if I have questions?
-              </h3>
-              <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Our support team is available 24/7. Pro users get priority support with faster response times.
-              </p>
-            </div>
-            
-            <div>
-              <h3 className={`font-medium text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Are there any refunds if I'm not satisfied?
-              </h3>
-              <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                We offer a 7-day money-back guarantee for all new Pro subscriptions if you're not completely satisfied.
-              </p>
+            <div className={`space-y-6 max-w-4xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-800'}`}>
+              <motion.div 
+                whileHover={{ x: 5 }}
+                className={`p-6 rounded-xl ${
+                  darkMode ? 'bg-gray-800/50 border border-gray-700' : 'bg-white border border-gray-100'
+                }`}
+              >
+                <h3 className="text-lg font-semibold mb-2">How do coins work?</h3>
+                <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Coins are the currency used within MatrixAI. Each AI operation costs a certain number of coins depending on complexity. Coins are valid for the duration of your subscription period.
+                </p>
+              </motion.div>
+              
+              <motion.div 
+                whileHover={{ x: 5 }}
+                className={`p-6 rounded-xl ${
+                  darkMode ? 'bg-gray-800/50 border border-gray-700' : 'bg-white border border-gray-100'
+                }`}
+              >
+                <h3 className="text-lg font-semibold mb-2">Can I cancel my subscription?</h3>
+                <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Yes, you can cancel your subscription at any time. Your subscription will remain active until the end of your current billing period.
+                </p>
+              </motion.div>
+              
+              <motion.div 
+                whileHover={{ x: 5 }}
+                className={`p-6 rounded-xl ${
+                  darkMode ? 'bg-gray-800/50 border border-gray-700' : 'bg-white border border-gray-100'
+                }`}
+              >
+                <h3 className="text-lg font-semibold mb-2">Do unused coins roll over?</h3>
+                <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Monthly coins expire at the end of each billing cycle. Yearly plan users receive a fresh allocation of 1380 coins at the beginning of each month.
+                </p>
+              </motion.div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Terms and Conditions Modal */}
+      {showTnC && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={`max-w-2xl w-full rounded-xl p-6 ${
+              darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
+            }`}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Terms and Conditions</h2>
+              <button 
+                onClick={() => setShowTnC(false)}
+                className={`p-2 rounded-full ${
+                  darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                }`}
+              >
+                <FiArrowLeft className="transform rotate-45" />
+              </button>
+            </div>
+            
+            <div className={`max-h-96 overflow-y-auto pr-4 ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              <h3 className="font-semibold mb-2">1. Subscription Terms</h3>
+              <p className="mb-4 text-sm">
+                Subscriptions automatically renew at the end of each billing period. You will be charged at the rate stated at the time of purchase. For monthly plans, your subscription will renew monthly. For yearly plans, your subscription will renew annually.
+              </p>
+              
+              <h3 className="font-semibold mb-2">2. Coin Allocation</h3>
+              <p className="mb-4 text-sm">
+                Coins are allocated at the beginning of each billing period and expire at the end of the period. Unused coins do not roll over to the next billing period.
+              </p>
+              
+              <h3 className="font-semibold mb-2">3. Cancellation Policy</h3>
+              <p className="mb-4 text-sm">
+                You can cancel your subscription at any time. Upon cancellation, you will continue to have access to your subscription benefits until the end of your current billing period. No refunds are provided for partial subscription periods.
+              </p>
+              
+              <h3 className="font-semibold mb-2">4. Addon Pack</h3>
+              <p className="mb-4 text-sm">
+                Addon Packs provide additional coins that expire at the end of the current month, regardless of when they were purchased. Addon Packs are non-refundable.
+              </p>
+              
+              <h3 className="font-semibold mb-2">5. Price Changes</h3>
+              <p className="mb-4 text-sm">
+                MatrixAI reserves the right to change subscription prices with 30 days notice. Any price changes will take effect at the next billing cycle.
+              </p>
+              
+              <h3 className="font-semibold mb-2">6. Usage Limitations</h3>
+              <p className="mb-4 text-sm">
+                MatrixAI reserves the right to impose usage limitations to prevent abuse of the service. Excessive usage that suggests automated or non-personal use may result in account restrictions.
+              </p>
+            </div>
+            
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setShowTnC(false)}
+                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg"
+              >
+                I Understand
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </Layout>
   );
 };

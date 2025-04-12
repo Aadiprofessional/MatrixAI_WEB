@@ -239,6 +239,11 @@ const Navbar: React.FC<NavbarProps> = () => {
                     }`}>Transactions</Link>
                   </li>
                   <li>
+                    <Link to="/order-history" className={`block py-2 px-4 ${
+                      darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+                    }`}>Order History</Link>
+                  </li>
+                  <li>
                     <Link to="/referral" className={`block py-2 px-4 ${
                       darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
                     }`}>Refer & Earn</Link>
