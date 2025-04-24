@@ -8,11 +8,13 @@ import {
   FiPlay, FiPause, FiDownload, FiCopy, FiShare2, 
   FiChevronLeft, FiChevronRight, FiRefreshCw, FiLoader,
   FiMaximize, FiMenu, FiLayout, FiSave, FiFileText,
-  FiBarChart2, FiZap, FiSettings, FiBookmark, FiMic
+  FiBarChart2, FiZap, FiSettings, FiBookmark, FiMic,
+  FiMessageSquare
 } from 'react-icons/fi';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import ReactMarkdown from 'react-markdown';
 
 // Define types for word timings
 interface WordTiming {
@@ -69,7 +71,7 @@ const TranscriptionPage: React.FC = () => {
   const activeWordRef = useRef<HTMLSpanElement>(null);
 
   // UI state
-  const [activeTab, setActiveTab] = useState<'transcript' | 'mindmap'>('transcript');
+  const [activeTab, setActiveTab] = useState<'transcript' | 'mindmap' | 'chat'>('transcript');
   const [showSidebar, setShowSidebar] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -81,6 +83,38 @@ const TranscriptionPage: React.FC = () => {
   const [xmlData, setXmlData] = useState<string | null>(null);
   const [isMindMapLoading, setIsMindMapLoading] = useState<boolean>(false);
   const mindMapContainerRef = useRef<HTMLDivElement>(null);
+
+  // Add state for chat processing
+  const [isChatProcessing, setIsChatProcessing] = useState<{[key: string]: boolean}>({
+    keypoints: false,
+    summary: false,
+    translate: false
+  });
+  const [chatResponses, setChatResponses] = useState<{[key: string]: string}>({
+    keypoints: '',
+    summary: '',
+    translate: ''
+  });
+  const [translationLanguage, setTranslationLanguage] = useState<string>('Spanish');
+  
+  // Chat interface state
+  interface ChatMessage {
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: number;
+  }
+  
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState<string>('');
+  const [isAssistantTyping, setIsAssistantTyping] = useState<boolean>(false);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll to bottom of chat when messages change
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
 
   // Get state passed from the previous page
   const locationState = location.state as any;
@@ -682,6 +716,149 @@ const TranscriptionPage: React.FC = () => {
     link.remove();
   };
 
+  // Function to handle quick actions with formatted responses
+  const handleQuickAction = async (action: 'keypoints' | 'summary' | 'translate') => {
+    if (!transcription || isChatProcessing[action]) return;
+    
+    setIsChatProcessing({...isChatProcessing, [action]: true});
+    
+    try {
+      let prompt = '';
+      switch(action) {
+        case 'keypoints':
+          prompt = `Extract the key points from this transcription. Format the response with a main heading "Key Points", and use bullet points for each key point. Group related points under appropriate subheadings if possible:\n\n${transcription}`;
+          break;
+        case 'summary':
+          prompt = `Provide a concise summary of this transcription. Format with a main heading "Summary", followed by an "Overview" section. Then include sections for "Main Topics", "Key Insights", and "Conclusion" as appropriate:\n\n${transcription}`;
+          break;
+        case 'translate':
+          prompt = `Translate this transcription to ${translationLanguage}. Maintain the structure of the original text as much as possible, using headings, paragraphs and formatting to enhance readability:\n\n${transcription}`;
+          break;
+      }
+      
+      // Using the Deepseek API to process the request
+      const response = await openai.chat.completions.create({
+        model: 'deepseek-chat',
+        messages: [
+          { 
+            role: 'system', 
+            content: 'You are a helpful assistant. Format your responses with proper markdown - use headings (# for main headings, ## for subheadings), bullet points, numbered lists, and emphasis where it enhances readability.'
+          },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: 1000
+      });
+      
+      const result = response.choices[0]?.message?.content || 'No response generated.';
+      setChatResponses({...chatResponses, [action]: result});
+    } catch (error) {
+      console.error(`Error in ${action} quick action:`, error);
+      setChatResponses({...chatResponses, [action]: `Error: Could not process ${action} request.`});
+    } finally {
+      setIsChatProcessing({...isChatProcessing, [action]: false});
+    }
+  };
+
+  // Function to handle user chat messages
+  const handleChatSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!chatInput.trim() || isAssistantTyping) return;
+    
+    // Add user message to chat
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: chatInput.trim(),
+      timestamp: Date.now()
+    };
+    
+    setChatMessages(prev => [...prev, userMessage]);
+    setChatInput(''); // Clear input
+    setIsAssistantTyping(true);
+    
+    try {
+      // Using the Deepseek API for chat
+      const response = await openai.chat.completions.create({
+        model: 'deepseek-chat',
+        messages: [
+          { 
+            role: 'system', 
+            content: 'You are a helpful assistant. The user is discussing a transcription of audio content. Format your responses with proper markdown when appropriate - use headings (# for main headings, ## for subheadings), bullet points, numbered lists, and emphasis where it enhances readability. Well-structured responses with clear headings are preferred.'
+          },
+          ...chatMessages.map(msg => ({ 
+            role: msg.role as 'user' | 'assistant', 
+            content: msg.content 
+          })),
+          { role: 'user', content: chatInput.trim() }
+        ],
+        max_tokens: 1000
+      });
+      
+      // Get assistant response
+      const assistantResponse = response.choices[0]?.message?.content || 'I apologize, but I am unable to provide a response at this time.';
+      
+      // Add assistant message to chat
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: assistantResponse,
+        timestamp: Date.now()
+      };
+      
+      setChatMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error in chat:', error);
+      
+      // Add error message
+      const errorMessage: ChatMessage = {
+        role: 'assistant',
+        content: 'I apologize, but I encountered an error while processing your request. Please try again.',
+        timestamp: Date.now()
+      };
+      
+      setChatMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsAssistantTyping(false);
+    }
+  };
+  
+  // Function to reset chat
+  const resetChat = () => {
+    if (chatMessages.length > 0 && window.confirm('Are you sure you want to clear the chat history?')) {
+      setChatMessages([]);
+    }
+  };
+  
+  // Use transcription as context
+  const setTranscriptionAsContext = () => {
+    if (!transcription) return;
+    
+    const contextMessage: ChatMessage = {
+      role: 'user',
+      content: `Here is the transcription I want to discuss:\n\n${transcription.substring(0, 1000)}${transcription.length > 1000 ? '...' : ''}`,
+      timestamp: Date.now()
+    };
+    
+    setChatMessages(prev => [...prev, contextMessage]);
+    setIsAssistantTyping(true);
+    
+    // Get assistant acknowledgment
+    setTimeout(() => {
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: 'I have received the transcription. What would you like to know or discuss about it?',
+        timestamp: Date.now()
+      };
+      
+      setChatMessages(prev => [...prev, assistantMessage]);
+      setIsAssistantTyping(false);
+    }, 1000);
+  };
+  
+  // Format timestamp
+  const formatTimestamp = (timestamp: number) => {
+    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   return (
     <div className={`min-h-screen bg-gradient-to-br ${
       theme === 'dark' 
@@ -773,6 +950,16 @@ const TranscriptionPage: React.FC = () => {
             }`}
           >
             <span className="flex items-center"><FiBarChart2 className="mr-2" /> Mind Map</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('chat')}
+            className={`py-3 px-4 border-b-2 font-medium text-sm ${
+              activeTab === 'chat' 
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            <span className="flex items-center"><FiMessageSquare className="mr-2" /> Chat</span>
           </button>
         </div>
 
@@ -1076,6 +1263,253 @@ const TranscriptionPage: React.FC = () => {
                         </button>
                       </div>
                     )}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Chat Tab */}
+              {activeTab === 'chat' && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-300px)]"
+                >
+                  <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Chat Assistant</h2>
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={resetChat} 
+                        className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                        title="Clear chat"
+                      >
+                        <FiRefreshCw />
+                      </button>
+                      <button 
+                        onClick={() => setShowSidebar(!showSidebar)}
+                        className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors" 
+                        title={showSidebar ? "Hide sidebar" : "Show sidebar"}
+                      >
+                        <FiLayout />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="p-4 border-b dark:border-gray-700">
+                    <h3 className="text-lg font-medium mb-3 dark:text-gray-300">Quick Actions</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleQuickAction('keypoints')}
+                        disabled={isChatProcessing.keypoints || !transcription}
+                        className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
+                          isChatProcessing.keypoints
+                            ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                            : 'bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-800/40 text-blue-700 dark:text-blue-300'
+                        }`}
+                      >
+                        {isChatProcessing.keypoints ? (
+                          <FiLoader className="animate-spin mr-2" />
+                        ) : (
+                          <FiZap className="mr-2" />
+                        )}
+                        Key Points
+                      </button>
+                      
+                      <button
+                        onClick={() => handleQuickAction('summary')}
+                        disabled={isChatProcessing.summary || !transcription}
+                        className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
+                          isChatProcessing.summary
+                            ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                            : 'bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-800/40 text-purple-700 dark:text-purple-300'
+                        }`}
+                      >
+                        {isChatProcessing.summary ? (
+                          <FiLoader className="animate-spin mr-2" />
+                        ) : (
+                          <FiFileText className="mr-2" />
+                        )}
+                        Quick Summary
+                      </button>
+                      
+                      <div className="flex items-center">
+                        <button
+                          onClick={() => handleQuickAction('translate')}
+                          disabled={isChatProcessing.translate || !transcription}
+                          className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
+                            isChatProcessing.translate
+                              ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                              : 'bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-800/40 text-green-700 dark:text-green-300'
+                          }`}
+                        >
+                          {isChatProcessing.translate ? (
+                            <FiLoader className="animate-spin mr-2" />
+                          ) : (
+                            <FiBookmark className="mr-2" />
+                          )}
+                          Translate
+                        </button>
+                        
+                        <select
+                          value={translationLanguage}
+                          onChange={(e) => setTranslationLanguage(e.target.value)}
+                          className="ml-2 px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300"
+                        >
+                          <option value="Spanish">Spanish</option>
+                          <option value="French">French</option>
+                          <option value="German">German</option>
+                          <option value="Chinese">Chinese</option>
+                          <option value="Japanese">Japanese</option>
+                          <option value="Hindi">Hindi</option>
+                        </select>
+                      </div>
+                      
+                      <button
+                        onClick={setTranscriptionAsContext}
+                        disabled={!transcription || chatMessages.length > 0}
+                        className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
+                          !transcription || chatMessages.length > 0
+                            ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                            : 'bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-800/40 text-amber-700 dark:text-amber-300'
+                        }`}
+                      >
+                        <FiFileText className="mr-2" />
+                        Use Transcription as Context
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Chat display area with messages */}
+                  <div 
+                    ref={chatContainerRef}
+                    className="flex-1 overflow-y-auto p-4 space-y-4"
+                  >
+                    {/* Quick Action Responses */}
+                    {(chatResponses.keypoints || chatResponses.summary || chatResponses.translate) && (
+                      <div className="space-y-6 mb-6 border-b pb-6 dark:border-gray-700">
+                        <h3 className="text-md font-medium text-gray-600 dark:text-gray-400">Quick Action Results</h3>
+                        
+                        {chatResponses.keypoints && (
+                          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                            <h4 className="font-medium text-blue-700 dark:text-blue-400 mb-2 flex items-center">
+                              <FiZap className="mr-2" /> Key Points
+                            </h4>
+                            <div className="text-gray-700 dark:text-gray-300 prose prose-sm max-w-none dark:prose-invert">
+                              <ReactMarkdown>
+                                {chatResponses.keypoints}
+                              </ReactMarkdown>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {chatResponses.summary && (
+                          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                            <h4 className="font-medium text-purple-700 dark:text-purple-400 mb-2 flex items-center">
+                              <FiFileText className="mr-2" /> Summary
+                            </h4>
+                            <div className="text-gray-700 dark:text-gray-300 prose prose-sm max-w-none dark:prose-invert">
+                              <ReactMarkdown>
+                                {chatResponses.summary}
+                              </ReactMarkdown>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {chatResponses.translate && (
+                          <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                            <h4 className="font-medium text-green-700 dark:text-green-400 mb-2 flex items-center">
+                              <FiBookmark className="mr-2" /> Translation ({translationLanguage})
+                            </h4>
+                            <div className="text-gray-700 dark:text-gray-300 prose prose-sm max-w-none dark:prose-invert">
+                              <ReactMarkdown>
+                                {chatResponses.translate}
+                              </ReactMarkdown>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Chat Messages */}
+                    {chatMessages.length > 0 ? (
+                      <div className="space-y-4">
+                        {chatMessages.map((message, index) => (
+                          <div 
+                            key={index}
+                            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                          >
+                            <div 
+                              className={`max-w-3/4 rounded-lg px-4 py-3 ${
+                                message.role === 'user' 
+                                  ? 'bg-blue-500 text-white' 
+                                  : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                              }`}
+                            >
+                              <div className="text-sm mb-1">
+                                {message.role === 'user' ? 'You' : 'Assistant'} • {formatTimestamp(message.timestamp)}
+                              </div>
+                              <div className={`${message.role === 'assistant' ? 'prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-800 dark:prose-headings:text-gray-200 prose-h1:text-lg prose-h2:text-base prose-h3:text-sm prose-p:my-1 prose-li:my-0 prose-ul:my-1 prose-ol:my-1' : 'whitespace-pre-wrap'}`}>
+                                {message.role === 'assistant' ? (
+                                  <ReactMarkdown>
+                                    {message.content}
+                                  </ReactMarkdown>
+                                ) : (
+                                  message.content
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {isAssistantTyping && (
+                          <div className="flex justify-start">
+                            <div className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg px-4 py-3">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse"></div>
+                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-75"></div>
+                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-150"></div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      !chatResponses.keypoints && !chatResponses.summary && !chatResponses.translate && (
+                        <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                          <FiMessageSquare className="w-12 h-12 mb-4" />
+                          <p>Start chatting or use the quick actions above</p>
+                        </div>
+                      )
+                    )}
+                  </div>
+                  
+                  {/* Chat input area */}
+                  <div className="border-t dark:border-gray-700 p-4">
+                    <form onSubmit={handleChatSubmit} className="flex space-x-2">
+                      <input
+                        type="text"
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        placeholder="Type your message..."
+                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200"
+                        disabled={isAssistantTyping}
+                      />
+                      <button
+                        type="submit"
+                        disabled={!chatInput.trim() || isAssistantTyping}
+                        className={`px-4 py-2 rounded-lg transition-colors ${
+                          !chatInput.trim() || isAssistantTyping
+                            ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                            : 'bg-blue-500 hover:bg-blue-600 text-white'
+                        }`}
+                      >
+                        {isAssistantTyping ? (
+                          <FiLoader className="animate-spin" />
+                        ) : (
+                          'Send'
+                        )}
+                      </button>
+                    </form>
                   </div>
                 </motion.div>
               )}

@@ -7,6 +7,7 @@ import {
   LoginPage, 
   DashboardPage, 
   ChatPage, 
+  CallPage,
   HomePage,
   NotFoundPage,
   ImageGeneratorPage,
@@ -115,6 +116,16 @@ const App: React.FC = () => {
                 element={
                   <ProFeatureRoute>
                     <ChatPage />
+                  </ProFeatureRoute>
+                } 
+              />
+              
+              {/* Call page with voice interaction */}
+              <Route 
+                path="/call" 
+                element={
+                  <ProFeatureRoute>
+                    <CallPage />
                   </ProFeatureRoute>
                 } 
               />

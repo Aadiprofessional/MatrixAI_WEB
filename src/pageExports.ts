@@ -3,6 +3,7 @@ export { default as DashboardPage } from './pages/DashboardPage';
 export { default as SignupPage } from './pages/SignupPage';
 export { default as LoginPage } from './pages/LoginPage';
 export { default as ChatPage } from './pages/ChatPage';
+export { default as CallPage } from './pages/CallPage';
 export { default as HomePage } from './pages/HomePage';
 export { default as NotFoundPage } from './pages/NotFoundPage';
 export { default as ImageGeneratorPage } from './pages/ImageGeneratorPage';

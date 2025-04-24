@@ -92,7 +92,7 @@ const LoginPage: React.FC = () => {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="text-2xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
           >
-            Welcome to MatrixAI
+            Welcome to AI
           </motion.h1>
           
           <motion.p

@@ -18,6 +18,9 @@ import {
 } from 'react-icons/fi';
 import { ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
+import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+import './ContentWriterPage.css';
 
 const ContentWriterPage: React.FC = () => {
   const { userData, isPro } = useUser();
@@ -86,17 +89,29 @@ const ContentWriterPage: React.FC = () => {
     setIsGenerating(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // Create request payload with all settings
+      const userMessageContent = {
+        prompt: prompt,
+        contentType: contentType,
+        tone: tone,
+        contentLength: contentLength
+      };
       
-      // Example result (in a real app, this would come from an API)
-      const result = `# ${getContentTitle()}
-
-${getContentBody()}
-
-${getContentConclusion()}`;
+      // Make API request to Supabase Function
+      const response = await axios.post(
+        'https://ddtgdhehxhgarkonvpfq.supabase.co/functions/v1/createContent',
+        {
+          prompt: userMessageContent
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
       
-      setGeneratedContent(result);
+      // Set the generated content from API response
+      setGeneratedContent(response.data.output.text);
       
       // Add to history if not already there
       if (!history.includes(prompt)) {
@@ -109,6 +124,7 @@ ${getContentConclusion()}`;
       }
     } catch (error) {
       console.error('Error generating content:', error);
+      setGeneratedContent('Error generating content. Please try again later.');
     } finally {
       setIsGenerating(false);
     }
@@ -456,6 +472,20 @@ ${getContentConclusion()}`;
                     >
                       <FiSave />
                     </button>
+                    <button
+                      onClick={() => {
+                        const textarea = contentRef.current;
+                        if (textarea) {
+                          textarea.classList.toggle('hidden');
+                          const markdownPreview = textarea.previousElementSibling;
+                          if (markdownPreview) markdownPreview.classList.toggle('hidden');
+                        }
+                      }}
+                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                      title="Toggle edit mode"
+                    >
+                      <FiEdit />
+                    </button>
                   </>
                 )}
               </div>
@@ -491,13 +521,20 @@ ${getContentConclusion()}`;
             {/* Content Area */}
             <div className="p-6">
               {generatedContent ? (
-                <textarea
-                  ref={contentRef}
-                  value={generatedContent}
-                  onChange={handleContentChange}
-                  className="w-full min-h-[600px] p-0 border-0 focus:ring-0 dark:bg-gray-800 dark:text-gray-200 font-mono text-sm resize-none"
-                  spellCheck="false"
-                />
+                <div className="w-full min-h-[600px]">
+                  <div className="prose prose-sm max-w-none dark:prose-invert mb-4 markdown-content">
+                    <ReactMarkdown>
+                      {generatedContent}
+                    </ReactMarkdown>
+                  </div>
+                  <textarea
+                    ref={contentRef}
+                    value={generatedContent}
+                    onChange={handleContentChange}
+                    className="w-full min-h-[600px] p-0 border-0 focus:ring-0 dark:bg-gray-800 dark:text-gray-200 font-mono text-sm resize-none hidden"
+                    spellCheck="false"
+                  />
+                </div>
               ) : (
                 <div className="flex flex-col items-center justify-center text-center py-16">
                   <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
@@ -547,47 +584,6 @@ ${getContentConclusion()}`;
           </div>
         </div>
       </div>
-
-      {/* Generated Content */}
-      {generatedContent && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Generated Content</h2>
-            <div className="flex space-x-2">
-              <button
-                onClick={handleCopyContent}
-                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                title="Copy to clipboard"
-              >
-                <FiCopy />
-              </button>
-              <button
-                onClick={handleDownloadContent}
-                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                title="Download as text file"
-              >
-                <FiDownload />
-              </button>
-              <button
-                onClick={() => setShowTitleEdit(true)}
-                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                title="Save content"
-              >
-                <FiSave />
-              </button>
-            </div>
-          </div>
-          
-          <div className="relative p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mb-4">
-            <textarea
-              ref={contentRef}
-              value={generatedContent}
-              onChange={handleContentChange}
-              className="w-full min-h-[400px] border-0 p-0 bg-transparent resize-none focus:ring-0 focus:outline-none text-gray-800 dark:text-gray-200"
-            />
-          </div>
-        </div>
-      )}
 
       {/* Saved Content */}
       {savedContents.length > 0 && (

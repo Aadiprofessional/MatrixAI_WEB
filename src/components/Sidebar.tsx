@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   FiHome, 
@@ -26,16 +26,17 @@ import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface SidebarProps {}
+interface SidebarProps {
+  onToggle?: (collapsed: boolean) => void;
+}
 
-const Sidebar: React.FC<SidebarProps> = () => {
+const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { darkMode } = useContext(ThemeContext);
   const { userData, isPro } = useUser();
   const { signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Speech to text state
   const [showSpeechToTextModal, setShowSpeechToTextModal] = useState(false);
@@ -55,12 +56,19 @@ const Sidebar: React.FC<SidebarProps> = () => {
   };
 
   const toggleSidebar = () => {
-    setCollapsed(!collapsed);
+    const newCollapsedState = !collapsed;
+    setCollapsed(newCollapsedState);
+    if (onToggle) {
+      onToggle(newCollapsedState);
+    }
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  // Call onToggle on initial render with the current state
+  useEffect(() => {
+    if (onToggle) {
+      onToggle(collapsed);
+    }
+  }, [collapsed, onToggle]);
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -144,134 +152,111 @@ const Sidebar: React.FC<SidebarProps> = () => {
     { path: '/tools/presentation-creator', label: 'Presentations', icon: <FiLayers className="w-5 h-5" />, pro: true },
     { path: '/tools/speech-to-text', label: 'Speech to Text', icon: <FiMic className="w-5 h-5" />, pro: true },
     { path: '/profile', label: 'Profile', icon: <FiUser className="w-5 h-5" /> },
- 
- 
     { path: '/settings', label: 'Settings', icon: <FiSettings className="w-5 h-5" /> },
     { path: '/help', label: 'Help & Support', icon: <FiHelpCircle className="w-5 h-5" /> },
   ];
 
   return (
     <>
-      {/* Mobile Sidebar Toggle Button */}
-      <div className="fixed bottom-4 right-4 md:hidden z-50">
-        <button 
-          onClick={toggleMobileMenu}
-          className={`p-3 rounded-full shadow-lg ${
-            darkMode 
-              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
-              : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-          }`}
-        >
-          <FiMenu className="w-6 h-6" />
-        </button>
-      </div>
-
-      {/* Mobile Sidebar (overlay) */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={toggleMobileMenu}
-        />
-      )}
-
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen transition-all duration-300 transform ${
-          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 ${
+        className={`fixed h-screen transition-all duration-300 ${
           collapsed ? 'w-16' : 'w-64'
         } ${
           darkMode 
             ? 'bg-gray-800 border-gray-700' 
             : 'bg-white border-gray-200'
-        } border-r md:sticky`}
+        } border-r left-0 top-0 z-40`}
       >
-        <div className="h-full px-3 py-4 overflow-y-auto">
-          {/* Logo */}
-          <div className="flex items-center justify-between mb-8 px-2">
-            {!collapsed && (
-              <Link to="/dashboard" className="flex items-center">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                  AI
-                </div>
-                <div className="flex flex-col">
-                  <span className="ml-2 self-center text-xl font-semibold whitespace-nowrap bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
-                    MatrixAI
-                  </span>
-                  {isPro && (
-                    <span className="ml-2 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5 -mt-1">
-                      PRO
-                    </span>
-                  )}
-                </div>
-              </Link>
-            )}
-            <button 
-              onClick={toggleSidebar}
-              className={`p-2 rounded-lg ${
-                darkMode 
-                  ? 'text-gray-400 hover:bg-gray-700' 
-                  : 'text-gray-500 hover:bg-gray-100'
-              } ${collapsed ? 'mx-auto' : ''}`}
-            >
-              <FiChevronLeft className={`w-5 h-5 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} />
-            </button>
-          </div>
-
-          <ul className="space-y-2">
-            {navItems.map((item) => (
-              <li key={item.path}>
-                <Link
-                  to={item.path}
-                  className={`flex items-center ${
-                    collapsed ? 'justify-center' : 'justify-start'
-                  } p-2 text-base font-normal rounded-lg ${
-                    isActive(item.path)
-                      ? darkMode 
-                        ? 'bg-gray-700 text-purple-400' 
-                        : 'bg-blue-50 text-blue-600'
-                      : darkMode
-                        ? 'text-gray-300 hover:bg-gray-700' 
-                        : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <span className="flex-shrink-0">{item.icon}</span>
-                  {!collapsed && (
-                    <div className="flex items-center justify-between w-full">
-                      <span className="ml-3">{item.label}</span>
-                      {item.pro && !isPro && (
-                        <span className="text-xs font-semibold text-yellow-500 border border-yellow-400 rounded-full px-1.5">
-                          PRO
-                        </span>
-                      )}
-                    </div>
-                  )}
+        <div className="flex flex-col h-full">
+          {/* Logo and Toggle Section */}
+          <div className="flex-shrink-0 px-3 py-4">
+            <div className="flex items-center justify-between mb-8 px-2">
+              {!collapsed && (
+                <Link to="/dashboard" className="flex items-center">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+                    AI
+                  </div>
+                  <div className="flex items-center">
+                    {isPro && (
+                      <span className="ml-1 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5">
+                        PRO
+                      </span>
+                    )}
+                  </div>
                 </Link>
-              </li>
-            ))}
-          </ul>
-
-          {/* Quick Speech to Text Button */}
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={openSpeechToTextModal}
-              className={`p-3 rounded-full ${
-                collapsed ? 'mx-auto' : 'w-full'
-              } ${
-                darkMode 
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90' 
-                  : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:opacity-90'
-              }`}
-              title="Quick Speech to Text"
-            >
-              <div className={`flex items-center ${collapsed ? 'justify-center' : ''}`}>
-                <FiMic className="w-5 h-5" />
-                {!collapsed && <span className="ml-2">Quick Speech to Text</span>}
-              </div>
-            </button>
+              )}
+              <button 
+                onClick={toggleSidebar}
+                className={`p-2 rounded-lg ${
+                  darkMode 
+                    ? 'text-gray-400 hover:bg-gray-700' 
+                    : 'text-gray-500 hover:bg-gray-100'
+                } ${collapsed ? 'mx-auto' : ''}`}
+              >
+                <FiChevronLeft className={`w-5 h-5 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
           </div>
 
-          <div className="mt-auto pt-4 space-y-2 border-t border-gray-200 absolute bottom-4 left-3 right-3">
+          {/* Navigation Links Section - Scrollable */}
+          <div className="flex-1 px-3 overflow-y-auto">
+            <ul className="space-y-2">
+              {navItems.map((item) => (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    className={`flex items-center ${
+                      collapsed ? 'justify-center' : 'justify-start'
+                    } p-2 text-base font-normal rounded-lg ${
+                      isActive(item.path)
+                        ? darkMode 
+                          ? 'bg-gray-700 text-purple-400' 
+                          : 'bg-blue-50 text-blue-600'
+                        : darkMode
+                          ? 'text-gray-300 hover:bg-gray-700' 
+                          : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <span className="flex-shrink-0">{item.icon}</span>
+                    {!collapsed && (
+                      <div className="flex items-center justify-between w-full">
+                        <span className="ml-3">{item.label}</span>
+                        {item.pro && !isPro && (
+                          <span className="text-xs font-semibold text-yellow-500 border border-yellow-400 rounded-full px-1.5">
+                            PRO
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            {/* Quick Speech to Text Button */}
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={openSpeechToTextModal}
+                className={`p-3 rounded-full ${
+                  collapsed ? 'mx-auto' : 'w-full'
+                } ${
+                  darkMode 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90' 
+                    : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:opacity-90'
+                }`}
+                title="Quick Speech to Text"
+              >
+                <div className={`flex items-center ${collapsed ? 'justify-center' : ''}`}>
+                  <FiMic className="w-5 h-5" />
+                  {!collapsed && <span className="ml-2">Quick Speech to Text</span>}
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Footer Section - Fixed at Bottom */}
+          <div className="flex-shrink-0 px-3 py-4 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={handleLogout}
               className={`flex items-center ${
@@ -288,7 +273,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
             
             {!collapsed && (
               <div className={`px-2 py-3 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                <p>MatrixAI v1.0</p>
+                <p>AI v1.0</p>
                 <p>© {new Date().getFullYear()}</p>
               </div>
             )}
@@ -299,37 +284,41 @@ const Sidebar: React.FC<SidebarProps> = () => {
       {/* Speech to Text Modal */}
       <AnimatePresence>
         {showSpeechToTextModal && (
-          <motion.div 
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-70 backdrop-blur-sm"
+            onClick={() => setShowSpeechToTextModal(false)}
           >
-            <motion.div 
+            <motion.div
+              className={`${
+                darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
+              } w-full max-w-md rounded-2xl shadow-xl overflow-hidden`}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className={`relative rounded-lg shadow-xl max-w-lg w-full ${
-                darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-              }`}
+              onClick={e => e.stopPropagation()}
             >
-              {/* Close Button */}
-              <button 
-                onClick={() => setShowSpeechToTextModal(false)} 
-                className="absolute top-3 right-3 text-gray-400 hover:text-gray-500 z-10"
-              >
-                <FiX className="w-6 h-6" />
-              </button>
-              
               {/* Header */}
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-xl font-bold flex items-center">
-                  <FiMic className="mr-2" />
-                  Speech to Text
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">
-                  Convert audio to text quickly and accurately
-                </p>
+              <div className={`p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                    <FiMic className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-lg">Speech to Text</h3>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      Convert audio to text quickly and accurately
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowSpeechToTextModal(false)}
+                  className={`rounded-full p-1 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+                >
+                  <FiX />
+                </button>
               </div>
               
               {/* Body */}

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import { 
@@ -13,11 +13,21 @@ import {
   FiCpu,
   FiUsers,
   FiBookOpen,
-  FiHeadphones
+  FiHeadphones,
+  FiChevronDown
 } from 'react-icons/fi';
 
 const Footer: React.FC = () => {
   const { darkMode } = useContext(ThemeContext);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  
+  const toggleSection = (title: string) => {
+    if (expandedSection === title) {
+      setExpandedSection(null);
+    } else {
+      setExpandedSection(title);
+    }
+  };
   
   // Links grouped by category
   const footerSections = [
@@ -59,9 +69,9 @@ const Footer: React.FC = () => {
     <footer className={`${
       darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-600'
     } border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} w-full`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         {/* Main footer content */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-8">
           {/* Brand and company info */}
           <div className="md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
@@ -69,12 +79,12 @@ const Footer: React.FC = () => {
                 AI
               </div>
               <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
-                MatrixAI
+                AI
               </span>
             </div>
             <p className={`mb-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              MatrixAI is a cutting-edge artificial intelligence platform designed to help you with creative tasks, 
-              data analysis, coding assistance, and much more. Our mission is to make AI accessible to everyone.
+              AI is a cutting-edge artificial intelligence platform designed to help you with creative tasks, 
+              data analysis, coding assistance, and much more.
             </p>
             <div className="flex space-x-4 mb-4">
               <a 
@@ -125,11 +135,19 @@ const Footer: React.FC = () => {
             </div>
           </div>
           
-          {/* Links sections */}
+          {/* Links sections - Collapsible on mobile */}
           {footerSections.map((section) => (
-            <div key={section.title} className="md:col-span-auto">
-              <h3 className={`text-sm font-semibold mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-800'}`}>{section.title}</h3>
-              <ul className="space-y-3">
+            <div key={section.title} className="md:col-span-auto border-b md:border-b-0 last:border-b-0 pb-2 md:pb-0">
+              <button 
+                onClick={() => toggleSection(section.title)}
+                className={`w-full text-left flex items-center justify-between py-3 md:py-0 ${darkMode ? 'text-gray-300' : 'text-gray-800'} md:cursor-default`}
+              >
+                <h3 className="text-sm font-semibold">{section.title}</h3>
+                <FiChevronDown className={`md:hidden transition-transform duration-200 ${expandedSection === section.title ? 'transform rotate-180' : ''}`} />
+              </button>
+              <ul className={`space-y-3 mt-3 overflow-hidden transition-all duration-200 ${
+                expandedSection === section.title ? 'max-h-40' : 'max-h-0 md:max-h-40'
+              }`}>
                 {section.links.map((link) => (
                   <li key={link.url}>
                     <Link 
@@ -149,12 +167,12 @@ const Footer: React.FC = () => {
         </div>
         
         {/* Bottom section */}
-        <div className={`pt-8 mt-8 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} flex flex-col md:flex-row justify-between items-center`}>
-          <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+        <div className={`pt-6 mt-4 md:pt-8 md:mt-8 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} flex flex-col md:flex-row justify-between items-center`}>
+          <div className={`text-xs md:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             © {new Date().getFullYear()} MatrixAI. All rights reserved.
           </div>
-          <div className={`mt-4 md:mt-0 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            Made with ❤️ by the MatrixAI Team | Version 1.0.0
+          <div className={`mt-2 md:mt-0 text-xs md:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            Made with ❤️ by the MatrixAI Team
           </div>
         </div>
       </div>

@@ -122,7 +122,7 @@ const ReferralPage: React.FC = () => {
               Refer Friends & Earn Rewards
             </h1>
             <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
-              Invite friends to join MatrixAI and earn bonus coins for every referral
+              Invite friends to join AI and earn bonus coins for every referral
             </p>
           </motion.div>
 
