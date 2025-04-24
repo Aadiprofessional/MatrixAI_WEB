@@ -23,7 +23,9 @@ import {
   PaymentPage,
   ReferralPage,
   SpeechToTextPage,
-  TranscriptionPage
+  TranscriptionPage,
+  EmailVerificationPage,
+  BuyPage
 } from './pageExports';
 
 // Import components
@@ -97,6 +99,7 @@ const App: React.FC = () => {
               {/* Auth routes */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/verify-email" element={<EmailVerificationPage />} />
               
               {/* AI feature routes */}
               <Route 
@@ -113,6 +116,16 @@ const App: React.FC = () => {
               {/* Chat has its own full-screen layout */}
               <Route 
                 path="/chat" 
+                element={
+                  <ProFeatureRoute>
+                    <ChatPage />
+                  </ProFeatureRoute>
+                } 
+              />
+              
+              {/* Individual chat route with ID */}
+              <Route 
+                path="/chat/:chatId" 
                 element={
                   <ProFeatureRoute>
                     <ChatPage />
@@ -263,9 +276,29 @@ const App: React.FC = () => {
                 } 
               />
               
+              {/* Buy page */}
+              <Route 
+                path="/buy" 
+                element={
+                  <ProtectedRoute>
+                    <BuyPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
               {/* Payment route */}
               <Route 
                 path="/payment" 
+                element={
+                  <ProtectedRoute>
+                    <PaymentPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Payment with Airwallex route */}
+              <Route 
+                path="/payment/airwallex" 
                 element={
                   <ProtectedRoute>
                     <PaymentPage />

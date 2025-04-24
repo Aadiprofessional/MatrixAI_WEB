@@ -2,6 +2,7 @@
 export { default as DashboardPage } from './pages/DashboardPage';
 export { default as SignupPage } from './pages/SignupPage';
 export { default as LoginPage } from './pages/LoginPage';
+export { default as EmailVerificationPage } from './pages/EmailVerificationPage';
 export { default as ChatPage } from './pages/ChatPage';
 export { default as CallPage } from './pages/CallPage';
 export { default as HomePage } from './pages/HomePage';
@@ -19,4 +20,5 @@ export { default as OrderHistoryPage } from './pages/OrderHistoryPage';
 export { default as PaymentPage } from './pages/PaymentPage';
 export { default as ReferralPage } from './pages/ReferralPage';
 export { default as SpeechToTextPage } from './pages/SpeechToTextPage';
-export { default as TranscriptionPage } from './pages/TranscriptionPage'; 
+export { default as TranscriptionPage } from './pages/TranscriptionPage';
+export { default as BuyPage } from './pages/BuyPage'; 

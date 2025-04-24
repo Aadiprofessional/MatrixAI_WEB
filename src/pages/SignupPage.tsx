@@ -4,19 +4,28 @@ import { motion } from 'framer-motion';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiCheck, FiX, FiMoon, FiSun } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../supabaseClient';
+
+// Default language constant
+const DEFAULT_LANGUAGE = 'English';
 
 const SignupPage: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('Male');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [planType, setPlanType] = useState<'personal' | 'enterprise'>('personal');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+  const [preferredLanguage, setPreferredLanguage] = useState(DEFAULT_LANGUAGE);
+  const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
-  const { signUp, error, setError, user } = useAuth();
+  const { error, setError, user } = useAuth();
 
   // If user is already logged in, redirect to dashboard
   useEffect(() => {
@@ -24,6 +33,41 @@ const SignupPage: React.FC = () => {
       navigate('/dashboard');
     }
   }, [user, navigate]);
+
+  // Function to generate a random 6-digit alphanumeric code
+  const generateReferralCode = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
+  // Function to check if referral code is valid
+  const checkReferralCode = async (code: string | null) => {
+    if (!code) return { valid: true, referrerId: null }; // Empty code is considered valid (optional)
+    
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('uid')
+        .eq('referral_code', code.toUpperCase())
+        .single();
+          
+      if (error) throw error;
+        
+      return { valid: !!data, referrerId: data?.uid };
+    } catch (error) {
+      console.error('Error checking referral code:', error);
+      return { valid: false, referrerId: null };
+    }
+  };
+
+  const handleSelectLanguage = (language: string) => {
+    setPreferredLanguage(language);
+    setLanguageModalVisible(false);
+  };
 
   // Password strength calculation
   const getPasswordStrength = () => {
@@ -85,18 +129,24 @@ const SignupPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !email || !password || !confirmPassword) {
-      setError('Please fill in all fields');
+    // Basic validation
+    if (!name.trim()) {
+      setError('Please enter your name');
+      return;
+    }
+
+    if (!email.trim() || !email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
       return;
     }
     
     if (password !== confirmPassword) {
       setError('Passwords do not match');
-      return;
-    }
-    
-    if (getPasswordStrength() < 3) {
-      setError('Please use a stronger password');
       return;
     }
     
@@ -108,25 +158,81 @@ const SignupPage: React.FC = () => {
     try {
       setLoading(true);
       
-      // Call Supabase signUp with user metadata
-      await signUp(email, password, { 
-        full_name: name,
-        plan_type: planType 
-      });
+      // Check if referral code is valid
+      const { valid, referrerId } = await checkReferralCode(referralCode);
       
-      // Show success message or redirect
-      // For now, we'll redirect to login page
-      navigate('/login', { 
+      if (referralCode && !valid) {
+        setError('Invalid referral code');
+        return;
+      }
+      
+      // Generate a unique referral code for the new user
+      const newReferralCode = generateReferralCode();
+      
+      // Use Supabase for signup
+      const { data, error: signupError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password,
+        options: {
+          data: {
+            name: name.trim(),
+            age: age ? parseInt(age, 10) : null,
+            gender: gender,
+            preferred_language: preferredLanguage,
+            referral_code: newReferralCode,
+            referrer_id: referrerId
+          }
+        }
+      });
+
+      if (signupError) throw signupError;
+
+      console.log('Signup successful:', data);
+      
+      // Pass user data to verification screen
+      const userData = {
+        uid: data.user?.id || '',
+        name: name.trim(),
+        email: email.trim(),
+        age: age ? parseInt(age, 10) : null,
+        gender: gender,
+        preferred_language: preferredLanguage,
+        referral_code: newReferralCode,
+        referrerId: referrerId,
+        password: password // Pass password for auto-login after verification
+      };
+      
+      // Navigate to email verification page instead of login page
+      navigate('/verify-email', { 
         state: { 
-          message: 'Registration successful! Please check your email to confirm your account.' 
+          email: email.trim(),
+          message: 'We have sent a verification link to your email. Please verify your email within 10 minutes to continue.',
+          isNewUser: true,
+          userData: userData
         } 
       });
-    } catch (err) {
-      // Error is already set in the AuthContext
-      console.error('Signup error:', err);
+    } catch (err: any) {
+      console.error('Error during signup:', err);
+      
+      // Handle specific error cases
+      if (err.message && err.message.includes('already registered')) {
+        setError('This email is already registered. Please login instead.');
+        navigate('/login');
+        return;
+      }
+      
+      setError(err.message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   return (
@@ -159,25 +265,11 @@ const SignupPage: React.FC = () => {
             darkMode ? 'border-purple-500/30' : 'border-blue-500/30'
           }`}
         >
-          <div className="flex justify-center mb-6">
-            <motion.div 
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="relative"
-            >
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 blur-xl opacity-70 animate-spin" style={{ animationDuration: '8s' }}></div>
-              <div className={`relative flex items-center justify-center h-20 w-20 rounded-full overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-                <span className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">AI</span>
-              </div>
-            </motion.div>
-          </div>
-          
           <h1 className={`text-2xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 mb-2`}>
             Create your account
           </h1>
           <p className={`text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-8`}>
-            Start your journey with MatrixAI today
+            Sign up to get started
           </p>
           
           {error && (
@@ -187,62 +279,6 @@ const SignupPage: React.FC = () => {
               {error}
             </div>
           )}
-          
-          {/* Plan selection */}
-          <div className="mb-8">
-            <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Select a plan:</p>
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setPlanType('personal')}
-                className={`relative p-4 border rounded-lg focus:outline-none transition-all duration-200 ${
-                  planType === 'personal'
-                    ? `${darkMode ? 'border-purple-500 bg-purple-900/20' : 'border-blue-500 bg-blue-50'} ring-2 ${darkMode ? 'ring-purple-500/50' : 'ring-blue-500/50'}`
-                    : `${darkMode ? 'border-gray-700 hover:border-purple-500' : 'border-gray-300 hover:border-blue-400'}`
-                }`}
-              >
-                <div className="text-left">
-                  <span className={`block text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Personal</span>
-                  <span className={`mt-1 block text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    For individual use
-                  </span>
-                  <span className={`mt-2 block ${darkMode ? 'text-purple-400' : 'text-blue-600'} font-medium`}>
-                    Free trial, then $19/mo
-                  </span>
-                </div>
-                {planType === 'personal' && (
-                  <div className={`absolute top-2 right-2 w-5 h-5 ${darkMode ? 'bg-purple-500' : 'bg-blue-500'} rounded-full flex items-center justify-center`}>
-                    <FiCheck className="text-white" size={12} />
-                  </div>
-                )}
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => setPlanType('enterprise')}
-                className={`relative p-4 border rounded-lg focus:outline-none transition-all duration-200 ${
-                  planType === 'enterprise'
-                    ? `${darkMode ? 'border-purple-500 bg-purple-900/20' : 'border-blue-500 bg-blue-50'} ring-2 ${darkMode ? 'ring-purple-500/50' : 'ring-blue-500/50'}`
-                    : `${darkMode ? 'border-gray-700 hover:border-purple-500' : 'border-gray-300 hover:border-blue-400'}`
-                }`}
-              >
-                <div className="text-left">
-                  <span className={`block text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Enterprise</span>
-                  <span className={`mt-1 block text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    For teams & businesses
-                  </span>
-                  <span className={`mt-2 block ${darkMode ? 'text-purple-400' : 'text-blue-600'} font-medium`}>
-                    Free trial, then $99/mo
-                  </span>
-                </div>
-                {planType === 'enterprise' && (
-                  <div className={`absolute top-2 right-2 w-5 h-5 ${darkMode ? 'bg-purple-500' : 'bg-blue-500'} rounded-full flex items-center justify-center`}>
-                    <FiCheck className="text-white" size={12} />
-                  </div>
-                )}
-              </button>
-            </div>
-          </div>
           
           <form onSubmit={handleSubmit}>
             <div className="space-y-5">
@@ -297,6 +333,74 @@ const SignupPage: React.FC = () => {
                   />
                 </div>
               </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="age">
+                    Age
+                  </label>
+                  <input
+                    id="age"
+                    name="age"
+                    type="number"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    className={`w-full px-3 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      darkMode 
+                        ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
+                        : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
+                    }`}
+                    placeholder="25"
+                  />
+                </div>
+                
+                <div>
+                  <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="gender">
+                    Gender
+                  </label>
+                  <select
+                    id="gender"
+                    name="gender"
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    className={`w-full px-3 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      darkMode 
+                        ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
+                        : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
+                    }`}
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="language">
+                  Preferred Language
+                </label>
+                <select
+                  id="language"
+                  name="language"
+                  value={preferredLanguage}
+                  onChange={(e) => setPreferredLanguage(e.target.value)}
+                  className={`w-full px-3 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    darkMode 
+                      ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
+                      : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
+                  }`}
+                >
+                  <option value="English">English</option>
+                  <option value="Spanish">Spanish</option>
+                  <option value="French">French</option>
+                  <option value="German">German</option>
+                  <option value="Chinese">Chinese</option>
+                  <option value="Japanese">Japanese</option>
+                  <option value="Korean">Korean</option>
+                </select>
+              </div>
               
               <div>
                 <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="password">
@@ -324,7 +428,7 @@ const SignupPage: React.FC = () => {
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={togglePasswordVisibility}
                       className={`focus:outline-none ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-600'}`}
                     >
                       {showPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
@@ -345,12 +449,12 @@ const SignupPage: React.FC = () => {
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showConfirmPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`w-full pl-10 pr-3 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    className={`w-full pl-10 pr-10 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
                       darkMode 
                         ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
                         : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
@@ -361,8 +465,17 @@ const SignupPage: React.FC = () => {
                     }`}
                     placeholder="Confirm your password"
                   />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <button
+                      type="button"
+                      onClick={toggleConfirmPasswordVisibility}
+                      className={`focus:outline-none ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-600'}`}
+                    >
+                      {showConfirmPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
+                    </button>
+                  </div>
                   {confirmPassword && (
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <div className="absolute inset-y-0 right-12 pr-3 flex items-center">
                       {password === confirmPassword ? (
                         <FiCheck className="h-5 w-5 text-green-500" />
                       ) : (
@@ -371,6 +484,25 @@ const SignupPage: React.FC = () => {
                     </div>
                   )}
                 </div>
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="referralCode">
+                  Referral Code (Optional)
+                </label>
+                <input
+                  id="referralCode"
+                  name="referralCode"
+                  type="text"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  className={`w-full px-3 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    darkMode 
+                      ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
+                      : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
+                  }`}
+                  placeholder="Enter referral code"
+                />
               </div>
               
               <div className="mt-6">

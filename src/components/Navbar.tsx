@@ -10,7 +10,9 @@ import {
   FiMoon,
   FiSun,
   FiCreditCard,
-  FiMic
+  FiMic,
+  FiPlus,
+  FiStar
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -68,16 +70,9 @@ const Navbar: React.FC<NavbarProps> = () => {
     } border-b sticky top-0 z-30 w-full flex-none h-16`}>
       <div className="max-w-screen-2xl mx-auto w-full h-full flex items-center justify-between px-4">
         <div className="flex items-center flex-grow-0 flex-shrink-0">
-          {/* Brand Logo - Visible on all screens */}
+          {/* Brand Logo without visible AI and PRO logo in navbar */}
           <Link to="/dashboard" className="flex items-center mr-4">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-              AI
-            </div>
-            {isPro && (
-              <span className="ml-1 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5">
-                PRO
-              </span>
-            )}
+            {/* Removed AI logo and PRO badge from navbar */}
           </Link>
 
           {/* Desktop Search */}
@@ -97,8 +92,11 @@ const Navbar: React.FC<NavbarProps> = () => {
               placeholder="Search..."
             />
           </div>
-          
-          {/* Mobile search icon */}
+        </div>
+
+        {/* Right Navigation */}
+        <div className="flex items-center space-x-1 sm:space-x-2">
+          {/* Mobile search icon - Moved more to the right */}
           <button 
             onClick={toggleSearchBar}
             className={`md:hidden p-2 rounded-lg ${
@@ -109,10 +107,35 @@ const Navbar: React.FC<NavbarProps> = () => {
           >
             <FiSearch className="w-5 h-5" />
           </button>
-        </div>
+          
+          {/* Subscription and Coin Purchase Buttons - now visible on mobile too */}
+          {!isPro && (
+            <button
+              onClick={() => navigate('/subscription')}
+              className="flex items-center px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-gradient-to-r from-purple-500 to-blue-600 text-white hover:opacity-90 transition-opacity"
+            >
+              <FiStar className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
+              <span className="font-medium">Upgrade</span>
+            </button>
+          )}
+          
+          {isPro && userData && userData.user_coins && userData.user_coins < 200 && (
+            <button
+              onClick={() => navigate('/buy', { 
+                state: { 
+                  uid: user?.id,
+                  plan: 'Addon',
+                  price: '50 HKD',
+                  isAddon: true
+                } 
+              })}
+              className="flex items-center px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:opacity-90 transition-opacity"
+            >
+              <FiPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
+              <span className="font-medium">Buy Coins</span>
+            </button>
+          )}
 
-        {/* Right Navigation */}
-        <div className="flex items-center space-x-1 sm:space-x-2">
           {/* User Coins */}
           {userData && (
             <div className={`hidden sm:flex items-center px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm ${

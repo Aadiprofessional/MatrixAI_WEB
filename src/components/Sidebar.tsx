@@ -28,9 +28,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {
   onToggle?: (collapsed: boolean) => void;
+  activeLink?: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { darkMode } = useContext(ThemeContext);
@@ -71,6 +72,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
   }, [collapsed, onToggle]);
 
   const isActive = (path: string) => {
+    if (activeLink) {
+      // Check if the activeLink matches the path or if the path is a prefix of activeLink
+      return activeLink === path || (path !== '/' && activeLink.startsWith(path));
+    }
     return location.pathname === path;
   };
 
@@ -166,7 +171,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
           darkMode 
             ? 'bg-gray-800 border-gray-700' 
             : 'bg-white border-gray-200'
-        } border-r left-0 top-0 z-40`}
+        } border-r left-0 top-0 z-40 overflow-hidden`}
+        style={{ position: 'fixed' }}
       >
         <div className="flex flex-col h-full">
           {/* Logo and Toggle Section */}
@@ -178,6 +184,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
                     AI
                   </div>
                   <div className="flex items-center">
+                    <span className="ml-2 text-lg font-bold">AI</span>
                     {isPro && (
                       <span className="ml-1 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5">
                         PRO
@@ -199,8 +206,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
             </div>
           </div>
 
-          {/* Navigation Links Section - Scrollable */}
-          <div className="flex-1 px-3 overflow-y-auto">
+          {/* Navigation Links Section - Scrollable but contained within sidebar */}
+          <div className="flex-1 px-3 overflow-y-auto max-h-[calc(100vh-180px)]">
             <ul className="space-y-2">
               {navItems.map((item) => (
                 <li key={item.path}>

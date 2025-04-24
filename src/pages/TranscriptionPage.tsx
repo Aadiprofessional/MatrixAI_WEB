@@ -15,6 +15,8 @@ import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import remarkGfm from 'remark-gfm';
 
 // Define types for word timings
 interface WordTiming {
@@ -77,6 +79,7 @@ const TranscriptionPage: React.FC = () => {
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
   const [isGeneratingMindMap, setIsGeneratingMindMap] = useState<boolean>(false);
+  const [isGraphFixed, setIsGraphFixed] = useState<boolean>(false);
 
   // Mind map state
   const [mindMapData, setMindMapData] = useState<MindMapNode[]>([]);
@@ -865,14 +868,14 @@ const TranscriptionPage: React.FC = () => {
         ? 'from-gray-900 via-gray-800 to-gray-900' 
         : 'from-gray-50 via-blue-50 to-gray-50'
     }`}>
-      <div className="container mx-auto max-w-7xl p-4 py-6">
+      <div className="container mx-auto max-w-7xl px-4 md:px-6 py-6 pb-0">
         {/* Header with title and controls */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
             <motion.h1 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+              className="text-2xl md:text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
             >
               Transcription
             </motion.h1>
@@ -888,12 +891,12 @@ const TranscriptionPage: React.FC = () => {
             )}
           </div>
           
-          <div className="flex space-x-2 mt-3 md:mt-0">
+          <div className="flex flex-wrap gap-2 mt-3 md:mt-0">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(-1)}
-              className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all flex items-center dark:text-gray-200"
+              className="px-3 md:px-4 py-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all flex items-center dark:text-gray-200 text-sm md:text-base"
             >
               <FiChevronLeft className="mr-1" /> Back
             </motion.button>
@@ -902,7 +905,7 @@ const TranscriptionPage: React.FC = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/speech-to-text')}
-              className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all flex items-center dark:text-gray-200"
+              className="px-3 md:px-4 py-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all flex items-center dark:text-gray-200 text-sm md:text-base"
             >
               <FiMic className="mr-1" /> Speech to Text
             </motion.button>
@@ -930,10 +933,10 @@ const TranscriptionPage: React.FC = () => {
         </div>
 
         {/* Main tabs */}
-        <div className="mb-6 flex items-center border-b border-gray-200 dark:border-gray-700">
+        <div className="mb-6 flex items-center border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
           <button
             onClick={() => setActiveTab('transcript')}
-            className={`py-3 px-4 border-b-2 font-medium text-sm ${
+            className={`py-3 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
               activeTab === 'transcript' 
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -943,7 +946,7 @@ const TranscriptionPage: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('mindmap')}
-            className={`py-3 px-4 border-b-2 font-medium text-sm ${
+            className={`py-3 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
               activeTab === 'mindmap' 
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -953,7 +956,7 @@ const TranscriptionPage: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('chat')}
-            className={`py-3 px-4 border-b-2 font-medium text-sm ${
+            className={`py-3 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
               activeTab === 'chat' 
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -1056,6 +1059,17 @@ const TranscriptionPage: React.FC = () => {
                     <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Mind Map Visualization</h2>
                     <div className="flex space-x-2">
                       <button 
+                        onClick={() => setIsGraphFixed(!isGraphFixed)}
+                        className={`p-2 ${
+                          isGraphFixed
+                            ? 'text-blue-500 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30'
+                            : 'text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400'
+                        } rounded-md transition-colors`}
+                        title={isGraphFixed ? "Unfix graph layout" : "Fix graph layout"}
+                      >
+                        <FiMaximize />
+                      </button>
+                      <button 
                         onClick={saveMindMapXml}
                         className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
                         title="Save mind map"
@@ -1099,6 +1113,7 @@ const TranscriptionPage: React.FC = () => {
                     ) : mindMapData.length > 0 ? (
                       <div className="p-4 min-h-[500px]">
                         <iframe 
+                          key={`mindmap-iframe-${isGraphFixed}`}
                           src={`data:text/html;charset=utf-8,${encodeURIComponent(`
                             <!DOCTYPE html>
                             <html>
@@ -1119,14 +1134,72 @@ const TranscriptionPage: React.FC = () => {
                                   height: 100%;
                                   min-height: 600px;
                                 }
+                                .controls {
+                                  position: absolute;
+                                  bottom: 10px;
+                                  right: 10px;
+                                  display: flex;
+                                  gap: 8px;
+                                  z-index: 100;
+                                }
+                                .control-btn {
+                                  background: ${theme === 'dark' ? '#374151' : '#f3f4f6'};
+                                  border: 1px solid ${theme === 'dark' ? '#4b5563' : '#d1d5db'};
+                                  color: ${theme === 'dark' ? '#e5e7eb' : '#374151'};
+                                  border-radius: 4px;
+                                  padding: 4px 8px;
+                                  cursor: pointer;
+                                  font-size: 12px;
+                                  display: flex;
+                                  align-items: center;
+                                  justify-content: center;
+                                }
+                                .control-btn:hover {
+                                  background: ${theme === 'dark' ? '#4b5563' : '#e5e7eb'};
+                                }
+                                .status-text {
+                                  position: absolute;
+                                  top: 10px;
+                                  left: 10px;
+                                  background: ${isGraphFixed 
+                                    ? (theme === 'dark' ? 'rgba(37, 99, 235, 0.8)' : 'rgba(59, 130, 246, 0.8)') 
+                                    : (theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(243, 244, 246, 0.8)')};
+                                  color: ${isGraphFixed 
+                                    ? '#ffffff' 
+                                    : (theme === 'dark' ? '#e5e7eb' : '#111827')};
+                                  padding: 6px 10px;
+                                  border-radius: 4px;
+                                  font-size: 13px;
+                                  font-weight: ${isGraphFixed ? 'bold' : 'normal'};
+                                  z-index: 100;
+                                  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                                  display: flex;
+                                  align-items: center;
+                                }
+                                .status-text:before {
+                                  content: '';
+                                  display: ${isGraphFixed ? 'inline-block' : 'none'};
+                                  width: 8px;
+                                  height: 8px;
+                                  background-color: ${isGraphFixed ? '#10B981' : 'transparent'};
+                                  border-radius: 50%;
+                                  margin-right: 6px;
+                                }
                               </style>
                             </head>
                             <body>
                               <div id="chart"></div>
+                              <div class="status-text">${isGraphFixed ? 'Graph Layout: Fixed' : 'Graph Layout: Dynamic'}</div>
+                              <div class="controls">
+                                <button class="control-btn" id="zoomIn">+</button>
+                                <button class="control-btn" id="zoomOut">-</button>
+                                <button class="control-btn" id="reset">Reset</button>
+                              </div>
                               <script>
                                 const chartDom = document.getElementById('chart');
                                 const myChart = echarts.init(chartDom);
                                 const colors = ['#5470C6', '#91CC75', '#EE6666', '#FAC858', '#73C0DE', '#3BA272', '#FC8452', '#9A60B4', '#EA7CCC'];
+                                const isGraphFixed = ${isGraphFixed};
                                 
                                 function assignColors(node, index = 0) {
                                   node.lineStyle = { color: colors[index % colors.length] };
@@ -1167,6 +1240,7 @@ const TranscriptionPage: React.FC = () => {
                                 }
                                 
                                 const option = {
+                                  backgroundColor: '${theme === 'dark' ? '#1f2937' : '#ffffff'}',
                                   tooltip: { 
                                     trigger: 'item', 
                                     triggerOn: 'mousemove',
@@ -1183,10 +1257,15 @@ const TranscriptionPage: React.FC = () => {
                                     left: '10%',
                                     bottom: '5%',
                                     right: '10%',
-                                    symbolSize: 12,
+                                    symbolSize: ${isGraphFixed ? 14 : 12},
                                     orient: 'LR',
                                     roam: true,
                                     initialTreeDepth: -1,
+                                    draggable: false,
+                                    ${isGraphFixed ? `
+                                    layout: 'orthogonal',
+                                    edgeShape: 'polyline',
+                                    ` : ''}
                                     label: {
                                       position: 'left',
                                       verticalAlign: 'middle',
@@ -1218,21 +1297,27 @@ const TranscriptionPage: React.FC = () => {
                                       }
                                     },
                                     expandAndCollapse: true,
-                                    animationDuration: 550,
+                                    animationDuration: ${isGraphFixed ? 0 : 550},
                                     animationEasing: 'cubicOut',
                                     lineStyle: {
-                                      width: 2,
-                                      curveness: 0.5
+                                      width: ${isGraphFixed ? 2.5 : 2},
+                                      curveness: ${isGraphFixed ? '0' : '0.5'},
+                                      ${isGraphFixed ? "color: '#3b82f6'" : ""}
                                     },
+                                    ${isGraphFixed ? `
+                                    force: null,
+                                    ` : `
                                     force: {
                                       repulsion: 500,
                                       gravity: 0.1,
                                       edgeLength: 200,
                                       layoutAnimation: true
                                     },
+                                    `}
                                     nodeGap: 60,
                                     itemStyle: {
-                                      borderWidth: 2,
+                                      borderWidth: ${isGraphFixed ? 3 : 2},
+                                      borderColor: ${isGraphFixed ? "'#3b82f6'" : "null"},
                                       shadowColor: 'rgba(0, 0, 0, 0.3)',
                                       shadowBlur: 5
                                     }
@@ -1241,8 +1326,58 @@ const TranscriptionPage: React.FC = () => {
                                 
                                 myChart.setOption(option);
                                 
+                                // Freeze the nodes in place when fixed
+                                ${isGraphFixed ? `
+                                // Prevent layout recalculation
+                                myChart.getZr().on('mousemove', () => {
+                                  if (window.layoutFixed) return;
+                                  window.layoutFixed = true;
+                                  
+                                  setTimeout(() => {
+                                    myChart.setOption({
+                                      series: [{
+                                        force: null,
+                                        roam: true,
+                                        draggable: false
+                                      }]
+                                    }, false);
+                                  }, 500);
+                                });
+                                ` : ''}
+                                
+                                // Create the chart and register a resize listener
                                 window.addEventListener('resize', function() {
                                   myChart.resize();
+                                });
+                                
+                                // Zoom controls
+                                document.getElementById('zoomIn').addEventListener('click', function() {
+                                  const currentZoom = myChart.getOption().series[0].zoom || 1;
+                                  myChart.setOption({
+                                    series: [{
+                                      zoom: Math.min(2, currentZoom * 1.3)
+                                    }]
+                                  });
+                                });
+                                
+                                document.getElementById('zoomOut').addEventListener('click', function() {
+                                  const currentZoom = myChart.getOption().series[0].zoom || 1;
+                                  myChart.setOption({
+                                    series: [{
+                                      zoom: Math.max(0.5, currentZoom / 1.3)
+                                    }]
+                                  });
+                                });
+                                
+                                document.getElementById('reset').addEventListener('click', function() {
+                                  myChart.setOption({
+                                    series: [{
+                                      zoom: 1
+                                    }]
+                                  });
+                                  myChart.dispatchAction({
+                                    type: 'restore'
+                                  });
                                 });
                               </script>
                             </body>
@@ -1274,7 +1409,8 @@ const TranscriptionPage: React.FC = () => {
                   animate={{ opacity: 1 }}
                   className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-300px)]"
                 >
-                  <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+                  {/* Fixed Header */}
+                  <div className="flex justify-between items-center p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-20 sticky top-0">
                     <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Chat Assistant</h2>
                     <div className="flex space-x-2">
                       <button 
@@ -1294,14 +1430,14 @@ const TranscriptionPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Quick Actions */}
-                  <div className="p-4 border-b dark:border-gray-700">
+                  {/* Quick Actions - Fixed below header */}
+                  <div className="p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-10 sticky top-[67px]">
                     <h3 className="text-lg font-medium mb-3 dark:text-gray-300">Quick Actions</h3>
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => handleQuickAction('keypoints')}
                         disabled={isChatProcessing.keypoints || !transcription}
-                        className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
+                        className={`px-3 py-2 rounded-lg flex items-center transition-colors text-sm ${
                           isChatProcessing.keypoints
                             ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                             : 'bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-800/40 text-blue-700 dark:text-blue-300'
@@ -1318,7 +1454,7 @@ const TranscriptionPage: React.FC = () => {
                       <button
                         onClick={() => handleQuickAction('summary')}
                         disabled={isChatProcessing.summary || !transcription}
-                        className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
+                        className={`px-3 py-2 rounded-lg flex items-center transition-colors text-sm ${
                           isChatProcessing.summary
                             ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                             : 'bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-800/40 text-purple-700 dark:text-purple-300'
@@ -1336,7 +1472,7 @@ const TranscriptionPage: React.FC = () => {
                         <button
                           onClick={() => handleQuickAction('translate')}
                           disabled={isChatProcessing.translate || !transcription}
-                          className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
+                          className={`px-3 py-2 rounded-lg flex items-center transition-colors text-sm ${
                             isChatProcessing.translate
                               ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                               : 'bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-800/40 text-green-700 dark:text-green-300'
@@ -1353,7 +1489,7 @@ const TranscriptionPage: React.FC = () => {
                         <select
                           value={translationLanguage}
                           onChange={(e) => setTranslationLanguage(e.target.value)}
-                          className="ml-2 px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300"
+                          className="ml-2 px-2 py-1 text-xs sm:text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
                         >
                           <option value="Spanish">Spanish</option>
                           <option value="French">French</option>
@@ -1367,22 +1503,22 @@ const TranscriptionPage: React.FC = () => {
                       <button
                         onClick={setTranscriptionAsContext}
                         disabled={!transcription || chatMessages.length > 0}
-                        className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
+                        className={`px-3 py-2 rounded-lg flex items-center transition-colors text-sm ${
                           !transcription || chatMessages.length > 0
                             ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                             : 'bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-800/40 text-amber-700 dark:text-amber-300'
                         }`}
                       >
                         <FiFileText className="mr-2" />
-                        Use Transcription as Context
+                        Use as Context
                       </button>
                     </div>
                   </div>
 
-                  {/* Chat display area with messages */}
+                  {/* Chat display area with messages - Scrollable */}
                   <div 
                     ref={chatContainerRef}
-                    className="flex-1 overflow-y-auto p-4 space-y-4"
+                    className="flex-1 overflow-y-auto p-4 space-y-4 pb-20"
                   >
                     {/* Quick Action Responses */}
                     {(chatResponses.keypoints || chatResponses.summary || chatResponses.translate) && (
@@ -1395,7 +1531,10 @@ const TranscriptionPage: React.FC = () => {
                               <FiZap className="mr-2" /> Key Points
                             </h4>
                             <div className="text-gray-700 dark:text-gray-300 prose prose-sm max-w-none dark:prose-invert">
-                              <ReactMarkdown>
+                              <ReactMarkdown 
+                                rehypePlugins={[rehypeRaw]} 
+                                remarkPlugins={[remarkGfm]}
+                              >
                                 {chatResponses.keypoints}
                               </ReactMarkdown>
                             </div>
@@ -1408,7 +1547,10 @@ const TranscriptionPage: React.FC = () => {
                               <FiFileText className="mr-2" /> Summary
                             </h4>
                             <div className="text-gray-700 dark:text-gray-300 prose prose-sm max-w-none dark:prose-invert">
-                              <ReactMarkdown>
+                              <ReactMarkdown 
+                                rehypePlugins={[rehypeRaw]} 
+                                remarkPlugins={[remarkGfm]}
+                              >
                                 {chatResponses.summary}
                               </ReactMarkdown>
                             </div>
@@ -1421,7 +1563,10 @@ const TranscriptionPage: React.FC = () => {
                               <FiBookmark className="mr-2" /> Translation ({translationLanguage})
                             </h4>
                             <div className="text-gray-700 dark:text-gray-300 prose prose-sm max-w-none dark:prose-invert">
-                              <ReactMarkdown>
+                              <ReactMarkdown 
+                                rehypePlugins={[rehypeRaw]} 
+                                remarkPlugins={[remarkGfm]}
+                              >
                                 {chatResponses.translate}
                               </ReactMarkdown>
                             </div>
@@ -1439,7 +1584,7 @@ const TranscriptionPage: React.FC = () => {
                             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                           >
                             <div 
-                              className={`max-w-3/4 rounded-lg px-4 py-3 ${
+                              className={`max-w-3/4 md:max-w-[70%] rounded-lg px-4 py-3 ${
                                 message.role === 'user' 
                                   ? 'bg-blue-500 text-white' 
                                   : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
@@ -1450,7 +1595,10 @@ const TranscriptionPage: React.FC = () => {
                               </div>
                               <div className={`${message.role === 'assistant' ? 'prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-800 dark:prose-headings:text-gray-200 prose-h1:text-lg prose-h2:text-base prose-h3:text-sm prose-p:my-1 prose-li:my-0 prose-ul:my-1 prose-ol:my-1' : 'whitespace-pre-wrap'}`}>
                                 {message.role === 'assistant' ? (
-                                  <ReactMarkdown>
+                                  <ReactMarkdown 
+                                    rehypePlugins={[rehypeRaw]} 
+                                    remarkPlugins={[remarkGfm]}
+                                  >
                                     {message.content}
                                   </ReactMarkdown>
                                 ) : (
@@ -1475,7 +1623,7 @@ const TranscriptionPage: React.FC = () => {
                       </div>
                     ) : (
                       !chatResponses.keypoints && !chatResponses.summary && !chatResponses.translate && (
-                        <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                        <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
                           <FiMessageSquare className="w-12 h-12 mb-4" />
                           <p>Start chatting or use the quick actions above</p>
                         </div>
@@ -1483,8 +1631,8 @@ const TranscriptionPage: React.FC = () => {
                     )}
                   </div>
                   
-                  {/* Chat input area */}
-                  <div className="border-t dark:border-gray-700 p-4">
+                  {/* Chat input area - Fixed at the bottom */}
+                  <div className="border-t dark:border-gray-700 p-4 bg-white dark:bg-gray-800 z-10 sticky bottom-0 shadow-md">
                     <form onSubmit={handleChatSubmit} className="flex space-x-2">
                       <input
                         type="text"
@@ -1528,7 +1676,7 @@ const TranscriptionPage: React.FC = () => {
                   </div>
                   
                   {/* Waveform visualization */}
-                  <div className="relative h-20 m-4 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                  <div className="relative h-16 sm:h-20 m-4 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
                     <div 
                       className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-400/60 to-purple-400/60 dark:from-blue-500/40 dark:to-purple-500/40 pointer-events-none"
                       style={{ width: `${(currentTime / duration) * 100}%` }}
@@ -1561,7 +1709,7 @@ const TranscriptionPage: React.FC = () => {
                   {/* Audio controls */}
                   <div className="px-4 pb-4">
                     <div className="flex items-center mb-3">
-                      <span className="text-sm text-gray-500 dark:text-gray-400 w-12">
+                      <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 w-10 sm:w-12">
                         {formatTime(currentTime)}
                       </span>
                       <input
@@ -1571,34 +1719,37 @@ const TranscriptionPage: React.FC = () => {
                         value={currentTime}
                         onChange={handleProgressChange}
                         step="0.1"
-                        className="flex-1 mx-3 accent-blue-500 h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 dark:bg-gray-700"
+                        className="flex-1 mx-2 sm:mx-3 accent-blue-500 h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 dark:bg-gray-700"
                       />
-                      <span className="text-sm text-gray-500 dark:text-gray-400 w-12 text-right">
+                      <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 w-10 sm:w-12 text-right">
                         {formatTime(duration)}
                       </span>
                     </div>
 
                     <div className="flex justify-between items-center mb-6">
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-1 sm:space-x-2">
                         <button 
                           onClick={() => seekTo(Math.max(0, currentTime - 5))}
-                          className="p-2 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
+                          className="p-1 sm:p-2 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
                           title="Back 5 seconds"
                         >
-                          <FiChevronLeft size={20} />
+                          <FiChevronLeft size={16} className="sm:h-5 sm:w-5" />
                         </button>
                         <button 
                           onClick={togglePlayPause}
-                          className="p-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full focus:outline-none shadow-md hover:shadow-lg transition-all"
+                          className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full focus:outline-none shadow-md hover:shadow-lg transition-all"
                         >
-                          {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} className="ml-1" />}
+                          {isPlaying ? 
+                            <FiPause size={20} className="sm:h-6 sm:w-6" /> : 
+                            <FiPlay size={20} className="ml-0.5 sm:h-6 sm:w-6 sm:ml-1" />
+                          }
                         </button>
                         <button 
                           onClick={() => seekTo(Math.min(duration, currentTime + 5))}
-                          className="p-2 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
+                          className="p-1 sm:p-2 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
                           title="Forward 5 seconds"
                         >
-                          <FiChevronRight size={20} />
+                          <FiChevronRight size={16} className="sm:h-5 sm:w-5" />
                         </button>
                       </div>
 
@@ -1608,7 +1759,7 @@ const TranscriptionPage: React.FC = () => {
                           <button 
                             key={rate}
                             onClick={() => handlePlaybackRateChange(rate)}
-                            className={`px-2 py-1 text-xs rounded-full font-medium transition-colors ${
+                            className={`px-1.5 sm:px-2 py-1 text-xs rounded-full font-medium transition-colors ${
                               playbackRate === rate 
                                 ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm' 
                                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
