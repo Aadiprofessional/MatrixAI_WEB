@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiMic, FiMicOff, FiArrowLeft, FiPhoneOff, FiLoader, FiRefreshCw, FiVolume2, FiVolumeX, FiMaximize2, FiMinimize2 } from 'react-icons/fi';
+import { FiMic, FiMicOff, FiArrowLeft, FiPhoneOff, FiLoader, FiRefreshCw, FiVolume2, FiVolumeX, FiMaximize2, FiMinimize2, FiEye, FiEyeOff } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 // @ts-ignore
 import Lottie from 'react-lottie-player';
@@ -97,7 +97,7 @@ const CallPage: React.FC = () => {
   const { darkMode } = useTheme();
   const [isListening, setIsListening] = useState(false);
   const [processingResponse, setProcessingResponse] = useState(false);
-  const [aiMessage, setAiMessage] = useState("Hello! I'm your AI assistant. How can I help you today?");
+  const [aiMessage, setAiMessage] = useState("Hello! I'm your MatrixAI assistant. How can I help you today?");
   const [speaking, setSpeaking] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
@@ -113,7 +113,7 @@ const CallPage: React.FC = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   
   const MAX_RETRIES = 3;
-  const SILENCE_TIMEOUT = 2000; // 2 seconds of silence before stopping
+  const SILENCE_TIMEOUT = 1000; // 2 seconds of silence before stopping
   
   const animationRef = useRef<any>(null);
   const recognizerRef = useRef<SpeechRecognition | null>(null);
@@ -135,13 +135,47 @@ const CallPage: React.FC = () => {
   // Auto-scroll chat to bottom
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      // Using scrollIntoView with a slight delay to ensure it works after DOM updates
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 100);
     }
   };
   
   // Check if speech recognition is supported
   const checkSpeechSupport = () => {
     return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  };
+  
+  // Simulate button press animation
+  const simulateButtonPress = () => {
+    if (micButtonRef.current) {
+      // Add a pressed class
+      micButtonRef.current.classList.add('button-pressed');
+      
+      // Add visual feedback
+      micButtonRef.current.style.transform = 'scale(0.9)';
+      micButtonRef.current.style.opacity = '0.8';
+      
+      // Find the parent button element
+      const stopButton = micButtonRef.current.closest('button');
+      if (stopButton) {
+        console.log("Physically clicking stop button via simulateButtonPress");
+        stopButton.click();
+      } else {
+        // Fallback if button not found
+        stopListening();
+      }
+      
+      // Remove after animation completes
+      setTimeout(() => {
+        if (micButtonRef.current) {
+          micButtonRef.current.classList.remove('button-pressed');
+          micButtonRef.current.style.transform = '';
+          micButtonRef.current.style.opacity = '';
+        }
+      }, 200);
+    }
   };
   
   // Enhanced silence detection that restarts timer on new text
@@ -168,35 +202,13 @@ const CallPage: React.FC = () => {
         if (newTranscript.length > 0 && newTranscript === lastTranscriptRef.current) {
           console.log(`No new speech detected for ${SILENCE_TIMEOUT}ms, stopping listening`);
           
-          // Simulate button press animation
-          simulateButtonPress();
-          
-          // Explicitly call stopListening to trigger API call
-          stopListening();
+          // Direct call to simulate button press - only if we're still listening
+          if (isListening) {
+            simulateButtonPress();
+          }
         }
       }
     }, SILENCE_TIMEOUT);
-  };
-  
-  // Function to simulate a button press visually
-  const simulateButtonPress = () => {
-    if (micButtonRef.current) {
-      // Add a pressed class
-      micButtonRef.current.classList.add('button-pressed');
-      
-      // Add visual feedback
-      micButtonRef.current.style.transform = 'scale(0.9)';
-      micButtonRef.current.style.opacity = '0.8';
-      
-      // Remove after animation completes
-      setTimeout(() => {
-        if (micButtonRef.current) {
-          micButtonRef.current.classList.remove('button-pressed');
-          micButtonRef.current.style.transform = '';
-          micButtonRef.current.style.opacity = '';
-        }
-      }, 200);
-    }
   };
   
   // Clear all timeouts
@@ -513,6 +525,9 @@ const CallPage: React.FC = () => {
       
       setChatHistory(prev => [...prev, userMessage]);
       
+      // Scroll to bottom after user message added
+      scrollToBottom();
+      
       // Start processing
       setProcessingResponse(true);
       try {
@@ -541,11 +556,11 @@ const CallPage: React.FC = () => {
         
         setChatHistory(prev => [...prev, aiMessageObj]);
         
+        // Scroll to bottom again after AI message added
+        scrollToBottom();
+        
         // Speak the response
         speakText(aiContent);
-        
-        // Scroll to bottom of chat
-        setTimeout(scrollToBottom, 100);
         
       } catch (error) {
         console.error('Error calling AI API:', error);
@@ -563,16 +578,29 @@ const CallPage: React.FC = () => {
         
         setChatHistory(prev => [...prev, errorMessageObj]);
         
+        // Scroll to bottom after error message
+        scrollToBottom();
+        
         speakText(errorMessage);
       } finally {
         setProcessingResponse(false);
-        setTimeout(scrollToBottom, 100);
       }
     }
   };
   
   // Speak text using the Web Speech API
   const speakText = (text: string) => {
+    // Don't speak if muted
+    if (isMuted) {
+      console.log('Audio is muted, not speaking');
+      setSpeaking(false);
+      // Start listening immediately when muted since we're not speaking
+      if (!isListening) {
+        startListening();
+      }
+      return;
+    }
+
     // Stop any existing speech
     if (window.speechSynthesis.speaking) {
       window.speechSynthesis.cancel();
@@ -636,7 +664,9 @@ const CallPage: React.FC = () => {
     utterance.onend = () => {
       setSpeaking(false);
       // Auto-start listening again after AI finishes speaking
-      startListening();
+      if (!isListening && !isMuted) {
+        startListening();
+      }
       if (animationRef.current) {
         animationRef.current.pause();
       }
@@ -656,9 +686,21 @@ const CallPage: React.FC = () => {
   
   // Toggle mute
   const toggleMute = () => {
-    setIsMuted(!isMuted);
-    // Implementation would depend on how you handle actual audio
-    // For now we just toggle the state
+    const newMutedState = !isMuted;
+    setIsMuted(newMutedState);
+    
+    // If we're currently speaking and user mutes, stop speaking
+    if (newMutedState && speaking && window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+      // Start listening again since we stopped the speech
+      startListening();
+      if (animationRef.current) {
+        animationRef.current.pause();
+      }
+    }
+    
+    console.log(`Audio ${newMutedState ? 'muted' : 'unmuted'}`);
   };
   
   // Toggle transcript visibility
@@ -713,6 +755,21 @@ const CallPage: React.FC = () => {
       speakText(aiMessage);
     }, 1000);
     
+    // Set an interval to check for silence every 500ms as an additional safeguard
+    const silenceCheckInterval = setInterval(() => {
+      if (isListening && lastSpeechTimestampRef.current > 0) {
+        const now = Date.now();
+        const timeSinceLastSpeech = now - lastSpeechTimestampRef.current;
+        
+        if (timeSinceLastSpeech > SILENCE_TIMEOUT && finalTranscriptRef.current.trim().length > 0) {
+          console.log(`Silence detected from interval check: ${timeSinceLastSpeech}ms`);
+          if (isListening) {
+            simulateButtonPress();
+          }
+        }
+      }
+    }, 500);
+    
     // Clean up on unmount
     return () => {
       if (window.speechSynthesis.speaking) {
@@ -722,6 +779,7 @@ const CallPage: React.FC = () => {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
       }
+      clearInterval(silenceCheckInterval);
     };
   }, []);
   
@@ -733,7 +791,7 @@ const CallPage: React.FC = () => {
   // Show error page if speech recognition is not supported
   if (!speechSupported) {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800 text-white' : 'bg-gradient-to-b from-blue-50 to-indigo-100 text-gray-900'}`}>
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-bold mb-4">Browser Not Supported</h1>
           <p className="mb-6">Your browser doesn't support speech recognition. Please try using Chrome or Edge.</p>
@@ -746,11 +804,11 @@ const CallPage: React.FC = () => {
   }
   
   return (
-    <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-      {/* WhatsApp-style call header */}
-      <div className={`w-full ${darkMode ? 'bg-gray-800' : 'bg-green-600'} py-4 px-4 flex items-center justify-between shadow-md`}>
+    <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800 text-white' : 'bg-gradient-to-b from-blue-50 to-indigo-100 text-gray-900'} overflow-hidden fixed inset-0`}>
+      {/* Stylish call header */}
+      <div className={`w-full ${darkMode ? 'bg-gray-800 bg-opacity-90' : 'bg-gradient-to-r from-blue-600 to-indigo-600'} py-4 px-4 flex items-center justify-between shadow-lg z-20 sticky top-0`}>
         <div className="flex items-center space-x-3">
-          <Link to="/chat" className="text-white p-2 rounded-full hover:bg-black hover:bg-opacity-20">
+          <Link to="/chat" className="text-white p-2 rounded-full hover:bg-black hover:bg-opacity-20 transition-all duration-200">
             <FiArrowLeft size={22} />
           </Link>
           <div>
@@ -762,17 +820,18 @@ const CallPage: React.FC = () => {
             </p>
           </div>
         </div>
-        <div className="text-white text-sm font-medium">
+        <div className="text-white text-sm font-medium flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${speaking || isListening || processingResponse ? 'bg-green-500 animate-pulse' : 'bg-white'}`}></div>
           {formatDuration(callDuration)}
         </div>
       </div>
       
       {/* Main content area */}
-      <div className="flex-1 flex flex-col">
-        {/* AI Profile area when chat is minimized */}
+      <div className="flex-1 flex flex-col relative overflow-hidden">
+        {/* Large centered animation when chat is minimized */}
         {!expandChat && (
           <div className={`flex-1 w-full flex flex-col items-center justify-center p-6`}>
-            <div className="relative w-32 h-32 mb-6 rounded-full overflow-hidden border-4 border-white shadow-lg">
+            <div className="relative w-60 h-60 md:w-80 md:h-80 mb-6">
               <Lottie
                 ref={animationRef}
                 loop={speaking || processingResponse || isInitializing}
@@ -780,36 +839,31 @@ const CallPage: React.FC = () => {
                 play={speaking || processingResponse || isInitializing}
                 style={{ width: '100%', height: '100%' }}
               />
-              <div className={`absolute inset-0 rounded-full ${
-                speaking ? 'bg-blue-500 animate-pulse opacity-30' : 
-                isListening ? 'bg-green-500 animate-pulse opacity-30' : 
-                'bg-transparent'
-              }`}></div>
             </div>
             
-            <h2 className="text-xl font-semibold mb-1">AI Assistant</h2>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            <h2 className="text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">AI Assistant</h2>
+            <p className={`text-sm ${darkMode ? 'text-blue-300' : 'text-indigo-600'} mb-3`}>
               {speaking 
                 ? 'Speaking to you...' 
                 : isListening 
                   ? 'Listening to you...' 
                   : processingResponse 
                     ? 'Processing your message...'
-                    : 'Ready'
+                    : 'Ready for conversation'
               }
             </p>
             
             {/* Status indicator */}
-            <div className={`mt-3 px-3 py-1 rounded-full text-xs font-medium ${
+            <div className={`mt-1 px-4 py-1.5 rounded-full text-xs font-semibold shadow-md transition-all ${
               speaking 
-                ? 'bg-blue-100 text-blue-800' 
+                ? 'bg-blue-600 text-white' 
                 : isListening 
-                  ? 'bg-green-100 text-green-800' 
+                  ? 'bg-green-600 text-white' 
                   : processingResponse 
-                    ? 'bg-yellow-100 text-yellow-800' 
+                    ? 'bg-yellow-500 text-white' 
                     : networkErrorOccurred
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-gray-100 text-gray-800'
+                      ? 'bg-red-500 text-white'
+                      : darkMode ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-800'
             }`}>
               {speaking 
                 ? 'AI Speaking' 
@@ -827,14 +881,14 @@ const CallPage: React.FC = () => {
         
         {/* Error message if any */}
         {recognitionError && (
-          <div className="w-full px-4 mb-4">
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md">
+          <div className="w-full px-4 mb-4 absolute top-2 left-0 right-0 z-20">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg shadow-md">
               <div className="flex justify-between items-center">
                 <p className="text-sm">{recognitionError}</p>
                 {networkErrorOccurred && (
                   <button 
                     onClick={retryRecognition}
-                    className="flex items-center gap-1 bg-red-200 hover:bg-red-300 text-red-800 px-2 py-1 rounded text-xs font-medium"
+                    className="flex items-center gap-1 bg-red-200 hover:bg-red-300 text-red-800 px-2 py-1 rounded text-xs font-medium transition-all"
                   >
                     <FiRefreshCw size={12} />
                     Retry
@@ -848,10 +902,17 @@ const CallPage: React.FC = () => {
         {/* Conversation area (always visible in expanded mode) */}
         {(expandChat || showTranscript) && (
           <div 
-            className={`${expandChat ? 'flex-1' : ''} w-full px-4 ${expandChat ? 'py-4' : 'mb-4'} overflow-y-auto ${
-              darkMode ? 'bg-gray-800' : 'bg-gray-50'
-            }`}
-            style={{ maxHeight: expandChat ? 'none' : '40vh' }}
+            className={`${expandChat ? 'flex-1' : ''} w-full px-4 overflow-y-auto ${
+              darkMode ? 'bg-gray-800 bg-opacity-70' : 'bg-white bg-opacity-60'
+            } rounded-t-2xl mx-auto max-w-4xl`}
+            style={{ 
+              maxHeight: expandChat ? 'calc(100vh - 180px)' : '40vh',
+              paddingTop: '1rem',
+              paddingBottom: '140px', // Increase bottom padding even more
+              overflowX: 'hidden',
+              position: 'relative',
+              zIndex: 1
+            }}
           >
             <div className="flex flex-col space-y-3">
               {chatHistory.map((message) => (
@@ -860,15 +921,15 @@ const CallPage: React.FC = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className={`p-3 rounded-lg ${message.sender === 'ai' ? 'rounded-tl-none mr-auto' : 'rounded-tr-none ml-auto'} max-w-[85%] ${
+                  className={`p-4 rounded-2xl ${message.sender === 'ai' ? 'rounded-tl-none mr-auto' : 'rounded-tr-none ml-auto'} max-w-[85%] ${
                     message.sender === 'ai'
                       ? darkMode 
-                        ? 'bg-gray-700 text-white' 
-                        : 'bg-white text-gray-800'
+                        ? 'bg-gray-700 text-white shadow-lg' 
+                        : 'bg-white text-gray-800 shadow-md'
                       : darkMode 
-                        ? 'bg-blue-700 text-white' 
-                        : 'bg-green-600 text-white'
-                  } shadow-sm relative`}
+                        ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg' 
+                        : 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
+                  } relative`}
                 >
                   <div 
                     className="text-sm markdown-content"
@@ -885,11 +946,11 @@ const CallPage: React.FC = () => {
                 <motion.div
                   initial={{ opacity: 0.5 }}
                   animate={{ opacity: 1 }}
-                  className={`p-3 rounded-lg rounded-tr-none ml-auto max-w-[85%] ${
+                  className={`p-4 rounded-2xl rounded-tr-none ml-auto max-w-[85%] ${
                     darkMode 
-                      ? 'bg-blue-600 bg-opacity-70 text-white' 
-                      : 'bg-green-500 bg-opacity-70 text-white'
-                  } shadow-sm relative`}
+                      ? 'bg-indigo-600 bg-opacity-70 text-white shadow-md' 
+                      : 'bg-blue-500 bg-opacity-70 text-white shadow-md'
+                  } relative`}
                 >
                   <p className="text-sm italic">{interimTranscript}</p>
                   <div className="flex space-x-1 mt-1 justify-end items-center">
@@ -900,29 +961,44 @@ const CallPage: React.FC = () => {
                 </motion.div>
               )}
               
-              {/* Reference for auto-scrolling */}
-              <div ref={messagesEndRef} />
+              {/* Reference for auto-scrolling with even more height to ensure proper scrolling */}
+              <div ref={messagesEndRef} style={{ height: '180px' }}></div>
             </div>
           </div>
         )}
       
-        {/* Call controls */}
-        <div className={`w-full ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} p-5 shadow-inner`}>
-          <div className="grid grid-cols-4 gap-4">
+        {/* Call controls - fixed at bottom with higher z-index */}
+        <div className={`w-full ${darkMode ? 'bg-gray-900' : 'bg-white'} p-5 shadow-lg fixed bottom-0 left-0 right-0 z-50 backdrop-blur-md ${darkMode ? 'bg-opacity-90' : 'bg-opacity-90'} rounded-t-2xl`}>
+          <div className="grid grid-cols-5 gap-3 max-w-lg mx-auto">
             <button
               onClick={toggleMute}
               className={`flex flex-col items-center justify-center space-y-1 ${isMuted ? 'text-red-500' : darkMode ? 'text-white' : 'text-gray-700'}`}
             >
               <div className={`p-3 rounded-full ${
                 isMuted 
-                  ? 'bg-red-100 text-red-500' 
+                  ? 'bg-red-500 text-white' 
                   : darkMode 
-                    ? 'bg-gray-700 text-white' 
-                    : 'bg-white text-gray-600'
-              } shadow-sm`}>
+                    ? 'bg-gray-800 text-white' 
+                    : 'bg-gray-100 text-gray-600'
+              } shadow-md transition-all duration-200 hover:scale-110 relative`}>
                 {isMuted ? <FiVolumeX size={22} /> : <FiVolume2 size={22} />}
+                {isMuted && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
+                )}
               </div>
-              <span className="text-xs">Mute</span>
+              <span className="text-xs font-medium">{isMuted ? 'Unmute' : 'Mute'}</span>
+            </button>
+            
+            <button
+              onClick={toggleTranscript}
+              className={`flex flex-col items-center justify-center space-y-1 ${darkMode ? 'text-white' : 'text-gray-700'}`}
+            >
+              <div className={`p-3 rounded-full ${
+                darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'
+              } shadow-md transition-all duration-200 hover:scale-110`}>
+                {showTranscript ? <FiEyeOff size={22} /> : <FiEye size={22} />}
+              </div>
+              <span className="text-xs">{showTranscript ? 'Hide Chat' : 'Show Chat'}</span>
             </button>
             
             <button
@@ -932,13 +1008,17 @@ const CallPage: React.FC = () => {
             >
               <div 
                 ref={micButtonRef}
-                className={`p-4 rounded-full transition-all duration-150 ${
+                className={`p-4 rounded-full transition-all duration-200 ${
                   isInitializing
                     ? (darkMode ? 'bg-gray-600' : 'bg-gray-300')
                     : isListening
-                      ? 'bg-red-500'
-                      : (darkMode ? 'bg-green-600' : 'bg-green-500')
-                } text-white shadow-md ${(speaking || processingResponse || isInitializing) ? 'opacity-50' : 'opacity-100'}`}
+                      ? 'bg-red-500 shadow-md shadow-red-300'
+                      : (darkMode ? 'bg-gradient-to-br from-blue-500 to-indigo-600' : 'bg-gradient-to-br from-green-400 to-blue-500')
+                } text-white shadow-lg hover:scale-110 transform-gpu ${(speaking || processingResponse || isInitializing) ? 'opacity-50 cursor-not-allowed' : 'opacity-100 cursor-pointer'}`}
+                style={{
+                  position: 'relative',
+                  zIndex: 40
+                }}
               >
                 {isInitializing ? (
                   <FiLoader size={26} className="animate-spin" />
@@ -948,7 +1028,7 @@ const CallPage: React.FC = () => {
                   <FiMic size={26} />
                 )}
                 {isListening && (
-                  <span className="absolute w-full h-full rounded-full animate-ping bg-red-400 opacity-20"></span>
+                  <span className="absolute w-full h-full rounded-full animate-ping bg-red-400 opacity-20" style={{ left: 0, top: 0 }}></span>
                 )}
               </div>
               <span className={`text-xs ${darkMode ? 'text-white' : 'text-gray-700'}`}>
@@ -961,8 +1041,8 @@ const CallPage: React.FC = () => {
               className={`flex flex-col items-center justify-center space-y-1 ${darkMode ? 'text-white' : 'text-gray-700'}`}
             >
               <div className={`p-3 rounded-full ${
-                darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-600'
-              } shadow-sm`}>
+                darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'
+              } shadow-md transition-all duration-200 hover:scale-110`}>
                 {expandChat ? <FiMinimize2 size={22} /> : <FiMaximize2 size={22} />}
               </div>
               <span className="text-xs">{expandChat ? 'Minimize' : 'Expand'}</span>
@@ -973,7 +1053,7 @@ const CallPage: React.FC = () => {
               onClick={endCall}
               className="flex flex-col items-center justify-center space-y-1 text-red-500"
             >
-              <div className="p-3 rounded-full bg-red-500 text-white shadow-sm">
+              <div className="p-3 rounded-full bg-red-500 text-white shadow-md transition-all duration-200 hover:scale-110">
                 <FiPhoneOff size={22} />
               </div>
               <span className="text-xs">End</span>

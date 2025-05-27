@@ -32,11 +32,13 @@ import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
 import ReactMarkdown from 'react-markdown';
 import { useUser } from '../context/UserContext';
+import { useAuth } from '../context/AuthContext';
 import './ChatPage.css'; // Import the CSS file for typing animation
 import './ContentWriterPage.css'; // Import shared markdown styling
 import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { MathJax, MathJaxContext } from 'better-react-mathjax'; // Import MathJax
+
 
 // Define interface for message types
 interface Message {
@@ -80,7 +82,7 @@ const initialMessages: Message[] = [
   { 
     id: 1, 
     role: 'assistant', 
-    content: 'Hello! I\'m your AI assistant. How can I help you today?',
+    content: 'Hello! I\'m your MatrixAI assistant. How can I help you today?',
     timestamp: new Date(Date.now() - 120000).toISOString()
   }
 ];
@@ -211,9 +213,11 @@ const mathJaxConfig = {
 
 const ChatPage: React.FC = () => {
   const { userData, isPro } = useUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { chatId: routeChatId } = useParams<{ chatId: string }>();
+  const uid = user?.id;
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -255,6 +259,7 @@ const ChatPage: React.FC = () => {
   const [isDesktop, setIsDesktop] = useState(false);
   const [isLoadingChats, setIsLoadingChats] = useState(true);
   const [chats, setChats] = useState<Chat[]>([]);
+
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -922,7 +927,9 @@ const ChatPage: React.FC = () => {
         const response = await axios.post(
           'https://ddtgdhehxhgarkonvpfq.supabase.co/functions/v1/createContent',
           {
-            prompt: userMessageContent + (fileContent ? `\n\n[Image data: ${fileContent}]` : '')
+            prompt: userMessageContent + (fileContent ? `\n\n[Image data: ${fileContent}]` : ''),
+            uid: uid
+          
           },
           {
             headers: {

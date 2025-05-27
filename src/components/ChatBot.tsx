@@ -86,7 +86,7 @@ const ChatBot: React.FC<ChatProps> = ({ initialMessages = [], onNewChat, version
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         // Create bot response
-        let botResponse = "I'm Matrix AI, your intelligent assistant. ";
+        let botResponse = "I'm MatrixAI, your intelligent assistant. ";
         
         if (selectedImage) {
           botResponse += "I can see the image you've shared. ";

@@ -19,7 +19,8 @@ import {
   FiPause,
   FiX,
   FiCheck,
-  FiShoppingBag
+  FiShoppingBag,
+  FiShield
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -154,7 +155,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
     { path: '/tools/image-generator', label: 'Image Generator', icon: <FiImage className="w-5 h-5" />, pro: true },
     { path: '/tools/video-creator', label: 'Video Creator', icon: <FiVideo className="w-5 h-5" />, pro: true },
     { path: '/tools/content-writer', label: 'Content Writer', icon: <FiFileText className="w-5 h-5" />, pro: true },
-    { path: '/tools/presentation-creator', label: 'Presentations', icon: <FiLayers className="w-5 h-5" />, pro: true },
+    // { path: '/tools/humanise-text', label: 'Humanise Text', icon: <FiUser className="w-5 h-5" />, pro: true },
+    // { path: '/tools/detect-ai', label: 'AI Detector', icon: <FiShield className="w-5 h-5" />, pro: true },
+    // { path: '/tools/presentation-creator', label: 'Presentations', icon: <FiLayers className="w-5 h-5" />, pro: true },
     { path: '/tools/speech-to-text', label: 'Speech to Text', icon: <FiMic className="w-5 h-5" />, pro: true },
     { path: '/profile', label: 'Profile', icon: <FiUser className="w-5 h-5" /> },
     { path: '/settings', label: 'Settings', icon: <FiSettings className="w-5 h-5" /> },
@@ -181,10 +184,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
               {!collapsed && (
                 <Link to="/dashboard" className="flex items-center">
                   <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                    AI
+                    MA
                   </div>
                   <div className="flex items-center">
-                    <span className="ml-2 text-lg font-bold">AI</span>
+                    <span className="ml-2 text-lg font-bold">MatrixAI</span>
                     {isPro && (
                       <span className="ml-1 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5">
                         PRO
@@ -280,7 +283,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
             
             {!collapsed && (
               <div className={`px-2 py-3 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                <p>AI v1.0</p>
+                <p>MatrixAI v1.0</p>
                 <p>© {new Date().getFullYear()}</p>
               </div>
             )}
@@ -314,7 +317,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
                     <FiMic className="text-white" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-lg">Speech to Text</h3>
+                    <h3 className="font-medium text-lg">MatrixAI Speech to Text</h3>
                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                       Convert audio to text quickly and accurately
                     </p>

@@ -10,6 +10,8 @@ export { default as NotFoundPage } from './pages/NotFoundPage';
 export { default as ImageGeneratorPage } from './pages/ImageGeneratorPage';
 export { default as VideoCreatorPage } from './pages/VideoCreatorPage';
 export { default as ContentWriterPage } from './pages/ContentWriterPage';
+export { default as HumaniseTextPage } from './pages/HumaniseTextPage';
+export { default as DetectAIPage } from './pages/DetectAIPage';
 export { default as PresentationCreatorPage } from './pages/PresentationCreatorPage';
 export { default as ProfilePage } from './pages/ProfilePage';
 export { default as SettingsPage } from './pages/SettingsPage';

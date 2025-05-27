@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useRef } from 'react';
 import { supabase, checkUser, signIn, signUp, signOut } from '../supabaseClient';
 
 // Define the shape of the auth context state
@@ -18,30 +18,114 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Auth provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<any>(null);
-  const [session, setSession] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  // Use refs to track if we've already initialized auth
+  const authInitialized = useRef(false);
+  const authCheckedFromLocalStorage = useRef(false);
+  
+  const [user, setUser] = useState<any>(() => {
+    authCheckedFromLocalStorage.current = true;
+    // Try to get user from localStorage when component mounts
+    const storedUser = localStorage.getItem('matrixai_user');
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  
+  const [session, setSession] = useState<any>(() => {
+    // Try to get session from localStorage when component mounts
+    const storedSession = localStorage.getItem('matrixai_session');
+    return storedSession ? JSON.parse(storedSession) : null;
+  });
+  
+  const [loading, setLoading] = useState(!authCheckedFromLocalStorage.current);
   const [error, setError] = useState<string | null>(null);
 
+  // Track last time auth was refreshed from server
+  const lastRefreshTime = useRef(0);
+  const AUTH_REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes
+
+  // Function to compare sessions to avoid unnecessary updates
+  const isSameSession = (newSession: any, oldSession: any): boolean => {
+    if (!newSession && !oldSession) return true;
+    if (!newSession || !oldSession) return false;
+    
+    return newSession.access_token === oldSession.access_token &&
+           newSession.refresh_token === oldSession.refresh_token;
+  };
+
+  // Function to verify session from server
+  const verifySession = async (forceRefresh = false) => {
+    try {
+      const now = Date.now();
+      
+      // Skip verification if we've checked recently and force refresh is not required
+      if (!forceRefresh && now - lastRefreshTime.current < AUTH_REFRESH_INTERVAL) {
+        return;
+      }
+      
+      // Get the session from Supabase
+      const { data: { session: newSession } } = await supabase.auth.getSession();
+      lastRefreshTime.current = now;
+      
+      if (newSession) {
+        // Only update if session changed
+        if (!isSameSession(newSession, session)) {
+          localStorage.setItem('matrixai_session', JSON.stringify(newSession));
+          localStorage.setItem('matrixai_user', JSON.stringify(newSession.user));
+          
+          setSession(newSession);
+          setUser(newSession.user);
+        }
+      } else if (session) {
+        // If we had a session but server says no session, clear it
+        localStorage.removeItem('matrixai_session');
+        localStorage.removeItem('matrixai_user');
+        
+        setSession(null);
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('Error verifying session:', error);
+    }
+  };
+
   useEffect(() => {
+    // Prevent multiple initialization
+    if (authInitialized.current) return;
+    
     // Check for an existing session
     const initSession = async () => {
       try {
-        setLoading(true);
-        
-        // Get the session from Supabase
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-        setUser(session?.user ?? null);
+        if (!authCheckedFromLocalStorage.current) {
+          setLoading(true);
+        }
         
         // Subscribe to auth changes
         const { data: authListener } = supabase.auth.onAuthStateChange(
-          async (_event, session) => {
-            setSession(session);
-            setUser(session?.user ?? null);
+          async (event, newSession) => {
+            // Only update if session actually changed
+            if (!isSameSession(newSession, session)) {
+              if (newSession) {
+                localStorage.setItem('matrixai_session', JSON.stringify(newSession));
+                localStorage.setItem('matrixai_user', JSON.stringify(newSession.user));
+                
+                setSession(newSession);
+                setUser(newSession.user);
+              } else {
+                localStorage.removeItem('matrixai_session');
+                localStorage.removeItem('matrixai_user');
+                
+                setSession(null);
+                setUser(null);
+              }
+            }
           }
         );
-
+        
+        // Verify session from server
+        await verifySession(true);
+        
+        // Mark as initialized
+        authInitialized.current = true;
+        
         return () => {
           authListener?.subscription.unsubscribe();
         };
@@ -54,7 +138,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     initSession();
-  }, []);
+    
+    // Add visibility change listener to handle tab focus changes
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Just verify the session without full reload when tab becomes visible
+        verifySession(false);
+      }
+    };
+    
+    // Handle page show event (when navigating back to the page via history)
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        // Page was restored from bfcache (back/forward cache)
+        verifySession(false);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pageshow', handlePageShow);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, [session]);
 
   // Sign up a new user
   const handleSignUp = async (email: string, password: string, metadata: any = {}) => {
@@ -90,6 +198,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       setError(null);
       await signOut();
+      localStorage.removeItem('matrixai_session');
+      localStorage.removeItem('matrixai_user');
+      localStorage.removeItem('matrixai_userData');
+      localStorage.removeItem('matrixai_userDataTimestamp');
       setUser(null);
       setSession(null);
     } catch (error: any) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
 
 type ThemeContextType = {
   darkMode: boolean;
@@ -23,29 +23,108 @@ export const ThemeContext = createContext<ThemeContextType>({
 
 // Create a provider component
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [darkMode, setDarkMode] = useState(false);
-  const theme = darkMode ? 'dark' : 'light';
-
-  // Check user preference for dark mode
-  useEffect(() => {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setDarkMode(true);
+  // Use a ref to track the first render
+  const isFirstRender = useRef(true);
+  // Use a ref to track if a theme has been applied
+  const themeApplied = useRef(false);
+  
+  // Initialize state from localStorage if available, otherwise use system preference
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('matrixai_theme');
+    if (savedTheme !== null) {
+      const isDark = savedTheme === 'dark';
+      
+      // Apply theme class immediately during initialization
+      if (typeof document !== 'undefined') {
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        themeApplied.current = true;
+      }
+      
+      return isDark;
     }
-  }, []);
+    
+    // Check system preference
+    const prefersDark = 
+      typeof window !== 'undefined' && 
+      window.matchMedia && 
+      window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Apply theme class immediately during initialization
+    if (typeof document !== 'undefined') {
+      if (prefersDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      themeApplied.current = true;
+    }
+    
+    return prefersDark;
+  });
+  
+  const theme = darkMode ? 'dark' : 'light' as const;
 
+  // Update localStorage and apply class when darkMode changes, but skip the first render
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    
+    localStorage.setItem('matrixai_theme', theme);
+    
     if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [darkMode]);
+  }, [darkMode, theme]);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+  // Listen for system theme changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      // Only update if user hasn't explicitly set a preference
+      if (localStorage.getItem('matrixai_theme_manual') !== 'true') {
+        setDarkMode(e.matches);
+      }
+    };
+    
+    // Use the correct event listener based on browser support
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+    } else {
+      // For older browsers
+      mediaQuery.addListener(handleChange);
+    }
+    
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else {
+        // For older browsers
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
 
-  const getThemeColors = (): Record<string, string> => {
+  // Memoized toggle function to prevent unnecessary re-renders
+  const toggleDarkMode = React.useCallback(() => {
+    setDarkMode(prevMode => {
+      const newMode = !prevMode;
+      // Mark that user has manually changed the theme
+      localStorage.setItem('matrixai_theme_manual', 'true');
+      return newMode;
+    });
+  }, []);
+
+  // Memoized color getter to prevent unnecessary re-renders
+  const getThemeColors = React.useCallback((): Record<string, string> => {
     if (darkMode) {
       return {
         text: '#F3F4F6',
@@ -67,10 +146,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         card: '#FFFFFF',
       };
     }
-  };
+  }, [darkMode]);
+  
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = React.useMemo((): ThemeContextType => ({
+    darkMode,
+    toggleDarkMode,
+    theme,
+    getThemeColors
+  }), [darkMode, toggleDarkMode, theme, getThemeColors]);
 
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleDarkMode, theme, getThemeColors }}>
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );

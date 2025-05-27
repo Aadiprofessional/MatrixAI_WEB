@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
-import { XMLParser } from 'fast-xml-parser';
 import OpenAI from 'openai';
 import { 
   FiPlay, FiPause, FiDownload, FiCopy, FiShare2, 
@@ -17,6 +16,7 @@ import { useTheme } from '../context/ThemeContext';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
+import MindMapComponent from '../components/MindMapComponent';
 
 // Define types for word timings
 interface WordTiming {
@@ -30,11 +30,6 @@ interface Paragraph {
   words: WordTiming[];
   startTime: number;
   endTime: number;
-}
-
-interface MindMapNode {
-  name: string;
-  children?: MindMapNode[];
 }
 
 const TranscriptionPage: React.FC = () => {
@@ -77,15 +72,9 @@ const TranscriptionPage: React.FC = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
-  const [isDownloading, setIsDownloading] = useState<boolean>(false);
-  const [isGeneratingMindMap, setIsGeneratingMindMap] = useState<boolean>(false);
-  const [isGraphFixed, setIsGraphFixed] = useState<boolean>(false);
 
   // Mind map state
-  const [mindMapData, setMindMapData] = useState<MindMapNode[]>([]);
   const [xmlData, setXmlData] = useState<string | null>(null);
-  const [isMindMapLoading, setIsMindMapLoading] = useState<boolean>(false);
-  const mindMapContainerRef = useRef<HTMLDivElement>(null);
 
   // Add state for chat processing
   const [isChatProcessing, setIsChatProcessing] = useState<{[key: string]: boolean}>({
@@ -132,10 +121,6 @@ const TranscriptionPage: React.FC = () => {
       setAudioUrl(locationState.audio_url);
       processTranscription(locationState.transcription);
       setIsLoading(false);
-      // Generate mind map from transcript if none exists
-      if (locationState.transcription) {
-        generateMindMap(locationState.transcription);
-      }
     }
   }, [uid, audioid, locationState]);
 
@@ -267,63 +252,6 @@ const TranscriptionPage: React.FC = () => {
     }
     
     return { paragraphs, words: allWords };
-  };
-
-  // Generate XML data using server endpoint
-  const fetchGraphData = async (transcriptionText: string) => {
-    if (!transcriptionText || !uid || !audioid) return;
-    
-    setIsGeneratingMindMap(true);
-    try {
-      // Use server endpoint instead of direct OpenAI API call
-      const response = await axios.post('https://matrix-server.vercel.app/generateMindMap', {
-        transcription: transcriptionText,
-        uid: uid,
-        audioid: audioid,
-        useDeepseek: true // Indicate to use Deepseek model on server
-      });
-      
-      if (response.data && response.data.xmlData) {
-        const content = response.data.xmlData;
-        console.log('XML Response from API:', content);
-        setXmlData(content);
-        parseXmlData(content);
-        sendXmlGraphData(content);
-      } else {
-        console.error('No valid response from API');
-        // Fallback to client-side generation if API fails
-        generateClientSideMindMap(transcriptionText);
-      }
-    } catch (error) {
-      console.error('Error fetching graph data:', error);
-      // Fallback to client-side generation
-      generateClientSideMindMap(transcriptionText);
-    } finally {
-      setIsGeneratingMindMap(false);
-    }
-  };
-
-  // Send XML data to server
-  const sendXmlGraphData = async (xmlDataToSend: string) => {
-    if (!xmlDataToSend || !uid || !audioid) {
-      console.error('No XML data available to send or missing uid/audioid.');
-      return;
-    }
-
-    try {
-      const response = await axios.post('https://matrix-server.vercel.app/sendXmlGraph', {
-        uid,
-        audioid,
-        xmlData: xmlDataToSend,
-      });
-      console.log('XML Graph Data Sent:', response.data);
-      console.log('Sending XML to Database:', xmlDataToSend);
-      
-      // Refetch audio metadata to ensure we have the latest data
-      fetchAudioMetadata(uid, audioid);
-    } catch (error) {
-      console.error('Error sending XML Graph Data:', error);
-    }
   };
 
   // Fetch audio metadata and transcription
@@ -472,240 +400,6 @@ const TranscriptionPage: React.FC = () => {
   };
 
   const waveformData = generateWaveformData();
-
-  // Mind map generation functions
-  const generateMindMap = async (text: string) => {
-    if (!text || text.trim().length === 0) return;
-    
-    setIsMindMapLoading(true);
-    
-    try {
-      // First check if we have XML data from audio metadata
-      if (xmlData) {
-        parseXmlData(xmlData);
-        setIsMindMapLoading(false);
-        return;
-      }
-      
-      // Try to fetch XML data from the server
-      if (uid && audioid) {
-        const response = await axios.post('https://matrix-server.vercel.app/getXmlGraph', {
-          uid,
-          audioid
-        });
-        
-        if (response.data && response.data.xmlData) {
-          setXmlData(response.data.xmlData);
-          parseXmlData(response.data.xmlData);
-          setIsMindMapLoading(false);
-          return;
-        }
-      }
-      
-      // If we don't have XML data yet, generate it using Deepseek
-      await fetchGraphData(text);
-    } catch (error) {
-      console.error('Error generating mind map:', error);
-      // Fallback to client-side generation
-      generateClientSideMindMap(text);
-    } finally {
-      setIsMindMapLoading(false);
-    }
-  };
-  
-  const fetchXmlData = async (uid: string, audioid: string) => {
-    try {
-      const response = await axios.post('https://matrix-server.vercel.app/getXmlGraph', {
-        uid,
-        audioid
-      });
-      
-      if (response.data && response.data.xmlData) {
-        setXmlData(response.data.xmlData);
-        parseXmlData(response.data.xmlData);
-      }
-    } catch (error) {
-      console.error('Error fetching XML data:', error);
-    }
-  };
-  
-  const parseXmlData = (xmlString: string) => {
-    const parser = new XMLParser({ 
-      ignoreAttributes: false, 
-      removeNSPrefix: true, 
-      parseTagValue: true 
-    });
-    
-    try {
-      const jsonData = parser.parse(xmlString);
-      const formattedData = formatGraphData(jsonData);
-      if (formattedData) {
-        setMindMapData(formattedData);
-      }
-    } catch (err) {
-      console.error('Error parsing XML:', err);
-    }
-  };
-  
-  const formatGraphData = (root: any): MindMapNode[] => {
-    const formatNode = (node: any, name = 'Root'): MindMapNode | null => {
-      const formattedNode: MindMapNode = { name, children: [] };
-
-      if (node['#text'] || node['?xml']) return null;
-
-      if (node.meeting && node.meeting.topic) {
-        const topics = Array.isArray(node.meeting.topic) ? node.meeting.topic : [node.meeting.topic];
-        topics.forEach((topic: any, index: number) => {
-          const topicNode: MindMapNode = { 
-            name: topic['@_name'] || `Topic ${index + 1}`, 
-            children: [] 
-          };
-          
-          if (topic.description) {
-            topicNode.children?.push({ name: topic.description });
-          }
-          
-          if (topic.subtopic) {
-            const subtopics = Array.isArray(topic.subtopic) ? topic.subtopic : [topic.subtopic];
-            subtopics.forEach((subtopic: any) => {
-              const subtopicNode: MindMapNode = { 
-                name: subtopic['@_name'], 
-                children: [] 
-              };
-              
-              if (subtopic.description) {
-                subtopicNode.children?.push({ name: subtopic.description });
-              }
-              
-              if (subtopic.action_items?.item) {
-                const items = Array.isArray(subtopic.action_items.item) 
-                  ? subtopic.action_items.item 
-                  : [subtopic.action_items.item];
-                  
-                items.forEach((item: string) => {
-                  subtopicNode.children?.push({ name: item });
-                });
-              }
-              
-              topicNode.children?.push(subtopicNode);
-            });
-          }
-          
-          formattedNode.children?.push(topicNode);
-        });
-        
-        return formattedNode;
-      }
-
-      Object.entries(node).forEach(([key, value]) => {
-        if (typeof value === 'object') {
-          const child = formatNode(value as any, key);
-          if (child) formattedNode.children?.push(child);
-        } else {
-          formattedNode.children?.push({ 
-            name: key, 
-            children: [{ name: String(value) }] 
-          });
-        }
-      });
-      
-      return formattedNode;
-    };
-
-    return root ? [formatNode(root) as MindMapNode] : [];
-  };
-  
-  // Generate a simple mind map on the client side as fallback
-  const generateClientSideMindMap = (text: string) => {
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const topics: Record<string, string[]> = {};
-    
-    // Basic topic extraction (very simplified)
-    sentences.forEach(sentence => {
-      const words = sentence.trim().split(/\s+/);
-      if (words.length > 3) {
-        const potentialTopic = words.slice(0, 3).join(' ');
-        if (!topics[potentialTopic]) {
-          topics[potentialTopic] = [];
-        }
-        topics[potentialTopic].push(sentence);
-      }
-    });
-    
-    // Convert to mind map format
-    const mindMapRoot: MindMapNode = {
-      name: fileName || 'Transcript',
-      children: []
-    };
-    
-    Object.entries(topics).forEach(([topic, relatedSentences], index) => {
-      if (index < 10) { // Limit to 10 topics for simplicity
-        const topicNode: MindMapNode = {
-          name: topic,
-          children: []
-        };
-        
-        relatedSentences.slice(0, 3).forEach(sentence => {
-          topicNode.children?.push({
-            name: sentence.trim()
-          });
-        });
-        
-        mindMapRoot.children?.push(topicNode);
-      }
-    });
-    
-    setMindMapData([mindMapRoot]);
-  };
-
-  // Save mind map as XML
-  const saveMindMapXml = async () => {
-    if (!xmlData || !uid || !audioid) return;
-    
-    try {
-      const response = await axios.post('https://matrix-server.vercel.app/sendXmlGraph', {
-        uid,
-        audioid,
-        xmlData,
-      });
-      
-      console.log('Mind map saved successfully:', response.data);
-      alert('Mind map saved successfully!');
-    } catch (error) {
-      console.error('Error saving mind map:', error);
-      alert('Failed to save mind map.');
-    }
-  };
-
-  // Download mind map as PDF
-  const downloadMindMapPdf = async () => {
-    setIsDownloading(true);
-    
-    try {
-      const response = await axios.post('https://matrix-server.vercel.app/generateMindMapPdf', {
-        uid,
-        audioid,
-        xmlData: xmlData || JSON.stringify(mindMapData)
-      }, {
-        responseType: 'blob'
-      });
-      
-      // Create blob link to download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `mindmap_${audioid || Date.now()}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      
-    } catch (error) {
-      console.error('Error downloading mind map PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
-    } finally {
-      setIsDownloading(false);
-    }
-  };
   
   // Download audio file
   const downloadAudio = () => {
@@ -860,6 +554,25 @@ const TranscriptionPage: React.FC = () => {
   // Format timestamp
   const formatTimestamp = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Handle XML data generation from MindMapComponent
+  const handleXmlDataGenerated = (newXmlData: string) => {
+    setXmlData(newXmlData);
+    
+    // Update cache with new XML data
+    if (audioid) {
+      const cachedData = localStorage.getItem(`audioData-${audioid}`);
+      if (cachedData) {
+        try {
+          const parsed = JSON.parse(cachedData);
+          parsed.xmlData = newXmlData;
+          localStorage.setItem(`audioData-${audioid}`, JSON.stringify(parsed));
+        } catch (e) {
+          console.error('Error updating cached XML data', e);
+        }
+      }
+    }
   };
 
   return (
@@ -1050,356 +763,13 @@ const TranscriptionPage: React.FC = () => {
 
               {/* Mind Map Tab */}
               {activeTab === 'mindmap' && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
-                >
-                  <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Mind Map Visualization</h2>
-                    <div className="flex space-x-2">
-                      <button 
-                        onClick={() => setIsGraphFixed(!isGraphFixed)}
-                        className={`p-2 ${
-                          isGraphFixed
-                            ? 'text-blue-500 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30'
-                            : 'text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400'
-                        } rounded-md transition-colors`}
-                        title={isGraphFixed ? "Unfix graph layout" : "Fix graph layout"}
-                      >
-                        <FiMaximize />
-                      </button>
-                      <button 
-                        onClick={saveMindMapXml}
-                        className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
-                        title="Save mind map"
-                      >
-                        <FiSave />
-                      </button>
-                      <button 
-                        onClick={downloadMindMapPdf}
-                        disabled={isDownloading}
-                        className={`p-2 ${
-                          isDownloading
-                            ? 'text-gray-400 dark:text-gray-600'
-                            : 'text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400'
-                        } transition-colors`}
-                        title="Download as PDF"
-                      >
-                        {isDownloading ? <FiLoader className="animate-spin" /> : <FiDownload />}
-                      </button>
-                      <button 
-                        onClick={() => setShowSidebar(!showSidebar)}
-                        className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors" 
-                        title={showSidebar ? "Hide sidebar" : "Show sidebar"}
-                      >
-                        <FiLayout />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Mind Map Visualization */}
-                  <div 
-                    ref={mindMapContainerRef}
-                    className="overflow-auto h-[calc(100vh-300px)] p-4"
-                  >
-                    {isGeneratingMindMap ? (
-                      <div className="flex justify-center items-center h-64">
-                        <div className="flex flex-col items-center">
-                          <FiLoader className="animate-spin h-10 w-10 text-blue-500 mb-4" />
-                          <span className="text-gray-600 dark:text-gray-400">Generating mind map...</span>
-                        </div>
-                      </div>
-                    ) : mindMapData.length > 0 ? (
-                      <div className="p-4 min-h-[500px]">
-                        <iframe 
-                          key={`mindmap-iframe-${isGraphFixed}`}
-                          src={`data:text/html;charset=utf-8,${encodeURIComponent(`
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                              <meta charset="utf-8">
-                              <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
-                              <style>
-                                body { 
-                                  margin: 0; 
-                                  padding: 0; 
-                                  background: ${theme === 'dark' ? '#1f2937' : '#ffffff'};
-                                  width: 100%;
-                                  height: 100%;
-                                  overflow: hidden;
-                                }
-                                #chart { 
-                                  width: 100%; 
-                                  height: 100%;
-                                  min-height: 600px;
-                                }
-                                .controls {
-                                  position: absolute;
-                                  bottom: 10px;
-                                  right: 10px;
-                                  display: flex;
-                                  gap: 8px;
-                                  z-index: 100;
-                                }
-                                .control-btn {
-                                  background: ${theme === 'dark' ? '#374151' : '#f3f4f6'};
-                                  border: 1px solid ${theme === 'dark' ? '#4b5563' : '#d1d5db'};
-                                  color: ${theme === 'dark' ? '#e5e7eb' : '#374151'};
-                                  border-radius: 4px;
-                                  padding: 4px 8px;
-                                  cursor: pointer;
-                                  font-size: 12px;
-                                  display: flex;
-                                  align-items: center;
-                                  justify-content: center;
-                                }
-                                .control-btn:hover {
-                                  background: ${theme === 'dark' ? '#4b5563' : '#e5e7eb'};
-                                }
-                                .status-text {
-                                  position: absolute;
-                                  top: 10px;
-                                  left: 10px;
-                                  background: ${isGraphFixed 
-                                    ? (theme === 'dark' ? 'rgba(37, 99, 235, 0.8)' : 'rgba(59, 130, 246, 0.8)') 
-                                    : (theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(243, 244, 246, 0.8)')};
-                                  color: ${isGraphFixed 
-                                    ? '#ffffff' 
-                                    : (theme === 'dark' ? '#e5e7eb' : '#111827')};
-                                  padding: 6px 10px;
-                                  border-radius: 4px;
-                                  font-size: 13px;
-                                  font-weight: ${isGraphFixed ? 'bold' : 'normal'};
-                                  z-index: 100;
-                                  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                                  display: flex;
-                                  align-items: center;
-                                }
-                                .status-text:before {
-                                  content: '';
-                                  display: ${isGraphFixed ? 'inline-block' : 'none'};
-                                  width: 8px;
-                                  height: 8px;
-                                  background-color: ${isGraphFixed ? '#10B981' : 'transparent'};
-                                  border-radius: 50%;
-                                  margin-right: 6px;
-                                }
-                              </style>
-                            </head>
-                            <body>
-                              <div id="chart"></div>
-                              <div class="status-text">${isGraphFixed ? 'Graph Layout: Fixed' : 'Graph Layout: Dynamic'}</div>
-                              <div class="controls">
-                                <button class="control-btn" id="zoomIn">+</button>
-                                <button class="control-btn" id="zoomOut">-</button>
-                                <button class="control-btn" id="reset">Reset</button>
-                              </div>
-                              <script>
-                                const chartDom = document.getElementById('chart');
-                                const myChart = echarts.init(chartDom);
-                                const colors = ['#5470C6', '#91CC75', '#EE6666', '#FAC858', '#73C0DE', '#3BA272', '#FC8452', '#9A60B4', '#EA7CCC'];
-                                const isGraphFixed = ${isGraphFixed};
-                                
-                                function assignColors(node, index = 0) {
-                                  node.lineStyle = { color: colors[index % colors.length] };
-                                  if (node.children) {
-                                    node.children.forEach((child, idx) => assignColors(child, idx));
-                                  }
-                                  return node;
-                                }
-                                
-                                const graphData = ${JSON.stringify(mindMapData)};
-                                const coloredGraphData = graphData.map((node, idx) => assignColors(node, idx));
-                                
-                                // Function to wrap text into multiple lines
-                                function wrapText(text, nodeType) {
-                                  let maxLineLength = 20; // Default for topic and subtopic nodes
-                                  if (nodeType === 'description') {
-                                    maxLineLength = 45; // For description nodes
-                                  }
-                              
-                                  const words = text.split(' ');
-                                  const lines = [];
-                                  let currentLine = '';
-                              
-                                  words.forEach(word => {
-                                    if ((currentLine + word).length > maxLineLength) {
-                                      lines.push(currentLine.trim());
-                                      currentLine = word + ' ';
-                                    } else {
-                                      currentLine += word + ' ';
-                                    }
-                                  });
-                              
-                                  if (currentLine.trim()) {
-                                    lines.push(currentLine.trim());
-                                  }
-                              
-                                  return lines.join('\\n');
-                                }
-                                
-                                const option = {
-                                  backgroundColor: '${theme === 'dark' ? '#1f2937' : '#ffffff'}',
-                                  tooltip: { 
-                                    trigger: 'item', 
-                                    triggerOn: 'mousemove',
-                                    backgroundColor: '${theme === 'dark' ? '#374151' : '#ffffff'}',
-                                    borderColor: '${theme === 'dark' ? '#6b7280' : '#e5e7eb'}',
-                                    textStyle: {
-                                      color: '${theme === 'dark' ? '#e5e7eb' : '#111827'}'
-                                    }
-                                  },
-                                  series: [{
-                                    type: 'tree',
-                                    data: coloredGraphData,
-                                    top: '5%',
-                                    left: '10%',
-                                    bottom: '5%',
-                                    right: '10%',
-                                    symbolSize: ${isGraphFixed ? 14 : 12},
-                                    orient: 'LR',
-                                    roam: true,
-                                    initialTreeDepth: -1,
-                                    draggable: false,
-                                    ${isGraphFixed ? `
-                                    layout: 'orthogonal',
-                                    edgeShape: 'polyline',
-                                    ` : ''}
-                                    label: {
-                                      position: 'left',
-                                      verticalAlign: 'middle',
-                                      align: 'right',
-                                      fontSize: 14,
-                                      color: '${theme === 'dark' ? '#e5e7eb' : '#111827'}',
-                                      formatter: (params) => {
-                                        const nodeType = params.data.nodeType || 'topic';
-                                        return wrapText(params.name, nodeType);
-                                      }
-                                    },
-                                    leaves: {
-                                      label: {
-                                        position: 'right',
-                                        verticalAlign: 'middle',
-                                        align: 'left',
-                                        color: '${theme === 'dark' ? '#d1d5db' : '#374151'}',
-                                        formatter: (params) => {
-                                          const nodeType = params.data.nodeType || 'description';
-                                          return wrapText(params.name, nodeType);
-                                        }
-                                      }
-                                    },
-                                    emphasis: { 
-                                      focus: 'descendant',
-                                      itemStyle: {
-                                        shadowBlur: 10,
-                                        shadowColor: 'rgba(0, 0, 0, 0.3)'
-                                      }
-                                    },
-                                    expandAndCollapse: true,
-                                    animationDuration: ${isGraphFixed ? 0 : 550},
-                                    animationEasing: 'cubicOut',
-                                    lineStyle: {
-                                      width: ${isGraphFixed ? 2.5 : 2},
-                                      curveness: ${isGraphFixed ? '0' : '0.5'},
-                                      ${isGraphFixed ? "color: '#3b82f6'" : ""}
-                                    },
-                                    ${isGraphFixed ? `
-                                    force: null,
-                                    ` : `
-                                    force: {
-                                      repulsion: 500,
-                                      gravity: 0.1,
-                                      edgeLength: 200,
-                                      layoutAnimation: true
-                                    },
-                                    `}
-                                    nodeGap: 60,
-                                    itemStyle: {
-                                      borderWidth: ${isGraphFixed ? 3 : 2},
-                                      borderColor: ${isGraphFixed ? "'#3b82f6'" : "null"},
-                                      shadowColor: 'rgba(0, 0, 0, 0.3)',
-                                      shadowBlur: 5
-                                    }
-                                  }]
-                                };
-                                
-                                myChart.setOption(option);
-                                
-                                // Freeze the nodes in place when fixed
-                                ${isGraphFixed ? `
-                                // Prevent layout recalculation
-                                myChart.getZr().on('mousemove', () => {
-                                  if (window.layoutFixed) return;
-                                  window.layoutFixed = true;
-                                  
-                                  setTimeout(() => {
-                                    myChart.setOption({
-                                      series: [{
-                                        force: null,
-                                        roam: true,
-                                        draggable: false
-                                      }]
-                                    }, false);
-                                  }, 500);
-                                });
-                                ` : ''}
-                                
-                                // Create the chart and register a resize listener
-                                window.addEventListener('resize', function() {
-                                  myChart.resize();
-                                });
-                                
-                                // Zoom controls
-                                document.getElementById('zoomIn').addEventListener('click', function() {
-                                  const currentZoom = myChart.getOption().series[0].zoom || 1;
-                                  myChart.setOption({
-                                    series: [{
-                                      zoom: Math.min(2, currentZoom * 1.3)
-                                    }]
-                                  });
-                                });
-                                
-                                document.getElementById('zoomOut').addEventListener('click', function() {
-                                  const currentZoom = myChart.getOption().series[0].zoom || 1;
-                                  myChart.setOption({
-                                    series: [{
-                                      zoom: Math.max(0.5, currentZoom / 1.3)
-                                    }]
-                                  });
-                                });
-                                
-                                document.getElementById('reset').addEventListener('click', function() {
-                                  myChart.setOption({
-                                    series: [{
-                                      zoom: 1
-                                    }]
-                                  });
-                                  myChart.dispatchAction({
-                                    type: 'restore'
-                                  });
-                                });
-                              </script>
-                            </body>
-                            </html>
-                          `)}`}
-                          style={{ width: '100%', height: '600px', border: 'none' }}
-                          title="Mind Map Visualization"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-64">
-                        <p className="text-gray-500 dark:text-gray-400 mb-4">No mind map data available</p>
-                        <button
-                          onClick={() => generateMindMap(transcription)}
-                          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center"
-                        >
-                          <FiZap className="mr-2" /> Generate Mind Map
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
+                <MindMapComponent
+                  transcription={transcription}
+                  uid={uid}
+                  audioid={audioid}
+                  xmlData={xmlData}
+                  onXmlDataGenerated={handleXmlDataGenerated}
+                />
               )}
 
               {/* Chat Tab */}
@@ -1789,24 +1159,6 @@ const TranscriptionPage: React.FC = () => {
                       </div>
 
                       <div className="flex flex-col space-y-3 mt-6">
-                        <button 
-                          onClick={() => generateMindMap(transcription)}
-                          disabled={isGeneratingMindMap}
-                          className="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg shadow-sm hover:shadow-md transition-all"
-                        >
-                          {isGeneratingMindMap ? (
-                            <>
-                              <FiLoader className="animate-spin mr-2" />
-                              Generating Mind Map...
-                            </>
-                          ) : (
-                            <>
-                              <FiBarChart2 className="mr-2" />
-                              Regenerate Mind Map
-                            </>
-                          )}
-                        </button>
-                        
                         <button 
                           onClick={downloadAudio} 
                           className="w-full flex items-center justify-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors"
