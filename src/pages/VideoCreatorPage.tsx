@@ -1,11 +1,39 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiVideo, FiUpload, FiPlay, FiPause, FiDownload, FiSliders, FiPlus, FiTrash, FiX, FiCheck, FiClock } from 'react-icons/fi';
+import { FiVideo, FiUpload, FiPlay, FiPause, FiDownload, FiSliders, FiPlus, FiTrash, FiX, FiCheck, FiClock, FiList } from 'react-icons/fi';
 import { ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
+import { useAuth } from '../context/AuthContext';
+import { videoService } from '../services/videoService';
+
+interface VideoHistoryItem {
+  videoId: string;
+  promptText: string;
+  size: string;
+  taskId: string;
+  taskStatus: string;
+  statusDisplay: string;
+  isReady: boolean;
+  hasVideo: boolean;
+  videoUrl: string;
+  createdAt: string;
+  ageDisplay: string;
+  apiType: string;
+  requestId: string;
+  submitTime: string;
+  scheduledTime: string;
+  endTime: string;
+  origPrompt: string;
+  actualPrompt: string;
+  imageUrl?: string;
+  ratio?: string;
+  duration?: string;
+  videoStyle?: string;
+}
 
 const VideoCreatorPage: React.FC = () => {
   const { userData, isPro } = useUser();
+  const { user } = useAuth();
   const [prompt, setPrompt] = useState('');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -25,8 +53,20 @@ const VideoCreatorPage: React.FC = () => {
     'A nature scene with animals in a forest'
   ]);
   
+  // Video generation state
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
+  const [taskStatus, setTaskStatus] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  
+  // History state
+  const [showHistory, setShowHistory] = useState(false);
+  const [videoHistory, setVideoHistory] = useState<VideoHistoryItem[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Style options for video
   const styleOptions = [
@@ -45,8 +85,105 @@ const VideoCreatorPage: React.FC = () => {
     { id: '1080p', name: '1080p (Full HD)', width: 1920, height: 1080 },
   ];
 
+  // Fetch video history when component mounts or when history is toggled
+  useEffect(() => {
+    if (showHistory && user?.id) {
+      fetchVideoHistory();
+    }
+  }, [showHistory, user?.id]);
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const fetchVideoHistory = async () => {
+    if (!user?.id) return;
+    
+    setIsLoadingHistory(true);
+    setHistoryError(null);
+    
+    try {
+      const response = await videoService.getAllVideos(user.id);
+      setVideoHistory(response.videos || []);
+    } catch (err: any) {
+      console.error('Error fetching video history:', err);
+      setHistoryError(err.message);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const startPolling = (videoId: string) => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+
+    pollingIntervalRef.current = setInterval(async () => {
+      try {
+        if (!user?.id) return;
+        
+        const response = await videoService.getVideo(user.id, videoId);
+        setTaskStatus(response.taskStatus);
+        
+        if (response.taskStatus === 'SUCCEEDED' && response.videoUrl) {
+          // Video is ready
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+          }
+          setVideoUrl(response.videoUrl);
+          setProcessingProgress(100);
+          
+          // Add prompt to recent prompts if not already there
+          if (!presetPrompts.includes(prompt)) {
+            setPresetPrompts(prev => [prompt, ...prev.slice(0, 3)]);
+          }
+          
+          // Decrease free generations left if user is not pro
+          if (!isPro) {
+            setFreeGenerationsLeft(prev => prev - 1);
+          }
+          
+          setTimeout(() => {
+            setIsGenerating(false);
+          }, 500);
+        } else if (response.taskStatus === 'FAILED') {
+          // Video generation failed
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+          }
+          setIsGenerating(false);
+          setError('Video generation failed. Please try again.');
+        }
+        // Continue polling if status is still PENDING or PROCESSING
+      } catch (error: any) {
+        console.error('Error checking video status:', error);
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+        }
+        setIsGenerating(false);
+        setError('Failed to check video status. Please try again.');
+      }
+    }, 2000); // Poll every 2 seconds
+
+    // Clear interval after 5 minutes to prevent infinite polling
+    setTimeout(() => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        if (isGenerating) {
+          setIsGenerating(false);
+          setError('Video generation is taking longer than expected. Please try again later.');
+        }
+      }
+    }, 300000); // 5 minutes timeout
+  };
+
   const handleGenerateVideo = async () => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim() || !user?.id) return;
     
     // If user is not pro and has used all free generations, show pro alert
     if (!isPro && freeGenerationsLeft <= 0) {
@@ -56,40 +193,55 @@ const VideoCreatorPage: React.FC = () => {
     
     setIsGenerating(true);
     setProcessingProgress(0);
+    setError(null);
+    setVideoUrl(null);
+    setCurrentVideoId(null);
+    setTaskStatus('PENDING');
     
+    // Start progress animation
     const progressInterval = setInterval(() => {
       setProcessingProgress(prev => {
-        const newProgress = prev + Math.random() * 10;
-        return newProgress > 98 ? 98 : newProgress;
+        const newProgress = prev + Math.random() * 5;
+        return newProgress > 95 ? 95 : newProgress;
       });
-    }, 800);
+    }, 1000);
     
     try {
-      // Simulate video generation API call
-      await new Promise(resolve => setTimeout(resolve, 6000));
+      // Initiate video generation
+      const response = await videoService.createVideo(user.id, prompt);
       
-      // Sample placeholder video - in a real app, this would come from an API
-      const demoVideo = 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4';
-      setVideoUrl(demoVideo);
-      
-      // Add prompt to recent prompts if not already there
-      if (!presetPrompts.includes(prompt)) {
-        setPresetPrompts(prev => [prompt, ...prev.slice(0, 3)]);
+      if (response.videoId) {
+        setCurrentVideoId(response.videoId);
+        setTaskStatus(response.taskStatus);
+        
+        // Start polling for video status
+        startPolling(response.videoId);
+        
+        // Clear the progress interval since we're now polling
+        clearInterval(progressInterval);
+      } else {
+        throw new Error('Failed to initiate video generation');
       }
-      
-      // Decrease free generations left if user is not pro
-      if (!isPro) {
-        setFreeGenerationsLeft(prev => prev - 1);
-      }
-      
-      clearInterval(progressInterval);
-      setProcessingProgress(100);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating video:', error);
-    } finally {
-      setTimeout(() => {
-        setIsGenerating(false);
-      }, 500);
+      setError(error.message);
+      setIsGenerating(false);
+      clearInterval(progressInterval);
+    }
+  };
+
+  const handleRemoveVideo = async (videoId: string) => {
+    if (!user?.id) return;
+    
+    if (window.confirm('Are you sure you want to remove this video?')) {
+      try {
+        await videoService.removeVideo(user.id, videoId);
+        // Remove the video from the local state
+        setVideoHistory(prev => prev.filter(video => video.videoId !== videoId));
+      } catch (error: any) {
+        console.error('Error removing video:', error);
+        alert('Failed to remove the video. Please try again.');
+      }
     }
   };
   
@@ -145,6 +297,25 @@ const VideoCreatorPage: React.FC = () => {
   const cancelGeneration = () => {
     setIsGenerating(false);
     setProcessingProgress(0);
+    setError(null);
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+  };
+
+  const getStatusText = () => {
+    switch (taskStatus) {
+      case 'PENDING':
+        return 'Initializing video generation...';
+      case 'PROCESSING':
+        return 'Generating video...';
+      case 'SUCCEEDED':
+        return 'Video generated successfully!';
+      case 'FAILED':
+        return 'Video generation failed';
+      default:
+        return 'Generating video...';
+    }
   };
 
   return (
@@ -328,6 +499,13 @@ const VideoCreatorPage: React.FC = () => {
               )}
             </div>
             
+            {/* Error Display */}
+            {error && (
+              <div className="p-3 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg">
+                <p className="text-red-700 dark:text-red-300 text-sm">{error}</p>
+              </div>
+            )}
+            
             {/* Generate Button */}
             <div>
               {isGenerating ? (
@@ -340,7 +518,7 @@ const VideoCreatorPage: React.FC = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                      <FiClock className="mr-1" /> Generating video...
+                      <FiClock className="mr-1" /> {getStatusText()}
                     </span>
                     <button
                       onClick={cancelGeneration}
@@ -353,9 +531,9 @@ const VideoCreatorPage: React.FC = () => {
               ) : (
                 <button
                   onClick={handleGenerateVideo}
-                  disabled={!prompt.trim()}
+                  disabled={!prompt.trim() || !user?.id}
                   className={`w-full py-3 rounded-lg font-medium flex items-center justify-center ${
-                    !prompt.trim()
+                    !prompt.trim() || !user?.id
                       ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                       : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90'
                   } transition`}
@@ -365,6 +543,129 @@ const VideoCreatorPage: React.FC = () => {
                 </button>
               )}
             </div>
+            
+            {/* History Button */}
+            <div>
+              <button
+                onClick={() => setShowHistory(!showHistory)}
+                className="w-full py-2 px-4 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center"
+              >
+                <FiList className="mr-2" />
+                {showHistory ? 'Hide History' : 'Show History'}
+              </button>
+            </div>
+            
+            {/* Video History */}
+            {showHistory && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="border rounded-lg p-4 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto"
+              >
+                <h3 className="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300">Video History</h3>
+                
+                {isLoadingHistory ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg animate-pulse">
+                        <div className="w-16 h-12 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+                          <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/4"></div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                          <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : historyError ? (
+                  <div className="text-center py-8">
+                    <p className="text-red-500 dark:text-red-400 text-sm mb-2">Error loading history</p>
+                    <p className="text-red-500 dark:text-red-400 text-xs">{historyError}</p>
+                    <button
+                      onClick={fetchVideoHistory}
+                      className="mt-4 px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-sm"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : videoHistory.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FiVideo className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-600" />
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">No videos generated yet</p>
+                    <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Generate your first video to see it here</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {videoHistory.map((video) => (
+                      <div key={video.videoId} className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        {/* Video Thumbnail */}
+                        {video.videoUrl && video.isReady && (
+                          <div className="flex-shrink-0">
+                            <video
+                              src={video.videoUrl}
+                              className="w-16 h-12 object-cover rounded border"
+                              muted
+                              preload="metadata"
+                            />
+                          </div>
+                        )}
+                        
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {video.promptText}
+                          </p>
+                          <div className="flex items-center space-x-4 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {video.ageDisplay}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {video.size}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              video.taskStatus === 'SUCCEEDED' 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                : video.taskStatus === 'PROCESSING'
+                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                : video.taskStatus === 'FAILED'
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                            }`}>
+                              {video.statusDisplay}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex space-x-2">
+                          {video.videoUrl && video.taskStatus === 'SUCCEEDED' && (
+                            <button
+                              onClick={() => setVideoUrl(video.videoUrl)}
+                              className="text-blue-500 hover:text-blue-700 dark:text-blue-400"
+                              title="Load video"
+                            >
+                              <FiPlay size={16} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleRemoveVideo(video.videoId)}
+                            className="text-red-500 hover:text-red-700 dark:text-red-400"
+                            title="Remove video"
+                          >
+                            <FiTrash size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
             
             {/* Presets */}
             <div>

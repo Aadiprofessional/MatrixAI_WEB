@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation } from 'framer-motion';
-import { FiDownload, FiShare2, FiTrash, FiChevronDown, FiImage, FiRefreshCw } from 'react-icons/fi';
+import { FiDownload, FiShare2, FiTrash, FiChevronDown, FiImage, FiRefreshCw, FiList } from 'react-icons/fi';
 import { Navbar, Sidebar, ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
-import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { imageService } from '../services/imageService';
 
 // Define image interface
 interface ImageData {
@@ -16,8 +17,9 @@ interface ImageData {
 
 const ImageGeneratorPage: React.FC = () => {
   const { userData, isPro } = useUser();
+  const { user } = useAuth();
   const { darkMode } = useTheme();
-  const uid = userData?.uid || '';
+  const uid = user?.id || '';
 
   // State for image generation
   const [message, setMessage] = useState('');
@@ -74,165 +76,47 @@ const ImageGeneratorPage: React.FC = () => {
       imageOpacity.set({ opacity: 0 });
       imageScale.set({ scale: 0.95 });
       
-      // Create a timeout to detect when network is taking too long
-      let apiTimedOut = false;
-      const timeoutId = setTimeout(() => {
-        apiTimedOut = true;
-        generateFallbackImages();
-      }, 5000); // Wait 5 seconds before showing fallbacks
-      
       try {
-        // Only attempt API call if not already timed out
-        if (!apiTimedOut) {
-          // Make API request to generate new images
-          const response = await axios.post(
-            "https://ddtgdhehxhgarkonvpfq.supabase.co/functions/v1/generateImage2",
-            { 
-              text: message, 
-              uid: uid,
-              imageCount: imageCount 
-            },
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdGdkaGVoeGhnYXJrb252cGZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2Njg4MTIsImV4cCI6MjA1MDI0NDgxMn0.mY8nx-lKrNXjJxHU7eEja3-fTSELQotOP4aZbxvmNPY`,
-              },
-              timeout: 10000 // 10 second timeout
-            }
-          );
-          
-          // Clear the timeout since we got a response
-          clearTimeout(timeoutId);
+        // Make API request to generate new images
+        const response = await imageService.generateImage(message, uid, imageCount);
 
-          if (response.data && response.data.images && response.data.images.length > 0) {
-            const imageData = response.data.images;
-            // In a web app, we'll use localStorage instead of AsyncStorage
-            localStorage.setItem("downloadedImages", JSON.stringify(imageData));
-            setImages(imageData.map((img: any) => img.url));
-            
-            // Show skeleton for 1 second before revealing the images
-            setTimeout(() => {
-              setShowSkeleton(false);
-              setLoading(false);
-              fadeInImage();
-            }, 1000);
-            
-            // Decrease free generations left if user is not pro
-            if (!isPro) {
-              setFreeGenerationsLeft(prev => Math.max(0, prev - 1));
-            }
-            
-            // Refresh image history
-            fetchImageHistory(1);
-            return;
+        if (response && response.images && response.images.length > 0) {
+          const imageData = response.images;
+          // In a web app, we'll use localStorage instead of AsyncStorage
+          localStorage.setItem("downloadedImages", JSON.stringify(imageData));
+          setImages(imageData.map((img: any) => img.url));
+          
+          // Show skeleton for 1 second before revealing the images
+          setTimeout(() => {
+            setShowSkeleton(false);
+            setLoading(false);
+            fadeInImage();
+          }, 1000);
+          
+          // Decrease free generations left if user is not pro
+          if (!isPro) {
+            setFreeGenerationsLeft(prev => Math.max(0, prev - 1));
           }
+          
+          // Refresh image history
+          fetchImageHistory(1);
+          return;
+        } else {
+          throw new Error('No images generated');
         }
       } catch (apiError) {
-        // Clear the timeout since we got an error
-        clearTimeout(timeoutId);
         console.error("Error from API:", apiError);
-        // Continue to fallback
-        generateFallbackImages();
+        setLoading(false);
+        setShowSkeleton(false);
+        alert("Failed to generate images. Please try again.");
         return;
       }
-      
-      // If we get here, we need to generate fallback images
-      generateFallbackImages();
       
     } catch (error) {
       console.error("Error fetching images:", error);
       setLoading(false);
       setShowSkeleton(false);
       alert("Something went wrong. Please try again.");
-    }
-  };
-  
-  // Generate offline fallback images
-  const generateFallbackImages = () => {
-    console.log("Using fallback image generation");
-    
-    // Create colorful solid colored blocks instead of placeholder.com which needs internet
-    const colors = ['3498db', '9b59b6', '2ecc71', 'e74c3c', 'f39c12', '1abc9c', 'd35400', '34495e'];
-    
-    // Create data URLs for colored blocks with the prompt text
-    const placeholderImages = [];
-    for (let i = 0; i < imageCount; i++) {
-      const color = colors[i % colors.length];
-      // Create a data URL for a canvas with the message text
-      const canvas = document.createElement('canvas');
-      canvas.width = 512;
-      canvas.height = 512;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        // Fill background
-        ctx.fillStyle = `#${color}`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Add text
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 24px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        // Wrap text if necessary
-        const maxWidth = 460;
-        const words = message.substring(0, 100).split(' ');
-        let line = '';
-        const lines = [];
-        
-        for (let n = 0; n < words.length; n++) {
-          const testLine = line + words[n] + ' ';
-          const metrics = ctx.measureText(testLine);
-          const testWidth = metrics.width;
-          
-          if (testWidth > maxWidth && n > 0) {
-            lines.push(line);
-            line = words[n] + ' ';
-          } else {
-            line = testLine;
-          }
-        }
-        lines.push(line);
-        
-        // Draw text lines
-        const lineHeight = 30;
-        const y = canvas.height / 2 - (lines.length - 1) * lineHeight / 2;
-        
-        for (let i = 0; i < lines.length; i++) {
-          ctx.fillText(lines[i], canvas.width / 2, y + i * lineHeight);
-        }
-      }
-      
-      // Convert canvas to data URL
-      const dataUrl = canvas.toDataURL('image/png');
-      placeholderImages.push(dataUrl);
-    }
-    
-    // Store and display the placeholder images
-    const placeholderData = placeholderImages.map((url, idx) => ({
-      url,
-      image_id: `placeholder-${Date.now()}-${idx}`,
-      prompt: message,
-      created_at: new Date().toISOString()
-    }));
-    
-    localStorage.setItem("downloadedImages", JSON.stringify(placeholderData));
-    setImages(placeholderImages);
-    
-    // Add to history
-    const currentHistory = JSON.parse(localStorage.getItem("imageHistory") || "[]");
-    localStorage.setItem("imageHistory", JSON.stringify([...placeholderData, ...currentHistory]));
-    
-    // Show skeleton for 1 second before revealing the images
-    setTimeout(() => {
-      setShowSkeleton(false);
-      setLoading(false);
-      fadeInImage();
-    }, 1000);
-    
-    // Decrease free generations left if user is not pro
-    if (!isPro) {
-      setFreeGenerationsLeft(prev => Math.max(0, prev - 1));
     }
   };
 
@@ -244,105 +128,29 @@ const ImageGeneratorPage: React.FC = () => {
     setError(null);
     
     try {
-      // Set a timeout for the network request
-      let apiTimedOut = false;
-      const timeoutId = setTimeout(() => {
-        apiTimedOut = true;
-        loadLocalHistory();
-      }, 3000); // Wait 3 seconds before using local history
+      const response = await imageService.getImageHistory(uid, page, 5); // Load recent 5 images
       
-      if (!apiTimedOut) {
-        try {
-          const controller = new AbortController();
-          const signal = controller.signal;
-          
-          const response = await fetch(
-            `https://matrix-server.vercel.app/getGeneratedImage?uid=${uid}&page=${page}&limit=${imagesPerPage}`,
-            {
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              signal // Add abort signal
-            }
-          );
-          
-          // Clear the timeout since we got a response
-          clearTimeout(timeoutId);
-          
-          if (response.ok) {
-            const result = await response.json();
-            const newImages = result.data || [];
-            
-            if (page === 1) {
-              setImageHistory(newImages);
-              // Also save to localStorage for offline use
-              localStorage.setItem("imageHistory", JSON.stringify(newImages));
-            } else {
-              const updatedHistory = [...imageHistory, ...newImages];
-              setImageHistory(updatedHistory);
-              // Update localStorage
-              localStorage.setItem("imageHistory", JSON.stringify(updatedHistory));
-            }
-            
-            setHistoryPage(page);
-            setHasMoreImages(newImages.length >= imagesPerPage);
-            setIsLoading(false);
-            return;
-          } else {
-            throw new Error('Server returned an error');
-          }
-        } catch (apiError) {
-          console.error('API error:', apiError);
-          // Clear the timeout
-          clearTimeout(timeoutId);
-          // Continue to fallback
-          loadLocalHistory();
-          return;
-        }
+      const newImages = response.data || [];
+      
+      if (page === 1) {
+        setImageHistory(newImages);
+        // Also save to localStorage for offline use
+        localStorage.setItem("imageHistory", JSON.stringify(newImages));
+      } else {
+        const updatedHistory = [...imageHistory, ...newImages];
+        setImageHistory(updatedHistory);
+        // Update localStorage
+        localStorage.setItem("imageHistory", JSON.stringify(updatedHistory));
       }
+      
+      setHistoryPage(page);
+      setHasMoreImages(newImages.length >= 5);
+      setIsLoading(false);
     } catch (err: any) {
       console.error('Error fetching image history:', err);
       setError(err.message || "Failed to load image history");
-      loadLocalHistory();
+      setIsLoading(false);
     }
-  };
-  
-  // Load image history from localStorage
-  const loadLocalHistory = () => {
-    console.log("Using fallback history from localStorage");
-    
-    // First check for dedicated history in localStorage
-    const historyJson = localStorage.getItem("imageHistory");
-    if (historyJson) {
-      try {
-        const historyData = JSON.parse(historyJson);
-        setImageHistory(historyData);
-        setHasMoreImages(false);
-        setIsLoading(false);
-        return;
-      } catch (parseError) {
-        console.error('Error parsing stored history:', parseError);
-      }
-    }
-    
-    // Fallback to using the last generated images if available
-    const storedImagesJson = localStorage.getItem("downloadedImages");
-    if (storedImagesJson) {
-      try {
-        const storedImages = JSON.parse(storedImagesJson);
-        setImageHistory(storedImages);
-        setHasMoreImages(false);
-      } catch (parseError) {
-        console.error('Error parsing stored images:', parseError);
-        setImageHistory([]);
-        setError("Couldn't load image history. Please try again later.");
-      }
-    } else {
-      // No stored images
-      setImageHistory([]);
-    }
-    
-    setIsLoading(false);
   };
 
   // Function to handle image removal
@@ -354,26 +162,8 @@ const ImageGeneratorPage: React.FC = () => {
         setIsLoading(true);
         
         try {
-          // Try to remove from server
-          const response = await fetch(
-            'https://matrix-server.vercel.app/removeImage',
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                uid: uid,
-                image_id: imageId
-              }),
-              // Add timeout with AbortController
-              signal: AbortSignal.timeout(5000)
-            }
-          );
-          
-          if (!response.ok) {
-            throw new Error('Server error');
-          }
+          // Try to remove from server using imageService
+          await imageService.removeImage(uid, imageId);
         } catch (apiError) {
           console.error('API error:', apiError);
           // Continue with local removal
@@ -477,7 +267,7 @@ const ImageGeneratorPage: React.FC = () => {
       <Sidebar onToggle={handleSidebarToggle} activeLink="/tools/image-generator" />
       
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <Navbar />
+       
         
         <div className={`flex-1 overflow-y-auto p-4 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
           <div className="max-w-6xl mx-auto">
@@ -597,8 +387,8 @@ const ImageGeneratorPage: React.FC = () => {
             {showHistory ? (
               // History View
               <div className={`p-6 rounded-lg shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Image History</h2>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Recent Images</h2>
                   <button
                     onClick={() => setShowHistory(false)}
                     className={`px-4 py-2 rounded-lg transition-colors ${
@@ -612,70 +402,154 @@ const ImageGeneratorPage: React.FC = () => {
                 </div>
                 
                 {isLoading && imageHistory.length === 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    {[...Array(8)].map((_, i) => (
-                      <div key={i} className={`rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} animate-pulse h-60`}></div>
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className={`flex space-x-4 p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} animate-pulse`}>
+                        <div className={`w-24 h-24 rounded-lg ${darkMode ? 'bg-gray-600' : 'bg-gray-300'}`}></div>
+                        <div className="flex-1 space-y-2">
+                          <div className={`h-4 rounded ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} w-3/4`}></div>
+                          <div className={`h-3 rounded ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} w-1/2`}></div>
+                          <div className={`h-3 rounded ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} w-1/4`}></div>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : error ? (
                   <div className={`text-center py-8 ${darkMode ? 'text-red-400' : 'text-red-600'}`}>
-                    {error}
+                    <p className="text-lg mb-2">Error loading history</p>
+                    <p className="text-sm">{error}</p>
+                    <button
+                      onClick={() => fetchImageHistory(1)}
+                      className={`mt-4 px-4 py-2 rounded-lg ${
+                        darkMode
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-blue-500 text-white hover:bg-blue-600'
+                      }`}
+                    >
+                      Retry
+                    </button>
                   </div>
                 ) : imageHistory.length === 0 ? (
                   <div className={`text-center py-16 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     <FiImage className="w-16 h-16 mx-auto mb-4 opacity-30" />
                     <p className="text-lg">No images generated yet</p>
+                    <p className="text-sm mt-2">Generate your first image to see it here</p>
                   </div>
                 ) : (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                      {imageHistory.map((image) => (
-                        <div 
-                          key={image.image_id} 
-                          className={`relative group overflow-hidden rounded-lg shadow-md ${darkMode ? 'bg-gray-700' : 'bg-white'}`}
-                        >
+                  <div className="space-y-4">
+                    {imageHistory.map((image, index) => (
+                      <div 
+                        key={image.image_id} 
+                        className={`flex space-x-4 p-4 rounded-lg border transition-all hover:shadow-md ${
+                          darkMode 
+                            ? 'bg-gray-700 border-gray-600 hover:bg-gray-650' 
+                            : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                        }`}
+                      >
+                        {/* Image Thumbnail */}
+                        <div className="flex-shrink-0">
                           <img 
-                            src={image.url} 
-                            alt={image.prompt || 'Generated image'} 
-                            className="w-full h-60 object-cover"
+                            src={image.image_url} 
+                            alt={image.prompt_text || 'Generated image'} 
+                            className="w-24 h-24 object-cover rounded-lg shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => {
+                              setImages([image.image_url]);
+                              setShowHistory(false);
+                            }}
                           />
-                          <div className={`absolute inset-0 flex flex-col justify-between p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/80 via-black/40 to-transparent`}>
-                            <div className="self-end">
+                        </div>
+                        
+                        {/* Image Details */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <h3 className={`text-sm font-medium truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {image.prompt_text || 'Generated Image'}
+                              </h3>
+                              <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {new Date(image.created_at).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                              <div className="flex items-center mt-2 space-x-2">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                  darkMode
+                                    ? 'bg-green-900 text-green-200'
+                                    : 'bg-green-100 text-green-800'
+                                }`}>
+                                  Ready
+                                </span>
+                                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  Image #{imageHistory.length - index}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {/* Action Buttons */}
+                            <div className="flex space-x-2 ml-4">
+                              <button 
+                                onClick={() => {
+                                  setImages([image.image_url]);
+                                  setShowHistory(false);
+                                }}
+                                className={`p-2 rounded-lg transition-colors ${
+                                  darkMode
+                                    ? 'text-blue-400 hover:bg-gray-600'
+                                    : 'text-blue-600 hover:bg-blue-50'
+                                }`}
+                                title="View image"
+                              >
+                                <FiImage size={16} />
+                              </button>
+                              <button 
+                                onClick={() => handleDownload(image.image_url)}
+                                className={`p-2 rounded-lg transition-colors ${
+                                  darkMode
+                                    ? 'text-gray-400 hover:bg-gray-600'
+                                    : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                                title="Download image"
+                              >
+                                <FiDownload size={16} />
+                              </button>
+                              <button 
+                                onClick={() => handleShare(image.image_url)}
+                                className={`p-2 rounded-lg transition-colors ${
+                                  darkMode
+                                    ? 'text-gray-400 hover:bg-gray-600'
+                                    : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                                title="Share image"
+                              >
+                                <FiShare2 size={16} />
+                              </button>
                               <button 
                                 onClick={() => handleRemoveImage(image.image_id)}
-                                className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
+                                className={`p-2 rounded-lg transition-colors ${
+                                  darkMode
+                                    ? 'text-red-400 hover:bg-gray-600'
+                                    : 'text-red-600 hover:bg-red-50'
+                                }`}
+                                title="Remove image"
                               >
                                 <FiTrash size={16} />
                               </button>
                             </div>
-                            <div>
-                              <p className="text-white text-sm line-clamp-2 mb-2">{image.prompt}</p>
-                              <div className="flex space-x-2">
-                                <button 
-                                  onClick={() => handleDownload(image.url)}
-                                  className="p-2 rounded-full bg-gray-800/80 text-white hover:bg-gray-700"
-                                >
-                                  <FiDownload size={16} />
-                                </button>
-                                <button 
-                                  onClick={() => handleShare(image.url)}
-                                  className="p-2 rounded-full bg-gray-800/80 text-white hover:bg-gray-700"
-                                >
-                                  <FiShare2 size={16} />
-                                </button>
-                              </div>
-                            </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                     
                     {hasMoreImages && (
-                      <div className="mt-6 text-center">
+                      <div className="text-center pt-4">
                         <button
                           onClick={loadMoreImages}
                           disabled={isLoading}
-                          className={`px-6 py-2 rounded-lg ${
+                          className={`px-6 py-2 rounded-lg transition-colors ${
                             isLoading
                               ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                               : darkMode
@@ -683,11 +557,11 @@ const ImageGeneratorPage: React.FC = () => {
                               : 'bg-blue-500 text-white hover:bg-blue-600'
                           }`}
                         >
-                          {isLoading ? 'Loading...' : 'Load More'}
+                          {isLoading ? 'Loading...' : 'Load More Images'}
                         </button>
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
               </div>
             ) : (
