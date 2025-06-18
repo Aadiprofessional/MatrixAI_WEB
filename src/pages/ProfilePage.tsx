@@ -2,7 +2,9 @@ import React, { useState, useContext, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
+import { useAuth } from '../context/AuthContext';
 import { Layout } from '../components';
+import axios from 'axios';
 import { 
   FiEdit2, 
   FiUser, 
@@ -18,10 +20,27 @@ import {
   FiSave,
   FiPhone,
   FiGlobe,
-  FiCode
+  FiCode,
+  FiRefreshCw,
+  FiLoader,
+  FiDollarSign,
+  FiActivity,
+  FiCheckCircle,
+  FiXCircle,
+  FiAlertCircle
 } from 'react-icons/fi';
 import { updateUserProfile } from '../supabaseClient';
 import { toast } from 'react-hot-toast';
+
+// Transaction interface
+interface Transaction {
+  id: string;
+  transaction_name?: string;
+  coin_amount?: number;
+  time?: string;
+  status?: string;
+  description?: string;
+}
 
 // Activity item component definition
 const ActivityItem: React.FC<{ item: { type: string, text: string, time: string } }> = ({ item }) => {
@@ -72,11 +91,129 @@ const ActivityItem: React.FC<{ item: { type: string, text: string, time: string 
   );
 };
 
+// Transaction item component
+const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }) => {
+  const { darkMode } = useContext(ThemeContext);
+  
+  const getTransactionIcon = (transactionName: string) => {
+    switch (transactionName.toLowerCase()) {
+      case 'audio transcription':
+        return <FiFileText className="w-5 h-5" />;
+      case 'image generation':
+        return <FiImage className="w-5 h-5" />;
+      case 'matrix bot':
+        return <FiMessageSquare className="w-5 h-5" />;
+      case 'image to text':
+        return <FiImage className="w-5 h-5" />;
+      case 'text to image':
+        return <FiImage className="w-5 h-5" />;
+      default:
+        return <FiVideo className="w-5 h-5" />;
+    }
+  };
+
+  const getTransactionColor = (transactionName: string) => {
+    switch (transactionName.toLowerCase()) {
+      case 'audio transcription':
+        return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600';
+      case 'image generation':
+        return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600';
+      case 'matrix bot':
+        return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-600';
+      case 'image to text':
+        return darkMode ? 'bg-orange-900/50 text-orange-300' : 'bg-orange-100 text-orange-600';
+      case 'text to image':
+        return darkMode ? 'bg-pink-900/50 text-pink-300' : 'bg-pink-100 text-pink-600';
+      default:
+        return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'success':
+        return <FiCheckCircle className="w-4 h-4 text-green-500" />;
+      case 'failed':
+      case 'error':
+        return <FiXCircle className="w-4 h-4 text-red-500" />;
+      case 'pending':
+        return <FiAlertCircle className="w-4 h-4 text-yellow-500" />;
+      default:
+        return <FiClock className="w-4 h-4 text-gray-500" />;
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Safely handle amount with fallback
+  const safeAmount = typeof transaction.coin_amount === 'number' ? transaction.coin_amount : 0;
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`p-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'} border-b last:border-b-0 hover:${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'} transition-colors`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className={`p-2 rounded-lg ${getTransactionColor(transaction.transaction_name || '')}`}>
+            {getTransactionIcon(transaction.transaction_name || '')}
+          </div>
+          <div>
+            <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              {transaction.transaction_name || 'Unknown Transaction'}
+            </h4>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              {transaction.time ? formatDate(transaction.time) : 'Unknown Date'}
+            </p>
+            {transaction.description && (
+              <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'} mt-1`}>
+                {transaction.description}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center space-x-3">
+          <div className="text-right">
+            <div className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} flex items-center`}>
+             
+              {safeAmount.toFixed(0)} Coins
+            </div>
+            <div className="flex items-center space-x-1">
+              {getStatusIcon(transaction.status || '')}
+              <span className={`text-xs capitalize ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                {transaction.status || 'unknown'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 const ProfilePage: React.FC = () => {
   const { darkMode } = useContext(ThemeContext);
   const { userData, loading, refreshUserData } = useUser();
+  const { user } = useAuth();
+  const uid = user?.id;
+  
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -105,6 +242,44 @@ const ProfilePage: React.FC = () => {
       });
     }
   }, [userData]);
+
+  // Fetch transactions when component mounts
+  useEffect(() => {
+    if (uid) {
+      fetchTransactions();
+    }
+  }, [uid]);
+
+  const fetchTransactions = async () => {
+    if (!uid) return;
+    
+    setTransactionsLoading(true);
+    try {
+      const response = await axios.post('https://matrix-server.vercel.app/AllTransactions', {
+        uid: uid
+      });
+      
+      if (response.data.success) {
+        const sortedTransactions = response.data.data.sort((a: Transaction, b: Transaction) => {
+          const timeA = a.time ? new Date(a.time).getTime() : 0;
+          const timeB = b.time ? new Date(b.time).getTime() : 0;
+          return timeB - timeA;
+        });
+        setTransactions(sortedTransactions);
+      }
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      toast.error('Failed to load transactions');
+    } finally {
+      setTransactionsLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const handleRefreshTransactions = () => {
+    setRefreshing(true);
+    fetchTransactions();
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -533,22 +708,73 @@ const ProfilePage: React.FC = () => {
                   : 'bg-white border border-gray-100'
               } lg:col-span-3`}
             >
-              <div className="px-6 py-4 border-b border-gray-700">
-                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Recent Activity
-                </h2>
-              </div>
-              <div className={`text-md font-medium mt-4 mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                Recent Activity
-              </div>
-              <div className={`${
-                darkMode ? 'bg-gray-800/50 border border-gray-700/50' : 'bg-white border border-gray-100'
-              } rounded-lg overflow-hidden`}>
-                <div className="p-4 text-center">
-                  <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    No recent activity to display
-                  </p>
+              <div className="px-6 py-4 border-b border-gray-700 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <FiActivity className={`w-5 h-5 ${darkMode ? 'text-white' : 'text-gray-900'}`} />
+                  <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    Recent Transactions
+                  </h2>
                 </div>
+                <button
+                  onClick={handleRefreshTransactions}
+                  disabled={refreshing}
+                  className={`p-2 rounded-lg transition-colors ${
+                    darkMode 
+                      ? 'hover:bg-gray-700 text-gray-300' 
+                      : 'hover:bg-gray-100 text-gray-600'
+                  } ${refreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title="Refresh transactions"
+                >
+                  <FiRefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
+              
+              <div className="max-h-96 overflow-y-auto">
+                {transactionsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="flex flex-col items-center space-y-3">
+                      <FiLoader className={`w-8 h-8 animate-spin ${darkMode ? 'text-blue-400' : 'text-blue-500'}`} />
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Loading transactions...
+                      </p>
+                    </div>
+                  </div>
+                ) : transactions.length > 0 ? (
+                  <div>
+                    {transactions.slice(0, 10).map((transaction) => (
+                      <TransactionItem key={transaction.id} transaction={transaction} />
+                    ))}
+                    {transactions.length > 10 && (
+                      <div className="p-4 text-center border-t border-gray-200 dark:border-gray-700">
+                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Showing 10 of {transactions.length} transactions
+                        </p>
+                        <button 
+                          onClick={() => {/* Navigate to full transactions page */}}
+                          className={`mt-2 text-sm font-medium ${
+                            darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'
+                          } transition-colors`}
+                        >
+                          View all transactions
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className={`p-4 rounded-full ${
+                      darkMode ? 'bg-gray-700/50' : 'bg-gray-100'
+                    } mb-4`}>
+                      <FiDollarSign className={`w-8 h-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                    </div>
+                    <h3 className={`text-lg font-medium ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>
+                      No transactions yet
+                    </h3>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} text-center max-w-sm`}>
+                      Your transaction history will appear here once you start using our services.
+                    </p>
+                  </div>
+                )}
               </div>
             </motion.div>
 

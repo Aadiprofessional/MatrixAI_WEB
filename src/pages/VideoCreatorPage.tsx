@@ -285,15 +285,88 @@ const VideoCreatorPage: React.FC = () => {
     }
   };
   
-  const handleDownload = () => {
-    if (!videoUrl) return;
+  const handleDownload = async (videoUrl?: string, promptText?: string) => {
+    const urlToDownload = videoUrl || videoUrl;
+    if (!urlToDownload) return;
     
-    const link = document.createElement('a');
-    link.href = videoUrl;
-    link.download = `matrixai-video-${new Date().getTime()}.mp4`;
-    link.click();
+    try {
+      // Show loading state
+      const loadingToast = document.createElement('div');
+      loadingToast.className = `fixed top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all`;
+      loadingToast.textContent = 'Downloading video...';
+      document.body.appendChild(loadingToast);
+
+      // Fetch the video as blob to handle CORS issues
+      const response = await fetch(urlToDownload, {
+        mode: 'cors',
+        headers: {
+          'Accept': 'video/*',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch video');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename with prompt if available
+      const timestamp = new Date().getTime();
+      const promptPrefix = promptText ? promptText.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_') : 'video';
+      link.download = `matrixai_${promptPrefix}_${timestamp}.mp4`;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(loadingToast);
+      
+      // Show success message
+      const successToast = document.createElement('div');
+      successToast.className = `fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all`;
+      successToast.textContent = 'Video downloaded successfully!';
+      document.body.appendChild(successToast);
+      
+      setTimeout(() => {
+        if (document.body.contains(successToast)) {
+          document.body.removeChild(successToast);
+        }
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error downloading video:', error);
+      
+      // Fallback to simple download
+      try {
+        const link = document.createElement('a');
+        link.href = urlToDownload;
+        link.download = `matrixai-video-${new Date().getTime()}.mp4`;
+        link.target = '_blank';
+        link.click();
+      } catch (fallbackError) {
+        // Show error message
+        const errorToast = document.createElement('div');
+        errorToast.className = `fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all`;
+        errorToast.textContent = 'Failed to download video. Please try right-click and save.';
+        document.body.appendChild(errorToast);
+        
+        setTimeout(() => {
+          if (document.body.contains(errorToast)) {
+            document.body.removeChild(errorToast);
+          }
+        }, 5000);
+      }
+    }
   };
-  
+
   const cancelGeneration = () => {
     setIsGenerating(false);
     setProcessingProgress(0);
@@ -385,7 +458,7 @@ const VideoCreatorPage: React.FC = () => {
               {/* Video Actions */}
               <div className="absolute bottom-3 right-3 flex space-x-2">
                 <button
-                  onClick={handleDownload}
+                  onClick={() => handleDownload(videoUrl, prompt)}
                   className="bg-black bg-opacity-70 hover:bg-opacity-90 rounded-full p-2 text-white"
                   title="Download video"
                 >
@@ -644,13 +717,22 @@ const VideoCreatorPage: React.FC = () => {
                         
                         <div className="flex space-x-2">
                           {video.videoUrl && video.taskStatus === 'SUCCEEDED' && (
-                            <button
-                              onClick={() => setVideoUrl(video.videoUrl)}
-                              className="text-blue-500 hover:text-blue-700 dark:text-blue-400"
-                              title="Load video"
-                            >
-                              <FiPlay size={16} />
-                            </button>
+                            <>
+                              <button
+                                onClick={() => setVideoUrl(video.videoUrl)}
+                                className="text-blue-500 hover:text-blue-700 dark:text-blue-400"
+                                title="Load video"
+                              >
+                                <FiPlay size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDownload(video.videoUrl, video.promptText)}
+                                className="text-green-500 hover:text-green-700 dark:text-green-400"
+                                title="Download video"
+                              >
+                                <FiDownload size={16} />
+                              </button>
+                            </>
                           )}
                           <button
                             onClick={() => handleRemoveVideo(video.videoId)}

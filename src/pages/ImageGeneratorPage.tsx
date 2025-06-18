@@ -219,11 +219,83 @@ const ImageGeneratorPage: React.FC = () => {
   };
 
   // Function to download image
-  const handleDownload = (imageUrl: string) => {
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = `matrixai-image-${new Date().getTime()}.jpg`;
-    link.click();
+  const handleDownload = async (imageUrl: string, prompt?: string) => {
+    try {
+      // Show loading state
+      const loadingToast = document.createElement('div');
+      loadingToast.className = `fixed top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all`;
+      loadingToast.textContent = 'Downloading image...';
+      document.body.appendChild(loadingToast);
+
+      // Fetch the image as blob to handle CORS issues
+      const response = await fetch(imageUrl, {
+        mode: 'cors',
+        headers: {
+          'Accept': 'image/*',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch image');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename with prompt if available
+      const timestamp = new Date().getTime();
+      const promptPrefix = prompt ? prompt.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_') : 'image';
+      link.download = `matrixai_${promptPrefix}_${timestamp}.jpg`;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(loadingToast);
+      
+      // Show success message
+      const successToast = document.createElement('div');
+      successToast.className = `fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all`;
+      successToast.textContent = 'Image downloaded successfully!';
+      document.body.appendChild(successToast);
+      
+      setTimeout(() => {
+        if (document.body.contains(successToast)) {
+          document.body.removeChild(successToast);
+        }
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      
+      // Fallback to simple download
+      try {
+        const link = document.createElement('a');
+        link.href = imageUrl;
+        link.download = `matrixai-image-${new Date().getTime()}.jpg`;
+        link.target = '_blank';
+        link.click();
+      } catch (fallbackError) {
+        // Show error message
+        const errorToast = document.createElement('div');
+        errorToast.className = `fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all`;
+        errorToast.textContent = 'Failed to download image. Please try right-click and save.';
+        document.body.appendChild(errorToast);
+        
+        setTimeout(() => {
+          if (document.body.contains(errorToast)) {
+            document.body.removeChild(errorToast);
+          }
+        }, 5000);
+      }
+    }
   };
 
   // Function to share image
@@ -332,13 +404,9 @@ const ImageGeneratorPage: React.FC = () => {
                   >
                     <option value={1}>1</option>
                     <option value={2}>2</option>
+                    <option value={3}>3</option>
                     <option value={4}>4</option>
-                    {isPro && (
-                      <>
-                        <option value={6}>6</option>
-                        <option value={8}>8</option>
-                      </>
-                    )}
+                 
                   </select>
                 </div>
                 <div className="flex space-x-3">
@@ -506,7 +574,7 @@ const ImageGeneratorPage: React.FC = () => {
                                 <FiImage size={16} />
                               </button>
                               <button 
-                                onClick={() => handleDownload(image.image_url)}
+                                onClick={() => handleDownload(image.image_url, image.prompt_text)}
                                 className={`p-2 rounded-lg transition-colors ${
                                   darkMode
                                     ? 'text-gray-400 hover:bg-gray-600'
@@ -590,7 +658,7 @@ const ImageGeneratorPage: React.FC = () => {
                         <div className={`absolute inset-0 flex flex-col justify-end p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/80 via-black/40 to-transparent`}>
                           <div className="flex space-x-2">
                             <button 
-                              onClick={() => handleDownload(imageUrl)}
+                              onClick={() => handleDownload(imageUrl, message)}
                               className="p-2 rounded-full bg-gray-800/80 text-white hover:bg-gray-700"
                             >
                               <FiDownload size={16} />

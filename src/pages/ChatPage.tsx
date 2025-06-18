@@ -31,13 +31,18 @@ import { Navbar, Sidebar, ProFeatureAlert } from '../components';
 import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
 import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
-import './ChatPage.css'; // Import the CSS file for typing animation
-import './ContentWriterPage.css'; // Import shared markdown styling
-import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
-import { MathJax, MathJaxContext } from 'better-react-mathjax'; // Import MathJax
+import 'katex/dist/katex.min.css';
+import './ChatPage.css';
 
 
 // Define interface for message types
@@ -50,6 +55,7 @@ interface Message {
   fileName?: string;
   sender?: string;
   text?: string;
+  isStreaming?: boolean;
 }
 
 // Define interface for chat type
@@ -65,7 +71,7 @@ interface Chat {
 // Sample role options for the AI assistant
 const roleOptions = [
   { id: 'general', name: 'General Assistant', description: 'Provides general assistance for any topic' },
-  { id: 'analyst', name: 'Data Analyst', description: 'Helps analyze and visualize data' },
+  { id: 'analyst', name: 'MatrixAI Data Analyst', description: 'Helps analyze and visualize data with advanced AI capabilities' },
   { id: 'doctor', name: 'Medical Assistant', description: 'Provides health-related information' },
   { id: 'lawyer', name: 'Legal Advisor', description: 'Offers legal guidance and information' },
   { id: 'teacher', name: 'Education Tutor', description: 'Assists with learning and homework' },
@@ -82,7 +88,7 @@ const initialMessages: Message[] = [
   { 
     id: 1, 
     role: 'assistant', 
-    content: 'Hello! I\'m your MatrixAI assistant. How can I help you today?',
+    content: 'Hello! I\'m MatrixAI. How can I help you today?',
     timestamp: new Date(Date.now() - 120000).toISOString()
   }
 ];
@@ -90,10 +96,10 @@ const initialMessages: Message[] = [
 // Empty array for new chats - this should be used whenever creating a new chat
 const emptyInitialMessages: Message[] = [];
 
-// Function to render tables with better formatting and horizontal scrolling
+// Enhanced Table Components with better styling
 const TableWrapper = ({ node, children, ...props }: any) => {
   return (
-    <div className="overflow-x-auto w-full border rounded-lg dark:border-gray-700 my-6">
+    <div className="overflow-x-auto w-full border rounded-lg dark:border-gray-700 my-6 shadow-sm">
       <table className="table-auto min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         {children}
       </table>
@@ -111,7 +117,7 @@ const TableBody = ({ node, children, ...props }: any) => {
 
 const TableRow = ({ node, children, isHeader, ...props }: any) => {
   return (
-    <tr className={isHeader ? 'bg-gray-50 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}>
+    <tr className={isHeader ? 'bg-gray-50 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors'}>
       {children}
     </tr>
   );
@@ -120,7 +126,7 @@ const TableRow = ({ node, children, isHeader, ...props }: any) => {
 const TableCell = ({ node, children, isHeader = false, ...props }: any) => {
   if (isHeader) {
     return (
-      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">
         {children}
       </th>
     );
@@ -132,83 +138,295 @@ const TableCell = ({ node, children, isHeader = false, ...props }: any) => {
   );
 };
 
-// Define custom components for ReactMarkdown
-const MarkdownComponents = {
-  // Table components with comprehensive styling
-  table: ({ node, children, ...props }: any) => <TableWrapper {...props}>{children}</TableWrapper>,
-  thead: ({ node, children, ...props }: any) => <TableHead {...props}>{children}</TableHead>,
-  tbody: ({ node, children, ...props }: any) => <TableBody {...props}>{children}</TableBody>,
-  tr: ({ node, children, ...props }: any) => {
-    // Detect if this is a header row by checking if it's a direct child of thead
-    const isHeader = node.parent?.tagName === 'thead';
-    return <TableRow isHeader={isHeader} {...props}>{children}</TableRow>;
-  },
-  td: ({ node, children, ...props }: any) => <TableCell {...props}>{children}</TableCell>,
-  th: ({ node, children, ...props }: any) => (
-    <th className="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
-      {children}
-    </th>
-  ),
+// Enhanced Code Block Component with syntax highlighting
+const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
+  const match = /language-(\w+)/.exec(className || '');
+  const language = match ? match[1] : '';
+  const codeString = String(children).replace(/\n$/, '');
   
-  // Improved code block rendering
-  code: ({node, inline, className, children, ...props}: any) => {
-    const match = /language-(\w+)/.exec(className || '');
-    const language = match ? match[1] : '';
-    
-    return !inline ? (
-      <div className="relative my-4">
-        {language && (
-          <div className="absolute right-2 top-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+  if (!inline && language) {
+    return (
+      <div className="relative my-6 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
+        {/* Language label */}
+        <div className="flex items-center justify-between px-4 py-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
             {language}
-          </div>
-        )}
-        <pre className="p-4 rounded-lg bg-gray-100 dark:bg-gray-800 overflow-auto">
-          <code className={className} {...props}>
-            {children}
-          </code>
-        </pre>
+          </span>
+          <button
+            onClick={() => navigator.clipboard.writeText(codeString)}
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            title="Copy code"
+          >
+            <FiCopy size={12} />
+            Copy
+          </button>
+        </div>
+        
+        {/* Code content */}
+        <SyntaxHighlighter
+          style={document.documentElement.classList.contains('dark') ? oneDark : oneLight}
+          language={language}
+          PreTag="div"
+          customStyle={{
+            margin: 0,
+            padding: '1rem',
+            background: 'transparent',
+            fontSize: '0.875rem',
+            lineHeight: '1.5'
+          }}
+          codeTagProps={{
+            style: {
+              fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
+            }
+          }}
+        >
+          {codeString}
+        </SyntaxHighlighter>
       </div>
-    ) : (
-      <code className="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-sm" {...props}>
-        {children}
-      </code>
     );
-  },
+  }
   
-  // Add additional styles for paragraphs within table cells to fix spacing
-  p: ({node, children, ...props}: any) => {
-    // Check if this paragraph is inside a table cell
+  // Inline code
+  return (
+    <code 
+      className="px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-sm font-mono text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700" 
+      {...props}
+    >
+      {children}
+    </code>
+  );
+};
+
+// Enhanced Markdown Components with comprehensive formatting
+const MarkdownComponents = {
+  // Enhanced headings with better typography and spacing
+  h1: ({ node, children, ...props }: any) => (
+    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6 mt-8 pb-3 border-b-2 border-gray-200 dark:border-gray-700 first:mt-0" {...props}>
+      {children}
+    </h1>
+  ),
+  h2: ({ node, children, ...props }: any) => (
+    <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4 mt-6 pb-2 border-b border-gray-200 dark:border-gray-700" {...props}>
+      {children}
+    </h2>
+  ),
+  h3: ({ node, children, ...props }: any) => (
+    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 mt-5" {...props}>
+      {children}
+    </h3>
+  ),
+  h4: ({ node, children, ...props }: any) => (
+    <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2 mt-4" {...props}>
+      {children}
+    </h4>
+  ),
+  h5: ({ node, children, ...props }: any) => (
+    <h5 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2 mt-3" {...props}>
+      {children}
+    </h5>
+  ),
+  h6: ({ node, children, ...props }: any) => (
+    <h6 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 mt-3 uppercase tracking-wide" {...props}>
+      {children}
+    </h6>
+  ),
+
+  // Enhanced paragraphs with proper spacing
+  p: ({ node, children, ...props }: any) => {
     const isInTableCell = node.parent && (node.parent.tagName === 'td' || node.parent.tagName === 'th');
     
     if (isInTableCell) {
       return <span {...props}>{children}</span>;
     }
     
-    return <p className="mb-4" {...props}>{children}</p>;
+    return (
+      <p className="mb-4 text-gray-800 dark:text-gray-200 leading-relaxed" {...props}>
+        {children}
+      </p>
+    );
+  },
+
+  // Enhanced lists with better styling
+  ul: ({ node, children, ...props }: any) => (
+    <ul className="mb-4 ml-6 space-y-2 list-disc text-gray-800 dark:text-gray-200" {...props}>
+      {children}
+    </ul>
+  ),
+  ol: ({ node, children, ...props }: any) => (
+    <ol className="mb-4 ml-6 space-y-2 list-decimal text-gray-800 dark:text-gray-200" {...props}>
+      {children}
+    </ol>
+  ),
+  li: ({ node, children, ...props }: any) => (
+    <li className="leading-relaxed" {...props}>
+      {children}
+    </li>
+  ),
+
+  // Enhanced blockquotes
+  blockquote: ({ node, children, ...props }: any) => (
+    <blockquote className="border-l-4 border-blue-500 dark:border-blue-400 pl-4 py-2 my-4 bg-blue-50 dark:bg-blue-900/20 rounded-r-lg" {...props}>
+      <div className="text-gray-700 dark:text-gray-300 italic">
+        {children}
+      </div>
+    </blockquote>
+  ),
+
+  // Enhanced links
+  a: ({ node, children, href, ...props }: any) => (
+    <a 
+      href={href}
+      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline decoration-blue-500/30 hover:decoration-blue-500 transition-colors"
+      target="_blank"
+      rel="noopener noreferrer"
+      {...props}
+    >
+      {children}
+    </a>
+  ),
+
+  // Enhanced horizontal rule
+  hr: ({ node, ...props }: any) => (
+    <hr className="my-8 border-0 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent" {...props} />
+  ),
+
+  // Enhanced emphasis and strong
+  em: ({ node, children, ...props }: any) => (
+    <em className="italic text-gray-800 dark:text-gray-200" {...props}>
+      {children}
+    </em>
+  ),
+  strong: ({ node, children, ...props }: any) => (
+    <strong className="font-semibold text-gray-900 dark:text-gray-100" {...props}>
+      {children}
+    </strong>
+  ),
+
+  // Code blocks with syntax highlighting
+  code: CodeBlock,
+
+  // Enhanced table components
+  table: ({ node, children, ...props }: any) => <TableWrapper {...props}>{children}</TableWrapper>,
+  thead: ({ node, children, ...props }: any) => <TableHead {...props}>{children}</TableHead>,
+  tbody: ({ node, children, ...props }: any) => <TableBody {...props}>{children}</TableBody>,
+  tr: ({ node, children, ...props }: any) => {
+    const isHeader = node.parent?.tagName === 'thead';
+    return <TableRow isHeader={isHeader} {...props}>{children}</TableRow>;
+  },
+  td: ({ node, children, ...props }: any) => <TableCell {...props}>{children}</TableCell>,
+  th: ({ node, children, ...props }: any) => (
+    <th className="px-4 py-3 text-left font-semibold text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
+      {children}
+    </th>
+  ),
+
+  // Enhanced images
+  img: ({ node, src, alt, ...props }: any) => (
+    <div className="my-6">
+      <img 
+        src={src}
+        alt={alt}
+        className="max-w-full h-auto rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
+        loading="lazy"
+        {...props}
+      />
+      {alt && (
+        <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-2 italic">
+          {alt}
+        </p>
+      )}
+    </div>
+  ),
+
+  // Task lists (GitHub Flavored Markdown)
+  input: ({ node, type, checked, ...props }: any) => {
+    if (type === 'checkbox') {
+      return (
+        <input
+          type="checkbox"
+          checked={checked}
+          readOnly
+          className="mr-2 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+          {...props}
+        />
+      );
+    }
+    return <input type={type} {...props} />;
   }
 };
 
-// Define MathJax configuration for proper rendering
+// Enhanced MathJax configuration with better rendering
 const mathJaxConfig = {
-  loader: { load: ['[tex]/html'] },
+  loader: { 
+    load: ['[tex]/html', '[tex]/color', '[tex]/cancel', '[tex]/mhchem', '[tex]/physics'] 
+  },
   tex: {
-    packages: { '[+]': ['html'] },
+    packages: { 
+      '[+]': ['html', 'color', 'cancel', 'mhchem', 'physics'] 
+    },
     inlineMath: [['$', '$'], ['\\(', '\\)']],
     displayMath: [['$$', '$$'], ['\\[', '\\]']],
     processEscapes: true,
-    processEnvironments: true
+    processEnvironments: true,
+    processRefs: true,
+    digits: /^(?:[0-9]+(?:\{,\}[0-9]{3})*(?:\.[0-9]*)?|\.[0-9]+)/,
+    tags: 'ams',
+    tagSide: 'right',
+    tagIndent: '0.8em',
+    useLabelIds: true,
+    multlineWidth: '85%',
+    macros: {
+      // Common math macros
+      RR: '{\\mathbb{R}}',
+      NN: '{\\mathbb{N}}',
+      ZZ: '{\\mathbb{Z}}',
+      QQ: '{\\mathbb{Q}}',
+      CC: '{\\mathbb{C}}',
+      vec: ['\\mathbf{#1}', 1],
+      norm: ['\\left\\|#1\\right\\|', 1],
+      abs: ['\\left|#1\\right|', 1],
+      set: ['\\left\\{#1\\right\\}', 1]
+    }
   },
   options: {
     skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
     ignoreHtmlClass: 'no-mathjax',
     renderActions: {
-      addMenu: [], // Disable the menu for better mobile experience
+      addMenu: [],
       checkLoading: []
     }
   },
   startup: {
-    typeset: false
+    typeset: false,
+    ready: () => {
+      console.log('MathJax is loaded and ready.');
+    }
   }
+};
+
+// Function to preprocess mathematical content for better rendering
+const preprocessMathContent = (content: string): string => {
+  if (!content) return content;
+  
+  // Ensure proper spacing around math expressions
+  let processed = content
+    // Fix inline math spacing
+    .replace(/([a-zA-Z0-9])\$([^$]+)\$/g, '$1 $$$2$$ ')
+    .replace(/\$([^$]+)\$([a-zA-Z0-9])/g, '$$$1$$ $2')
+    // Fix display math spacing
+    .replace(/([a-zA-Z0-9])\$\$([^$]+)\$\$/g, '$1\n\n$$$$$2$$$$\n\n')
+    .replace(/\$\$([^$]+)\$\$([a-zA-Z0-9])/g, '$$$$$1$$$$\n\n$2')
+    // Ensure boxed expressions are properly formatted
+    .replace(/\\boxed\{([^}]+)\}/g, '\\boxed{$1}')
+    // Fix common fraction formatting
+    .replace(/(\d+)\/(\d+)/g, '\\frac{$1}{$2}')
+    // Fix square root formatting
+    .replace(/sqrt\(([^)]+)\)/g, '\\sqrt{$1}')
+    // Fix power notation
+    .replace(/\^(\d+)/g, '^{$1}')
+    .replace(/_(\d+)/g, '_{$1}');
+  
+  return processed;
 };
 
 const ChatPage: React.FC = () => {
@@ -757,6 +975,140 @@ const ChatPage: React.FC = () => {
     return !!text && urlRegex.test(text);
   };
 
+  // Add streaming API function similar to BotScreen.js
+  const sendMessageToAI = async (message: string, imageUrl: string | null = null, onChunk?: (chunk: string) => void): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      try {
+        // Get the current role context
+        const systemContent = `You are MatrixAI Bot, acting as a ${selectedRole.name}. ${selectedRole.description}`;
+
+        // Prepare messages array
+        const messages = [
+          {
+            role: "system",
+            content: [
+              {
+                type: "text", 
+                text: systemContent
+              }
+            ]
+          },
+          {
+            role: "user",
+            content: [] as any[]
+          }
+        ];
+
+        // Add text content
+        messages[1].content.push({
+          type: "text",
+          text: `Please help me with this question or topic: ${message}`
+        });
+
+        // Add image if provided
+        if (imageUrl) {
+          messages[1].content.push({
+            type: "image_url",
+            image_url: {
+              url: imageUrl
+            }
+          });
+        }
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', true);
+        xhr.setRequestHeader('Authorization', 'Bearer sk-256fda005a1445628fe2ceafcda9e389');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        let fullContent = '';
+        let processedLength = 0;
+        let isFirstChunk = true;
+
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 3 || xhr.readyState === 4) {
+            const responseText = xhr.responseText;
+            
+            // Only process new content that we haven't seen before
+            const newContent = responseText.substring(processedLength);
+            if (newContent) {
+              processedLength = responseText.length;
+              const lines = newContent.split('\n');
+              
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const data = line.slice(6).trim();
+                  if (data === '[DONE]') {
+                    console.log('✅ Stream marked as DONE');
+                    continue;
+                  }
+                  
+                  try {
+                    const parsed = JSON.parse(data);
+                    const content_chunk = parsed.choices?.[0]?.delta?.content;
+                    
+                    if (content_chunk) {
+                      if (isFirstChunk) {
+                        console.log('📝 First content chunk received');
+                        isFirstChunk = false;
+                      }
+                      
+                      fullContent += content_chunk;
+                      
+                      // Call the chunk callback immediately for real-time updates
+                      if (onChunk) {
+                        onChunk(content_chunk);
+                      }
+                    }
+                  } catch (parseError) {
+                    // Skip invalid JSON lines
+                    continue;
+                  }
+                }
+              }
+            }
+            
+            // If request is complete
+            if (xhr.readyState === 4) {
+              if (xhr.status === 200) {
+                console.log('✅ AI API request completed successfully');
+                console.log('📊 Final content length:', fullContent.length);
+                resolve(fullContent.trim() || 'I apologize, but I could not generate a response. Please try again.');
+              } else {
+                console.error('❌ API request failed:', xhr.status, xhr.statusText);
+                reject(new Error(`API call failed: ${xhr.status} ${xhr.statusText}`));
+              }
+            }
+          }
+        };
+
+        xhr.onerror = function() {
+          console.error('💥 XMLHttpRequest error');
+          reject(new Error('Failed to get response from AI. Please try again.'));
+        };
+
+        xhr.ontimeout = function() {
+          console.error('💥 XMLHttpRequest timeout');
+          reject(new Error('Request timed out. Please try again.'));
+        };
+
+        xhr.timeout = 60000; // 60 second timeout
+
+        const requestBody = JSON.stringify({
+          model: "qwen-vl-max",
+          messages: messages,
+          stream: true
+        });
+
+        console.log('📊 Sending request to streaming API...');
+        xhr.send(requestBody);
+
+      } catch (error) {
+        console.error('💥 Error in sendMessageToAI:', error);
+        reject(new Error('Failed to get response from AI. Please try again.'));
+      }
+    });
+  };
+
   const handleSendMessage = async () => {
     if (!inputMessage.trim() && !selectedFile) return;
     
@@ -773,7 +1125,7 @@ const ChatPage: React.FC = () => {
     }
     
     setIsLoading(true);
-    let fileContent = '';
+    let imageUrl: string | null = null;
     let userMessageContent = inputMessage;
     
     try {
@@ -807,21 +1159,17 @@ const ChatPage: React.FC = () => {
             setInputMessage('');
             setSelectedFile(null);
             
-            // Add to message history for API
-            const userMessageForApi = { 
-              role: 'user', 
-              content: userMessageContent + `\n\n[Image: ${selectedFile.name}]`
-            };
-            setMessageHistory([...messageHistory, userMessageForApi]);
-            
             // Decrease free uploads left if user is not pro
             if (!isPro) {
               setFreeUploadsLeft(prev => prev - 1);
             }
+            
+            // Use local URL for AI processing
+            imageUrl = localUrl;
           } else {
             // Read file content as base64
             const reader = new FileReader();
-            fileContent = await new Promise((resolve) => {
+            const fileContent = await new Promise<string>((resolve) => {
               reader.onload = (e) => {
                 const result = e.target?.result as string;
                 resolve(result || '');
@@ -872,13 +1220,6 @@ const ChatPage: React.FC = () => {
             // Save user message to database
             await saveChatToDatabase(publicUrl, 'user');
             
-            // Add to message history for API
-            const userMessageForApi = { 
-              role: 'user', 
-              content: userMessageContent + `\n\n[Image data: ${publicUrl}]`
-            };
-            setMessageHistory([...messageHistory, userMessageForApi]);
-            
             // Clear input and file selection
             setInputMessage('');
             setSelectedFile(null);
@@ -887,6 +1228,9 @@ const ChatPage: React.FC = () => {
             if (!isPro) {
               setFreeUploadsLeft(prev => prev - 1);
             }
+            
+            // Use public URL for AI processing
+            imageUrl = publicUrl;
           }
         } catch (error) {
           console.error('Error processing file:', error);
@@ -908,140 +1252,60 @@ const ChatPage: React.FC = () => {
         // Save user message to database
         await saveChatToDatabase(userMessageContent, 'user');
         
-        // Add to message history for API
-        const userMessageForApi = { 
-          role: 'user', 
-          content: userMessageContent
-        };
-        const updatedMessageHistory = [...messageHistory, userMessageForApi];
-        setMessageHistory(updatedMessageHistory);
-        
         setInputMessage('');
       }
       
-      // System content including role specification
-      const systemContent = `You are an advanced AI assistant with expertise in ${selectedRole.name}. ${selectedRole.description}.`;
+      // Create a streaming bot message that will be updated in real-time
+      const streamingMessageId = messages.length + 2;
+      let streamingContent = '';
       
-      try {
-        // Make API call
-        const response = await axios.post(
-          'https://ddtgdhehxhgarkonvpfq.supabase.co/functions/v1/createContent',
-          {
-            prompt: userMessageContent + (fileContent ? `\n\n[Image data: ${fileContent}]` : ''),
-            uid: uid
-          
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
+      // Add initial empty streaming message
+      const initialStreamingMessage = {
+        id: streamingMessageId,
+        role: 'assistant',
+        content: '',
+        timestamp: new Date().toISOString(),
+        isStreaming: true
+      };
+      
+      setMessages(prev => [...prev, initialStreamingMessage]);
+      
+      // Define chunk handler for real-time updates
+      const handleChunk = (chunk: string) => {
+        streamingContent += chunk;
+        
+        // Update the streaming message in real-time
+        setMessages(prev => prev.map(msg => 
+          msg.id === streamingMessageId 
+            ? { ...msg, content: streamingContent }
+            : msg
+        ));
+        
+        // Auto-scroll to bottom as content streams in
+        setTimeout(() => {
+          if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
           }
+        }, 50);
+      };
+
+      try {
+        // Get streaming response
+        const fullResponse = await sendMessageToAI(
+          userMessageContent + (imageUrl ? `\n\n[Image data: ${imageUrl}]` : ''), 
+          imageUrl, 
+          handleChunk
         );
         
-        // Extract AI response
-        const aiContent = response.data.output.text;
-        
-        // Add AI response to messages with empty content initially
-        const aiResponse = {
-          id: messages.length + 2,
-          role: 'assistant',
-          content: aiContent,
-          timestamp: new Date().toISOString()
-        };
-        
-        setMessages(prev => [...prev, aiResponse]);
-        setIsTyping(prev => ({ ...prev, [aiResponse.id]: true }));
-        setDisplayedText(prev => ({ ...prev, [aiResponse.id]: '' }));
+        // Finalize the streaming message
+        setMessages(prev => prev.map(msg => 
+          msg.id === streamingMessageId 
+            ? { ...msg, content: fullResponse, isStreaming: false }
+            : msg
+        ));
         
         // Save AI message to database
-        await saveChatToDatabase(aiContent, 'assistant');
-        
-        // Process the content into chunks of words for a better typing effect
-        const contentLines = aiContent.split('\n').filter((line: string) => line.trim() !== '');
-        
-        // Create chunks of 5-7 words for each line
-        const lineChunks: string[][] = [];
-        
-        contentLines.forEach((line: string) => {
-          const words = line.split(' ');
-          const chunks: string[] = [];
-          
-          for (let i = 0; i < words.length; i += 5 + Math.floor(Math.random() * 3)) { // 5-7 words per chunk
-            const chunkSize = Math.min(5 + Math.floor(Math.random() * 3), words.length - i);
-            chunks.push(words.slice(i, i + chunkSize).join(' '));
-          }
-          
-          lineChunks.push(chunks);
-        });
-        
-        setWordChunks(prev => ({ ...prev, [aiResponse.id]: lineChunks }));
-        setCurrentLineIndex(prev => ({ ...prev, [aiResponse.id]: 0 }));
-        setCurrentWordIndex(prev => ({ ...prev, [aiResponse.id]: 0 }));
-        
-        // If no content, skip animation
-        if (contentLines.length === 0) {
-          setIsTyping(prev => ({ ...prev, [aiResponse.id]: false }));
-          return;
-        }
-        
-        // Improved typing effect that shows chunks of words in sequence
-        const typeNextChunk = (lineIndex: number, chunkIndex: number) => {
-          // If we've reached the end of all lines
-          if (lineIndex >= lineChunks.length) {
-            setIsTyping(prev => ({ ...prev, [aiResponse.id]: false }));
-            
-            // Auto speak if enabled and not currently speaking
-            if (autoSpeak && !isSpeaking) {
-              setTimeout(() => {
-                handleTextToSpeech(aiContent, aiResponse.id);
-              }, 300);
-            }
-            return;
-          }
-          
-          // If we've reached the end of the current line's chunks
-          if (chunkIndex >= lineChunks[lineIndex].length) {
-            // Move to the next line and start with its first chunk
-            setTimeout(() => {
-              typeNextChunk(lineIndex + 1, 0);
-            }, 350 + Math.random() * 250); // Slightly longer pause between lines
-            
-            setCurrentLineIndex(prev => ({ ...prev, [aiResponse.id]: lineIndex + 1 }));
-            setCurrentWordIndex(prev => ({ ...prev, [aiResponse.id]: 0 }));
-            return;
-          }
-          
-          // Update displayed text by adding the next chunk
-          setDisplayedText(prev => {
-            // If we're starting a new line
-            if (chunkIndex === 0) {
-              // Add a new line if not the first line
-              const newLinePrefix = lineIndex > 0 ? prev[aiResponse.id] + '\n' : prev[aiResponse.id];
-              return {
-                ...prev,
-                [aiResponse.id]: newLinePrefix + lineChunks[lineIndex][chunkIndex]
-              };
-            } else {
-              // Continue the current line by adding a space and the next chunk
-              return {
-                ...prev,
-                [aiResponse.id]: prev[aiResponse.id] + ' ' + lineChunks[lineIndex][chunkIndex]
-              };
-            }
-          });
-          
-          setCurrentWordIndex(prev => ({ ...prev, [aiResponse.id]: chunkIndex + 1 }));
-          
-          // Schedule typing the next chunk
-          setTimeout(() => {
-            typeNextChunk(lineIndex, chunkIndex + 1);
-          }, 100 + Math.random() * 150); // Variable delay between chunks
-        };
-        
-        // Start typing from the first line's first chunk
-        setTimeout(() => {
-          typeNextChunk(0, 0);
-        }, 300); // Initial delay before starting to type
+        await saveChatToDatabase(fullResponse, 'assistant');
         
         // Add to chat history if this is a new conversation
         if (messages.length <= 1) {
@@ -1057,15 +1321,18 @@ const ChatPage: React.FC = () => {
           }));
         }
       } catch (error) {
-        console.error('Error calling AI API:', error);
-        // Add error message
-        const errorResponse = {
-          id: messages.length + 2,
-          role: 'assistant',
-          content: 'Sorry, I encountered an error. Please try again.',
-          timestamp: new Date().toISOString()
-        };
-        setMessages(prev => [...prev, errorResponse]);
+        console.error('Error calling streaming AI API:', error);
+        
+        // Remove the streaming message and add error message
+        setMessages(prev => {
+          const messagesWithoutStreaming = prev.filter(msg => msg.id !== streamingMessageId);
+          return [...messagesWithoutStreaming, {
+            id: streamingMessageId,
+            role: 'assistant',
+            content: 'Sorry, I encountered an error. Please try again.',
+            timestamp: new Date().toISOString()
+          }];
+        });
         
         // Save error message to database
         await saveChatToDatabase('Sorry, I encountered an error. Please try again.', 'assistant');
@@ -1078,23 +1345,102 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  // When a role is changed, show a message from the assistant
-  const handleRoleChange = (role: typeof roleOptions[0]) => {
+  // When a role is changed, automatically create a new chat with that role
+  const handleRoleChange = async (role: typeof roleOptions[0]) => {
     setSelectedRole(role);
     setShowRoleSelector(false);
     
-    // Add a message to let the user know the role has changed
+    // Stop any ongoing speech
+    stopSpeech();
+    
+    // Generate a new chat ID
+    const newChatId = Date.now().toString();
+    setChatId(newChatId);
+    
+    // Clear the messageHistory to prevent duplicating previous messages
+    setMessageHistory([]);
+    
+    // Reset inputMessage in case there was draft text
+    setInputMessage('');
+    
+    // Clear any selected file
+    setSelectedFile(null);
+    
+    // Create role-specific welcome message
     const roleChangeMessage = {
-      id: messages.length + 1,
+      id: 1,
       role: 'assistant',
-      content: `I am now your ${role.name}. ${role.description}. How can I help you today?`,
+      content: `Hello! I am now your ${role.name}. ${role.description} How can I help you today?`,
       timestamp: new Date().toISOString()
     };
     
-    setMessages(prev => [...prev, roleChangeMessage]);
+    // Set messages with the new role message
+    setMessages([roleChangeMessage]);
     
     // Reset message history for the new role
     setMessageHistory([{ role: 'assistant', content: roleChangeMessage.content }]);
+    
+    try {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user?.id) {
+        console.log('No authenticated user, skipping database creation');
+        
+        // Update URL without reloading
+        navigate(`/chat/${newChatId}`, { replace: true });
+        
+        return;
+      }
+      
+      const userId = session.user.id;
+      const timestamp = new Date().toISOString();
+      
+      // Create new chat with role-specific information
+      const newChat = {
+        chat_id: newChatId,
+        user_id: userId,
+        name: `${role.name} Chat`,
+        messages: [{
+          sender: 'bot',
+          text: roleChangeMessage.content,
+          timestamp: timestamp
+        }],
+        role: role.id,
+        role_description: role.description,
+        created_at: timestamp,
+        updated_at: timestamp
+      };
+      
+      const { error: insertError } = await supabase
+        .from('user_chats')
+        .insert(newChat);
+      
+      if (insertError) {
+        console.error('Error creating new chat:', insertError);
+      } else {
+        // Update local state with the new chat
+        setChats(prev => [{
+          id: newChatId,
+          title: `${role.name} Chat`,
+          messages: [roleChangeMessage],
+          role: role.id,
+          roleDescription: role.description,
+          description: `New conversation with ${role.name}`
+        }, ...prev]);
+        
+        // Update URL without reloading
+        navigate(`/chat/${newChatId}`, { replace: true });
+        
+        // Update local storage with new chat ID
+        localStorage.setItem('lastActiveChatId', newChatId);
+        
+        // Refresh chat list to show the new chat
+        await fetchUserChats();
+      }
+    } catch (error) {
+      console.error('Error in role change:', error);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -1217,7 +1563,7 @@ const ChatPage: React.FC = () => {
     // Clear any selected file
     setSelectedFile(null);
     
-    // Use initialMessages instead of empty array to show default welcome message
+    // Use initialMessages for the UI display
     setMessages(initialMessages);
     setSelectedRole(roleOptions[0]);
     
@@ -1237,21 +1583,20 @@ const ChatPage: React.FC = () => {
       const userId = session.user.id;
       const timestamp = new Date().toISOString();
       
-      // Initialize with welcome message instead of empty messages
+      // Initialize with welcome message for database storage
       const newChat = {
         chat_id: newChatId,
         user_id: userId,
         name: 'New Chat',
         messages: [{
           sender: 'bot',
-          text: 'Hello! I\'m your AI assistant. How can I help you today?',
+          text: 'Hello! I\'m MatrixAI. How can I help you today?',
           timestamp: timestamp
-        }], 
+        }],
         role: selectedRole.id,
         role_description: selectedRole.description,
         created_at: timestamp,
-        updated_at: timestamp,
-        description: 'New conversation'
+        updated_at: timestamp
       };
       
       const { error: insertError } = await supabase
@@ -1265,7 +1610,7 @@ const ChatPage: React.FC = () => {
         setChats(prev => [{
           id: newChatId,
           title: 'New Chat',
-          messages: initialMessages, // Use initialMessages instead of empty array
+          messages: initialMessages,
           role: selectedRole.id,
           roleDescription: selectedRole.description,
           description: 'New conversation'
@@ -1299,7 +1644,7 @@ const ChatPage: React.FC = () => {
     stopSpeech();
     
     // Clear all message state completely
-    setMessages(initialMessages);
+    setMessages([]);
     setMessageHistory([]);
     setInputMessage('');
     setSelectedFile(null);
@@ -1317,13 +1662,17 @@ const ChatPage: React.FC = () => {
       // just update the local state
       const { data } = await supabase.auth.getSession();
       if (!data?.session?.user?.id) {
-        return; // Skip database operations if not signed in
+        // For non-logged in users, just set the initial messages
+        setMessages(initialMessages);
+        return;
       }
       
       // For logged in users, create the new chat in the database
       await startNewChat(newChatId);
     } catch (error) {
       console.error('Error starting new chat:', error);
+      // Fallback to showing initial messages
+      setMessages(initialMessages);
     }
   };
 
@@ -1690,564 +2039,560 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <MathJaxContext config={mathJaxConfig}>
-      <div className="flex h-screen overflow-hidden">
-        {/* Sidebar - always fixed on desktop, hidden on mobile when closed */}
-        <div className="md:block hidden">
-          <Sidebar onToggle={handleSidebarToggle} activeLink="/chat" />
-        </div>
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar - always fixed on desktop, hidden on mobile when closed */}
+      <div className="md:block hidden">
+        <Sidebar onToggle={handleSidebarToggle} activeLink="/chat" />
+      </div>
 
-        {/* Mobile sidebar toggle button */}
-        <div className="md:hidden fixed top-3 left-3 z-[60]">
-          <button 
-            onClick={() => setShowChatHistory(!showChatHistory)}
-            className={`p-2 rounded-lg ${
-              darkMode 
-                ? 'bg-gray-800 text-white hover:bg-gray-700' 
-                : 'bg-white text-gray-800 hover:bg-gray-100'
-            } shadow-md`}
-            aria-label="Toggle mobile menu"
-          >
-            <FiMenu className="w-5 h-5" />
-          </button>
-        </div>
+      {/* Mobile sidebar toggle button */}
+      <div className="md:hidden fixed top-3 left-3 z-[60]">
+        <button 
+          onClick={() => setShowChatHistory(!showChatHistory)}
+          className={`p-2 rounded-lg ${
+            darkMode 
+              ? 'bg-gray-800 text-white hover:bg-gray-700' 
+              : 'bg-white text-gray-800 hover:bg-gray-100'
+          } shadow-md`}
+          aria-label="Toggle mobile menu"
+        >
+          <FiMenu className="w-5 h-5" />
+        </button>
+      </div>
 
-        {/* Mobile sidebar/chat history */}
-        {showChatHistory && (
-          <div className="md:hidden fixed inset-0 z-50 flex">
-            <div 
-              className="bg-black bg-opacity-50 flex-1"
-              onClick={() => setShowChatHistory(false)}
-            ></div>
-            <div className={`w-72 ${darkMode ? 'bg-gray-800' : 'bg-white'} flex flex-col h-full`}>
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h2 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Chat History</h2>
-                <button 
-                  onClick={() => setShowChatHistory(false)}
-                  className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                  <FiX className="w-5 h-5" />
-                </button>
+      {/* Mobile sidebar/chat history */}
+      {showChatHistory && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          <div 
+            className="bg-black bg-opacity-50 flex-1"
+            onClick={() => setShowChatHistory(false)}
+          ></div>
+          <div className={`w-72 ${darkMode ? 'bg-gray-800' : 'bg-white'} flex flex-col h-full`}>
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+              <h2 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Chat History</h2>
+              <button 
+                onClick={() => setShowChatHistory(false)}
+                className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-3">
+              <div className="mb-4">
+                <h3 className="px-3 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Today</h3>
+                {groupedChatHistory.today.map(chat => renderChatHistoryItem(chat, 'Today'))}
               </div>
-              <div className="flex-1 overflow-y-auto p-3">
-                <div className="mb-4">
-                  <h3 className="px-3 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Today</h3>
-                  {groupedChatHistory.today.map(chat => renderChatHistoryItem(chat, 'Today'))}
-                </div>
-                
-                <div className="mb-4">
-                  <h3 className="px-3 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Yesterday</h3>
-                  {groupedChatHistory.yesterday.map(chat => renderChatHistoryItem(chat, 'Yesterday'))}
-                </div>
-
-                {/* Last week chats */}
-                {groupedChatHistory.lastWeek.length > 0 && (
-                  <div className="mb-3">
-                    <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Last Week</h4>
-                    {groupedChatHistory.lastWeek.map(chat => renderChatHistoryItem(chat, 'Last week'))}
-                  </div>
-                )}
-                
-                {/* Last month chats */}
-                {groupedChatHistory.lastMonth.length > 0 && (
-                  <div>
-                    <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Last Month</h4>
-                    {groupedChatHistory.lastMonth.map(chat => renderChatHistoryItem(chat, 'Last month'))}
-                  </div>
-                )}
+              
+              <div className="mb-4">
+                <h3 className="px-3 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Yesterday</h3>
+                {groupedChatHistory.yesterday.map(chat => renderChatHistoryItem(chat, 'Yesterday'))}
               </div>
+
+              {/* Last week chats */}
+              {groupedChatHistory.lastWeek.length > 0 && (
+                <div className="mb-3">
+                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Last Week</h4>
+                  {groupedChatHistory.lastWeek.map(chat => renderChatHistoryItem(chat, 'Last week'))}
+                </div>
+              )}
+              
+              {/* Last month chats */}
+              {groupedChatHistory.lastMonth.length > 0 && (
+                <div>
+                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Last Month</h4>
+                  {groupedChatHistory.lastMonth.map(chat => renderChatHistoryItem(chat, 'Last month'))}
+                </div>
+              )}
             </div>
           </div>
-        )}
-        
-        {/* Main content area with fixed navbar */}
-        <div className="flex-1 flex flex-col h-screen transition-all duration-300"
-            style={{ marginLeft: isDesktop ? `${sidebarWidth}px` : '0' }}>
-          {/* Fixed navbar */}
-          <div className={`${
-            darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'
-          } border-b w-full flex-none h-16 fixed top-0 right-0 z-40 transition-all duration-300`}
-          style={{ 
-            left: isDesktop ? `${sidebarWidth}px` : '0',
-            width: isDesktop ? `calc(100% - ${sidebarWidth}px)` : '100%'
-          }}>
-            <div className="h-full flex items-center justify-between px-4">
-              <div className="flex items-center">
-                {/* Brand Logo - Only visible on mobile */}
-                <div className="md:hidden flex items-center">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                    AI
-                  </div>
-                  {isPro && (
-                    <span className="ml-1 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5">
-                      PRO
-                    </span>
-                  )}
+        </div>
+      )}
+      
+      {/* Main content area with fixed navbar */}
+      <div className="flex-1 flex flex-col h-screen transition-all duration-300"
+          style={{ marginLeft: isDesktop ? `${sidebarWidth}px` : '0' }}>
+        {/* Fixed navbar */}
+        <div className={`${
+          darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'
+        } border-b w-full flex-none h-16 fixed top-0 right-0 z-40 transition-all duration-300`}
+        style={{ 
+          left: isDesktop ? `${sidebarWidth}px` : '0',
+          width: isDesktop ? `calc(100% - ${sidebarWidth}px)` : '100%'
+        }}>
+          <div className="h-full flex items-center justify-between px-4">
+            <div className="flex items-center">
+              {/* Brand Logo - Only visible on mobile */}
+              <div className="md:hidden flex items-center">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+                  AI
                 </div>
-                
-                {/* Page title */}
-                <h1 className="text-lg font-semibold ml-4 md:ml-0">AI Chat</h1>
-              </div>
-
-              {/* Right Navigation */}
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                {/* User Coins */}
-                {userData && (
-                  <div className={`hidden sm:flex items-center px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm ${
-                    darkMode 
-                      ? 'bg-amber-900/30 text-amber-300' 
-                      : 'bg-amber-100 text-amber-600'
-                  }`}>
-                    <FiCreditCard className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
-                    <span className="font-medium">{userData.user_coins || 0}</span>
-                  </div>
+                {isPro && (
+                  <span className="ml-1 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5">
+                    PRO
+                  </span>
                 )}
+              </div>
+              
+              {/* Page title */}
+              <h1 className="text-lg font-semibold ml-4 md:ml-0">AI Chat</h1>
+            </div>
 
-                {/* Dark Mode Toggle */}
+            {/* Right Navigation */}
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              {/* User Coins */}
+              {userData && (
+                <div className={`hidden sm:flex items-center px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm ${
+                  darkMode 
+                    ? 'bg-amber-900/30 text-amber-300' 
+                    : 'bg-amber-100 text-amber-600'
+                }`}>
+                  <FiCreditCard className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
+                  <span className="font-medium">{userData.user_coins || 0}</span>
+                </div>
+              )}
+
+              {/* Dark Mode Toggle */}
+              <button 
+                onClick={toggleDarkMode}
+                className={`p-1.5 sm:p-2 rounded-lg ${
+                  darkMode 
+                    ? 'text-yellow-300 hover:bg-gray-700' 
+                    : 'text-gray-500 hover:bg-gray-100'
+                }`}
+                aria-label="Toggle dark mode"
+              >
+                {darkMode ? <FiSun className="w-4 h-4 sm:w-5 sm:h-5" /> : <FiMoon className="w-4 h-4 sm:w-5 sm:h-5" />}
+              </button>
+
+              {/* User Menu */}
+              <div className="relative">
                 <button 
-                  onClick={toggleDarkMode}
-                  className={`p-1.5 sm:p-2 rounded-lg ${
-                    darkMode 
-                      ? 'text-yellow-300 hover:bg-gray-700' 
-                      : 'text-gray-500 hover:bg-gray-100'
-                  }`}
-                  aria-label="Toggle dark mode"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center"
                 >
-                  {darkMode ? <FiSun className="w-4 h-4 sm:w-5 sm:h-5" /> : <FiMoon className="w-4 h-4 sm:w-5 sm:h-5" />}
-                </button>
-
-                {/* User Menu */}
-                <div className="relative">
-                  <button 
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center"
-                  >
-                    <span className="sr-only">Open user menu</span>
-                    {userData?.dp_url ? (
-                      <img 
-                        src={userData.dp_url} 
-                        alt={userData.name || 'User'} 
-                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border-2 border-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
-                      />
-                    ) : (
-                      <div className="relative w-7 h-7 sm:w-8 sm:h-8 overflow-hidden rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center">
-                        <span className="text-white font-medium">{getUserInitial()}</span>
-                      </div>
-                    )}
-                  </button>
-
-                  {/* User Menu Dropdown */}
-                  {showUserMenu && (
-                    <div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg ring-1 focus:outline-none z-50 ${
-                      darkMode ? 'bg-gray-800 ring-gray-700' : 'bg-white ring-black ring-opacity-5'
-                    }`}>
-                      <div className={`py-3 px-4 text-sm border-b ${
-                        darkMode ? 'text-gray-200 border-gray-700' : 'text-gray-900 border-gray-200'
-                      }`}>
-                        <div className="font-medium">{getUserDisplayName()}</div>
-                        <div className={`truncate ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                          {userData?.email}
-                        </div>
-                        {userData?.user_plan && (
-                          <div className={`mt-1 px-2 py-0.5 text-xs rounded-full inline-block ${
-                            darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-600'
-                          }`}>
-                            {userData.user_plan} Plan
-                          </div>
-                        )}
-                      </div>
-                      <ul className="py-1 text-sm">
-                        <li>
-                          <Link to="/profile" className={`block py-2 px-4 ${
-                            darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                          }`}>Profile</Link>
-                        </li>
-                        <li>
-                          <Link to="/settings" className={`block py-2 px-4 ${
-                            darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                          }`}>Settings</Link>
-                        </li>
-                      </ul>
+                  <span className="sr-only">Open user menu</span>
+                  {userData?.dp_url ? (
+                    <img 
+                      src={userData.dp_url} 
+                      alt={userData.name || 'User'} 
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border-2 border-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+                    />
+                  ) : (
+                    <div className="relative w-7 h-7 sm:w-8 sm:h-8 overflow-hidden rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center">
+                      <span className="text-white font-medium">{getUserInitial()}</span>
                     </div>
                   )}
-                </div>
+                </button>
+
+                {/* User Menu Dropdown */}
+                {showUserMenu && (
+                  <div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg ring-1 focus:outline-none z-50 ${
+                    darkMode ? 'bg-gray-800 ring-gray-700' : 'bg-white ring-black ring-opacity-5'
+                  }`}>
+                    <div className={`py-3 px-4 text-sm border-b ${
+                      darkMode ? 'text-gray-200 border-gray-700' : 'text-gray-900 border-gray-200'
+                    }`}>
+                      <div className="font-medium">{getUserDisplayName()}</div>
+                      <div className={`truncate ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {userData?.email}
+                      </div>
+                      {userData?.user_plan && (
+                        <div className={`mt-1 px-2 py-0.5 text-xs rounded-full inline-block ${
+                          darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-600'
+                        }`}>
+                          {userData.user_plan} Plan
+                        </div>
+                      )}
+                    </div>
+                    <ul className="py-1 text-sm">
+                      <li>
+                        <Link to="/profile" className={`block py-2 px-4 ${
+                          darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+                        }`}>Profile</Link>
+                      </li>
+                      <li>
+                        <Link to="/settings" className={`block py-2 px-4 ${
+                          darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+                        }`}>Settings</Link>
+                      </li>
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Main content area with fixed navbar */}
-          <div className={`flex-1 flex flex-col overflow-hidden pt-16 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-            <div className="flex-1 overflow-hidden relative">
-              {/* Show pro feature alert modal */}
-              <AnimatePresence>
-                {showProAlert && (
-                  <ProFeatureAlert 
-                    onClose={() => setShowProAlert(false)} 
-                    featureName="AI Chat"
-                  />
-                )}
-              </AnimatePresence>
-              
-              {/* Main chat container */}
-              <div className="h-full max-w-6xl mx-auto px-4 pt-4 pb-0 flex flex-col">
-                <div className="bg-opacity-80 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden flex-1 flex flex-col">
-                  {/* Chat interface */}
-                  <div ref={chatContainerRef} className="flex flex-col h-full">
-                    {/* Chat header with role selector */}
-                    <div className={`px-6 py-3 flex justify-between items-center border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+        {/* Main content area with fixed navbar */}
+        <div className={`flex-1 flex flex-col overflow-hidden pt-16 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+          <div className="flex-1 overflow-hidden relative">
+            {/* Show pro feature alert modal */}
+            <AnimatePresence>
+              {showProAlert && (
+                <ProFeatureAlert 
+                  onClose={() => setShowProAlert(false)} 
+                  featureName="AI Chat"
+                />
+              )}
+            </AnimatePresence>
+            
+            {/* Main chat container */}
+            <div className="h-full max-w-6xl mx-auto px-4 pt-4 pb-0 flex flex-col">
+              <div className="bg-opacity-80 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden flex-1 flex flex-col">
+                {/* Chat interface */}
+                <div ref={chatContainerRef} className="flex flex-col h-full">
+                  {/* Chat header with role selector */}
+                  <div className={`px-6 py-3 flex justify-between items-center border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    <div className="relative">
+                      <button 
+                        onClick={() => setShowRoleSelector(!showRoleSelector)} 
+                        className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium border ${
+                          darkMode ? 'text-gray-200 hover:bg-gray-700 border-gray-600' : 'text-gray-700 hover:bg-gray-50 border-gray-300'
+                        }`}
+                      >
+                        <FiCpu className="text-blue-500 mr-2" />
+                        <span>{selectedRole.name}</span>
+                        <FiChevronDown className={`transition-transform ${showRoleSelector ? 'rotate-180' : ''}`} />
+                      </button>
+                      
+                      {/* Role Selector Dropdown */}
+                      {showRoleSelector && (
+                        <div className={`absolute top-full left-0 mt-1 w-64 rounded-md shadow-lg z-10 ${
+                          darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                        }`}>
+                          <div className="py-1">
+                            {roleOptions.map(role => (
+                              <button
+                                key={role.id}
+                                className={`w-full text-left px-4 py-2 text-sm ${
+                                  darkMode 
+                                    ? 'hover:bg-gray-700 text-gray-200' 
+                                    : 'hover:bg-gray-100 text-gray-700'
+                                }`}
+                                onClick={() => handleRoleChange(role)}
+                              >
+                                <div className="font-medium">{role.name}</div>
+                                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  {role.description}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      {!isPro && (
+                        <div className="hidden md:flex items-center text-sm text-yellow-600 dark:text-yellow-400 mr-2">
+                          <FiMessageSquare className="mr-1 h-4 w-4" />
+                          <span>{remainingMessages} messages left</span>
+                        </div>
+                      )}
+                      <button 
+                        onClick={handleStartNewChat}
+                        className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                        title="New Chat"
+                      >
+                        <FiPlus className="w-5 h-5" />
+                      </button>
+                      
+                      {/* History dropdown button */}
                       <div className="relative">
                         <button 
-                          onClick={() => setShowRoleSelector(!showRoleSelector)} 
-                          className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium border ${
-                            darkMode ? 'text-gray-200 hover:bg-gray-700 border-gray-600' : 'text-gray-700 hover:bg-gray-50 border-gray-300'
+                          onClick={() => setShowHistoryDropdown(!showHistoryDropdown)}
+                          className={`p-2 rounded-full ${
+                            showHistoryDropdown
+                              ? (darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-700') 
+                              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                           }`}
+                          title="Chat History"
                         >
-                          <FiCpu className="text-blue-500 mr-2" />
-                          <span>{selectedRole.name}</span>
-                          <FiChevronDown className={`transition-transform ${showRoleSelector ? 'rotate-180' : ''}`} />
+                          <FiClock className="w-5 h-5" />
                         </button>
                         
-                        {/* Role Selector Dropdown */}
-                        {showRoleSelector && (
-                          <div className={`absolute top-full left-0 mt-1 w-64 rounded-md shadow-lg z-10 ${
-                            darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-                          }`}>
-                            <div className="py-1">
-                              {roleOptions.map(role => (
-                                <button
-                                  key={role.id}
-                                  className={`w-full text-left px-4 py-2 text-sm ${
-                                    darkMode 
-                                      ? 'hover:bg-gray-700 text-gray-200' 
-                                      : 'hover:bg-gray-100 text-gray-700'
-                                  }`}
-                                  onClick={() => handleRoleChange(role)}
-                                >
-                                  <div className="font-medium">{role.name}</div>
-                                  <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                    {role.description}
-                                  </div>
-                                </button>
-                              ))}
+                        {/* History Dropdown */}
+                        {showHistoryDropdown && (
+                          <div 
+                            className={`absolute top-full right-0 mt-2 w-72 rounded-lg shadow-xl z-20 overflow-hidden ${
+                              darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                            }`}
+                          >
+                            <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                              <h3 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Recent Conversations</h3>
+                              <button 
+                                onClick={() => setShowHistoryDropdown(false)}
+                                className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                              >
+                                <FiX className="w-4 h-4" />
+                              </button>
+                            </div>
+                            
+                            <div className="max-h-96 overflow-y-auto py-2">
+                              {/* Today's chats */}
+                              {groupedChatHistory.today.length > 0 && (
+                                <div className="mb-3">
+                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Today</h4>
+                                  {groupedChatHistory.today.map(chat => renderChatHistoryItem(chat, 'Today'))}
+                                </div>
+                              )}
+                              
+                              {/* Yesterday's chats */}
+                              {groupedChatHistory.yesterday.length > 0 && (
+                                <div className="mb-3">
+                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Yesterday</h4>
+                                  {groupedChatHistory.yesterday.map(chat => renderChatHistoryItem(chat, 'Yesterday'))}
+                                </div>
+                              )}
+
+                              {/* Last week chats */}
+                              {groupedChatHistory.lastWeek.length > 0 && (
+                                <div className="mb-3">
+                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Last Week</h4>
+                                  {groupedChatHistory.lastWeek.map(chat => renderChatHistoryItem(chat, 'Last week'))}
+                                </div>
+                              )}
+                              
+                              {/* Last month chats */}
+                              {groupedChatHistory.lastMonth.length > 0 && (
+                                <div>
+                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Last Month</h4>
+                                  {groupedChatHistory.lastMonth.map(chat => renderChatHistoryItem(chat, 'Last month'))}
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className={`p-2 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                              <button 
+                                className={`w-full text-center py-2 rounded-md text-sm font-medium ${
+                                  darkMode 
+                                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                }`}
+                              >
+                                View All History
+                              </button>
                             </div>
                           </div>
                         )}
                       </div>
                       
-                      <div className="flex items-center space-x-2">
-                        {!isPro && (
-                          <div className="hidden md:flex items-center text-sm text-yellow-600 dark:text-yellow-400 mr-2">
-                            <FiMessageSquare className="mr-1 h-4 w-4" />
-                            <span>{remainingMessages} messages left</span>
-                          </div>
-                        )}
-                        <button 
-                          onClick={handleStartNewChat}
-                          className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                          title="New Chat"
-                        >
-                          <FiPlus className="w-5 h-5" />
-                        </button>
-                        
-                        {/* History dropdown button */}
-                        <div className="relative">
-                          <button 
-                            onClick={() => setShowHistoryDropdown(!showHistoryDropdown)}
-                            className={`p-2 rounded-full ${
-                              showHistoryDropdown
-                                ? (darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-700') 
-                                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                            }`}
-                            title="Chat History"
-                          >
-                            <FiClock className="w-5 h-5" />
-                          </button>
-                          
-                          {/* History Dropdown */}
-                          {showHistoryDropdown && (
-                            <div 
-                              className={`absolute top-full right-0 mt-2 w-72 rounded-lg shadow-xl z-20 overflow-hidden ${
-                                darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-                              }`}
-                            >
-                              <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                                <h3 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Recent Conversations</h3>
-                                <button 
-                                  onClick={() => setShowHistoryDropdown(false)}
-                                  className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-                                >
-                                  <FiX className="w-4 h-4" />
-                                </button>
-                              </div>
-                              
-                              <div className="max-h-96 overflow-y-auto py-2">
-                                {/* Today's chats */}
-                                {groupedChatHistory.today.length > 0 && (
-                                  <div className="mb-3">
-                                    <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Today</h4>
-                                    {groupedChatHistory.today.map(chat => renderChatHistoryItem(chat, 'Today'))}
-                                  </div>
-                                )}
-                                
-                                {/* Yesterday's chats */}
-                                {groupedChatHistory.yesterday.length > 0 && (
-                                  <div className="mb-3">
-                                    <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Yesterday</h4>
-                                    {groupedChatHistory.yesterday.map(chat => renderChatHistoryItem(chat, 'Yesterday'))}
-                                  </div>
-                                )}
-
-                                {/* Last week chats */}
-                                {groupedChatHistory.lastWeek.length > 0 && (
-                                  <div className="mb-3">
-                                    <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Last Week</h4>
-                                    {groupedChatHistory.lastWeek.map(chat => renderChatHistoryItem(chat, 'Last week'))}
-                                  </div>
-                                )}
-                                
-                                {/* Last month chats */}
-                                {groupedChatHistory.lastMonth.length > 0 && (
-                                  <div>
-                                    <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Last Month</h4>
-                                    {groupedChatHistory.lastMonth.map(chat => renderChatHistoryItem(chat, 'Last month'))}
-                                  </div>
-                                )}
-                              </div>
-                              
-                              <div className={`p-2 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                                <button 
-                                  className={`w-full text-center py-2 rounded-md text-sm font-medium ${
-                                    darkMode 
-                                      ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
-                                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                  }`}
-                                >
-                                  View All History
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Auto-speak toggle */}
-                        <button 
-                          onClick={toggleAutoSpeak}
-                          className={`p-2 rounded ${autoSpeak
-                            ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-600')
-                            : (darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700')
-                          }`}
-                          title={autoSpeak ? "Auto-speak On" : "Auto-speak Off"}
-                        >
-                          {autoSpeak ? <FiVolume2 className="w-5 h-5" /> : <FiVolume className="w-5 h-5" />}
-                        </button>
-                        
-                        {/* Call button */}
-                        <Link
-                          to="/call" 
-                          className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                          title="Start Voice Call"
-                          onClick={stopSpeech}
-                        >
-                          <FiPhone className="w-5 h-5" />
-                        </Link>
-                      </div>
-                    </div>
+                      {/* Auto-speak toggle */}
+                      <button 
+                        onClick={toggleAutoSpeak}
+                        className={`p-2 rounded ${autoSpeak
+                          ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-600')
+                          : (darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700')
+                        }`}
+                        title={autoSpeak ? "Auto-speak On" : "Auto-speak Off"}
+                      >
+                        {autoSpeak ? <FiVolume2 className="w-5 h-5" /> : <FiVolume className="w-5 h-5" />}
+                      </button>
+                      
+                      {/* Call button */}
                     
-                    {/* Messages container with improved markdown */}
-                    <div className="flex-1 overflow-y-auto px-4 py-4">
-                      <div className="max-w-3xl mx-auto space-y-6">
-                        {messages.map((message) => (
-                          <motion.div
-                            key={message.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                          >
-                            <div className={`max-w-[85%] flex ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                              {/* Avatar */}
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
-                                message.role === 'assistant' 
-                                  ? (darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white') 
-                                  : (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700')
-                              } ${message.role === 'user' ? 'ml-3' : 'mr-3'}`}>
-                                {message.role === 'assistant' ? (
-                                  <FiCpu />
-                                ) : (
-                                  <FiUser />
-                                )}
-                              </div>
-                              
-                              <div className={`rounded-2xl px-4 py-3 ${
-                                message.role === 'assistant' 
-                                  ? (darkMode ? 'bg-gray-800 border border-gray-700 text-gray-100' : 'bg-white border border-gray-200 shadow-sm text-gray-800') 
-                                  : (darkMode ? 'bg-gradient-to-r from-blue-800 to-purple-800 text-white' : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white')
-                              }`}>
-                                {message.role === 'assistant' ? (
-                                  <div className={`prose prose-sm max-w-none ${darkMode ? 'prose-invert' : ''} prose-headings:font-bold prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-pre:bg-gray-100 dark:prose-pre:bg-gray-800 prose-pre:p-2 prose-pre:rounded-md markdown-content`}>
-                                    {isTyping[message.id] ? (
-                                      <div>
-                                        {displayedText[message.id]?.split('\n').map((line: string, lineIdx: number) => (
-                                          <div key={lineIdx} className="mb-2">
-                                            <div className="typing-animation">
-                                              {line}
-                                              {lineIdx === currentLineIndex[message.id] && (
-                                                <span className="typing-cursor"></span>
-                                              )}
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    ) : (
-                                      <MathJax dynamic={true}>
-                                        {message.content ? (
-                                          <ReactMarkdown components={MarkdownComponents}>
-                                            {message.content}
-                                          </ReactMarkdown>
-                                        ) : (
-                                          <span>Loading content...</span>
-                                        )}
-                                      </MathJax>
-                                    )}
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <div className="whitespace-pre-wrap">{message.content}</div>
-                                    {/* Display image if it exists */}
-                                    {'fileContent' in message && message.fileContent && (
-                                      <div className="mt-2">
-                                        <img 
-                                          src={message.fileContent as string} 
-                                          alt={message.fileName as string || "Uploaded image"} 
-                                          className="max-w-full rounded-lg mt-2 max-h-64 object-contain"
-                                        />
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                                
-                                {/* Message footer */}
-                                <div className={`mt-2 flex items-center justify-between text-xs ${
-                                  message.role === 'assistant' 
-                                    ? (darkMode ? 'text-gray-500' : 'text-gray-500') 
-                                    : 'text-blue-200'
-                                }`}>
-                                  <span>{formatTimestamp(message.timestamp)}</span>
-                                  
-                                  <div className="flex space-x-2">
-                                    {/* Add message actions here */}
-                                    <button 
-                                      onClick={() => copyToClipboard(message.content)}
-                                      className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-                                      aria-label="Copy to clipboard"
-                                    >
-                                      <FiCopy size={14} />
-                                    </button>
-                                    {message.role === 'assistant' && (
-                                      <>
-                                        <button 
-                                          onClick={() => handleTextToSpeech(message.content, message.id)}
-                                          className={`p-1 rounded-full ${
-                                            speakingMessageId === message.id 
-                                              ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-600')
-                                              : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')
-                                          }`}
-                                          aria-label={speakingMessageId === message.id ? "Stop speaking" : "Speak message"}
-                                        >
-                                          {speakingMessageId === message.id ? 
-                                            <FiSquare size={14} /> : 
-                                            <FiVolume2 size={14} />
-                                          }
-                                        </button>
-                                        <button 
-                                          onClick={() => handleShareMessage(message.content)}
-                                          className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-                                          aria-label="Share message"
-                                        >
-                                          <FiShare2 size={14} />
-                                        </button>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
-                        ))}
-                        
-                        {/* Loading indicator */}
-                        {isLoading && (
-                          <div className="flex justify-start">
-                            <div className="max-w-[85%] flex flex-row">
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-3 ${darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'}`}>
+                    </div>
+                  </div>
+                  
+                  {/* Messages container with improved markdown */}
+                  <div className="flex-1 overflow-y-auto px-4 py-4">
+                    <div className="max-w-3xl mx-auto space-y-6">
+                      {messages.map((message) => (
+                        <motion.div
+                          key={message.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div className={`max-w-[85%] flex ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                            {/* Avatar */}
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
+                              message.role === 'assistant' 
+                                ? (darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white') 
+                                : (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700')
+                            } ${message.role === 'user' ? 'ml-3' : 'mr-3'}`}>
+                              {message.role === 'assistant' ? (
                                 <FiCpu />
-                              </div>
-                              <div className={`rounded-2xl px-6 py-4 ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                              ) : (
+                                <FiUser />
+                              )}
+                            </div>
+                            
+                            <div className={`rounded-2xl px-4 py-3 ${
+                              message.role === 'assistant' 
+                                ? (darkMode ? 'bg-gray-800 border border-gray-700 text-gray-100' : 'bg-white border border-gray-200 shadow-sm text-gray-800') 
+                                : (darkMode ? 'bg-gradient-to-r from-blue-800 to-purple-800 text-white' : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white')
+                            }`}>
+                              {message.role === 'assistant' ? (
+                                <div className={`prose prose-sm max-w-none ${darkMode ? 'prose-invert' : ''} markdown-content`}>
+                                  {message.isStreaming ? (
+                                    <div className="streaming-content">
+                                      <ReactMarkdown 
+                                        components={MarkdownComponents}
+                                        remarkPlugins={[remarkGfm, remarkMath]}
+                                        rehypePlugins={[rehypeKatex, rehypeRaw]}
+                                      >
+                                        {preprocessMathContent(message.content)}
+                                      </ReactMarkdown>
+                                      <span className="typing-cursor animate-pulse">▋</span>
+                                    </div>
+                                  ) : (
+                                    <div>
+                                      {message.content ? (
+                                        <ReactMarkdown 
+                                          components={MarkdownComponents}
+                                          remarkPlugins={[remarkGfm, remarkMath]}
+                                          rehypePlugins={[rehypeKatex, rehypeRaw]}
+                                          remarkRehypeOptions={{
+                                            allowDangerousHtml: true
+                                          }}
+                                        >
+                                          {preprocessMathContent(message.content)}
+                                        </ReactMarkdown>
+                                      ) : (
+                                        <span>Loading content...</span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div>
+                                  <div className="whitespace-pre-wrap">{message.content}</div>
+                                  {/* Display image if it exists */}
+                                  {'fileContent' in message && message.fileContent && (
+                                    <div className="mt-2">
+                                      <img 
+                                        src={message.fileContent as string} 
+                                        alt={message.fileName as string || "Uploaded image"} 
+                                        className="max-w-full rounded-lg mt-2 max-h-64 object-contain"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              
+                              {/* Message footer */}
+                              <div className={`mt-2 flex items-center justify-between text-xs ${
+                                message.role === 'assistant' 
+                                  ? (darkMode ? 'text-gray-500' : 'text-gray-500') 
+                                  : 'text-blue-200'
+                              }`}>
+                                <span>{formatTimestamp(message.timestamp)}</span>
+                                
                                 <div className="flex space-x-2">
-                                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                  {/* Add message actions here */}
+                                  <button 
+                                    onClick={() => copyToClipboard(message.content)}
+                                    className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                                    aria-label="Copy to clipboard"
+                                  >
+                                    <FiCopy size={14} />
+                                  </button>
+                                  {message.role === 'assistant' && (
+                                    <>
+                                      <button 
+                                        onClick={() => handleTextToSpeech(message.content, message.id)}
+                                        className={`p-1 rounded-full ${
+                                          speakingMessageId === message.id 
+                                            ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-600')
+                                            : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')
+                                        }`}
+                                        aria-label={speakingMessageId === message.id ? "Stop speaking" : "Speak message"}
+                                      >
+                                        {speakingMessageId === message.id ? 
+                                          <FiSquare size={14} /> : 
+                                          <FiVolume2 size={14} />
+                                        }
+                                      </button>
+                                      <button 
+                                        onClick={() => handleShareMessage(message.content)}
+                                        className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                                        aria-label="Share message"
+                                      >
+                                        <FiShare2 size={14} />
+                                      </button>
+                                    </>
+                                  )}
                                 </div>
                               </div>
                             </div>
                           </div>
-                        )}
-                        
-                        <div ref={messagesEndRef} />
-                      </div>
-                    </div>
-                    
-                    {/* Input area */}
-                    <div className={`p-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                      {selectedFile && (
-                        <div className={`mb-2 p-2 rounded-lg flex items-center space-x-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                          <FiFile className={darkMode ? 'text-gray-300' : 'text-gray-600'} />
-                          <span className="text-sm truncate flex-1">{selectedFile.name}</span>
-                          <button 
-                            onClick={() => setSelectedFile(null)}
-                            className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-600 text-gray-400' : 'hover:bg-gray-200 text-gray-500'}`}
-                          >
-                            <FiX size={16} />
-                          </button>
+                        </motion.div>
+                      ))}
+                      
+                      {/* Loading indicator */}
+                      {isLoading && (
+                        <div className="flex justify-start">
+                          <div className="max-w-[85%] flex flex-row">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-3 ${darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'}`}>
+                              <FiCpu />
+                            </div>
+                            <div className={`rounded-2xl px-6 py-4 ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                              <div className="flex space-x-2">
+                                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       )}
-                      <div className={`flex items-end rounded-xl ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border border-gray-300'} focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500`}>
-                        <textarea
-                          ref={textareaRef}
-                          value={inputMessage}
-                          onChange={(e) => setInputMessage(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          placeholder="Type your message..."
-                          rows={1}
-                          className={`flex-1 py-3 px-4 bg-transparent focus:outline-none resize-none max-h-32 ${darkMode ? 'text-white placeholder-gray-400' : 'text-gray-700 placeholder-gray-400'}`}
+                      
+                      <div ref={messagesEndRef} />
+                    </div>
+                  </div>
+                  
+                  {/* Input area */}
+                  <div className={`p-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    {selectedFile && (
+                      <div className={`mb-2 p-2 rounded-lg flex items-center space-x-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                        <FiFile className={darkMode ? 'text-gray-300' : 'text-gray-600'} />
+                        <span className="text-sm truncate flex-1">{selectedFile.name}</span>
+                        <button 
+                          onClick={() => setSelectedFile(null)}
+                          className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-600 text-gray-400' : 'hover:bg-gray-200 text-gray-500'}`}
+                        >
+                          <FiX size={16} />
+                        </button>
+                      </div>
+                    )}
+                    <div className={`flex items-end rounded-xl ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border border-gray-300'} focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500`}>
+                      <textarea
+                        ref={textareaRef}
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Type your message..."
+                        rows={1}
+                        className={`flex-1 py-3 px-4 bg-transparent focus:outline-none resize-none max-h-32 ${darkMode ? 'text-white placeholder-gray-400' : 'text-gray-700 placeholder-gray-400'}`}
+                      />
+                      <div className="flex items-center space-x-1 p-2">
+                        <input 
+                          type="file"
+                          ref={fileInputRef}
+                          className="hidden"
+                          onChange={handleFileChange}
+                          accept="image/*"
                         />
-                        <div className="flex items-center space-x-1 p-2">
-                          <input 
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            onChange={handleFileChange}
-                            accept="image/*"
-                          />
-                          <button 
-                            onClick={handleFileUpload}
-                            className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
-                            aria-label="Upload file"
-                          >
-                            <FiFile />
-                          </button>
-                          <button
-                            onClick={handleSendMessage}
-                            disabled={!inputMessage.trim() && !selectedFile}
-                            className={`p-2 rounded-full ${
-                              !inputMessage.trim() && !selectedFile 
-                                ? (darkMode ? 'text-gray-500 bg-gray-800' : 'text-gray-400 bg-gray-100') 
-                                : (darkMode ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600')
-                            }`}
-                            aria-label="Send message"
-                          >
-                            <FiSend />
-                          </button>
-                        </div>
+                        <button 
+                          onClick={handleFileUpload}
+                          className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
+                          aria-label="Upload file"
+                        >
+                          <FiFile />
+                        </button>
+                        <button
+                          onClick={handleSendMessage}
+                          disabled={!inputMessage.trim() && !selectedFile}
+                          className={`p-2 rounded-full ${
+                            !inputMessage.trim() && !selectedFile 
+                              ? (darkMode ? 'text-gray-500 bg-gray-800' : 'text-gray-400 bg-gray-100') 
+                              : (darkMode ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600')
+                          }`}
+                          aria-label="Send message"
+                        >
+                          <FiSend />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -2257,7 +2602,7 @@ const ChatPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </MathJaxContext>
+    </div>
   );
 };
 

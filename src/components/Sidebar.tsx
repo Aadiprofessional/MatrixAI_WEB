@@ -207,6 +207,39 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
                 <FiChevronLeft className={`w-5 h-5 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} />
               </button>
             </div>
+            
+            {/* Upgrade to Pro prompt - only show when not collapsed and not pro */}
+            {!collapsed && !isPro && (
+              <div className={`mx-2 mb-4 p-3 rounded-lg border-2 border-dashed ${
+                darkMode 
+                  ? 'border-yellow-600 bg-yellow-900/20' 
+                  : 'border-yellow-400 bg-yellow-50'
+              }`}>
+                <div className="text-center">
+                  <div className={`text-sm font-medium mb-1 ${
+                    darkMode ? 'text-yellow-300' : 'text-yellow-700'
+                  }`}>
+                    Upgrade to Pro
+                  </div>
+                  <div className={`text-xs mb-2 ${
+                    darkMode ? 'text-yellow-400' : 'text-yellow-600'
+                  }`}>
+                    Unlock all AI tools and features
+                  </div>
+                  <Link 
+                    to="/subscription"
+                    className={`inline-block px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                      darkMode 
+                        ? 'bg-yellow-600 text-white hover:bg-yellow-700' 
+                        : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                    }`}
+                  >
+                    <FiShoppingBag className="inline w-3 h-3 mr-1" />
+                    Upgrade Now
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Navigation Links Section - Scrollable but contained within sidebar */}
@@ -230,14 +263,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
                   >
                     <span className="flex-shrink-0">{item.icon}</span>
                     {!collapsed && (
-                      <div className="flex items-center justify-between w-full">
-                        <span className="ml-3">{item.label}</span>
-                        {item.pro && !isPro && (
-                          <span className="text-xs font-semibold text-yellow-500 border border-yellow-400 rounded-full px-1.5">
-                            PRO
-                          </span>
-                        )}
-                      </div>
+                      <span className="ml-3">{item.label}</span>
                     )}
                   </Link>
                 </li>

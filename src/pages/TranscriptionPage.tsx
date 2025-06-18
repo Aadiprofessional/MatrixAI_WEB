@@ -8,7 +8,7 @@ import {
   FiChevronLeft, FiChevronRight, FiRefreshCw, FiLoader,
   FiMaximize, FiMenu, FiLayout, FiSave, FiFileText,
   FiBarChart2, FiZap, FiSettings, FiBookmark, FiMic,
-  FiMessageSquare
+  FiMessageSquare, FiGlobe, FiToggleLeft, FiToggleRight
 } from 'react-icons/fi';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -31,6 +31,19 @@ interface Paragraph {
   startTime: number;
   endTime: number;
 }
+
+const azureEndpoint = 'https://api.cognitive.microsofttranslator.com';
+const azureKey = '21oYn4dps9k7VJUVttDmU3oigC93LUtyYB9EvQatENmWOufZa4xeJQQJ99ALACYeBjFXJ3w3AAAbACOG0HQP';
+const region = 'eastus';
+
+const languages = [
+  { label: 'Chinese (Simplified)', value: 'zh' },
+  { label: 'Chinese (Traditional)', value: 'zh-TW' },
+  { label: 'Spanish', value: 'es' },
+  { label: 'French', value: 'fr' },
+  { label: 'German', value: 'de' },
+  { label: 'Hindi', value: 'hi' },
+];
 
 const TranscriptionPage: React.FC = () => {
   const { audioid } = useParams<{ audioid: string }>();
@@ -66,6 +79,12 @@ const TranscriptionPage: React.FC = () => {
   const [activeWord, setActiveWord] = useState<number>(-1);
   const [activeParagraph, setActiveParagraph] = useState<number>(0);
   const activeWordRef = useRef<HTMLSpanElement>(null);
+
+  // Translation state
+  const [isTranslationEnabled, setIsTranslationEnabled] = useState<boolean>(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('es');
+  const [translations, setTranslations] = useState<string[]>([]);
+  const [translatingIndex, setTranslatingIndex] = useState<number>(-1);
 
   // UI state
   const [activeTab, setActiveTab] = useState<'transcript' | 'mindmap' | 'chat'>('transcript');
@@ -110,6 +129,64 @@ const TranscriptionPage: React.FC = () => {
 
   // Get state passed from the previous page
   const locationState = location.state as any;
+
+  // Translation function for individual paragraphs
+  const handleTranslateParagraph = async (index: number) => {
+    if (!paragraphs[index]) return;
+
+    setTranslatingIndex(index);
+    try {
+      const response = await fetch(
+        `https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=${selectedLanguage}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Ocp-Apim-Subscription-Key': azureKey,
+            'Ocp-Apim-Subscription-Region': region,
+          },
+          body: JSON.stringify([{ Text: paragraphs[index].text }]),
+        }
+      );
+
+      const data = await response.json();
+      console.log('Paragraph Translation Response:', data);
+
+      if (data && data[0] && data[0].translations && data[0].translations[0]) {
+        const translation = data[0].translations[0].text;
+
+        setTranslations((prev) => {
+          const updatedTranslations = [...prev];
+          updatedTranslations[index] = translation;
+          return updatedTranslations;
+        });
+      } else {
+        console.error('Translation data is not in the expected format:', data);
+      }
+    } catch (error) {
+      console.error('Translation error:', error);
+    } finally {
+      setTranslatingIndex(-1);
+    }
+  };
+
+  // Toggle translation for all paragraphs
+  const toggleTranslation = async () => {
+    if (!isTranslationEnabled) {
+      // Enable translation and translate all paragraphs
+      setIsTranslationEnabled(true);
+      setTranslations(new Array(paragraphs.length).fill(''));
+      
+      // Translate all paragraphs
+      for (let i = 0; i < paragraphs.length; i++) {
+        await handleTranslateParagraph(i);
+      }
+    } else {
+      // Disable translation
+      setIsTranslationEnabled(false);
+      setTranslations([]);
+    }
+  };
 
   // Fetch transcription data
   useEffect(() => {
@@ -723,39 +800,113 @@ const TranscriptionPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Transcription text with word highlighting */}
-                  <div className="overflow-auto h-[calc(100vh-300px)] p-4 font-medium leading-relaxed text-gray-700 dark:text-gray-300">
+                  {/* Translation Controls */}
+                  <div className="p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={toggleTranslation}
+                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
+                            isTranslationEnabled
+                              ? 'bg-green-500 hover:bg-green-600 text-white'
+                              : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200'
+                          }`}
+                          disabled={translatingIndex !== -1}
+                        >
+                          <FiGlobe className="w-4 h-4" />
+                          {isTranslationEnabled ? (
+                            <FiToggleRight className="w-5 h-5" />
+                          ) : (
+                            <FiToggleLeft className="w-5 h-5" />
+                          )}
+                          <span>{isTranslationEnabled ? 'Translation On' : 'Enable Translation'}</span>
+                        </button>
+                        
+                        <select
+                          value={selectedLanguage}
+                          onChange={(e) => setSelectedLanguage(e.target.value)}
+                          className="px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          disabled={translatingIndex !== -1}
+                        >
+                          {languages.map((lang) => (
+                            <option key={lang.value} value={lang.value}>
+                              {lang.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      {translatingIndex !== -1 && (
+                        <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
+                          <FiLoader className="animate-spin w-4 h-4" />
+                          <span className="text-sm">Translating paragraph {translatingIndex + 1}...</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Transcription text with word highlighting and translations */}
+                  <div className="overflow-auto h-[calc(100vh-400px)] p-4 font-medium leading-relaxed text-gray-700 dark:text-gray-300">
                     {paragraphs.map((paragraph, paraIndex) => (
-                      <p 
-                        key={paraIndex}
-                        className={`mb-4 rounded-lg transition-all duration-200 ${
-                          paraIndex === activeParagraph 
-                            ? 'bg-blue-50 dark:bg-blue-900/20 p-3' 
-                            : ''
-                        }`}
-                      >
-                        {paragraph.words.map((word, wordIndex) => {
-                          // Find the global index of this word
-                          const globalWordIndex = wordTimings.findIndex(
-                            w => w.startTime === word.startTime && w.endTime === word.endTime
-                          );
-                          
-                          return (
-                            <span 
-                              key={`${paraIndex}-${wordIndex}`}
-                              ref={globalWordIndex === activeWord ? activeWordRef : null}
-                              className={`cursor-pointer transition-all duration-150 ${
-                                globalWordIndex === activeWord 
-                                  ? 'bg-blue-500 text-white dark:bg-blue-600 rounded px-1 py-0.5' 
-                                  : 'hover:bg-blue-100 hover:dark:bg-blue-900/30 rounded'
-                              }`}
-                              onClick={() => handleWordClick(word)}
-                            >
-                              {word.word}{' '}
-                            </span>
-                          );
-                        })}
-                      </p>
+                      <div key={paraIndex} className="mb-6">
+                        {/* Original paragraph */}
+                        <p 
+                          className={`mb-3 rounded-lg transition-all duration-200 ${
+                            paraIndex === activeParagraph 
+                              ? 'bg-blue-50 dark:bg-blue-900/20 p-3' 
+                              : ''
+                          }`}
+                        >
+                          {paragraph.words.map((word, wordIndex) => {
+                            // Find the global index of this word
+                            const globalWordIndex = wordTimings.findIndex(
+                              w => w.startTime === word.startTime && w.endTime === word.endTime
+                            );
+                            
+                            return (
+                              <span 
+                                key={`${paraIndex}-${wordIndex}`}
+                                ref={globalWordIndex === activeWord ? activeWordRef : null}
+                                className={`cursor-pointer transition-all duration-150 ${
+                                  globalWordIndex === activeWord 
+                                    ? 'bg-blue-500 text-white dark:bg-blue-600 rounded px-1 py-0.5' 
+                                    : 'hover:bg-blue-100 hover:dark:bg-blue-900/30 rounded'
+                                }`}
+                                onClick={() => handleWordClick(word)}
+                              >
+                                {word.word}{' '}
+                              </span>
+                            );
+                          })}
+                        </p>
+                        
+                        {/* Translated paragraph */}
+                        {isTranslationEnabled && translations[paraIndex] && (
+                          <div className="ml-4 pl-4 border-l-4 border-green-400 dark:border-green-500">
+                            <div className="flex items-center mb-2">
+                              <FiGlobe className="w-4 h-4 text-green-600 dark:text-green-400 mr-2" />
+                              <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                                {languages.find(lang => lang.value === selectedLanguage)?.label}
+                              </span>
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400 italic leading-relaxed">
+                              {translations[paraIndex]}
+                            </p>
+                          </div>
+                        )}
+                        
+                        {/* Loading indicator for individual paragraph */}
+                        {isTranslationEnabled && translatingIndex === paraIndex && (
+                          <div className="ml-4 pl-4 border-l-4 border-blue-400 dark:border-blue-500">
+                            <div className="flex items-center">
+                              <FiLoader className="animate-spin w-4 h-4 text-blue-600 dark:text-blue-400 mr-2" />
+                              <span className="text-sm text-blue-600 dark:text-blue-400">
+                                Translating...
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </motion.div>
@@ -777,7 +928,7 @@ const TranscriptionPage: React.FC = () => {
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-300px)]"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-200px)]"
                 >
                   {/* Fixed Header */}
                   <div className="flex justify-between items-center p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-20 sticky top-0">
