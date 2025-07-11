@@ -91,7 +91,7 @@ const TransactionsPage: React.FC = () => {
     
     try {
       // Attempt to fetch from API
-      const response = await axios.post('https://matrix-server.vercel.app/AllTransactions', {
+      const response = await axios.post('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/AllTransactions', {
         uid: user.id
       });
       

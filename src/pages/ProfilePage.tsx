@@ -4,7 +4,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { Layout } from '../components';
-import axios from 'axios';
+import { userService } from '../services/userService';
 import { 
   FiEdit2, 
   FiUser, 
@@ -32,14 +32,15 @@ import {
 import { updateUserProfile } from '../supabaseClient';
 import { toast } from 'react-hot-toast';
 
-// Transaction interface
+// Transaction interface - updated to match userService
 interface Transaction {
-  id: string;
-  transaction_name?: string;
-  coin_amount?: number;
-  time?: string;
-  status?: string;
-  description?: string;
+  id: number;
+  uid: string;
+  transaction_name: string;
+  coin_amount: number;
+  remaining_coins: number;
+  status: string;
+  time: string;
 }
 
 // Activity item component definition
@@ -107,8 +108,10 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
         return <FiImage className="w-5 h-5" />;
       case 'text to image':
         return <FiImage className="w-5 h-5" />;
-      default:
+      case 'video generation':
         return <FiVideo className="w-5 h-5" />;
+      default:
+        return <FiActivity className="w-5 h-5" />;
     }
   };
 
@@ -124,6 +127,8 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
         return darkMode ? 'bg-orange-900/50 text-orange-300' : 'bg-orange-100 text-orange-600';
       case 'text to image':
         return darkMode ? 'bg-pink-900/50 text-pink-300' : 'bg-pink-100 text-pink-600';
+      case 'video generation':
+        return darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-600';
       default:
         return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600';
     }
@@ -166,33 +171,28 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className={`p-2 rounded-lg ${getTransactionColor(transaction.transaction_name || '')}`}>
-            {getTransactionIcon(transaction.transaction_name || '')}
+          <div className={`p-2 rounded-lg ${getTransactionColor(transaction.transaction_name)}`}>
+            {getTransactionIcon(transaction.transaction_name)}
           </div>
           <div>
             <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              {transaction.transaction_name || 'Unknown Transaction'}
+              {transaction.transaction_name}
             </h4>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              {transaction.time ? formatDate(transaction.time) : 'Unknown Date'}
+              {formatDate(transaction.time)}
             </p>
-            {transaction.description && (
-              <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'} mt-1`}>
-                {transaction.description}
-              </p>
-            )}
+            {/* transaction.description is removed as per new Transaction interface */}
           </div>
         </div>
         <div className="flex items-center space-x-3">
           <div className="text-right">
             <div className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} flex items-center`}>
-             
               {safeAmount.toFixed(0)} Coins
             </div>
             <div className="flex items-center space-x-1">
-              {getStatusIcon(transaction.status || '')}
+              {getStatusIcon(transaction.status)}
               <span className={`text-xs capitalize ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                {transaction.status || 'unknown'}
+                {transaction.status}
               </span>
             </div>
           </div>
@@ -255,12 +255,10 @@ const ProfilePage: React.FC = () => {
     
     setTransactionsLoading(true);
     try {
-      const response = await axios.post('https://matrix-server.vercel.app/AllTransactions', {
-        uid: uid
-      });
+      const response = await userService.getAllTransactions(uid);
       
-      if (response.data.success) {
-        const sortedTransactions = response.data.data.sort((a: Transaction, b: Transaction) => {
+      if (response.success) {
+        const sortedTransactions = response.data.sort((a: Transaction, b: Transaction) => {
           const timeA = a.time ? new Date(a.time).getTime() : 0;
           const timeB = b.time ? new Date(b.time).getTime() : 0;
           return timeB - timeA;
@@ -785,4 +783,4 @@ const ProfilePage: React.FC = () => {
   );
 };
 
-export default ProfilePage; 
+export default ProfilePage;

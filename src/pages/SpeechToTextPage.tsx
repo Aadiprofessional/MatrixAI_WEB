@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   FiUpload, FiMic, FiFileText, FiClock, FiCheck, FiLoader, 
   FiX, FiGlobe, FiZap, FiSettings, FiVolume2, FiDownload,
-  FiTrash, FiRefreshCw, FiPlay, FiPause, FiInfo, FiSearch, FiChevronLeft, FiGrid, FiList
+  FiTrash, FiRefreshCw, FiPlay, FiPause, FiInfo, FiSearch, FiChevronLeft, FiGrid, FiList, FiEdit3
 } from 'react-icons/fi';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -15,12 +15,24 @@ import { ProFeatureAlert } from '../components';
 // Define interface for files
 interface AudioFile {
   audioid: string;
-  audio_name: string;
-  uploaded_at: string;
-  duration: number;
+  uid: string;
+  audio_url: string;
+  file_path: string;
   language: string;
-  status: string;
-  audio_url?: string;
+  duration: number;
+  status?: string; // Make status optional since server might not always return it
+  uploaded_at: string;
+  transcription?: string;
+  words_data?: Array<{
+    word: string;
+    start: number;
+    end: number;
+    confidence: number;
+    punctuated_word: string;
+  }>;
+  error_message?: string;
+  // Computed field for display
+  audio_name?: string;
 }
 
 const SpeechToTextPage: React.FC = () => {
@@ -36,7 +48,6 @@ const SpeechToTextPage: React.FC = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('en-US');
   const [duration, setDuration] = useState(0);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [audioPreview, setAudioPreview] = useState<string | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -58,6 +69,14 @@ const SpeechToTextPage: React.FC = () => {
   const [loadingAudioIds, setLoadingAudioIds] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Add state for editing
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingName, setEditingName] = useState('');
+  const [isEditingName, setIsEditingName] = useState(false);
+
+  // Add polling intervals state
+  const [pollingIntervals, setPollingIntervals] = useState<Map<string, NodeJS.Timeout>>(new Map());
+
   const [supportedFormats] = useState([
     'audio/wav', 'audio/x-wav', 'audio/mpeg', 'audio/mp3', 'audio/mp4', 
     'audio/x-m4a', 'audio/aac', 'audio/ogg', 'audio/flac'
@@ -71,6 +90,7 @@ const SpeechToTextPage: React.FC = () => {
     { label: 'Danish', value: 'da' },
     { label: 'Dutch', value: 'nl' },
     { label: 'English (US)', value: 'en-US' },
+    { label: 'English (UK)', value: 'en-GB' },
     { label: 'French', value: 'fr' },
     { label: 'German', value: 'de' },
     { label: 'Hindi', value: 'hi' },
@@ -84,7 +104,7 @@ const SpeechToTextPage: React.FC = () => {
 
   useEffect(() => {
     if (user?.id) {
-      loadFiles();
+      loadFiles(true); // Force refresh from API on initial load
       checkFreeTranscriptionsLeft();
     }
   }, [user]);
@@ -126,42 +146,98 @@ const SpeechToTextPage: React.FC = () => {
           console.log('Using cached files from local storage');
           setFiles(cachedFiles);
           setIsLoading(false);
+          
+          // Start polling for any files that are still processing
+          cachedFiles.forEach((file: AudioFile) => {
+            if (file.status === 'pending' || file.status === 'processing') {
+              setLoadingAudioIds(prev => new Set(prev).add(file.audioid));
+              startStatusPolling(file.audioid);
+            }
+          });
           return;
         }
       }
       
-      // If forcing refresh or no cached data, fetch from API
-      const response = await fetch(`https://matrix-server.vercel.app/getAudio/${user?.id}`);
+      // If forcing refresh or no cached data, fetch from correct API
+      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/getAllAudioFiles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: user?.id
+        }),
+      });
       
-      // Check response content type
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        console.log('Non-JSON response received');
-        setFiles([]); // Set empty files array
-        setIsLoading(false); // Stop loading
+      // Check if response is ok first
+      if (!response.ok) {
+        console.log('API request failed with status:', response.status);
+        setFiles([]);
+        setIsLoading(false);
         return;
       }
-
-      const data = await response.json();
       
-      if (response.ok) {
+      // Try to parse as JSON regardless of content-type header
+      // (server sometimes returns wrong content-type but valid JSON)
+      let data;
+      try {
+        data = await response.json();
+        console.log('Successfully parsed JSON response:', data);
+      } catch (jsonError) {
+        console.log('Failed to parse JSON response:', jsonError);
+        // If JSON parsing fails, try to read as text to debug
+        try {
+          const responseText = await response.text();
+          console.log('Response text:', responseText);
+        } catch (textError) {
+          console.log('Failed to read response as text:', textError);
+        }
+        setFiles([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      if (data.success) {
+        // Handle successful response
+        const audioFiles = data.audioFiles || [];
+        console.log('Raw audioFiles from API:', audioFiles);
+        
         // Sort files by uploaded_at in descending order (newest first)
-        const sortedFiles = (data.audioData || []).sort((a: AudioFile, b: AudioFile) => 
+        const sortedFiles = audioFiles.map((file: any) => ({
+          ...file,
+          // Map server fields to frontend interface
+          audio_url: file.audio_url || file.file_path, // Use audio_url or fallback to file_path
+          audio_name: file.audio_name || file.audio_url?.split('/').pop()?.split('?')[0] || file.audioid,
+          status: file.status || (file.transcription ? 'completed' : 'pending') // Set default status based on transcription
+        })).sort((a: AudioFile, b: AudioFile) => 
           new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime()
         );
+        
+        console.log('Processed sortedFiles:', sortedFiles);
         setFiles(sortedFiles);
         
-        // Save to local storage for future use
+        // Save to local storage for future use with longer persistence
         saveFilesToLocalStorage(sortedFiles);
+        
+        // Start polling for any files that are still processing
+        sortedFiles.forEach((file: AudioFile) => {
+          if (file.status === 'pending' || file.status === 'processing') {
+            setLoadingAudioIds(prev => new Set(prev).add(file.audioid));
+            startStatusPolling(file.audioid);
+          }
+        });
+        
+        console.log('Successfully loaded', sortedFiles.length, 'audio files');
       } else {
-        console.log('Error fetching audio:', data.error);
-        setFiles([]); // Set empty files array
+        // Handle API error response
+        console.log('API returned error:', data.message || data.error || 'Unknown error');
+        setFiles([]);
       }
     } catch (error) {
-      console.log('Error fetching audio:', error);
-      setFiles([]); // Set empty files array
+      console.log('Network error fetching audio files:', error);
+      setFiles([]);
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
       setIsRefreshing(false);
     }
   };
@@ -171,21 +247,66 @@ const SpeechToTextPage: React.FC = () => {
     loadFiles(true);
   };
 
-  const getFilesFromLocalStorage = () => {
+  const getFilesFromLocalStorage = (): AudioFile[] | null => {
     try {
-      const filesData = localStorage.getItem(`audio_files_${user?.id}`);
-      return filesData ? JSON.parse(filesData) : null;
+      // Try sessionStorage first (for current session)
+      let storedData = sessionStorage.getItem('speechToTextFiles');
+      
+      // Fallback to localStorage if sessionStorage is empty
+      if (!storedData) {
+        storedData = localStorage.getItem('speechToTextFiles');
+      }
+      
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        
+        // Check if data is recent (less than 24 hours old)
+        const dataAge = Date.now() - (parsedData.timestamp || 0);
+        const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+        
+        if (dataAge < maxAge && parsedData.files) {
+          console.log('Using cached files from storage');
+          return parsedData.files;
+        } else {
+          console.log('Cached data is too old, will refresh from API');
+          // Clean up old data
+          localStorage.removeItem('speechToTextFiles');
+          sessionStorage.removeItem('speechToTextFiles');
+        }
+      }
+      
+      return null;
     } catch (error) {
-      console.error('Error getting files from localStorage:', error);
+      console.error('Error retrieving files from storage:', error);
       return null;
     }
   };
 
-  const saveFilesToLocalStorage = (filesData: AudioFile[]) => {
+  const saveFilesToLocalStorage = (files: AudioFile[]) => {
     try {
-      localStorage.setItem(`audio_files_${user?.id}`, JSON.stringify(filesData));
+      const dataToStore = {
+        files,
+        timestamp: Date.now(),
+        version: '1.0' // Add version for future compatibility
+      };
+      
+      // Use both localStorage and sessionStorage for better persistence
+      localStorage.setItem('speechToTextFiles', JSON.stringify(dataToStore));
+      sessionStorage.setItem('speechToTextFiles', JSON.stringify(dataToStore));
+      
+      // Also save individual file data with extended expiry
+      files.forEach(file => {
+        const fileData = {
+          ...file,
+          cached_at: Date.now(),
+          expires_at: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days expiry
+        };
+        localStorage.setItem(`audioFile-${file.audioid}`, JSON.stringify(fileData));
+      });
+      
+      console.log('Files saved to storage successfully');
     } catch (error) {
-      console.error('Error saving files to localStorage:', error);
+      console.error('Error saving files to storage:', error);
     }
   };
 
@@ -343,7 +464,8 @@ const SpeechToTextPage: React.FC = () => {
     try {
       setIsLoading(true);
       
-      const response = await fetch('https://matrix-server.vercel.app/removeAudio', {
+      // Use the correct removeAudio API endpoint
+      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/removeAudio', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -356,14 +478,32 @@ const SpeechToTextPage: React.FC = () => {
       
       const result = await response.json();
       
-      if (response.ok) {
+      if (response.ok && !result.error) {
         // Remove from local state and storage
         const updatedFiles = files.filter(f => f.audioid !== file.audioid);
         setFiles(updatedFiles);
         saveFilesToLocalStorage(updatedFiles);
         alert('Audio file deleted successfully');
+        
+        // Also clear any polling for this audio ID
+        const existingInterval = pollingIntervals.get(file.audioid);
+        if (existingInterval) {
+          clearInterval(existingInterval);
+          setPollingIntervals(prev => {
+            const newMap = new Map(prev);
+            newMap.delete(file.audioid);
+            return newMap;
+          });
+        }
+        
+        // Remove from loading state
+        setLoadingAudioIds(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(file.audioid);
+          return newSet;
+        });
       } else {
-        alert(`Failed to delete audio: ${result.error || 'Unknown error'}`);
+        alert(`Failed to delete audio: ${result.error || result.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error deleting audio:', error);
@@ -376,15 +516,72 @@ const SpeechToTextPage: React.FC = () => {
     }
   };
 
+  // Add function to edit audio name
+  const editAudioName = async (file: AudioFile, newName: string) => {
+    if (!user?.id || !file.audioid || !newName.trim()) {
+      alert('Cannot edit file: Missing required information');
+      return;
+    }
+    
+    try {
+      setIsEditingName(true);
+      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/editAudio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: user.id,
+          audioid: file.audioid,
+          updatedName: newName.trim()
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok && !result.error) {
+        // Update local state and storage
+        const updatedFiles = files.map(f => 
+          f.audioid === file.audioid 
+            ? { ...f, audio_name: newName.trim() }
+            : f
+        );
+        setFiles(updatedFiles);
+        saveFilesToLocalStorage(updatedFiles);
+        alert('Audio name updated successfully');
+        setIsEditModalOpen(false);
+        setSelectedFile(null);
+        setEditingName('');
+      } else {
+        alert(`Failed to update audio name: ${result.error || result.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error editing audio name:', error);
+      alert('An error occurred while updating the audio name');
+    } finally {
+      setIsEditingName(false);
+    }
+  };
+
+  const openEditModal = (file: AudioFile) => {
+    setSelectedFile(file);
+    setEditingName(file.audio_name || file.audio_url?.split('/').pop() || ''); // Use existing name or derive from URL
+    setIsEditModalOpen(true);
+  };
+
+  const getDisplayName = (file: AudioFile): string => {
+    return file.audio_name || file.audio_url?.split('/').pop()?.split('?')[0] || file.audioid;
+  };
+
   // Apply filtering and sorting to files
   const getFilteredAndSortedFiles = () => {
     let filteredFiles = [...files];
     
     // Apply search filter
-    if (searchQuery) {
+    if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filteredFiles = filteredFiles.filter(file => 
-        file.audio_name.toLowerCase().includes(query)
+        getDisplayName(file).toLowerCase().includes(query)
       );
     }
     
@@ -400,9 +597,11 @@ const SpeechToTextPage: React.FC = () => {
           ? new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime()
           : new Date(a.uploaded_at).getTime() - new Date(b.uploaded_at).getTime();
       } else if (sortBy === 'name') {
+        const aName = getDisplayName(a);
+        const bName = getDisplayName(b);
         return sortDirection === 'desc'
-          ? b.audio_name.localeCompare(a.audio_name)
-          : a.audio_name.localeCompare(b.audio_name);
+          ? bName.localeCompare(aName)
+          : aName.localeCompare(bName);
       } else { // duration
         return sortDirection === 'desc'
           ? b.duration - a.duration
@@ -413,13 +612,120 @@ const SpeechToTextPage: React.FC = () => {
     return filteredFiles;
   };
 
+  // Clean up polling intervals on unmount
+  useEffect(() => {
+    return () => {
+      pollingIntervals.forEach(interval => clearInterval(interval));
+    };
+  }, [pollingIntervals]);
+
+  // Function to start status polling
+  const startStatusPolling = (audioid: string) => {
+    // Clear any existing interval for this audio ID
+    const existingInterval = pollingIntervals.get(audioid);
+    if (existingInterval) {
+      clearInterval(existingInterval);
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/getAudioStatus', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            uid: user?.id,
+            audioid: audioid
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success && data.status === 'completed') {
+          // Stop polling for this audio
+          clearInterval(interval);
+          setPollingIntervals(prev => {
+            const newMap = new Map(prev);
+            newMap.delete(audioid);
+            return newMap;
+          });
+          
+          // Remove from loading state
+          setLoadingAudioIds(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(audioid);
+            return newSet;
+          });
+          
+          // Update files list to reflect completion
+          setFiles(prevFiles => 
+            prevFiles.map(file => 
+              file.audioid === audioid 
+                ? { ...file, status: 'completed' }
+                : file
+            )
+          );
+          
+          // Save updated files to localStorage
+          const updatedFiles = files.map(file => 
+            file.audioid === audioid 
+              ? { ...file, status: 'completed' }
+              : file
+          );
+          saveFilesToLocalStorage(updatedFiles);
+          
+          // Navigate to transcription page
+          navigate(`/transcription/${audioid}`, {
+            state: {
+              uid: user?.id,
+              audioid: audioid
+            }
+          });
+        } else if (response.ok && data.success && data.status === 'failed') {
+          // Stop polling on failure
+          clearInterval(interval);
+          setPollingIntervals(prev => {
+            const newMap = new Map(prev);
+            newMap.delete(audioid);
+            return newMap;
+          });
+          
+          // Remove from loading state
+          setLoadingAudioIds(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(audioid);
+            return newSet;
+          });
+          
+          // Update files list to reflect failure
+          setFiles(prevFiles => 
+            prevFiles.map(file => 
+              file.audioid === audioid 
+                ? { ...file, status: 'failed', error_message: data.error_message }
+                : file
+            )
+          );
+          
+          alert(`Transcription failed: ${data.error_message || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error polling status for', audioid, ':', error);
+      }
+    }, 2000); // Poll every 2 seconds
+
+    // Store the interval
+    setPollingIntervals(prev => new Map(prev).set(audioid, interval));
+  };
+
+  // Updated handleUpload function to use correct API
   const handleUpload = async () => {
     if (!audioFile || !user?.id) {
       alert('No file selected or user not logged in');
       return;
     }
     
-    // Check if user has enough coins
+    // Check if user has enough coins (you might want to remove this check if the new API handles it)
     const hasEnoughCoins = await checkUserCoins(user.id, duration);
     
     if (!hasEnoughCoins && !isPro) {
@@ -433,9 +739,6 @@ const SpeechToTextPage: React.FC = () => {
     try {
       // Generate a secure unique ID for the audio file
       const audioID = generateAudioID();
-      
-      // Set the loading state for this audio ID
-      setLoadingAudioIds(prev => new Set(prev).add(audioID));
       
       const audioName = audioFile.name;
       const fileExtension = getFileExtension(audioName);
@@ -476,35 +779,71 @@ const SpeechToTextPage: React.FC = () => {
         .from('user-uploads')
         .getPublicUrl(filePath);
         
-      // Save metadata to database - without the model field
-      const { data: metadataData, error: metadataError } = await supabase
-        .from('audio_metadata')
-        .insert([
-          {
+      // Now use the correct uploadAudioUrl API
+      const uploadResponse = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/uploadAudioUrl', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: user.id,
+          audioUrl: publicUrl,
+          language: selectedLanguage,
+          duration: duration
+        }),
+      });
+
+      const uploadResult = await uploadResponse.json();
+      
+      if (uploadResponse.ok && uploadResult.success) {
+        // The server now processes immediately, so check if it's completed
+        if (uploadResult.status === 'completed') {
+          // Navigate directly to transcription page
+          navigate(`/transcription/${uploadResult.audioid}`, {
+            state: {
+              uid: user.id,
+              audioid: uploadResult.audioid,
+              transcription: uploadResult.transcription,
+              audio_url: publicUrl,
+              audio_name: audioName,
+              language: selectedLanguage,
+              duration: duration
+            }
+          });
+        } else {
+          // Set the loading state for this audio ID if still processing
+          setLoadingAudioIds(prev => new Set(prev).add(uploadResult.audioid));
+          
+          // Add the new file to the files list immediately
+          const newFile: AudioFile = {
+            audioid: uploadResult.audioid,
             uid: user.id,
-            audioid: audioID,
-            audio_name: audioName,
-            language: selectedLanguage,
             audio_url: publicUrl,
-            file_path: filePath,
-            duration: parseInt(duration.toString(), 10),
+            file_path: publicUrl,
+            language: selectedLanguage,
+            duration: duration,
+            status: uploadResult.status || 'pending',
             uploaded_at: new Date().toISOString(),
+            audio_name: audioName,
+            transcription: uploadResult.transcription,
+            error_message: uploadResult.error_message
+          };
+          
+          setFiles(prevFiles => [newFile, ...prevFiles]);
+          
+          // Save to localStorage
+          const updatedFiles = [newFile, ...files];
+          saveFilesToLocalStorage(updatedFiles);
+          
+          // Start polling for status if not completed
+          if (uploadResult.status !== 'completed') {
+            startStatusPolling(uploadResult.audioid);
           }
-        ]);
+        }
         
-      if (metadataError) {
-        console.error('Supabase metadata insert error:', {
-          message: metadataError.message,
-          error: metadataError,
-        });
-        throw new Error(`Metadata error: ${metadataError.message}`);
+      } else {
+        throw new Error(`Upload API error: ${uploadResult.error || uploadResult.message || 'Unknown error'}`);
       }
-      
-      // Success - refresh the files list
-      await loadFiles(true);
-      
-      // Start processing automatically
-      await handleProcessAudio(audioID, publicUrl);
       
     } catch (error) {
       console.error('Upload error:', error);
@@ -521,88 +860,71 @@ const SpeechToTextPage: React.FC = () => {
     }
   };
   
-  const handleProcessAudio = async (audioid: string, audioUrl: string) => {
-    try {
-      setIsProcessing(true);
-      setLoadingAudioIds(prev => new Set(prev).add(audioid));
-      
-      console.log('audioid:', audioid, 'uid:', user?.id);
-      console.log('Types:', typeof audioid, typeof user?.id);
-      
-      // Create a proper JSON object for the request body with string values
-      const requestBody = JSON.stringify({
-        uid: String(user?.id),
-        audioid: String(audioid)
-      });
-      
-      console.log('Request body:', requestBody);
-
-      const response = await fetch('https://ddtgdhehxhgarkonvpfq.supabase.co/functions/v1/convertAudio', {
-        method: 'POST',
-        headers: { 
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: requestBody
-      });
-
-      // Log the raw response for debugging
-      const responseText = await response.text();
-      console.log('Raw response:', responseText);
-
-      // Parse the response text as JSON
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('Error parsing response:', parseError);
-        alert('Invalid response from server. Please try again later.');
-        return;
-      }
-
-      if (response.ok && data.message === "Transcription completed and saved") {
-        navigate(`/transcription/${audioid}`, {
-          state: {
-            uid: user?.id,
-            audioid,
-            transcription: data.transcription,
-            audio_url: data.audio_url || audioUrl // Use audio_url from response if available, otherwise use our url
-          }
-        });
-      } else {
-        console.error('API Error:', data);
-        alert(`Failed to process audio: ${data.error || 'Unknown error'}`);
-      }
-    } catch (error) {
-      console.error('Network Error:', error);
-      alert('Network error occurred. Please check your connection.');
-    } finally {
-      setIsProcessing(false);
-      setLoadingAudioIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(audioid);
-        return newSet;
-      });
-    }
-  };
-
-  const handleFileClick = (item: AudioFile) => {
+  // Remove the old handleProcessAudio function and replace with new getAudioFile logic
+  const handleFileClick = async (item: AudioFile) => {
     if (loadingAudioIds.has(item.audioid)) {
       // If already processing, do nothing
       return;
     }
     
-    // If we have audio_url, we can navigate directly
-    if (item.audio_url) {
+    // If the file already has a completed status and transcription, navigate directly
+    if (item.status === 'completed' && item.transcription) {
       navigate(`/transcription/${item.audioid}`, {
         state: {
           uid: user?.id,
-          audioid: item.audioid
+          audioid: item.audioid,
+          transcription: item.transcription,
+          audio_url: item.audio_url,
+          words_data: item.words_data,
+          audio_name: item.audio_name,
+          language: item.language,
+          duration: item.duration
         }
       });
-    } else {
-      // Otherwise, start processing
-      handleProcessAudio(item.audioid, item.audio_url || '');
+      return;
+    }
+    
+    // Always fetch the latest file data using the correct API
+    try {
+      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/getAudioFile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: user?.id,
+          audioid: item.audioid
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        if (data.status === 'completed' || data.transcription) {
+          // Navigate to transcription page with the data
+          navigate(`/transcription/${item.audioid}`, {
+            state: {
+              uid: user?.id,
+              audioid: item.audioid,
+              transcription: data.transcription,
+              audio_url: data.audioUrl || data.audio_url,
+              words_data: data.words_data,
+              audio_name: data.audio_name,
+              language: data.language,
+              duration: data.duration
+            }
+          });
+        } else {
+          // If still processing, start polling
+          setLoadingAudioIds(prev => new Set(prev).add(item.audioid));
+          startStatusPolling(item.audioid);
+        }
+      } else {
+        alert(`Failed to get audio file data: ${data.error || data.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error fetching audio file:', error);
+      alert('Network error occurred. Please check your connection.');
     }
   };
 
@@ -622,6 +944,29 @@ const SpeechToTextPage: React.FC = () => {
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
+
+  const clearExpiredCache = () => {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('audioFile-')) {
+        try {
+          const data = JSON.parse(localStorage.getItem(key) || '{}');
+          if (data.expires_at && Date.now() > data.expires_at) {
+            keysToRemove.push(key);
+          }
+        } catch (error) {
+          keysToRemove.push(key);
+        }
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+  };
+
+  // Clear expired cache on component mount
+  useEffect(() => {
+    clearExpiredCache();
+  }, []);
 
   return (
     <div className={`min-h-screen bg-gradient-to-br ${
@@ -834,17 +1179,17 @@ const SpeechToTextPage: React.FC = () => {
                 <div className="mt-8 flex justify-end">
                   <button
                     onClick={handleUpload}
-                    disabled={isUploading || isProcessing}
+                    disabled={isUploading}
                     className={`px-8 py-3 rounded-lg font-medium shadow-md flex items-center ${
-                      isUploading || isProcessing
+                      isUploading
                         ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                         : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:shadow-lg'
                     } transition-all`}
                   >
-                    {isUploading || isProcessing ? (
+                    {isUploading ? (
                       <>
                         <FiLoader className="animate-spin -ml-1 mr-2 h-5 w-5" />
-                        {isUploading ? 'Uploading...' : 'Processing...'}
+                        Uploading...
                       </>
                     ) : (
                       <>
@@ -940,8 +1285,8 @@ const SpeechToTextPage: React.FC = () => {
                   >
                     <div className={`${viewMode === 'list' ? 'flex items-center w-full' : ''}`}>
                       <div className={`${viewMode === 'list' ? 'flex-1' : ''}`}>
-                        <h3 className={`font-medium text-gray-800 dark:text-gray-300 truncate ${viewMode === 'list' ? 'text-lg' : 'mb-2'}`} title={file.audio_name}>
-                          {file.audio_name}
+                        <h3 className={`font-medium text-gray-800 dark:text-gray-300 truncate ${viewMode === 'list' ? 'text-lg' : 'mb-2'}`} title={getDisplayName(file)}>
+                          {getDisplayName(file)}
                         </h3>
                         
                         <div className={`flex items-center text-sm text-gray-500 dark:text-gray-400 ${viewMode === 'list' ? 'mr-4' : 'mt-2'}`}>
@@ -983,14 +1328,28 @@ const SpeechToTextPage: React.FC = () => {
                   {viewMode === 'list' && (
                     <div className="flex items-center px-4">
                       <button 
-                        onClick={() => downloadAudio(file)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          downloadAudio(file);
+                        }}
                         className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
                         title="Download audio"
                       >
                         <FiDownload />
                       </button>
                       <button 
-                        onClick={() => { 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditModal(file);
+                        }}
+                        className="p-2 text-gray-500 hover:text-yellow-500 dark:text-gray-400 dark:hover:text-yellow-400 transition-colors ml-1"
+                        title="Edit name"
+                      >
+                        <FiEdit3 />
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedFile(file);
                           setIsDeleteModalOpen(true);
                         }}
@@ -1004,14 +1363,29 @@ const SpeechToTextPage: React.FC = () => {
                   
                   {viewMode === 'grid' && (
                     <div className="mt-2 pt-3 px-5 pb-4 flex justify-between border-t dark:border-gray-700">
+                      <div className="flex space-x-3">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadAudio(file);
+                          }}
+                          className="text-sm flex items-center text-gray-600 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                        >
+                          <FiDownload className="mr-1" /> Download
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditModal(file);
+                          }}
+                          className="text-sm flex items-center text-gray-600 hover:text-yellow-500 dark:text-gray-400 dark:hover:text-yellow-400 transition-colors"
+                        >
+                          <FiEdit3 className="mr-1" /> Edit
+                        </button>
+                      </div>
                       <button 
-                        onClick={() => downloadAudio(file)}
-                        className="text-sm flex items-center text-gray-600 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
-                      >
-                        <FiDownload className="mr-1" /> Download
-                      </button>
-                      <button 
-                        onClick={() => { 
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedFile(file);
                           setIsDeleteModalOpen(true);
                         }}
@@ -1072,7 +1446,7 @@ const SpeechToTextPage: React.FC = () => {
               </div>
               
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Are you sure you want to delete <span className="font-medium">{selectedFile.audio_name}</span>? This action cannot be undone.
+                Are you sure you want to delete <span className="font-medium">{getDisplayName(selectedFile)}</span>? This action cannot be undone.
               </p>
               
               <div className="flex justify-end space-x-3">
@@ -1090,6 +1464,74 @@ const SpeechToTextPage: React.FC = () => {
                   className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
                 >
                   Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Name Modal */}
+      <AnimatePresence>
+        {isEditModalOpen && selectedFile && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full shadow-xl"
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-500 mr-3">
+                  <FiEdit3 />
+                </div>
+                <h3 className="text-lg font-medium dark:text-gray-200">Edit Audio Name</h3>
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Audio Name
+                </label>
+                <input
+                  type="text"
+                  value={editingName}
+                  onChange={(e) => setEditingName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200"
+                  placeholder="Enter new name"
+                  disabled={isEditingName}
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    setSelectedFile(null);
+                    setEditingName('');
+                  }}
+                  disabled={isEditingName}
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => editAudioName(selectedFile, editingName)}
+                  disabled={isEditingName || !editingName.trim()}
+                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center"
+                >
+                  {isEditingName ? (
+                    <>
+                      <FiLoader className="animate-spin mr-2" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </button>
               </div>
             </motion.div>

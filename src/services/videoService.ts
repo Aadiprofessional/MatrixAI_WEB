@@ -1,14 +1,40 @@
-interface VideoGenerationResponse {
+interface VideoCreationResponse {
+  message: string;
   videoId: string;
-  taskStatus: string;
+  taskId: string;
+  taskStatus: string; // Server returns taskStatus for the initial status
+  status?: string; // Keep this for backward compatibility
+  requestId?: string;
+  coinsDeducted?: number;
 }
 
 interface VideoStatusResponse {
-  taskStatus: string;
+  message: string;
+  videoId?: string;
+  status?: string;
+  taskStatus?: string; // Server returns taskStatus for video generation status
   videoUrl?: string;
+  error?: string;
+  submitTime?: string;
+  endTime?: string;
+  origPrompt?: string;
+  actualPrompt?: string;
 }
 
-interface VideoHistoryResponse {
+interface VideoListResponse {
+  message: string;
+  videos: Array<{
+    video_id: string;
+    prompt_text: string;
+    size: string;
+    task_status: string;
+    video_url?: string;
+    created_at: string;
+  }>;
+  totalCount: number;
+}
+
+interface EnhancedVideoListResponse {
   message: string;
   uid: string;
   summary: {
@@ -27,101 +53,123 @@ interface VideoHistoryResponse {
     statusDisplay: string;
     isReady: boolean;
     hasVideo: boolean;
-    videoUrl: string;
+    videoUrl?: string;
     createdAt: string;
     ageDisplay: string;
     apiType: string;
-    requestId: string;
-    submitTime: string;
-    scheduledTime: string;
-    endTime: string;
-    origPrompt: string;
-    actualPrompt: string;
-    imageUrl?: string;
-    ratio?: string;
-    duration?: string;
-    videoStyle?: string;
+    requestId?: string;
+    submitTime?: string;
+    scheduledTime?: string;
+    endTime?: string;
+    origPrompt?: string;
+    actualPrompt?: string;
   }>;
   totalCount: number;
 }
 
-interface RemoveVideoResponse {
-  success: boolean;
+interface VideoRemoveResponse {
   message: string;
 }
 
+const API_BASE_URL = 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run';
+
 export const videoService = {
-  // Create/initiate video generation
-  createVideo: async (uid: string, promptText: string): Promise<VideoGenerationResponse> => {
-    const response = await fetch('https://matrix-server.vercel.app/createVideo', {
+  // Create video
+  createVideo: async (uid: string, promptText: string, size: string = '1280*720'): Promise<VideoCreationResponse> => {
+    const response = await fetch(`${API_BASE_URL}/api/video/createVideo`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        uid: uid,
-        promptText: promptText
-      })
+        uid,
+        promptText,
+        size
+      }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to initiate video generation');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || 'Failed to create video');
     }
 
     return response.json();
   },
 
-  // Get video status and URL
-  getVideo: async (uid: string, videoId: string): Promise<VideoStatusResponse> => {
-    const response = await fetch(
-      `https://matrix-server.vercel.app/getVideo?uid=${uid}&videoId=${videoId}`,
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to check video status');
-    }
-
-    return response.json();
-  },
-
-  // Get all videos for a user
-  getAllVideos: async (uid: string): Promise<VideoHistoryResponse> => {
-    const response = await fetch(
-      `https://matrix-server.vercel.app/getAllVideos?uid=${uid}`,
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch video history');
-    }
-
-    return response.json();
-  },
-
-  // Remove a video
-  removeVideo: async (uid: string, videoId: string): Promise<RemoveVideoResponse> => {
-    const response = await fetch('https://matrix-server.vercel.app/removeVideo', {
+  // Get video status
+  getVideoStatus: async (uid: string, videoId: string): Promise<VideoStatusResponse> => {
+    const response = await fetch(`${API_BASE_URL}/api/video/getVideoStatus`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        uid: uid,
-        videoId: videoId
-      })
+        uid,
+        videoId
+      }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to remove video');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || 'Failed to get video status');
+    }
+
+    return response.json();
+  },
+
+  // Get all videos (simple)
+  getAllVideos: async (uid: string): Promise<VideoListResponse> => {
+    const response = await fetch(`${API_BASE_URL}/api/video/getAllVideos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        uid
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || 'Failed to get videos');
+    }
+
+    return response.json();
+  },
+
+  // Get all videos (enhanced with GET endpoint)
+  getAllVideosEnhanced: async (uid: string): Promise<EnhancedVideoListResponse> => {
+    const response = await fetch(`${API_BASE_URL}/api/video/getAllVideos/${encodeURIComponent(uid)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || 'Failed to get enhanced videos');
+    }
+
+    return response.json();
+  },
+
+  // Remove video
+  removeVideo: async (uid: string, videoId: string): Promise<VideoRemoveResponse> => {
+    const response = await fetch(`${API_BASE_URL}/api/video/removeVideo`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        uid,
+        videoId
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to remove video');
     }
 
     return response.json();

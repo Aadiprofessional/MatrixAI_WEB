@@ -75,7 +75,7 @@ const BuyPage: React.FC = () => {
   const fetchCoupons = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://matrix-server.vercel.app/getCoupon', {
+      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/getCoupon', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

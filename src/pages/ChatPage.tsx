@@ -96,61 +96,20 @@ const initialMessages: Message[] = [
 // Empty array for new chats - this should be used whenever creating a new chat
 const emptyInitialMessages: Message[] = [];
 
-// Enhanced Table Components with better styling
-const TableWrapper = ({ node, children, ...props }: any) => {
-  return (
-    <div className="overflow-x-auto w-full border rounded-lg dark:border-gray-700 my-6 shadow-sm">
-      <table className="table-auto min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        {children}
-      </table>
-    </div>
-  );
-};
-
-const TableHead = ({ node, children, ...props }: any) => {
-  return <thead className="bg-gray-50 dark:bg-gray-700">{children}</thead>;
-};
-
-const TableBody = ({ node, children, ...props }: any) => {
-  return <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">{children}</tbody>;
-};
-
-const TableRow = ({ node, children, isHeader, ...props }: any) => {
-  return (
-    <tr className={isHeader ? 'bg-gray-50 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors'}>
-      {children}
-    </tr>
-  );
-};
-
-const TableCell = ({ node, children, isHeader = false, ...props }: any) => {
-  if (isHeader) {
-    return (
-      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">
-        {children}
-      </th>
-    );
-  }
-  return (
-    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200 border-t border-gray-200 dark:border-gray-700">
-      {children}
-    </td>
-  );
-};
-
-// Enhanced Code Block Component with syntax highlighting
+// Enhanced Code Block Component
 const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
+  const { darkMode } = useContext(ThemeContext);
   const match = /language-(\w+)/.exec(className || '');
   const language = match ? match[1] : '';
   const codeString = String(children).replace(/\n$/, '');
   
-  if (!inline && language) {
+  if (!inline && (language || codeString.includes('\n'))) {
     return (
-      <div className="relative my-6 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="relative my-4 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
         {/* Language label */}
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
-            {language}
+            {language || 'code'}
           </span>
           <button
             onClick={() => navigator.clipboard.writeText(codeString)}
@@ -164,8 +123,8 @@ const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
         
         {/* Code content */}
         <SyntaxHighlighter
-          style={document.documentElement.classList.contains('dark') ? oneDark : oneLight}
-          language={language}
+          style={darkMode ? oneDark : oneLight}
+          language={language || 'text'}
           PreTag="div"
           customStyle={{
             margin: 0,
@@ -197,83 +156,116 @@ const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
   );
 };
 
-// Enhanced Markdown Components with comprehensive formatting
+// Enhanced Table Components
+const TableWrapper = ({ children, ...props }: any) => {
+  return (
+    <div className="overflow-x-auto w-full my-4">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
+        {children}
+      </table>
+    </div>
+  );
+};
+
+const TableHead = ({ children, ...props }: any) => {
+  return <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>;
+};
+
+const TableBody = ({ children, ...props }: any) => {
+  return <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">{children}</tbody>;
+};
+
+const TableRow = ({ children, ...props }: any) => {
+  return (
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+      {children}
+    </tr>
+  );
+};
+
+const TableCell = ({ children, ...props }: any) => {
+  return (
+    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700">
+      {children}
+    </td>
+  );
+};
+
+const TableHeaderCell = ({ children, ...props }: any) => {
+  return (
+    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-gray-50 dark:bg-gray-800">
+      {children}
+    </th>
+  );
+};
+
+// Enhanced Markdown Components
 const MarkdownComponents = {
-  // Enhanced headings with better typography and spacing
-  h1: ({ node, children, ...props }: any) => (
-    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6 mt-8 pb-3 border-b-2 border-gray-200 dark:border-gray-700 first:mt-0" {...props}>
+  // Headings
+  h1: ({ children, ...props }: any) => (
+    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 mt-6 pb-2 border-b border-gray-200 dark:border-gray-700 first:mt-0" {...props}>
       {children}
     </h1>
   ),
-  h2: ({ node, children, ...props }: any) => (
-    <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4 mt-6 pb-2 border-b border-gray-200 dark:border-gray-700" {...props}>
+  h2: ({ children, ...props }: any) => (
+    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 mt-5 pb-1 border-b border-gray-200 dark:border-gray-700" {...props}>
       {children}
     </h2>
   ),
-  h3: ({ node, children, ...props }: any) => (
-    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 mt-5" {...props}>
+  h3: ({ children, ...props }: any) => (
+    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 mt-4" {...props}>
       {children}
     </h3>
   ),
-  h4: ({ node, children, ...props }: any) => (
-    <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2 mt-4" {...props}>
+  h4: ({ children, ...props }: any) => (
+    <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2 mt-3" {...props}>
       {children}
     </h4>
   ),
-  h5: ({ node, children, ...props }: any) => (
-    <h5 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2 mt-3" {...props}>
+  h5: ({ children, ...props }: any) => (
+    <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1 mt-2" {...props}>
       {children}
     </h5>
   ),
-  h6: ({ node, children, ...props }: any) => (
-    <h6 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 mt-3 uppercase tracking-wide" {...props}>
+  h6: ({ children, ...props }: any) => (
+    <h6 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 mt-2 uppercase tracking-wide" {...props}>
       {children}
     </h6>
   ),
 
-  // Enhanced paragraphs with proper spacing
-  p: ({ node, children, ...props }: any) => {
-    const isInTableCell = node.parent && (node.parent.tagName === 'td' || node.parent.tagName === 'th');
-    
-    if (isInTableCell) {
-      return <span {...props}>{children}</span>;
-    }
-    
-    return (
-      <p className="mb-4 text-gray-800 dark:text-gray-200 leading-relaxed" {...props}>
-        {children}
-      </p>
-    );
-  },
+  // Paragraphs
+  p: ({ children, ...props }: any) => (
+    <p className="mb-3 text-gray-800 dark:text-gray-200 leading-relaxed" {...props}>
+      {children}
+    </p>
+  ),
 
-  // Enhanced lists with better styling
-  ul: ({ node, children, ...props }: any) => (
-    <ul className="mb-4 ml-6 space-y-2 list-disc text-gray-800 dark:text-gray-200" {...props}>
+  // Lists
+  ul: ({ children, ...props }: any) => (
+    <ul className="mb-3 ml-4 space-y-1 list-disc text-gray-800 dark:text-gray-200" {...props}>
       {children}
     </ul>
   ),
-  ol: ({ node, children, ...props }: any) => (
-    <ol className="mb-4 ml-6 space-y-2 list-decimal text-gray-800 dark:text-gray-200" {...props}>
+  ol: ({ children, ...props }: any) => (
+    <ol className="mb-3 ml-4 space-y-1 list-decimal text-gray-800 dark:text-gray-200" {...props}>
       {children}
     </ol>
   ),
-  li: ({ node, children, ...props }: any) => (
+  li: ({ children, ...props }: any) => (
     <li className="leading-relaxed" {...props}>
       {children}
     </li>
   ),
 
-  // Enhanced blockquotes
-  blockquote: ({ node, children, ...props }: any) => (
-    <blockquote className="border-l-4 border-blue-500 dark:border-blue-400 pl-4 py-2 my-4 bg-blue-50 dark:bg-blue-900/20 rounded-r-lg" {...props}>
-      <div className="text-gray-700 dark:text-gray-300 italic">
-        {children}
-      </div>
+  // Blockquotes
+  blockquote: ({ children, ...props }: any) => (
+    <blockquote className="border-l-4 border-blue-500 dark:border-blue-400 pl-4 py-2 my-3 bg-blue-50 dark:bg-blue-900/20 rounded-r-lg italic text-gray-700 dark:text-gray-300" {...props}>
+      {children}
     </blockquote>
   ),
 
-  // Enhanced links
-  a: ({ node, children, href, ...props }: any) => (
+  // Links
+  a: ({ children, href, ...props }: any) => (
     <a 
       href={href}
       className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline decoration-blue-500/30 hover:decoration-blue-500 transition-colors"
@@ -285,44 +277,37 @@ const MarkdownComponents = {
     </a>
   ),
 
-  // Enhanced horizontal rule
-  hr: ({ node, ...props }: any) => (
-    <hr className="my-8 border-0 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent" {...props} />
+  // Horizontal rule
+  hr: ({ ...props }: any) => (
+    <hr className="my-6 border-0 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent" {...props} />
   ),
 
-  // Enhanced emphasis and strong
-  em: ({ node, children, ...props }: any) => (
+  // Emphasis and strong
+  em: ({ children, ...props }: any) => (
     <em className="italic text-gray-800 dark:text-gray-200" {...props}>
       {children}
     </em>
   ),
-  strong: ({ node, children, ...props }: any) => (
+  strong: ({ children, ...props }: any) => (
     <strong className="font-semibold text-gray-900 dark:text-gray-100" {...props}>
       {children}
     </strong>
   ),
 
-  // Code blocks with syntax highlighting
+  // Code blocks
   code: CodeBlock,
 
-  // Enhanced table components
-  table: ({ node, children, ...props }: any) => <TableWrapper {...props}>{children}</TableWrapper>,
-  thead: ({ node, children, ...props }: any) => <TableHead {...props}>{children}</TableHead>,
-  tbody: ({ node, children, ...props }: any) => <TableBody {...props}>{children}</TableBody>,
-  tr: ({ node, children, ...props }: any) => {
-    const isHeader = node.parent?.tagName === 'thead';
-    return <TableRow isHeader={isHeader} {...props}>{children}</TableRow>;
-  },
-  td: ({ node, children, ...props }: any) => <TableCell {...props}>{children}</TableCell>,
-  th: ({ node, children, ...props }: any) => (
-    <th className="px-4 py-3 text-left font-semibold text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
-      {children}
-    </th>
-  ),
+  // Tables
+  table: ({ children, ...props }: any) => <TableWrapper {...props}>{children}</TableWrapper>,
+  thead: ({ children, ...props }: any) => <TableHead {...props}>{children}</TableHead>,
+  tbody: ({ children, ...props }: any) => <TableBody {...props}>{children}</TableBody>,
+  tr: ({ children, ...props }: any) => <TableRow {...props}>{children}</TableRow>,
+  td: ({ children, ...props }: any) => <TableCell {...props}>{children}</TableCell>,
+  th: ({ children, ...props }: any) => <TableHeaderCell {...props}>{children}</TableHeaderCell>,
 
-  // Enhanced images
-  img: ({ node, src, alt, ...props }: any) => (
-    <div className="my-6">
+  // Images
+  img: ({ src, alt, ...props }: any) => (
+    <div className="my-4">
       <img 
         src={src}
         alt={alt}
@@ -338,8 +323,8 @@ const MarkdownComponents = {
     </div>
   ),
 
-  // Task lists (GitHub Flavored Markdown)
-  input: ({ node, type, checked, ...props }: any) => {
+  // Task lists
+  input: ({ type, checked, ...props }: any) => {
     if (type === 'checkbox') {
       return (
         <input
@@ -355,78 +340,27 @@ const MarkdownComponents = {
   }
 };
 
-// Enhanced MathJax configuration with better rendering
-const mathJaxConfig = {
-  loader: { 
-    load: ['[tex]/html', '[tex]/color', '[tex]/cancel', '[tex]/mhchem', '[tex]/physics'] 
-  },
-  tex: {
-    packages: { 
-      '[+]': ['html', 'color', 'cancel', 'mhchem', 'physics'] 
-    },
-    inlineMath: [['$', '$'], ['\\(', '\\)']],
-    displayMath: [['$$', '$$'], ['\\[', '\\]']],
-    processEscapes: true,
-    processEnvironments: true,
-    processRefs: true,
-    digits: /^(?:[0-9]+(?:\{,\}[0-9]{3})*(?:\.[0-9]*)?|\.[0-9]+)/,
-    tags: 'ams',
-    tagSide: 'right',
-    tagIndent: '0.8em',
-    useLabelIds: true,
-    multlineWidth: '85%',
-    macros: {
-      // Common math macros
-      RR: '{\\mathbb{R}}',
-      NN: '{\\mathbb{N}}',
-      ZZ: '{\\mathbb{Z}}',
-      QQ: '{\\mathbb{Q}}',
-      CC: '{\\mathbb{C}}',
-      vec: ['\\mathbf{#1}', 1],
-      norm: ['\\left\\|#1\\right\\|', 1],
-      abs: ['\\left|#1\\right|', 1],
-      set: ['\\left\\{#1\\right\\}', 1]
-    }
-  },
-  options: {
-    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-    ignoreHtmlClass: 'no-mathjax',
-    renderActions: {
-      addMenu: [],
-      checkLoading: []
-    }
-  },
-  startup: {
-    typeset: false,
-    ready: () => {
-      console.log('MathJax is loaded and ready.');
-    }
-  }
-};
-
-// Function to preprocess mathematical content for better rendering
-const preprocessMathContent = (content: string): string => {
+// Function to preprocess content for better markdown rendering
+const preprocessContent = (content: string): string => {
   if (!content) return content;
   
-  // Ensure proper spacing around math expressions
+  // Clean up content and ensure proper formatting
   let processed = content
-    // Fix inline math spacing
-    .replace(/([a-zA-Z0-9])\$([^$]+)\$/g, '$1 $$$2$$ ')
-    .replace(/\$([^$]+)\$([a-zA-Z0-9])/g, '$$$1$$ $2')
-    // Fix display math spacing
-    .replace(/([a-zA-Z0-9])\$\$([^$]+)\$\$/g, '$1\n\n$$$$$2$$$$\n\n')
-    .replace(/\$\$([^$]+)\$\$([a-zA-Z0-9])/g, '$$$$$1$$$$\n\n$2')
-    // Ensure boxed expressions are properly formatted
-    .replace(/\\boxed\{([^}]+)\}/g, '\\boxed{$1}')
-    // Fix common fraction formatting
-    .replace(/(\d+)\/(\d+)/g, '\\frac{$1}{$2}')
-    // Fix square root formatting
-    .replace(/sqrt\(([^)]+)\)/g, '\\sqrt{$1}')
-    // Fix power notation
-    .replace(/\^(\d+)/g, '^{$1}')
-    .replace(/_(\d+)/g, '_{$1}');
+    // Fix math expressions
+    .replace(/\\\(/g, '$')
+    .replace(/\\\)/g, '$')
+    .replace(/\\\[/g, '$$')
+    .replace(/\\\]/g, '$$')
+    // Ensure proper line breaks for lists
+    .replace(/\n(\d+\.|\*|\-)\s/g, '\n\n$1 ')
+    // Ensure proper spacing around headers
+    .replace(/\n(#{1,6})\s/g, '\n\n$1 ')
+    // Clean up extra spaces
+    .replace(/\s+/g, ' ')
+    // Restore line breaks
+    .replace(/\n\s*\n/g, '\n\n');
   
-  return processed;
+  return processed.trim();
 };
 
 const ChatPage: React.FC = () => {
@@ -2008,7 +1942,7 @@ const ChatPage: React.FC = () => {
             if (msg.text && typeof msg.text === 'string' && 
                 msg.text.includes('supabase.co/storage/v1/')) {
               return {
-                id: msg.id || Date.now(),
+                id: msg.id || Date.now().toString(),
                 role: msg.sender === 'bot' ? 'assistant' : 'user',
                 content: '', // Empty content for image messages
                 timestamp: msg.timestamp || new Date().toISOString(),
@@ -2019,7 +1953,7 @@ const ChatPage: React.FC = () => {
             
             // Regular text message
             return {
-              id: msg.id || Date.now(),
+              id: msg.id || Date.now().toString(),
               role: msg.sender === 'bot' ? 'assistant' : 'user',
               content: msg.text || '',
               timestamp: msg.timestamp || new Date().toISOString()
@@ -2432,7 +2366,7 @@ const ChatPage: React.FC = () => {
                                         remarkPlugins={[remarkGfm, remarkMath]}
                                         rehypePlugins={[rehypeKatex, rehypeRaw]}
                                       >
-                                        {preprocessMathContent(message.content)}
+                                        {preprocessContent(message.content)}
                                       </ReactMarkdown>
                                       <span className="typing-cursor animate-pulse">▋</span>
                                     </div>
@@ -2447,7 +2381,7 @@ const ChatPage: React.FC = () => {
                                             allowDangerousHtml: true
                                           }}
                                         >
-                                          {preprocessMathContent(message.content)}
+                                          {preprocessContent(message.content)}
                                         </ReactMarkdown>
                                       ) : (
                                         <span>Loading content...</span>

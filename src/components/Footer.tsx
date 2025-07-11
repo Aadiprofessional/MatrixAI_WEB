@@ -39,14 +39,7 @@ const Footer: React.FC = () => {
         { text: "Blog", url: "/blog", icon: <FiBookOpen size={14} /> },
       ]
     },
-    {
-      title: "Resources",
-      links: [
-        { text: "Documentation", url: "/docs", icon: <FiBookOpen size={14} /> },
-        { text: "API Reference", url: "/api", icon: <FiCpu size={14} /> },
-        { text: "Community", url: "/community", icon: <FiUsers size={14} /> },
-      ]
-    },
+    
     {
       title: "Legal",
       links: [

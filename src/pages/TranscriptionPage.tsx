@@ -8,7 +8,8 @@ import {
   FiChevronLeft, FiChevronRight, FiRefreshCw, FiLoader,
   FiMaximize, FiMenu, FiLayout, FiSave, FiFileText,
   FiBarChart2, FiZap, FiSettings, FiBookmark, FiMic,
-  FiMessageSquare, FiGlobe, FiToggleLeft, FiToggleRight
+  FiMessageSquare, FiGlobe, FiToggleLeft, FiToggleRight,
+  FiCpu, FiUser, FiSquare, FiVolume2
 } from 'react-icons/fi';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +17,11 @@ import { useTheme } from '../context/ThemeContext';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import 'katex/dist/katex.min.css';
 import MindMapComponent from '../components/MindMapComponent';
 
 // Define types for word timings
@@ -44,6 +50,273 @@ const languages = [
   { label: 'German', value: 'de' },
   { label: 'Hindi', value: 'hi' },
 ];
+
+// Enhanced Code Block Component
+const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
+  const { theme } = useTheme();
+  const match = /language-(\w+)/.exec(className || '');
+  const language = match ? match[1] : '';
+  const codeString = String(children).replace(/\n$/, '');
+  
+  if (!inline && (language || codeString.includes('\n'))) {
+    return (
+      <div className="relative my-4 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
+        {/* Language label */}
+        <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+            {language || 'code'}
+          </span>
+          <button
+            onClick={() => navigator.clipboard.writeText(codeString)}
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            title="Copy code"
+          >
+            <FiCopy size={12} />
+            Copy
+          </button>
+        </div>
+        
+        {/* Code content */}
+        <SyntaxHighlighter
+          style={theme === 'dark' ? oneDark : oneLight}
+          language={language || 'text'}
+          PreTag="div"
+          customStyle={{
+            margin: 0,
+            padding: '1rem',
+            background: 'transparent',
+            fontSize: '0.875rem',
+            lineHeight: '1.5'
+          }}
+          codeTagProps={{
+            style: {
+              fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
+            }
+          }}
+        >
+          {codeString}
+        </SyntaxHighlighter>
+      </div>
+    );
+  }
+  
+  // Inline code
+  return (
+    <code 
+      className="px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-sm font-mono text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700" 
+      {...props}
+    >
+      {children}
+    </code>
+  );
+};
+
+// Enhanced Table Components
+const TableWrapper = ({ children, ...props }: any) => {
+  return (
+    <div className="overflow-x-auto w-full my-4">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
+        {children}
+      </table>
+    </div>
+  );
+};
+
+const TableHead = ({ children, ...props }: any) => {
+  return <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>;
+};
+
+const TableBody = ({ children, ...props }: any) => {
+  return <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">{children}</tbody>;
+};
+
+const TableRow = ({ children, ...props }: any) => {
+  return (
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+      {children}
+    </tr>
+  );
+};
+
+const TableCell = ({ children, ...props }: any) => {
+  return (
+    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700">
+      {children}
+    </td>
+  );
+};
+
+const TableHeaderCell = ({ children, ...props }: any) => {
+  return (
+    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-gray-50 dark:bg-gray-800">
+      {children}
+    </th>
+  );
+};
+
+// Enhanced Markdown Components
+const MarkdownComponents = {
+  // Headings
+  h1: ({ children, ...props }: any) => (
+    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 mt-6 pb-2 border-b border-gray-200 dark:border-gray-700 first:mt-0" {...props}>
+      {children}
+    </h1>
+  ),
+  h2: ({ children, ...props }: any) => (
+    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 mt-5 pb-1 border-b border-gray-200 dark:border-gray-700" {...props}>
+      {children}
+    </h2>
+  ),
+  h3: ({ children, ...props }: any) => (
+    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 mt-4" {...props}>
+      {children}
+    </h3>
+  ),
+  h4: ({ children, ...props }: any) => (
+    <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2 mt-3" {...props}>
+      {children}
+    </h4>
+  ),
+  h5: ({ children, ...props }: any) => (
+    <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1 mt-2" {...props}>
+      {children}
+    </h5>
+  ),
+  h6: ({ children, ...props }: any) => (
+    <h6 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 mt-2 uppercase tracking-wide" {...props}>
+      {children}
+    </h6>
+  ),
+
+  // Paragraphs
+  p: ({ children, ...props }: any) => (
+    <p className="mb-3 text-gray-800 dark:text-gray-200 leading-relaxed" {...props}>
+      {children}
+    </p>
+  ),
+
+  // Lists
+  ul: ({ children, ...props }: any) => (
+    <ul className="mb-3 ml-4 space-y-1 list-disc text-gray-800 dark:text-gray-200" {...props}>
+      {children}
+    </ul>
+  ),
+  ol: ({ children, ...props }: any) => (
+    <ol className="mb-3 ml-4 space-y-1 list-decimal text-gray-800 dark:text-gray-200" {...props}>
+      {children}
+    </ol>
+  ),
+  li: ({ children, ...props }: any) => (
+    <li className="leading-relaxed" {...props}>
+      {children}
+    </li>
+  ),
+
+  // Blockquotes
+  blockquote: ({ children, ...props }: any) => (
+    <blockquote className="border-l-4 border-blue-500 dark:border-blue-400 pl-4 py-2 my-3 bg-blue-50 dark:bg-blue-900/20 rounded-r-lg italic text-gray-700 dark:text-gray-300" {...props}>
+      {children}
+    </blockquote>
+  ),
+
+  // Links
+  a: ({ children, href, ...props }: any) => (
+    <a 
+      href={href}
+      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline decoration-blue-500/30 hover:decoration-blue-500 transition-colors"
+      target="_blank"
+      rel="noopener noreferrer"
+      {...props}
+    >
+      {children}
+    </a>
+  ),
+
+  // Horizontal rule
+  hr: ({ ...props }: any) => (
+    <hr className="my-6 border-0 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent" {...props} />
+  ),
+
+  // Emphasis and strong
+  em: ({ children, ...props }: any) => (
+    <em className="italic text-gray-800 dark:text-gray-200" {...props}>
+      {children}
+    </em>
+  ),
+  strong: ({ children, ...props }: any) => (
+    <strong className="font-semibold text-gray-900 dark:text-gray-100" {...props}>
+      {children}
+    </strong>
+  ),
+
+  // Code blocks
+  code: CodeBlock,
+
+  // Tables
+  table: ({ children, ...props }: any) => <TableWrapper {...props}>{children}</TableWrapper>,
+  thead: ({ children, ...props }: any) => <TableHead {...props}>{children}</TableHead>,
+  tbody: ({ children, ...props }: any) => <TableBody {...props}>{children}</TableBody>,
+  tr: ({ children, ...props }: any) => <TableRow {...props}>{children}</TableRow>,
+  td: ({ children, ...props }: any) => <TableCell {...props}>{children}</TableCell>,
+  th: ({ children, ...props }: any) => <TableHeaderCell {...props}>{children}</TableHeaderCell>,
+
+  // Images
+  img: ({ src, alt, ...props }: any) => (
+    <div className="my-4">
+      <img 
+        src={src}
+        alt={alt}
+        className="max-w-full h-auto rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
+        loading="lazy"
+        {...props}
+      />
+      {alt && (
+        <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-2 italic">
+          {alt}
+        </p>
+      )}
+    </div>
+  ),
+
+  // Task lists
+  input: ({ type, checked, ...props }: any) => {
+    if (type === 'checkbox') {
+      return (
+        <input
+          type="checkbox"
+          checked={checked}
+          readOnly
+          className="mr-2 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+          {...props}
+        />
+      );
+    }
+    return <input type={type} {...props} />;
+  }
+};
+
+// Function to preprocess content for better markdown rendering
+const preprocessContent = (content: string): string => {
+  if (!content) return content;
+  
+  // Clean up content and ensure proper formatting
+  let processed = content
+    // Fix math expressions
+    .replace(/\\\(/g, '$')
+    .replace(/\\\)/g, '$')
+    .replace(/\\\[/g, '$$')
+    .replace(/\\\]/g, '$$')
+    // Ensure proper line breaks for lists
+    .replace(/\n(\d+\.|\*|\-)\s/g, '\n\n$1 ')
+    // Ensure proper spacing around headers
+    .replace(/\n(#{1,6})\s/g, '\n\n$1 ')
+    // Clean up extra spaces
+    .replace(/\s+/g, ' ')
+    // Restore line breaks
+    .replace(/\n\s*\n/g, '\n\n');
+  
+  return processed.trim();
+};
 
 const TranscriptionPage: React.FC = () => {
   const { audioid } = useParams<{ audioid: string }>();
@@ -87,13 +360,16 @@ const TranscriptionPage: React.FC = () => {
   const [translatingIndex, setTranslatingIndex] = useState<number>(-1);
 
   // UI state
-  const [activeTab, setActiveTab] = useState<'transcript' | 'mindmap' | 'chat'>('transcript');
+  const [activeTab, setActiveTab] = useState<'transcript' | 'mindmap' | 'chat' | 'wordsdata'>('transcript');
   const [showSidebar, setShowSidebar] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
 
   // Mind map state
   const [xmlData, setXmlData] = useState<string | null>(null);
+  
+  // Add words_data state for JSON view
+  const [wordsData, setWordsData] = useState<any[]>([]);
 
   // Add state for chat processing
   const [isChatProcessing, setIsChatProcessing] = useState<{[key: string]: boolean}>({
@@ -113,19 +389,142 @@ const TranscriptionPage: React.FC = () => {
     role: 'user' | 'assistant';
     content: string;
     timestamp: number;
+    isStreaming?: boolean;
+    id?: number;
   }
   
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState<string>('');
   const [isAssistantTyping, setIsAssistantTyping] = useState<boolean>(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   // Scroll to bottom of chat when messages change
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chatMessages]);
+
+  // Add streaming API function similar to ChatPage
+  const sendMessageToAI = async (message: string, onChunk?: (chunk: string) => void): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      try {
+        // Prepare messages array for streaming API
+        const messages = [
+          {
+            role: "system",
+            content: [
+              {
+                type: "text", 
+                text: "You are a helpful assistant. The user is discussing a transcription of audio content. Format your responses with proper markdown when appropriate - use headings (# for main headings, ## for subheadings), bullet points, numbered lists, and emphasis where it enhances readability. Well-structured responses with clear headings are preferred."
+              }
+            ]
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: message
+              }
+            ]
+          }
+        ];
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', true);
+        xhr.setRequestHeader('Authorization', 'Bearer sk-256fda005a1445628fe2ceafcda9e389');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        let fullContent = '';
+        let processedLength = 0;
+        let isFirstChunk = true;
+
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 3 || xhr.readyState === 4) {
+            const responseText = xhr.responseText;
+            
+            // Only process new content that we haven't seen before
+            const newContent = responseText.substring(processedLength);
+            if (newContent) {
+              processedLength = responseText.length;
+              const lines = newContent.split('\n');
+              
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const data = line.slice(6).trim();
+                  if (data === '[DONE]') {
+                    console.log('✅ Stream marked as DONE');
+                    continue;
+                  }
+                  
+                  try {
+                    const parsed = JSON.parse(data);
+                    const content_chunk = parsed.choices?.[0]?.delta?.content;
+                    
+                    if (content_chunk) {
+                      if (isFirstChunk) {
+                        console.log('📝 First content chunk received');
+                        isFirstChunk = false;
+                      }
+                      
+                      fullContent += content_chunk;
+                      
+                      // Call the chunk callback immediately for real-time updates
+                      if (onChunk) {
+                        onChunk(content_chunk);
+                      }
+                    }
+                  } catch (parseError) {
+                    // Skip invalid JSON lines
+                    continue;
+                  }
+                }
+              }
+            }
+            
+            // If request is complete
+            if (xhr.readyState === 4) {
+              if (xhr.status === 200) {
+                console.log('✅ AI API request completed successfully');
+                console.log('📊 Final content length:', fullContent.length);
+                resolve(fullContent.trim() || 'I apologize, but I could not generate a response. Please try again.');
+              } else {
+                console.error('❌ API request failed:', xhr.status, xhr.statusText);
+                reject(new Error(`API call failed: ${xhr.status} ${xhr.statusText}`));
+              }
+            }
+          }
+        };
+
+        xhr.onerror = function() {
+          console.error('💥 XMLHttpRequest error');
+          reject(new Error('Failed to get response from AI. Please try again.'));
+        };
+
+        xhr.ontimeout = function() {
+          console.error('💥 XMLHttpRequest timeout');
+          reject(new Error('Request timed out. Please try again.'));
+        };
+
+        xhr.timeout = 60000; // 60 second timeout
+
+        const requestBody = JSON.stringify({
+          model: "qwen-vl-max",
+          messages: messages,
+          stream: true
+        });
+
+        console.log('📊 Sending request to streaming API...');
+        xhr.send(requestBody);
+
+      } catch (error) {
+        console.error('💥 Error in sendMessageToAI:', error);
+        reject(new Error('Failed to get response from AI. Please try again.'));
+      }
+    });
+  };
 
   // Get state passed from the previous page
   const locationState = location.state as any;
@@ -188,149 +587,6 @@ const TranscriptionPage: React.FC = () => {
     }
   };
 
-  // Fetch transcription data
-  useEffect(() => {
-    if (uid && audioid) {
-      fetchAudioMetadata(uid, audioid);
-    } else if (locationState?.transcription && locationState?.audio_url) {
-      // Use data passed from the previous page if available
-      setTranscription(locationState.transcription);
-      setAudioUrl(locationState.audio_url);
-      processTranscription(locationState.transcription);
-      setIsLoading(false);
-    }
-  }, [uid, audioid, locationState]);
-
-  // Update current word based on audio time
-  useEffect(() => {
-    if (wordTimings.length > 0 && currentTime > 0) {
-      const index = wordTimings.findIndex(
-        word => currentTime >= word.startTime && currentTime <= word.endTime
-      );
-      
-      if (index !== -1) {
-        setActiveWord(index);
-        
-        // Find which paragraph contains this word
-        const paraIndex = paragraphs.findIndex(
-          para => currentTime >= para.startTime && currentTime <= para.endTime
-        );
-        
-        if (paraIndex !== -1 && paraIndex !== activeParagraph) {
-          setActiveParagraph(paraIndex);
-        }
-        
-        // Scroll the active word into view if needed
-        if (activeWordRef.current) {
-          activeWordRef.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-          });
-        }
-      }
-    }
-  }, [currentTime, wordTimings, paragraphs, activeParagraph]);
-
-  // Audio time update handler
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-    }
-  };
-
-  // Process the transcription to create paragraphs and word timings
-  const processTranscription = (text: string) => {
-    if (!text) return;
-    
-    // Split text into paragraphs (using simple approach for now)
-    const paraTexts = text.split(/\n\n|\.\s+/g).filter(p => p.trim().length > 0);
-    
-    // Create paragraphs with estimated word timings
-    const totalWords = text.split(/\s+/).length;
-    let wordIndex = 0;
-    let timePerWord = duration / totalWords;
-    
-    const processedParagraphs: Paragraph[] = [];
-    const allWordTimings: WordTiming[] = [];
-    
-    paraTexts.forEach((paraText, paraIndex) => {
-      const words = paraText.split(/\s+/).filter(w => w.length > 0);
-      const paraWordTimings: WordTiming[] = [];
-      
-      words.forEach((word, index) => {
-        const startTime = wordIndex * timePerWord;
-        const endTime = (wordIndex + 1) * timePerWord;
-        
-        const wordTiming: WordTiming = {
-          word,
-          startTime,
-          endTime
-        };
-        
-        paraWordTimings.push(wordTiming);
-        allWordTimings.push(wordTiming);
-        wordIndex++;
-      });
-      
-      processedParagraphs.push({
-        text: paraText,
-        words: paraWordTimings,
-        startTime: paraWordTimings[0]?.startTime || 0,
-        endTime: paraWordTimings[paraWordTimings.length - 1]?.endTime || 0
-      });
-    });
-    
-    setParagraphs(processedParagraphs);
-    setWordTimings(allWordTimings);
-  };
-
-  // Process word timings from API response
-  const processWordTimings = (wordsData: any[]) => {
-    return wordsData.map(word => ({
-      word: word.word,
-      startTime: word.start,
-      endTime: word.end
-    }));
-  };
-
-  // Create paragraphs from word timings
-  const createParagraphsFromWordsData = (wordsData: any[]) => {
-    const allWords: WordTiming[] = processWordTimings(wordsData);
-    // Group words into paragraphs (100 words per paragraph)
-    const paragraphs: Paragraph[] = [];
-    let currentParagraph: WordTiming[] = [];
-    
-    allWords.forEach((word, index) => {
-      currentParagraph.push(word);
-      
-      // Create a new paragraph after every 100 words or at punctuation marks
-      if (
-        currentParagraph.length >= 100 || 
-        (word.word.match(/[.!?]$/) && (index === allWords.length - 1 || allWords[index + 1]?.word.match(/^[A-Z]/)))
-      ) {
-        paragraphs.push({
-          text: currentParagraph.map(w => w.word).join(' '),
-          words: [...currentParagraph],
-          startTime: currentParagraph[0]?.startTime || 0,
-          endTime: currentParagraph[currentParagraph.length - 1]?.endTime || 0
-        });
-        currentParagraph = [];
-      }
-    });
-    
-    // Add any remaining words as the last paragraph
-    if (currentParagraph.length > 0) {
-      paragraphs.push({
-        text: currentParagraph.map(w => w.word).join(' '),
-        words: [...currentParagraph],
-        startTime: currentParagraph[0]?.startTime || 0,
-        endTime: currentParagraph[currentParagraph.length - 1]?.endTime || 0
-      });
-    }
-    
-    return { paragraphs, words: allWords };
-  };
-
   // Fetch audio metadata and transcription
   const fetchAudioMetadata = async (uid: string, audioid: string) => {
     try {
@@ -345,9 +601,23 @@ const TranscriptionPage: React.FC = () => {
             setTranscription(parsed.transcription);
             setAudioUrl(parsed.audioUrl);
             setDuration(parsed.duration || 0);
+            setFileName(parsed.audio_name || 'Untitled');
+            
+            // Set words_data if available
+            if (parsed.words_data) {
+              setWordsData(parsed.words_data);
+            }
             
             if (parsed.paragraphs && parsed.paragraphs.length > 0) {
               setParagraphs(parsed.paragraphs);
+              setWordTimings(parsed.wordTimings || []);
+            } else if (parsed.words_data && Array.isArray(parsed.words_data) && parsed.words_data.length > 0) {
+              // Process words_data if available
+              setWordTimings(processWordTimings(parsed.words_data));
+              
+              // Create paragraphs from words_data
+              const { paragraphs } = createParagraphsFromWordsData(parsed.words_data);
+              setParagraphs(paragraphs);
             } else {
               processTranscription(parsed.transcription);
             }
@@ -365,8 +635,8 @@ const TranscriptionPage: React.FC = () => {
         }
       }
       
-      // If no cache or parsing error, fetch from API
-      const response = await fetch('https://matrix-server.vercel.app/getAudioFile', {
+      // If no cache or parsing error, fetch from correct API
+      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/getAudioFile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -376,17 +646,22 @@ const TranscriptionPage: React.FC = () => {
       
       const data = await response.json();
       
-      if (response.ok) {
-        // Set state with fetched data
+      if (response.ok && data.success) {
+        // Set state with fetched data - using correct field names from server response
         setTranscription(data.transcription || '');
         setFileName(data.audio_name || 'Untitled');
         const audioDur = data.duration || 0;
         setDuration(audioDur);
-        setAudioUrl(data.audio_url || '');
+        setAudioUrl(data.audioUrl || ''); // Note: server returns 'audioUrl' not 'audio_url'
 
-        // Check if xmlData is available
-        if (data.xmlData) {
-          setXmlData(data.xmlData);
+        // Check if xml_data is available (server stores it as xml_data)
+        if (data.xml_data) {
+          setXmlData(data.xml_data);
+        }
+
+        // Set words_data if available
+        if (data.words_data) {
+          setWordsData(data.words_data);
         }
 
         // Process words_data if available
@@ -402,16 +677,19 @@ const TranscriptionPage: React.FC = () => {
           processTranscription(data.transcription);
         }
         
-        // Cache the data
+        // Cache the data with words_data
         localStorage.setItem(`audioData-${audioid}`, JSON.stringify({
           transcription: data.transcription || '',
-          audioUrl: data.audio_url || '',
+          audioUrl: data.audioUrl || '',
+          audio_name: data.audio_name || 'Untitled',
           duration: audioDur,
-          paragraphs: paragraphs,
-          xmlData: data.xmlData || null,
+          paragraphs: paragraphs.length > 0 ? paragraphs : [],
+          wordTimings: wordTimings.length > 0 ? wordTimings : [],
+          words_data: data.words_data || [],
+          xmlData: data.xml_data || null,
         }));
       } else {
-        console.error('Error fetching audio metadata:', data.error);
+        console.error('Error fetching audio metadata:', data.error || data.message);
         alert('Failed to load audio data');
       }
     } catch (error) {
@@ -510,20 +788,8 @@ const TranscriptionPage: React.FC = () => {
           break;
       }
       
-      // Using the Deepseek API to process the request
-      const response = await openai.chat.completions.create({
-        model: 'deepseek-chat',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are a helpful assistant. Format your responses with proper markdown - use headings (# for main headings, ## for subheadings), bullet points, numbered lists, and emphasis where it enhances readability.'
-          },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 1000
-      });
-      
-      const result = response.choices[0]?.message?.content || 'No response generated.';
+      // Using the streaming API to process the request
+      const result = await sendMessageToAI(prompt);
       setChatResponses({...chatResponses, [action]: result});
     } catch (error) {
       console.error(`Error in ${action} quick action:`, error);
@@ -543,53 +809,77 @@ const TranscriptionPage: React.FC = () => {
     const userMessage: ChatMessage = {
       role: 'user',
       content: chatInput.trim(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      id: Date.now()
     };
     
     setChatMessages(prev => [...prev, userMessage]);
-    setChatInput(''); // Clear input
+    const currentInput = chatInput.trim();
+    setChatInput(''); // Clear input immediately
     setIsAssistantTyping(true);
     
+    // Create a streaming assistant message that will be updated in real-time
+    const streamingMessageId = Date.now() + 1;
+    let streamingContent = '';
+    
+    // Add initial empty streaming message
+    const initialStreamingMessage: ChatMessage = {
+      role: 'assistant',
+      content: '',
+      timestamp: Date.now(),
+      isStreaming: true,
+      id: streamingMessageId
+    };
+    
+    setChatMessages(prev => [...prev, initialStreamingMessage]);
+    
+    // Define chunk handler for real-time updates
+    const handleChunk = (chunk: string) => {
+      streamingContent += chunk;
+      
+      // Update the streaming message in real-time
+      setChatMessages(prev => prev.map(msg => 
+        msg.id === streamingMessageId 
+          ? { ...msg, content: streamingContent }
+          : msg
+      ));
+      
+      // Auto-scroll to bottom as content streams in
+      setTimeout(() => {
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+      }, 50);
+    };
+
     try {
-      // Using the Deepseek API for chat
-      const response = await openai.chat.completions.create({
-        model: 'deepseek-chat',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are a helpful assistant. The user is discussing a transcription of audio content. Format your responses with proper markdown when appropriate - use headings (# for main headings, ## for subheadings), bullet points, numbered lists, and emphasis where it enhances readability. Well-structured responses with clear headings are preferred.'
-          },
-          ...chatMessages.map(msg => ({ 
-            role: msg.role as 'user' | 'assistant', 
-            content: msg.content 
-          })),
-          { role: 'user', content: chatInput.trim() }
-        ],
-        max_tokens: 1000
-      });
+      // Build context with previous messages
+      const contextMessages = chatMessages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+      const fullPrompt = contextMessages ? `${contextMessages}\nuser: ${currentInput}` : currentInput;
       
-      // Get assistant response
-      const assistantResponse = response.choices[0]?.message?.content || 'I apologize, but I am unable to provide a response at this time.';
+      // Get streaming response
+      const fullResponse = await sendMessageToAI(fullPrompt, handleChunk);
       
-      // Add assistant message to chat
-      const assistantMessage: ChatMessage = {
-        role: 'assistant',
-        content: assistantResponse,
-        timestamp: Date.now()
-      };
+      // Finalize the streaming message
+      setChatMessages(prev => prev.map(msg => 
+        msg.id === streamingMessageId 
+          ? { ...msg, content: fullResponse, isStreaming: false }
+          : msg
+      ));
       
-      setChatMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error in chat:', error);
       
-      // Add error message
-      const errorMessage: ChatMessage = {
-        role: 'assistant',
-        content: 'I apologize, but I encountered an error while processing your request. Please try again.',
-        timestamp: Date.now()
-      };
-      
-      setChatMessages(prev => [...prev, errorMessage]);
+      // Remove the streaming message and add error message
+      setChatMessages(prev => {
+        const messagesWithoutStreaming = prev.filter(msg => msg.id !== streamingMessageId);
+        return [...messagesWithoutStreaming, {
+          role: 'assistant',
+          content: 'I apologize, but I encountered an error while processing your request. Please try again.',
+          timestamp: Date.now(),
+          id: streamingMessageId
+        }];
+      });
     } finally {
       setIsAssistantTyping(false);
     }
@@ -634,8 +924,35 @@ const TranscriptionPage: React.FC = () => {
   };
 
   // Handle XML data generation from MindMapComponent
-  const handleXmlDataGenerated = (newXmlData: string) => {
+  const handleXmlDataGenerated = async (newXmlData: string) => {
     setXmlData(newXmlData);
+    
+    // Send XML data to server using the correct API endpoint
+    if (uid && audioid) {
+      try {
+        const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/sendXmlGraph', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            uid,
+            audioid,
+            xmlData: newXmlData
+          }),
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && !result.error) {
+          console.log('XML data saved successfully:', result.message);
+        } else {
+          console.error('Error saving XML data:', result.error || result.message);
+        }
+      } catch (error) {
+        console.error('Error sending XML data to server:', error);
+      }
+    }
     
     // Update cache with new XML data
     if (audioid) {
@@ -651,6 +968,154 @@ const TranscriptionPage: React.FC = () => {
       }
     }
   };
+
+  // Process the transcription to create paragraphs and word timings
+  const processTranscription = (text: string) => {
+    if (!text) return;
+    
+    // Split text into paragraphs (using simple approach for now)
+    const paraTexts = text.split(/\n\n|\.\s+/g).filter(p => p.trim().length > 0);
+    
+    // Create paragraphs with estimated word timings
+    const totalWords = text.split(/\s+/).length;
+    let wordIndex = 0;
+    let timePerWord = duration / totalWords;
+    
+    const processedParagraphs: Paragraph[] = [];
+    const allWordTimings: WordTiming[] = [];
+    
+    paraTexts.forEach((paraText, paraIndex) => {
+      const words = paraText.split(/\s+/).filter(w => w.length > 0);
+      const paraWordTimings: WordTiming[] = [];
+      
+      words.forEach((word, index) => {
+        const startTime = wordIndex * timePerWord;
+        const endTime = (wordIndex + 1) * timePerWord;
+        
+        const wordTiming: WordTiming = {
+          word,
+          startTime,
+          endTime
+        };
+        
+        paraWordTimings.push(wordTiming);
+        allWordTimings.push(wordTiming);
+        wordIndex++;
+      });
+      
+      processedParagraphs.push({
+        text: paraText,
+        words: paraWordTimings,
+        startTime: paraWordTimings[0]?.startTime || 0,
+        endTime: paraWordTimings[paraWordTimings.length - 1]?.endTime || 0
+      });
+    });
+    
+    setParagraphs(processedParagraphs);
+    setWordTimings(allWordTimings);
+  };
+
+  // Process word timings from API response
+  const processWordTimings = (wordsData: any[]) => {
+    return wordsData.map(word => ({
+      word: word.word,
+      startTime: word.start,
+      endTime: word.end
+    }));
+  };
+
+  // Create paragraphs from word timings
+  const createParagraphsFromWordsData = (wordsData: any[]) => {
+    const allWords: WordTiming[] = processWordTimings(wordsData);
+    // Group words into paragraphs (100 words per paragraph)
+    const paragraphs: Paragraph[] = [];
+    let currentParagraph: WordTiming[] = [];
+    
+    allWords.forEach((word, index) => {
+      currentParagraph.push(word);
+      
+      // Create a new paragraph after every 100 words or at punctuation marks
+      if (
+        currentParagraph.length >= 100 || 
+        (word.word.match(/[.!?]$/) && (index === allWords.length - 1 || allWords[index + 1]?.word.match(/^[A-Z]/)))
+      ) {
+        paragraphs.push({
+          text: currentParagraph.map(w => w.word).join(' '),
+          words: [...currentParagraph],
+          startTime: currentParagraph[0]?.startTime || 0,
+          endTime: currentParagraph[currentParagraph.length - 1]?.endTime || 0
+        });
+        currentParagraph = [];
+      }
+    });
+    
+    // Add any remaining words as the last paragraph
+    if (currentParagraph.length > 0) {
+      paragraphs.push({
+        text: currentParagraph.map(w => w.word).join(' '),
+        words: [...currentParagraph],
+        startTime: currentParagraph[0]?.startTime || 0,
+        endTime: currentParagraph[currentParagraph.length - 1]?.endTime || 0
+      });
+    }
+    
+    return { paragraphs, words: allWords };
+  };
+
+  // Fetch transcription data
+  useEffect(() => {
+    if (uid && audioid) {
+      fetchAudioMetadata(uid, audioid);
+    } else if (locationState?.transcription && locationState?.audio_url) {
+      // Use data passed from the previous page if available
+      setTranscription(locationState.transcription);
+      setAudioUrl(locationState.audio_url);
+      setDuration(locationState.duration || 0);
+      setFileName(locationState.audio_name || 'Untitled');
+      
+      // Set words_data if available
+      if (locationState.words_data) {
+        setWordsData(locationState.words_data);
+        setWordTimings(processWordTimings(locationState.words_data));
+        const { paragraphs } = createParagraphsFromWordsData(locationState.words_data);
+        setParagraphs(paragraphs);
+      } else {
+        processTranscription(locationState.transcription);
+      }
+      
+      setIsLoading(false);
+    }
+  }, [uid, audioid, locationState]);
+
+  // Update current word based on audio time
+  useEffect(() => {
+    if (wordTimings.length > 0 && currentTime > 0) {
+      const index = wordTimings.findIndex(
+        word => currentTime >= word.startTime && currentTime <= word.endTime
+      );
+      
+      if (index !== -1) {
+        setActiveWord(index);
+        
+        // Find which paragraph contains this word
+        const paraIndex = paragraphs.findIndex(
+          para => currentTime >= para.startTime && currentTime <= para.endTime
+        );
+        
+        if (paraIndex !== -1 && paraIndex !== activeParagraph) {
+          setActiveParagraph(paraIndex);
+        }
+        
+        // Scroll the active word into view if needed
+        if (activeWordRef.current) {
+          activeWordRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+        }
+      }
+    }
+  }, [currentTime, wordTimings, paragraphs, activeParagraph]);
 
   return (
     <div className={`min-h-screen bg-gradient-to-br ${
@@ -753,6 +1218,16 @@ const TranscriptionPage: React.FC = () => {
             }`}
           >
             <span className="flex items-center"><FiMessageSquare className="mr-2" /> Chat</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('wordsdata')}
+            className={`py-3 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
+              activeTab === 'wordsdata' 
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            <span className="flex items-center"><FiFileText className="mr-2" /> Words Data</span>
           </button>
         </div>
 
@@ -872,7 +1347,12 @@ const TranscriptionPage: React.FC = () => {
                                     ? 'bg-blue-500 text-white dark:bg-blue-600 rounded px-1 py-0.5' 
                                     : 'hover:bg-blue-100 hover:dark:bg-blue-900/30 rounded'
                                 }`}
-                                onClick={() => handleWordClick(word)}
+                                onClick={() => {
+                                  if (audioRef.current) {
+                                    audioRef.current.currentTime = word.startTime;
+                                    setCurrentTime(word.startTime);
+                                  }
+                                }}
                               >
                                 {word.word}{' '}
                               </span>
@@ -1051,12 +1531,13 @@ const TranscriptionPage: React.FC = () => {
                             <h4 className="font-medium text-blue-700 dark:text-blue-400 mb-2 flex items-center">
                               <FiZap className="mr-2" /> Key Points
                             </h4>
-                            <div className="text-gray-700 dark:text-gray-300 prose prose-sm max-w-none dark:prose-invert">
+                            <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
                               <ReactMarkdown 
-                                rehypePlugins={[rehypeRaw]} 
-                                remarkPlugins={[remarkGfm]}
+                                components={MarkdownComponents}
+                                remarkPlugins={[remarkGfm, remarkMath]}
+                                rehypePlugins={[rehypeKatex, rehypeRaw]}
                               >
-                                {chatResponses.keypoints}
+                                {preprocessContent(chatResponses.keypoints)}
                               </ReactMarkdown>
                             </div>
                           </div>
@@ -1067,12 +1548,13 @@ const TranscriptionPage: React.FC = () => {
                             <h4 className="font-medium text-purple-700 dark:text-purple-400 mb-2 flex items-center">
                               <FiFileText className="mr-2" /> Summary
                             </h4>
-                            <div className="text-gray-700 dark:text-gray-300 prose prose-sm max-w-none dark:prose-invert">
+                            <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
                               <ReactMarkdown 
-                                rehypePlugins={[rehypeRaw]} 
-                                remarkPlugins={[remarkGfm]}
+                                components={MarkdownComponents}
+                                remarkPlugins={[remarkGfm, remarkMath]}
+                                rehypePlugins={[rehypeKatex, rehypeRaw]}
                               >
-                                {chatResponses.summary}
+                                {preprocessContent(chatResponses.summary)}
                               </ReactMarkdown>
                             </div>
                           </div>
@@ -1083,12 +1565,13 @@ const TranscriptionPage: React.FC = () => {
                             <h4 className="font-medium text-green-700 dark:text-green-400 mb-2 flex items-center">
                               <FiBookmark className="mr-2" /> Translation ({translationLanguage})
                             </h4>
-                            <div className="text-gray-700 dark:text-gray-300 prose prose-sm max-w-none dark:prose-invert">
+                            <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
                               <ReactMarkdown 
-                                rehypePlugins={[rehypeRaw]} 
-                                remarkPlugins={[remarkGfm]}
+                                components={MarkdownComponents}
+                                remarkPlugins={[remarkGfm, remarkMath]}
+                                rehypePlugins={[rehypeKatex, rehypeRaw]}
                               >
-                                {chatResponses.translate}
+                                {preprocessContent(chatResponses.translate)}
                               </ReactMarkdown>
                             </div>
                           </div>
@@ -1098,45 +1581,116 @@ const TranscriptionPage: React.FC = () => {
                     
                     {/* Chat Messages */}
                     {chatMessages.length > 0 ? (
-                      <div className="space-y-4">
-                        {chatMessages.map((message, index) => (
-                          <div 
-                            key={index}
+                      <div className="space-y-6">
+                        {chatMessages.map((message) => (
+                          <motion.div
+                            key={message.id || message.timestamp}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
                             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                           >
-                            <div 
-                              className={`max-w-3/4 md:max-w-[70%] rounded-lg px-4 py-3 ${
-                                message.role === 'user' 
-                                  ? 'bg-blue-500 text-white' 
-                                  : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                              }`}
-                            >
-                              <div className="text-sm mb-1">
-                                {message.role === 'user' ? 'You' : 'Assistant'} • {formatTimestamp(message.timestamp)}
-                              </div>
-                              <div className={`${message.role === 'assistant' ? 'prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-800 dark:prose-headings:text-gray-200 prose-h1:text-lg prose-h2:text-base prose-h3:text-sm prose-p:my-1 prose-li:my-0 prose-ul:my-1 prose-ol:my-1' : 'whitespace-pre-wrap'}`}>
+                            <div className={`max-w-[85%] flex ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                              {/* Avatar */}
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
+                                message.role === 'assistant' 
+                                  ? (theme === 'dark' ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white') 
+                                  : (theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700')
+                              } ${message.role === 'user' ? 'ml-3' : 'mr-3'}`}>
                                 {message.role === 'assistant' ? (
-                                  <ReactMarkdown 
-                                    rehypePlugins={[rehypeRaw]} 
-                                    remarkPlugins={[remarkGfm]}
-                                  >
-                                    {message.content}
-                                  </ReactMarkdown>
+                                  <FiCpu />
                                 ) : (
-                                  message.content
+                                  <FiUser />
                                 )}
                               </div>
+                              
+                              <div className={`rounded-2xl px-4 py-3 ${
+                                message.role === 'assistant' 
+                                  ? (theme === 'dark' ? 'bg-gray-800 border border-gray-700 text-gray-100' : 'bg-white border border-gray-200 shadow-sm text-gray-800') 
+                                  : (theme === 'dark' ? 'bg-gradient-to-r from-blue-800 to-purple-800 text-white' : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white')
+                              }`}>
+                                {message.role === 'assistant' ? (
+                                  <div className={`prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
+                                    {message.isStreaming ? (
+                                      <div className="streaming-content">
+                                        <ReactMarkdown 
+                                          components={MarkdownComponents}
+                                          remarkPlugins={[remarkGfm, remarkMath]}
+                                          rehypePlugins={[rehypeKatex, rehypeRaw]}
+                                        >
+                                          {preprocessContent(message.content)}
+                                        </ReactMarkdown>
+                                        <span className="typing-cursor animate-pulse">▋</span>
+                                      </div>
+                                    ) : (
+                                      <div>
+                                        {message.content ? (
+                                          <ReactMarkdown 
+                                            components={MarkdownComponents}
+                                            remarkPlugins={[remarkGfm, remarkMath]}
+                                            rehypePlugins={[rehypeKatex, rehypeRaw]}
+                                            remarkRehypeOptions={{
+                                              allowDangerousHtml: true
+                                            }}
+                                          >
+                                            {preprocessContent(message.content)}
+                                          </ReactMarkdown>
+                                        ) : (
+                                          <span>Loading content...</span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="whitespace-pre-wrap">{message.content}</div>
+                                )}
+                                
+                                {/* Message footer */}
+                                <div className={`mt-2 flex items-center justify-between text-xs ${
+                                  message.role === 'assistant' 
+                                    ? (theme === 'dark' ? 'text-gray-500' : 'text-gray-500') 
+                                    : 'text-blue-200'
+                                }`}>
+                                  <span>{formatTimestamp(message.timestamp)}</span>
+                                  
+                                  <div className="flex space-x-2">
+                                    <button 
+                                      onClick={() => navigator.clipboard.writeText(message.content)}
+                                      className={`p-1 rounded-full ${theme === 'dark' ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                                      aria-label="Copy to clipboard"
+                                    >
+                                      <FiCopy size={14} />
+                                    </button>
+                                    {message.role === 'assistant' && (
+                                      <button 
+                                        onClick={() => {
+                                          const utterance = new SpeechSynthesisUtterance(message.content);
+                                          window.speechSynthesis.speak(utterance);
+                                        }}
+                                        className={`p-1 rounded-full ${theme === 'dark' ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                                        aria-label="Speak message"
+                                      >
+                                        <FiVolume2 size={14} />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                          </div>
+                          </motion.div>
                         ))}
                         
                         {isAssistantTyping && (
                           <div className="flex justify-start">
-                            <div className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg px-4 py-3">
-                              <div className="flex items-center space-x-2">
-                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse"></div>
-                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-75"></div>
-                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-150"></div>
+                            <div className="max-w-[85%] flex flex-row">
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-3 ${theme === 'dark' ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'}`}>
+                                <FiCpu />
+                              </div>
+                              <div className={`rounded-2xl px-6 py-4 ${theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                                <div className="flex space-x-2">
+                                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -1150,6 +1704,8 @@ const TranscriptionPage: React.FC = () => {
                         </div>
                       )
                     )}
+                    
+                    <div ref={messagesEndRef} />
                   </div>
                   
                   {/* Chat input area - Fixed at the bottom */}
@@ -1179,6 +1735,131 @@ const TranscriptionPage: React.FC = () => {
                         )}
                       </button>
                     </form>
+                  </div>
+                </motion.div>
+              )}
+              
+              {/* Words Data Tab */}
+              {activeTab === 'wordsdata' && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-200px)]"
+                >
+                  {/* Header */}
+                  <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Words Data (JSON)</h2>
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(JSON.stringify(wordsData, null, 2));
+                          alert('Words data copied to clipboard!');
+                        }}
+                        className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                        title="Copy JSON"
+                      >
+                        <FiCopy />
+                      </button>
+                      <button 
+                        onClick={() => {
+                          const dataStr = JSON.stringify(wordsData, null, 2);
+                          const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                          const url = URL.createObjectURL(dataBlob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = `words_data_${audioid}.json`;
+                          link.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                        title="Download JSON"
+                      >
+                        <FiDownload />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* JSON Content */}
+                  <div className="flex-1 overflow-auto p-4">
+                    {wordsData && wordsData.length > 0 ? (
+                      <div className="relative">
+                        {/* Statistics */}
+                        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Total Words:</span>
+                              <div className="font-bold text-gray-800 dark:text-gray-200">{wordsData.length}</div>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Duration:</span>
+                              <div className="font-bold text-gray-800 dark:text-gray-200">{formatTime(duration)}</div>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Avg Word Length:</span>
+                              <div className="font-bold text-gray-800 dark:text-gray-200">
+                                {(wordsData.reduce((acc, word) => acc + word.word.length, 0) / wordsData.length).toFixed(1)} chars
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Words per Minute:</span>
+                              <div className="font-bold text-gray-800 dark:text-gray-200">
+                                {duration > 0 ? Math.round((wordsData.length / duration) * 60) : 0}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* JSON Data */}
+                        <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg text-sm overflow-auto font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap mb-6">
+                          {JSON.stringify(wordsData, null, 2)}
+                        </pre>
+                        
+                        {/* Interactive Word List */}
+                        <div className="mt-6">
+                          <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Interactive Word Timeline</h3>
+                          <div className="space-y-2 max-h-96 overflow-auto border dark:border-gray-600 rounded-lg">
+                            {wordsData.map((wordData, index) => (
+                              <div 
+                                key={index}
+                                className={`p-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 border-b dark:border-gray-700 transition-colors ${
+                                  activeWord === index ? 'bg-blue-100 dark:bg-blue-900/30' : ''
+                                }`}
+                                onClick={() => {
+                                  if (audioRef.current) {
+                                    audioRef.current.currentTime = wordData.start;
+                                    setCurrentTime(wordData.start);
+                                  }
+                                }}
+                              >
+                                <div className="flex justify-between items-center">
+                                  <div className="flex items-center space-x-3">
+                                    <span className="text-gray-500 dark:text-gray-400 text-xs font-mono">
+                                      #{index + 1}
+                                    </span>
+                                    <span className="font-medium text-gray-800 dark:text-gray-200">
+                                      {wordData.word}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                                    {formatTime(wordData.start)} - {formatTime(wordData.end)}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                        <FiFileText size={48} className="mb-4" />
+                        <p className="text-lg font-medium mb-2">No Words Data Available</p>
+                        <p className="text-sm text-center">
+                          Words timing data is not available for this transcription. 
+                          This may happen if the transcription was processed with an older version 
+                          or if detailed timing information was not generated.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -1220,8 +1901,16 @@ const TranscriptionPage: React.FC = () => {
                   <audio 
                     ref={audioRef}
                     src={audioUrl}
-                    onTimeUpdate={handleTimeUpdate}
-                    onDurationChange={() => audioRef.current && setDuration(audioRef.current.duration)}
+                    onTimeUpdate={() => {
+                      if (audioRef.current) {
+                        setCurrentTime(audioRef.current.currentTime);
+                      }
+                    }}
+                    onDurationChange={() => {
+                      if (audioRef.current) {
+                        setDuration(audioRef.current.duration);
+                      }
+                    }}
                     onEnded={() => setIsPlaying(false)}
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
@@ -1238,7 +1927,11 @@ const TranscriptionPage: React.FC = () => {
                         min="0"
                         max={duration}
                         value={currentTime}
-                        onChange={handleProgressChange}
+                        onChange={(e) => {
+                          if (audioRef.current) {
+                            audioRef.current.currentTime = parseFloat(e.target.value);
+                          }
+                        }}
                         step="0.1"
                         className="flex-1 mx-2 sm:mx-3 accent-blue-500 h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 dark:bg-gray-700"
                       />
@@ -1250,7 +1943,11 @@ const TranscriptionPage: React.FC = () => {
                     <div className="flex justify-between items-center mb-6">
                       <div className="flex space-x-1 sm:space-x-2">
                         <button 
-                          onClick={() => seekTo(Math.max(0, currentTime - 5))}
+                          onClick={() => {
+                            if (audioRef.current) {
+                              audioRef.current.currentTime = Math.max(0, currentTime - 5);
+                            }
+                          }}
                           className="p-1 sm:p-2 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
                           title="Back 5 seconds"
                         >
@@ -1266,7 +1963,11 @@ const TranscriptionPage: React.FC = () => {
                           }
                         </button>
                         <button 
-                          onClick={() => seekTo(Math.min(duration, currentTime + 5))}
+                          onClick={() => {
+                            if (audioRef.current) {
+                              audioRef.current.currentTime = Math.min(duration, currentTime + 5);
+                            }
+                          }}
                           className="p-1 sm:p-2 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
                           title="Forward 5 seconds"
                         >
@@ -1279,7 +1980,12 @@ const TranscriptionPage: React.FC = () => {
                         {[0.5, 1, 1.5, 2].map(rate => (
                           <button 
                             key={rate}
-                            onClick={() => handlePlaybackRateChange(rate)}
+                            onClick={() => {
+                              if (audioRef.current) {
+                                audioRef.current.playbackRate = rate;
+                                setPlaybackRate(rate);
+                              }
+                            }}
                             className={`px-1.5 sm:px-2 py-1 text-xs rounded-full font-medium transition-colors ${
                               playbackRate === rate 
                                 ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm' 
@@ -1342,5 +2048,118 @@ const TranscriptionPage: React.FC = () => {
     </div>
   );
 };
+
+// Add CSS styles for streaming and markdown
+const styles = `
+  .streaming-content .typing-cursor {
+    display: inline-block;
+    background-color: currentColor;
+    margin-left: 2px;
+    animation: blink 1s infinite;
+  }
+  
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  
+  .markdown-content {
+    line-height: 1.6;
+  }
+  
+  .markdown-content h1,
+  .markdown-content h2,
+  .markdown-content h3,
+  .markdown-content h4,
+  .markdown-content h5,
+  .markdown-content h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+  }
+  
+  .markdown-content h1:first-child,
+  .markdown-content h2:first-child,
+  .markdown-content h3:first-child,
+  .markdown-content h4:first-child,
+  .markdown-content h5:first-child,
+  .markdown-content h6:first-child {
+    margin-top: 0;
+  }
+  
+  .markdown-content p {
+    margin-bottom: 1em;
+  }
+  
+  .markdown-content ul,
+  .markdown-content ol {
+    margin-bottom: 1em;
+    padding-left: 1.5em;
+  }
+  
+  .markdown-content li {
+    margin-bottom: 0.25em;
+  }
+  
+  .markdown-content blockquote {
+    margin: 1em 0;
+    padding-left: 1em;
+    border-left: 4px solid #e5e7eb;
+  }
+  
+  .dark .markdown-content blockquote {
+    border-left-color: #374151;
+  }
+  
+  .markdown-content pre {
+    margin: 1em 0;
+    padding: 1em;
+    background-color: #f3f4f6;
+    border-radius: 0.5em;
+    overflow-x: auto;
+  }
+  
+  .dark .markdown-content pre {
+    background-color: #1f2937;
+  }
+  
+  .markdown-content code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  
+  .markdown-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+  }
+  
+  .markdown-content th,
+  .markdown-content td {
+    border: 1px solid #e5e7eb;
+    padding: 0.5em;
+    text-align: left;
+  }
+  
+  .dark .markdown-content th,
+  .dark .markdown-content td {
+    border-color: #374151;
+  }
+  
+  .markdown-content th {
+    background-color: #f9fafb;
+    font-weight: 600;
+  }
+  
+  .dark .markdown-content th {
+    background-color: #1f2937;
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = styles;
+  document.head.appendChild(styleElement);
+}
 
 export default TranscriptionPage; 

@@ -101,6 +101,34 @@ const VideoCreatorPage: React.FC = () => {
     };
   }, []);
 
+  // Transform API video data to match VideoHistoryItem interface
+  const transformVideoData = (apiVideo: any): VideoHistoryItem => {
+    return {
+      videoId: apiVideo.video_id,
+      promptText: apiVideo.prompt_text,
+      size: apiVideo.size || '1280*720',
+      taskId: apiVideo.task_id || '',
+      taskStatus: apiVideo.task_status || apiVideo.status || 'unknown',
+      statusDisplay: apiVideo.task_status || apiVideo.status || 'unknown',
+      isReady: apiVideo.task_status === 'SUCCEEDED' || apiVideo.status === 'completed',
+      hasVideo: !!(apiVideo.video_url),
+      videoUrl: apiVideo.video_url || '',
+      createdAt: apiVideo.created_at,
+      ageDisplay: new Date(apiVideo.created_at).toLocaleDateString(),
+      apiType: 'video',
+      requestId: apiVideo.request_id || '',
+      submitTime: apiVideo.submit_time || apiVideo.created_at,
+      scheduledTime: apiVideo.scheduled_time || '',
+      endTime: apiVideo.end_time || '',
+      origPrompt: apiVideo.prompt_text,
+      actualPrompt: apiVideo.prompt_text,
+      imageUrl: apiVideo.image_url,
+      ratio: apiVideo.ratio,
+      duration: apiVideo.duration,
+      videoStyle: apiVideo.video_style
+    };
+  };
+
   const fetchVideoHistory = async () => {
     if (!user?.id) return;
     
@@ -109,7 +137,8 @@ const VideoCreatorPage: React.FC = () => {
     
     try {
       const response = await videoService.getAllVideos(user.id);
-      setVideoHistory(response.videos || []);
+      const transformedVideos = (response.videos || []).map(transformVideoData);
+      setVideoHistory(transformedVideos);
     } catch (err: any) {
       console.error('Error fetching video history:', err);
       setHistoryError(err.message);
@@ -127,10 +156,23 @@ const VideoCreatorPage: React.FC = () => {
       try {
         if (!user?.id) return;
         
-        const response = await videoService.getVideo(user.id, videoId);
-        setTaskStatus(response.taskStatus);
+        const response = await videoService.getVideoStatus(user.id, videoId);
+        console.log('Video status response:', response);
         
-        if (response.taskStatus === 'SUCCEEDED' && response.videoUrl) {
+        // Update task status - server returns taskStatus, not status
+        const currentTaskStatus = response.taskStatus || response.status || '';
+        setTaskStatus(currentTaskStatus);
+        
+        // Update progress bar while processing
+        if (currentTaskStatus === 'PENDING' || currentTaskStatus === 'RUNNING') {
+          setProcessingProgress(prev => {
+            const newProgress = prev + Math.random() * 2; // Slower increment during polling
+            return newProgress > 95 ? 95 : newProgress;
+          });
+        }
+        
+        // Check if video is completed - server returns 'SUCCEEDED' status and videoUrl
+        if (currentTaskStatus === 'SUCCEEDED' && response.videoUrl) {
           // Video is ready
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -151,15 +193,15 @@ const VideoCreatorPage: React.FC = () => {
           setTimeout(() => {
             setIsGenerating(false);
           }, 500);
-        } else if (response.taskStatus === 'FAILED') {
+        } else if (currentTaskStatus === 'FAILED') {
           // Video generation failed
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
           }
           setIsGenerating(false);
-          setError('Video generation failed. Please try again.');
+          setError(response.message || 'Video generation failed. Please try again.');
         }
-        // Continue polling if status is still PENDING or PROCESSING
+        // Continue polling if status is still PENDING or RUNNING
       } catch (error: any) {
         console.error('Error checking video status:', error);
         if (pollingIntervalRef.current) {
@@ -168,7 +210,7 @@ const VideoCreatorPage: React.FC = () => {
         setIsGenerating(false);
         setError('Failed to check video status. Please try again.');
       }
-    }, 2000); // Poll every 2 seconds
+    }, 500); // Poll every 0.5 seconds (500ms)
 
     // Clear interval after 5 minutes to prevent infinite polling
     setTimeout(() => {
@@ -196,7 +238,7 @@ const VideoCreatorPage: React.FC = () => {
     setError(null);
     setVideoUrl(null);
     setCurrentVideoId(null);
-    setTaskStatus('PENDING');
+    setTaskStatus('');
     
     // Start progress animation
     const progressInterval = setInterval(() => {
@@ -207,12 +249,18 @@ const VideoCreatorPage: React.FC = () => {
     }, 1000);
     
     try {
+      // Get resolution dimensions
+      const selectedResolution = resolutionOptions.find(r => r.id === resolution);
+      const size = selectedResolution ? `${selectedResolution.width}*${selectedResolution.height}` : '1280*720';
+      
       // Initiate video generation
-      const response = await videoService.createVideo(user.id, prompt);
+      const response = await videoService.createVideo(user.id, prompt, size);
+      console.log('Create video response:', response);
       
       if (response.videoId) {
         setCurrentVideoId(response.videoId);
-        setTaskStatus(response.taskStatus);
+        // Server returns taskStatus in the response
+        setTaskStatus(response.taskStatus || response.status || 'PENDING');
         
         // Start polling for video status
         startPolling(response.videoId);
@@ -220,7 +268,7 @@ const VideoCreatorPage: React.FC = () => {
         // Clear the progress interval since we're now polling
         clearInterval(progressInterval);
       } else {
-        throw new Error('Failed to initiate video generation');
+        throw new Error(response.message || 'Failed to initiate video generation');
       }
     } catch (error: any) {
       console.error('Error generating video:', error);
@@ -380,11 +428,21 @@ const VideoCreatorPage: React.FC = () => {
     switch (taskStatus) {
       case 'PENDING':
         return 'Initializing video generation...';
-      case 'PROCESSING':
+      case 'RUNNING':
         return 'Generating video...';
       case 'SUCCEEDED':
         return 'Video generated successfully!';
       case 'FAILED':
+        return 'Video generation failed';
+      case 'pending':
+        return 'Initializing video generation...';
+      case 'processing':
+        return 'Setting up video generation...';
+      case 'generating':
+        return 'Generating video...';
+      case 'completed':
+        return 'Video generated successfully!';
+      case 'failed':
         return 'Video generation failed';
       default:
         return 'Generating video...';
@@ -702,21 +760,25 @@ const VideoCreatorPage: React.FC = () => {
                           </div>
                           <div className="flex items-center space-x-2 mt-1">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              video.taskStatus === 'SUCCEEDED' 
+                              video.taskStatus === 'SUCCEEDED' || video.taskStatus === 'completed'
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                : video.taskStatus === 'PROCESSING'
+                                : video.taskStatus === 'RUNNING' || video.taskStatus === 'PENDING' || video.taskStatus === 'processing'
                                 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                : video.taskStatus === 'FAILED'
+                                : video.taskStatus === 'FAILED' || video.taskStatus === 'failed'
                                 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                 : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                             }`}>
-                              {video.statusDisplay}
+                              {video.taskStatus === 'SUCCEEDED' ? 'Ready' : 
+                               video.taskStatus === 'RUNNING' ? 'Generating' :
+                               video.taskStatus === 'PENDING' ? 'Pending' :
+                               video.taskStatus === 'FAILED' ? 'Failed' :
+                               video.statusDisplay}
                             </span>
                           </div>
                         </div>
                         
                         <div className="flex space-x-2">
-                          {video.videoUrl && video.taskStatus === 'SUCCEEDED' && (
+                          {video.videoUrl && (video.taskStatus === 'SUCCEEDED' || video.taskStatus === 'completed') && (
                             <>
                               <button
                                 onClick={() => setVideoUrl(video.videoUrl)}

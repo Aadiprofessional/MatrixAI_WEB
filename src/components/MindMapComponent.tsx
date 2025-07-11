@@ -191,7 +191,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     }
 
     try {
-      const response = await axios.post('https://matrix-server.vercel.app/sendXmlGraph', {
+      const response = await axios.post('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/sendXmlGraph', {
         uid,
         audioid,
         xmlData: xmlDataToSend,
@@ -208,7 +208,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     setIsDownloading(true);
     
     try {
-      const response = await axios.post('https://matrix-server.vercel.app/generateMindMapPdf', {
+      const response = await axios.post('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/generateMindMapPdf', {
         uid,
         audioid,
         xmlData: currentXmlData || JSON.stringify(graphData)
@@ -237,7 +237,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     if (!currentXmlData || !uid || !audioid) return;
     
     try {
-      const response = await axios.post('https://matrix-server.vercel.app/sendXmlGraph', {
+      const response = await axios.post('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/sendXmlGraph', {
         uid,
         audioid,
         xmlData: currentXmlData,

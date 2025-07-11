@@ -341,7 +341,7 @@ export const confirmSubscriptionPurchase = async (
     }
     
     // Always call the real backend API to update coins, even in mock mode
-    const response = await fetch('https://matrix-server.vercel.app/BuySubscription', {
+    const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/user/BuySubscription', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

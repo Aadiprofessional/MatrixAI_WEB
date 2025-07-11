@@ -27,7 +27,16 @@ import {
   EmailVerificationPage,
   BuyPage,
   HumaniseTextPage,
-  DetectAIPage
+  DetectAIPage,
+  // Footer pages
+  AboutPage,
+  ContactPage,
+  CareersPage,
+  BlogPage,
+  PrivacyPage,
+  TermsPage,
+  CookiesPage,
+  StatusPage
 } from './pageExports';
 
 // Import components
@@ -392,6 +401,79 @@ const App: React.FC = () => {
                   <ProtectedRoute>
                     <PaymentPage />
                   </ProtectedRoute>
+                } 
+              />
+              
+              {/* Footer page routes */}
+              <Route 
+                path="/about" 
+                element={
+                  <Layout>
+                    <AboutPage />
+                  </Layout>
+                } 
+              />
+              
+              <Route 
+                path="/contact" 
+                element={
+                  <Layout>
+                    <ContactPage />
+                  </Layout>
+                } 
+              />
+              
+              <Route 
+                path="/careers" 
+                element={
+                  <Layout>
+                    <CareersPage />
+                  </Layout>
+                } 
+              />
+              
+              <Route 
+                path="/blog" 
+                element={
+                  <Layout>
+                    <BlogPage />
+                  </Layout>
+                } 
+              />
+              
+              <Route 
+                path="/privacy" 
+                element={
+                  <Layout>
+                    <PrivacyPage />
+                  </Layout>
+                } 
+              />
+              
+              <Route 
+                path="/terms" 
+                element={
+                  <Layout>
+                    <TermsPage />
+                  </Layout>
+                } 
+              />
+              
+              <Route 
+                path="/cookies" 
+                element={
+                  <Layout>
+                    <CookiesPage />
+                  </Layout>
+                } 
+              />
+              
+              <Route 
+                path="/status" 
+                element={
+                  <Layout>
+                    <StatusPage />
+                  </Layout>
                 } 
               />
               

@@ -55,7 +55,7 @@ const OrderHistoryPage: React.FC = () => {
     setError(null);
     
     try {
-      const response = await axios.post('https://matrix-server.vercel.app/getUserOrder', {
+      const response = await axios.post('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/getUserOrder', {
         uid: user.id
       });
       

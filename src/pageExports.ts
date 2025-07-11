@@ -23,4 +23,14 @@ export { default as PaymentPage } from './pages/PaymentPage';
 export { default as ReferralPage } from './pages/ReferralPage';
 export { default as SpeechToTextPage } from './pages/SpeechToTextPage';
 export { default as TranscriptionPage } from './pages/TranscriptionPage';
-export { default as BuyPage } from './pages/BuyPage'; 
+export { default as BuyPage } from './pages/BuyPage';
+
+// Footer pages
+export { default as AboutPage } from './pages/AboutPage';
+export { default as ContactPage } from './pages/ContactPage';
+export { default as CareersPage } from './pages/CareersPage';
+export { default as BlogPage } from './pages/BlogPage';
+export { default as PrivacyPage } from './pages/PrivacyPage';
+export { default as TermsPage } from './pages/TermsPage';
+export { default as CookiesPage } from './pages/CookiesPage';
+export { default as StatusPage } from './pages/StatusPage'; 
