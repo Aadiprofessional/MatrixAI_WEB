@@ -25,6 +25,7 @@ import {
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {
@@ -38,6 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
   const { darkMode } = useContext(ThemeContext);
   const { userData, isPro } = useUser();
   const { signOut } = useAuth();
+  const { t } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
   
   // Speech to text state
@@ -150,18 +152,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
 
   // Navigation items
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: <FiHome className="w-5 h-5" /> },
-    { path: '/chat', label: 'AI Chat', icon: <FiMessageSquare className="w-5 h-5" />, pro: true },
-    { path: '/tools/image-generator', label: 'Image Generator', icon: <FiImage className="w-5 h-5" />, pro: true },
-    { path: '/tools/video-creator', label: 'Video Creator', icon: <FiVideo className="w-5 h-5" />, pro: true },
-    { path: '/tools/content-writer', label: 'Content Writer', icon: <FiFileText className="w-5 h-5" />, pro: true },
-    // { path: '/tools/humanise-text', label: 'Humanise Text', icon: <FiUser className="w-5 h-5" />, pro: true },
-    // { path: '/tools/detect-ai', label: 'AI Detector', icon: <FiShield className="w-5 h-5" />, pro: true },
-    // { path: '/tools/presentation-creator', label: 'Presentations', icon: <FiLayers className="w-5 h-5" />, pro: true },
-    { path: '/tools/speech-to-text', label: 'Speech to Text', icon: <FiMic className="w-5 h-5" />, pro: true },
-    { path: '/profile', label: 'Profile', icon: <FiUser className="w-5 h-5" /> },
-    { path: '/settings', label: 'Settings', icon: <FiSettings className="w-5 h-5" /> },
-    { path: '/help', label: 'Help & Support', icon: <FiHelpCircle className="w-5 h-5" /> },
+    { path: '/dashboard', label: t('nav.dashboard'), icon: <FiHome className="w-5 h-5" /> },
+    { path: '/chat', label: t('nav.chat'), icon: <FiMessageSquare className="w-5 h-5" />, pro: true },
+    { path: '/tools/image-generator', label: t('nav.imageGenerator'), icon: <FiImage className="w-5 h-5" />, pro: true },
+    { path: '/tools/video-creator', label: t('nav.video'), icon: <FiVideo className="w-5 h-5" />, pro: true },
+    { path: '/tools/content-writer', label: t('nav.content'), icon: <FiFileText className="w-5 h-5" />, pro: true },
+    { path: '/tools/speech-to-text', label: t('nav.speechToText'), icon: <FiMic className="w-5 h-5" />, pro: true },
+    { path: '/profile', label: t('nav.profile'), icon: <FiUser className="w-5 h-5" /> },
+    { path: '/settings', label: t('nav.settings'), icon: <FiSettings className="w-5 h-5" /> },
+    { path: '/help', label: t('nav.help'), icon: <FiHelpCircle className="w-5 h-5" /> },
   ];
 
   return (
@@ -281,11 +280,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
                     ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90' 
                     : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:opacity-90'
                 }`}
-                title="Quick Speech to Text"
+                title={t('sidebar.quickSpeechToText')}
               >
                 <div className={`flex items-center ${collapsed ? 'justify-center' : ''}`}>
                   <FiMic className="w-5 h-5" />
-                  {!collapsed && <span className="ml-2">Quick Speech to Text</span>}
+                  {!collapsed && <span className="ml-2">{t('sidebar.quickSpeechToText')}</span>}
                 </div>
               </button>
             </div>

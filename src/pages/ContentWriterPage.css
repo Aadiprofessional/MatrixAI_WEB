@@ -1,3 +1,19 @@
+/* Streaming content animations */
+.streaming-content {
+  position: relative;
+}
+
+.typing-cursor {
+  display: inline-block;
+  vertical-align: text-top;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
 /* Markdown content styling */
 .markdown-content code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;

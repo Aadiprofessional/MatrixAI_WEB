@@ -1,7 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  FiBell, 
   FiHelpCircle, 
   FiSearch, 
   FiSettings,
@@ -14,22 +13,32 @@ import {
   FiPlus,
   FiStar
 } from 'react-icons/fi';
-import { ThemeContext } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
+import { useLanguage } from '../context/LanguageContext';
+import ChargeModal from './ChargeModal';
+import LanguageSelector from './LanguageSelector';
+import coinImage from '../assets/coin.png';
 
 interface NavbarProps {}
 
 const Navbar: React.FC<NavbarProps> = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
+
   const [showSearchBar, setShowSearchBar] = useState(false);
+  const [showChargeModal, setShowChargeModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { darkMode, toggleDarkMode } = useContext(ThemeContext);
+
+  const { darkMode, toggleDarkMode } = useTheme();
   const { user, signOut } = useAuth();
   const { userData } = useUser();
   const { isPro } = useUser();
+  const { t } = useLanguage();
+
+  // Debug logging
+  console.log('Navbar render:', { showChargeModal, userData: !!userData, isPro });
 
   const handleLogout = async () => {
     try {
@@ -121,14 +130,10 @@ const Navbar: React.FC<NavbarProps> = () => {
           
           {isPro && userData && userData.user_coins && userData.user_coins < 200 && (
             <button
-              onClick={() => navigate('/buy', { 
-                state: { 
-                  uid: user?.id,
-                  plan: 'Addon',
-                  price: '50 HKD',
-                  isAddon: true
-                } 
-              })}
+              onClick={() => {
+                console.log('Buy Coins button clicked, opening charge modal');
+                setShowChargeModal(true);
+              }}
               className="flex items-center px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:opacity-90 transition-opacity"
             >
               <FiPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
@@ -136,16 +141,23 @@ const Navbar: React.FC<NavbarProps> = () => {
             </button>
           )}
 
-          {/* User Coins */}
+          {/* User Coins - Make it clickable to open charge modal */}
           {userData && (
-            <div className={`hidden sm:flex items-center px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm ${
-              darkMode 
-                ? 'bg-amber-900/30 text-amber-300' 
-                : 'bg-amber-100 text-amber-600'
-            }`}>
-              <FiCreditCard className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
+            <button
+              onClick={() => {
+                console.log('Coin button clicked, opening charge modal');
+                setShowChargeModal(true);
+              }}
+              className={`hidden sm:flex items-center px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm hover:opacity-80 transition-opacity ${
+                darkMode 
+                  ? 'bg-amber-900/30 text-amber-300 hover:bg-amber-900/40' 
+                  : 'bg-amber-100 text-amber-600 hover:bg-amber-200'
+              }`}
+              title="Click to buy more coins"
+            >
+              <img src={coinImage} alt="Coin" className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
               <span className="font-medium">{userData.user_coins || 0}</span>
-            </div>
+            </button>
           )}
 
           {/* Dark Mode Toggle */}
@@ -161,6 +173,9 @@ const Navbar: React.FC<NavbarProps> = () => {
             {darkMode ? <FiSun className="w-4 h-4 sm:w-5 sm:h-5" /> : <FiMoon className="w-4 h-4 sm:w-5 sm:h-5" />}
           </button>
 
+          {/* Language Selector */}
+          <LanguageSelector />
+
           {/* Help Button - Hidden on small mobile */}
           <button className={`hidden sm:block p-1.5 sm:p-2 rounded-lg ${
             darkMode 
@@ -170,64 +185,7 @@ const Navbar: React.FC<NavbarProps> = () => {
             <FiHelpCircle className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
-          {/* Notifications */}
-          <div className="relative">
-            <button 
-              className={`p-1.5 sm:p-2 rounded-lg ${
-                darkMode 
-                  ? 'text-gray-300 hover:bg-gray-700' 
-                  : 'text-gray-500 hover:bg-gray-100'
-              }`}
-              onClick={() => setShowNotifications(!showNotifications)}
-            >
-              <div className="relative">
-                <FiBell className="w-4 h-4 sm:w-5 sm:h-5" />
-                <div className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-[8px] sm:text-[10px] font-bold">3</span>
-                </div>
-              </div>
-            </button>
 
-            {/* Notification Menu */}
-            {showNotifications && (
-              <div className={`absolute right-0 mt-2 w-72 sm:w-80 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 ${
-                darkMode ? 'bg-gray-800 ring-gray-700' : 'bg-white'
-              }`}>
-                <div className={`p-3 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <h3 className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Notifications</h3>
-                </div>
-                <div className="max-h-60 overflow-y-auto">
-                  <a href="#" className={`block px-4 py-3 ${darkMode ? 'hover:bg-gray-700 border-gray-700' : 'hover:bg-gray-50 border-gray-100'} border-b`}>
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white">
-                        <FiUser className="w-4 h-4" />
-                      </div>
-                      <div className="ml-3 w-0 flex-1">
-                        <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>New AI Model Available</p>
-                        <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Try out our new image generation model</p>
-                        <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>2 hours ago</p>
-                      </div>
-                    </div>
-                  </a>
-                  <a href="#" className={`block px-4 py-3 ${darkMode ? 'hover:bg-gray-700 border-gray-700' : 'hover:bg-gray-50 border-gray-100'} border-b`}>
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white">
-                        <FiSettings className="w-4 h-4" />
-                      </div>
-                      <div className="ml-3 w-0 flex-1">
-                        <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>System Update Completed</p>
-                        <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>AI has new capabilities</p>
-                        <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>1 day ago</p>
-                      </div>
-                    </div>
-                  </a>
-                </div>
-                <div className={`py-2 px-3 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <a href="#" className="text-xs font-medium text-blue-500 hover:text-blue-600">View all notifications</a>
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* User Menu */}
           <div className="relative">
@@ -334,6 +292,13 @@ const Navbar: React.FC<NavbarProps> = () => {
           </div>
         </div>
       )}
+
+      {/* Charge Modal */}
+      <ChargeModal
+        isOpen={showChargeModal}
+        onClose={() => setShowChargeModal(false)}
+        currentCoins={userData?.user_coins || 0}
+      />
     </nav>
   );
 };

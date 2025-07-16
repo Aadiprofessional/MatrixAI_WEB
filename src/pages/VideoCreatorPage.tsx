@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiVideo, FiUpload, FiPlay, FiPause, FiDownload, FiSliders, FiPlus, FiTrash, FiX, FiCheck, FiClock, FiList } from 'react-icons/fi';
+import { FiVideo, FiUpload, FiPlay, FiPause, FiDownload, FiSliders, FiPlus, FiTrash, FiX, FiCheck, FiClock, FiList, FiVolume2, FiVolumeX, FiMaximize, FiMinimize, FiLoader } from 'react-icons/fi';
 import { ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { videoService } from '../services/videoService';
 
 interface VideoHistoryItem {
@@ -34,6 +36,8 @@ interface VideoHistoryItem {
 const VideoCreatorPage: React.FC = () => {
   const { userData, isPro } = useUser();
   const { user } = useAuth();
+  const { t } = useLanguage();
+  const { darkMode } = useTheme();
   const [prompt, setPrompt] = useState('');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -43,6 +47,14 @@ const VideoCreatorPage: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [uploadedVideo, setUploadedVideo] = useState<File | null>(null);
   const [style, setStyle] = useState('cinematic');
+  const [videoProgress, setVideoProgress] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [showControls, setShowControls] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
   const [showProAlert, setShowProAlert] = useState(false);
   const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(1);
@@ -293,25 +305,104 @@ const VideoCreatorPage: React.FC = () => {
     }
   };
   
-  const handlePlayPause = () => {
+  const handlePlayPause = async () => {
     if (!videoRef.current) return;
     
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play();
+    try {
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        await videoRef.current.play();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('Error playing video:', error);
     }
-    
-    setIsPlaying(!isPlaying);
   };
   
   const handleVideoTimeUpdate = () => {
     if (!videoRef.current) return;
     
+    const currentTime = videoRef.current.currentTime;
+    const duration = videoRef.current.duration;
+    
+    setCurrentTime(currentTime);
+    setVideoProgress((currentTime / duration) * 100);
+    
     // If video ends, reset to playing state to false
-    if (videoRef.current.currentTime === videoRef.current.duration) {
+    if (currentTime === duration) {
       setIsPlaying(false);
     }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (!videoRef.current) return;
+    setVideoDuration(videoRef.current.duration);
+  };
+
+  const handleVideoLoading = () => {
+    setIsBuffering(true);
+  };
+
+  const handleVideoLoaded = () => {
+    setIsBuffering(false);
+  };
+
+  const handleVideoError = () => {
+    setIsBuffering(false);
+    setError('Error loading video. Please try again.');
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!videoRef.current) return;
+    
+    const seekTime = (parseFloat(e.target.value) / 100) * videoDuration;
+    videoRef.current.currentTime = seekTime;
+    setCurrentTime(seekTime);
+    setVideoProgress(parseFloat(e.target.value));
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!videoRef.current) return;
+    
+    const newVolume = parseFloat(e.target.value);
+    videoRef.current.volume = newVolume;
+    setVolume(newVolume);
+    setIsMuted(newVolume === 0);
+  };
+
+  const toggleMute = () => {
+    if (!videoRef.current) return;
+    
+    if (isMuted) {
+      videoRef.current.volume = volume;
+      setIsMuted(false);
+    } else {
+      videoRef.current.volume = 0;
+      setIsMuted(true);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (!videoRef.current) return;
+    
+    if (!isFullscreen) {
+      if (videoRef.current.requestFullscreen) {
+        videoRef.current.requestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+    setIsFullscreen(!isFullscreen);
+  };
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
   
   const handleUploadClick = () => {
@@ -464,7 +555,7 @@ const VideoCreatorPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
         >
-          AI Video Creator
+          {t('video.title')}
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0, y: -10 }}
@@ -472,13 +563,13 @@ const VideoCreatorPage: React.FC = () => {
           transition={{ delay: 0.1 }}
           className="text-gray-500 dark:text-gray-400"
         >
-          Transform your ideas into high-quality videos with AI
+          {t('video.subtitle')}
         </motion.p>
         
         {!isPro && (
           <div className="mt-2 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
             <FiVideo className="mr-1.5" />
-            <span>{freeGenerationsLeft} free generation{freeGenerationsLeft !== 1 ? 's' : ''} left</span>
+            <span>{freeGenerationsLeft} {freeGenerationsLeft === 1 ? t('video.freeLeft') || 'free generation' : t('video.freeLeftPlural') || 'free generations'} left</span>
             {freeGenerationsLeft === 0 && (
               <button 
                 onClick={() => setShowProAlert(true)}
@@ -495,33 +586,123 @@ const VideoCreatorPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
         <div className="lg:col-span-3">
           {videoUrl ? (
-            <div className="relative rounded-lg overflow-hidden bg-black aspect-video shadow-lg">
+            <div 
+              className="relative rounded-lg overflow-hidden bg-black aspect-video shadow-lg group"
+              onMouseEnter={() => setShowControls(true)}
+              onMouseLeave={() => setShowControls(false)}
+            >
               <video
                 ref={videoRef}
                 src={videoUrl}
                 className="w-full h-full object-contain"
                 onTimeUpdate={handleVideoTimeUpdate}
+                onLoadedMetadata={handleLoadedMetadata}
+                onLoadStart={handleVideoLoading}
+                onCanPlay={handleVideoLoaded}
+                onWaiting={handleVideoLoading}
+                onPlaying={handleVideoLoaded}
+                onError={handleVideoError}
                 onEnded={() => setIsPlaying(false)}
+                onClick={handlePlayPause}
               />
-              {/* Video Controls Overlay */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <button
-                  onClick={handlePlayPause}
-                  className="bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full p-4 text-white transition-all transform hover:scale-110"
-                >
-                  {isPlaying ? <FiPause size={24} /> : <FiPlay size={24} />}
-                </button>
-              </div>
               
-              {/* Video Actions */}
-              <div className="absolute bottom-3 right-3 flex space-x-2">
-                <button
-                  onClick={() => handleDownload(videoUrl, prompt)}
-                  className="bg-black bg-opacity-70 hover:bg-opacity-90 rounded-full p-2 text-white"
-                  title="Download video"
-                >
-                  <FiDownload size={18} />
-                </button>
+              {/* Buffering Indicator */}
+              {isBuffering && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="flex items-center space-x-2 text-white">
+                    <FiLoader className="animate-spin" size={24} />
+                    <span>Buffering...</span>
+                  </div>
+                </div>
+              )}
+              
+              {/* Center Play/Pause Button */}
+              {!isPlaying && !isBuffering && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <button
+                    onClick={handlePlayPause}
+                    className="bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full p-4 text-white transition-all transform hover:scale-110"
+                  >
+                    <FiPlay size={24} />
+                  </button>
+                </div>
+              )}
+              
+              {/* Video Controls */}
+              <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/50 to-transparent p-4 transition-all duration-300 ${
+                showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+              }`}>
+                {/* Progress Bar */}
+                <div className="mb-3">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={videoProgress}
+                    onChange={handleSeek}
+                    className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider-thumb"
+                    style={{
+                      background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${videoProgress}%, #6b7280 ${videoProgress}%, #6b7280 100%)`
+                    }}
+                  />
+                </div>
+                
+                {/* Control Buttons */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    {/* Play/Pause */}
+                    <button
+                      onClick={handlePlayPause}
+                      className="text-white hover:text-blue-400 transition-colors"
+                    >
+                      {isPlaying ? <FiPause size={20} /> : <FiPlay size={20} />}
+                    </button>
+                    
+                    {/* Volume Control */}
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={toggleMute}
+                        className="text-white hover:text-blue-400 transition-colors"
+                      >
+                        {isMuted ? <FiVolumeX size={18} /> : <FiVolume2 size={18} />}
+                      </button>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={isMuted ? 0 : volume}
+                        onChange={handleVolumeChange}
+                        className="w-16 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                      />
+                    </div>
+                    
+                    {/* Time Display */}
+                    <div className="text-white text-sm">
+                      {formatTime(currentTime)} / {formatTime(videoDuration)}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    {/* Download Button */}
+                    <button
+                      onClick={() => handleDownload(videoUrl, prompt)}
+                      className="text-white hover:text-blue-400 transition-colors"
+                      title="Download video"
+                    >
+                      <FiDownload size={18} />
+                    </button>
+                    
+                    {/* Fullscreen Button */}
+                    <button
+                      onClick={toggleFullscreen}
+                      className="text-white hover:text-blue-400 transition-colors"
+                      title="Toggle fullscreen"
+                    >
+                      {isFullscreen ? <FiMinimize size={18} /> : <FiMaximize size={18} />}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
@@ -621,7 +802,7 @@ const VideoCreatorPage: React.FC = () => {
                       />
                       {!isPro && (
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          Upgrade to Pro for videos up to 60 seconds
+                          {t('video.upgradeText') || 'Upgrade to Pro'} for videos up to 60 seconds
                         </p>
                       )}
                     </div>

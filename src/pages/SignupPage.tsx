@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiCheck, FiX, FiMoon, FiSun } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../supabaseClient';
 
 // Default language constant
@@ -26,6 +27,7 @@ const SignupPage: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const { error, setError, user } = useAuth();
+  const { t } = useLanguage();
 
   // If user is already logged in, redirect to dashboard
   useEffect(() => {

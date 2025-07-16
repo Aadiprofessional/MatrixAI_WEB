@@ -32,6 +32,8 @@ import {
 } from 'react-icons/fi';
 import { ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface Slide {
   id: string;
@@ -162,6 +164,8 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, isSelected, onSel
 
 const PresentationCreatorPage: React.FC = () => {
   const { userData, isPro } = useUser();
+  const { t } = useLanguage();
+  const { theme } = useTheme();
   const [presentationTitle, setPresentationTitle] = useState('');
   const [slides, setSlides] = useState<Slide[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -894,7 +898,7 @@ const PresentationCreatorPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
         >
-          AI Presentation Creator
+          {t('presentation.title')}
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0, y: -10 }}
@@ -902,19 +906,19 @@ const PresentationCreatorPage: React.FC = () => {
           transition={{ delay: 0.1 }}
           className="text-gray-500 dark:text-gray-400"
         >
-          Create professional presentations in seconds with AI
+          {t('presentation.subtitle')}
         </motion.p>
         
         {!isPro && (
           <div className="mt-2 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
             <FiLayers className="mr-1.5" />
-            <span>{freeGenerationsLeft} free generation{freeGenerationsLeft !== 1 ? 's' : ''} left</span>
+            <span>{freeGenerationsLeft} {freeGenerationsLeft === 1 ? t('presentation.freeLeft') : t('presentation.freeLeftPlural')} left</span>
             {freeGenerationsLeft === 0 && (
               <button 
                 onClick={() => setShowProAlert(true)}
                 className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
               >
-                Upgrade to Pro
+                                  {t('presentation.upgradeText')}
               </button>
             )}
           </div>
@@ -924,7 +928,7 @@ const PresentationCreatorPage: React.FC = () => {
       {/* Presentation Generation Form - Show only when no slides are created yet */}
       {slides.length === 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-medium mb-6">Choose a Template or Create Your Own</h2>
+          <h2 className="text-xl font-medium mb-6">{t('chooseTemplateOrCreateOwn')}</h2>
           
           {/* Template Categories */}
           <div className="mb-6">
@@ -938,7 +942,7 @@ const PresentationCreatorPage: React.FC = () => {
                 }`}
               >
                 <span className="mr-2"><FiGrid /></span>
-                <span>All Templates</span>
+                <span>{t('allTemplates')}</span>
               </button>
               {templateCategories.map(category => (
                 <button
@@ -992,10 +996,10 @@ const PresentationCreatorPage: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-medium text-blue-700 dark:text-blue-300">
-                    {selectedTemplate.name} Template Selected
+                    {t('templateSelected')} {selectedTemplate.name}
                   </h3>
                   <p className="text-sm text-blue-600/70 dark:text-blue-400/70">
-                    {selectedTemplate.slides.length} slides • {selectedTemplate.category}
+                    {selectedTemplate.slides.length} {t('slides')} • {selectedTemplate.category}
                   </p>
                 </div>
                 <div className="flex space-x-3">
@@ -1005,7 +1009,7 @@ const PresentationCreatorPage: React.FC = () => {
                     }}
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                   >
-                    Use Template
+                    {t('useTemplate')}
                   </button>
                   <button
                     onClick={() => setSelectedTemplate(null)}
@@ -1017,11 +1021,11 @@ const PresentationCreatorPage: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1 dark:text-gray-300">Customize with your content (optional)</label>
+                <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('customizeWithContent')}</label>
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Describe your presentation topic to generate content for this template..."
+                  placeholder={t('describePresentationTopic')}
                   className="w-full p-3 border rounded-lg shadow-sm h-32 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   disabled={isGenerating}
                 />
@@ -1033,7 +1037,7 @@ const PresentationCreatorPage: React.FC = () => {
                   className="flex-1 py-3 rounded-lg font-medium flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                 >
                   <FiLayout className="mr-2" />
-                  Use Template As Is
+                  {t('useTemplateAsIs')}
                 </button>
                 
                 <button
@@ -1051,12 +1055,12 @@ const PresentationCreatorPage: React.FC = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Generating Content
+                      {t('generatingContent')}
                     </>
                   ) : (
                     <>
                       <FiZap className="mr-2" />
-                      Generate AI Content
+                      {t('generateAIContent')}
                     </>
                   )}
                 </button>
@@ -1065,9 +1069,9 @@ const PresentationCreatorPage: React.FC = () => {
           ) : (
             <div className="text-center p-8 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
               <FiLayout className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-3" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">Select a Template</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">Choose from our professionally designed templates</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500">or</p>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">{t('selectTemplate')}</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">{t('chooseFromProfessionalTemplates')}</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">{t('or')}</p>
               <button
                 onClick={() => {
                   // Create a blank template
@@ -1096,7 +1100,7 @@ const PresentationCreatorPage: React.FC = () => {
                 }}
                 className="mt-4 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
-                Start from Scratch
+                {t('startFromScratch')}
               </button>
             </div>
           )}
@@ -1170,7 +1174,7 @@ const PresentationCreatorPage: React.FC = () => {
                   className="w-full py-2 rounded-lg font-medium flex items-center justify-center bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-800/40"
                 >
                   <FiPlus className="mr-1" />
-                  Add Slide
+                  {t('addSlide')}
                 </button>
                 
                 <div className="flex justify-between">
@@ -1179,14 +1183,14 @@ const PresentationCreatorPage: React.FC = () => {
                     className="flex-1 py-2 rounded-lg font-medium flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 mr-2"
                   >
                     <FiDownload className="mr-1" />
-                    Export
+                    {t('export')}
                   </button>
                   <button
                     onClick={startFullScreenPreview}
                     className="flex-1 py-2 rounded-lg font-medium flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                   >
                     <FiMaximize className="mr-1" />
-                    Preview
+                    {t('preview')}
                   </button>
                 </div>
               </div>
@@ -1196,7 +1200,7 @@ const PresentationCreatorPage: React.FC = () => {
             {selectedSlide && (
               <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <div className="mb-6 flex justify-between items-center">
-                  <h2 className="text-lg font-medium">Edit Slide</h2>
+                  <h2 className="text-lg font-medium">{t('editSlide')}</h2>
                   
                   <div className="flex space-x-2">
                     <button 
@@ -1222,7 +1226,7 @@ const PresentationCreatorPage: React.FC = () => {
                 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium mb-1 dark:text-gray-300">Slide Title</label>
+                    <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('slideTitle')}</label>
                     <input 
                       type="text"
                       value={selectedSlide.title}
@@ -1232,7 +1236,7 @@ const PresentationCreatorPage: React.FC = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1 dark:text-gray-300">Layout</label>
+                    <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('layout')}</label>
                     <div className="grid grid-cols-5 gap-2">
                       {layoutOptions.map((layout) => (
                         <button
@@ -1252,7 +1256,7 @@ const PresentationCreatorPage: React.FC = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1 dark:text-gray-300">Content</label>
+                    <label className="block text-sm font-medium mb-1 dark:text-gray-300">{t('content')}</label>
                     <textarea 
                       value={selectedSlide.content}
                       onChange={(e) => updateSlideContent(selectedSlide.id, e.target.value)}
@@ -1262,7 +1266,7 @@ const PresentationCreatorPage: React.FC = () => {
                 </div>
                 
                 <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-medium mb-4">Preview</h3>
+                  <h3 className="text-lg font-medium mb-4">{t('preview')}</h3>
                   
                   <div 
                     className="aspect-[16/9] bg-gray-100 dark:bg-gray-900 rounded-lg shadow-sm p-8 flex flex-col relative overflow-hidden"
@@ -1467,11 +1471,11 @@ const PresentationCreatorPage: React.FC = () => {
                   : 'bg-white/10 hover:bg-white/20'
               }`}
             >
-              Previous
+              {t('previous')}
             </button>
             
             <div className="text-center">
-              Slide {previewSlideIndex + 1} of {slides.length}
+              {t('slide')} {previewSlideIndex + 1} {t('of')} {slides.length}
             </div>
             
             <button
@@ -1483,7 +1487,7 @@ const PresentationCreatorPage: React.FC = () => {
                   : 'bg-white/10 hover:bg-white/20'
               }`}
             >
-              Next
+              {t('next')}
             </button>
           </div>
         </div>

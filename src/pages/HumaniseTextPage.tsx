@@ -18,12 +18,16 @@ import {
 } from 'react-icons/fi';
 import { ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import './ContentWriterPage.css';
 
 const HumaniseTextPage: React.FC = () => {
   const { userData, isPro } = useUser();
+  const { t } = useLanguage();
+  const { darkMode } = useTheme();
   const [text, setText] = useState('');
   const [humanisedText, setHumanisedText] = useState('');
   const [tone, setTone] = useState('casual');
@@ -47,22 +51,22 @@ const HumaniseTextPage: React.FC = () => {
 
   // Tone options
   const toneOptions = [
-    { id: 'casual', name: 'Casual' },
-    { id: 'friendly', name: 'Friendly' },
-    { id: 'conversational', name: 'Conversational' },
-    { id: 'professional', name: 'Professional' },
-    { id: 'humorous', name: 'Humorous' },
-    { id: 'enthusiastic', name: 'Enthusiastic' },
-    { id: 'thoughtful', name: 'Thoughtful' },
-    { id: 'simple', name: 'Simple' },
+    { id: 'casual', name: t('common.casual') || 'Casual' },
+    { id: 'friendly', name: t('common.friendly') || 'Friendly' },
+    { id: 'conversational', name: t('common.conversational') || 'Conversational' },
+    { id: 'professional', name: t('common.professional') || 'Professional' },
+    { id: 'humorous', name: t('common.humorous') || 'Humorous' },
+    { id: 'enthusiastic', name: t('common.enthusiastic') || 'Enthusiastic' },
+    { id: 'thoughtful', name: t('common.thoughtful') || 'Thoughtful' },
+    { id: 'simple', name: t('common.simple') || 'Simple' },
   ];
 
   // Humanisation levels
   const levelOptions = [
-    { id: 'light', name: 'Light Changes' },
-    { id: 'medium', name: 'Medium Changes' },
-    { id: 'heavy', name: 'Significant Rewrite' },
-    { id: 'creative', name: 'Creative Rewrite' },
+    { id: 'light', name: t('common.light') || 'Light Changes' },
+    { id: 'medium', name: t('common.medium') || 'Medium Changes' },
+    { id: 'heavy', name: t('common.heavy') || 'Significant Rewrite' },
+    { id: 'creative', name: t('common.creative') || 'Creative Rewrite' },
   ];
 
   const handleHumaniseText = async () => {
@@ -119,12 +123,12 @@ const HumaniseTextPage: React.FC = () => {
   };
 
   const getContentTitle = () => {
-    let title = 'Humanised Text';
+    let title = t('humanizeText.result');
     
     if (text.length > 30) {
-      title = `Humanised: ${text.substring(0, 30)}...`;
+      title = `${t('humanizeText.result')}: ${text.substring(0, 30)}...`;
     } else if (text.length > 0) {
-      title = `Humanised: ${text}`;
+      title = `${t('humanizeText.result')}: ${text}`;
     }
     
     return title;
@@ -177,7 +181,7 @@ const HumaniseTextPage: React.FC = () => {
     <div className="container mx-auto max-w-6xl p-4 py-8">
       {showProAlert && (
         <ProFeatureAlert 
-          featureName="Advanced Text Humaniser"
+          featureName={t('humanizeText.title')}
           onClose={() => setShowProAlert(false)}
         />
       )}
@@ -188,7 +192,7 @@ const HumaniseTextPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-green-500 via-teal-500 to-blue-500"
         >
-          AI Text Humaniser
+          {t('humanizeText.title')}
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0, y: -10 }}
@@ -196,26 +200,26 @@ const HumaniseTextPage: React.FC = () => {
           transition={{ delay: 0.1 }}
           className="text-gray-500 dark:text-gray-400"
         >
-          Transform AI-generated content into natural, human-like text
+          {t('humanizeText.subtitle')}
         </motion.p>
         
         {/* Added cool feature badges */}
         <div className="flex flex-wrap gap-2 mt-2">
-          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gradient-to-r from-green-400 to-teal-400 text-white">AI Detection Protection</span>
-          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gradient-to-r from-teal-400 to-blue-400 text-white">Tone Matching</span>
-          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-400 to-indigo-400 text-white">Natural Phrasing</span>
+          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gradient-to-r from-green-400 to-teal-400 text-white">{t('humanizeText.badges.protection')}</span>
+          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gradient-to-r from-teal-400 to-blue-400 text-white">{t('humanizeText.badges.toneMatching')}</span>
+          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-400 to-indigo-400 text-white">{t('humanizeText.badges.phrasing')}</span>
         </div>
         
         {!isPro && (
           <div className="mt-4 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
             <FiFileText className="mr-1.5" />
-            <span>{freeGenerationsLeft} free humanisation{freeGenerationsLeft !== 1 ? 's' : ''} left</span>
+            <span>{freeGenerationsLeft} {freeGenerationsLeft === 1 ? t('humanizeText.freeLeft') : t('humanizeText.freeLeftPlural')} left</span>
             {freeGenerationsLeft === 0 && (
               <button 
                 onClick={() => setShowProAlert(true)}
                 className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
               >
-                Upgrade to Pro
+                {t('humanizeText.upgradeText')}
               </button>
             )}
           </div>
@@ -232,7 +236,7 @@ const HumaniseTextPage: React.FC = () => {
                 <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-1.5 rounded-md mr-2">
                   <FiFileText className="w-5 h-5" />
                 </span>
-                Humanise Text
+                {t('humanizeText.humanizeAction')}
               </h2>
               
               <div className="space-y-4">
@@ -241,7 +245,7 @@ const HumaniseTextPage: React.FC = () => {
                     <textarea
                       value={text}
                       onChange={(e) => setText(e.target.value)}
-                      placeholder="Paste AI-generated text here to make it sound more human..."
+                      placeholder={t('humanizeText.placeholder')}
                       className="w-full p-4 pr-12 border rounded-lg shadow-sm h-36 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       disabled={isProcessing}
                     />
@@ -255,49 +259,71 @@ const HumaniseTextPage: React.FC = () => {
                       </button>
                     </div>
                   </div>
-
-                  {showSettings && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="mt-4 p-4 border rounded-lg shadow-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                    >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Tone</label>
-                          <select 
-                            value={tone}
-                            onChange={(e) => setTone(e.target.value)}
-                            className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                            disabled={isProcessing}
-                          >
-                            {toneOptions.map(option => (
-                              <option key={option.id} value={option.id}>{option.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Humanisation Level</label>
-                          <select 
-                            value={level}
-                            onChange={(e) => setLevel(e.target.value)}
-                            className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                            disabled={isProcessing}
-                          >
-                            {levelOptions.map(option => (
-                              <option key={option.id} value={option.id}>{option.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
                 </div>
+                
+                <button
+                  onClick={handleHumaniseText}
+                  disabled={!text.trim() || isProcessing}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all ${
+                    !text.trim() || isProcessing
+                      ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]'
+                  }`}
+                >
+                  {isProcessing ? (
+                    <div className="flex items-center justify-center">
+                      <FiRotateCw className="w-4 h-4 mr-2 animate-spin" />
+                      {t('humanizeText.processing')}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center">
+                      <FiZap className="w-4 h-4 mr-2" />
+                      {t('humanizeText.humanizeAction')}
+                    </div>
+                  )}
+                </button>
+                
+                {/* Settings panel */}
+                {showSettings && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="border-t pt-4 space-y-4"
+                  >
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('humanizeText.tone')}</label>
+                      <select 
+                        value={tone}
+                        onChange={(e) => setTone(e.target.value)}
+                        className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        disabled={isProcessing}
+                      >
+                        {toneOptions.map(option => (
+                          <option key={option.id} value={option.id}>{option.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('humanizeText.level')}</label>
+                      <select 
+                        value={level}
+                        onChange={(e) => setLevel(e.target.value)}
+                        className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        disabled={isProcessing}
+                      >
+                        {levelOptions.map(option => (
+                          <option key={option.id} value={option.id}>{option.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </motion.div>
+                )}
                 
                 {history.length > 0 && (
                   <div className="mt-4">
-                    <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Recent Inputs:</h3>
+                    <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('humanizeText.recent')}</h3>
                     <div className="flex flex-wrap gap-2">
                       {history.map((item, index) => (
                         <button
@@ -314,154 +340,49 @@ const HumaniseTextPage: React.FC = () => {
                 )}
               </div>
             </div>
-            
-            <div>
-              <button
-                onClick={handleHumaniseText}
-                disabled={isProcessing || !text.trim()}
-                className={`px-4 py-4 min-w-24 rounded-lg font-medium shadow-sm transition-all flex items-center justify-center ${
-                  isProcessing || !text.trim()
-                    ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-                    : 'bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 text-white hover:shadow-md'
-                }`}
-              >
-                {isProcessing ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    Humanise Text
-                    <FiUser className="ml-2" />
-                  </>
-                )}
-              </button>
-            </div>
-            
-            {/* Text Comparison Toggle - new feature */}
-            {humanisedText && (
-              <div className="flex justify-center mt-2">
-                <button
-                  onClick={() => setShowComparison(!showComparison)}
-                  className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium flex items-center"
-                >
-                  {showComparison ? 'Hide Comparison' : 'Show Side-by-Side Comparison'}
-                  <FiRotateCw className="ml-1" />
-                </button>
-              </div>
-            )}
           </div>
         </div>
-        
-        {/* Output */}
+
+        {/* Output Section */}
         <div className="lg:col-span-3 order-1 lg:order-2">
-          {showComparison && humanisedText ? (
-            <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
-                <h2 className="font-medium">Before & After Comparison</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-700">
-                <div className="p-4">
-                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Original Text</div>
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
-                    {text}
-                  </div>
-                </div>
-                <div className="p-4">
-                  <div className="text-sm font-medium text-green-500 dark:text-green-400 mb-2">Humanised Text</div>
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
-                    {humanisedText}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : null}
-        
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
-            {/* Content Header */}
-            <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
-              <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 flex items-center justify-center text-white mr-2">
-                  <FiUser className="w-4 h-4" />
-                </div>
-                <h2 className="font-medium">{humanisedText ? getContentTitle() : 'Humanised Text'}</h2>
-              </div>
-              
-              <div className="flex space-x-1">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {/* Header */}
+            <div className="border-b border-gray-200 dark:border-gray-700 p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
+                  <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-1.5 rounded-md mr-2">
+                    <FiUser className="w-5 h-5" />
+                  </span>
+                  {t('humanizeText.result')}
+                </h3>
                 {humanisedText && (
-                  <>
+                  <div className="flex space-x-2">
                     <button
                       onClick={handleCopyContent}
-                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-                      title="Copy to clipboard"
+                      className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm"
                     >
-                      <FiCopy />
+                      <FiCopy className="w-4 h-4 mr-1" />
+                      {t('common.copy')}
                     </button>
                     <button
                       onClick={handleDownloadContent}
-                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-                      title="Download as Markdown"
+                      className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm"
                     >
-                      <FiDownload />
+                      <FiDownload className="w-4 h-4 mr-1" />
+                      {t('common.download')}
                     </button>
                     <button
-                      onClick={() => setShowTitleEdit(!showTitleEdit)}
-                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-                      title="Save content"
+                      onClick={handleSaveContent}
+                      className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center text-sm"
                     >
-                      <FiSave />
+                      <FiSave className="w-4 h-4 mr-1" />
+                      {t('common.save')}
                     </button>
-                    <button
-                      onClick={() => {
-                        const textarea = contentRef.current;
-                        if (textarea) {
-                          textarea.classList.toggle('hidden');
-                          const markdownPreview = textarea.previousElementSibling;
-                          if (markdownPreview) markdownPreview.classList.toggle('hidden');
-                        }
-                      }}
-                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-                      title="Toggle edit mode"
-                    >
-                      <FiEdit />
-                    </button>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
             
-            {/* Save Dialog */}
-            {showTitleEdit && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
-                <div className="flex items-center">
-                  <input
-                    type="text"
-                    value={editingTitle}
-                    onChange={(e) => setEditingTitle(e.target.value)}
-                    placeholder="Enter a title for your saved content"
-                    className="flex-1 p-2 border rounded-md mr-2 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <button
-                    onClick={handleSaveContent}
-                    className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setShowTitleEdit(false)}
-                    className="p-2 ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <FiX />
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {/* Content Area */}
             <div className="p-6">
               {humanisedText ? (
                 <div className="w-full min-h-[600px]">
@@ -487,60 +408,10 @@ const HumaniseTextPage: React.FC = () => {
                   <div className="h-20 w-20 rounded-full bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 bg-opacity-10 flex items-center justify-center mb-4">
                     <FiUser className="h-10 w-10 text-green-500 dark:text-green-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Text Humanised Yet</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t('humanizeText.empty')}</h3>
                   <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
-                    Paste AI-generated text and adjust humanisation settings to transform it into natural, human-like writing.
+                    {t('humanizeText.emptyDesc')}
                   </p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl">
-                    <motion.div 
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => setText('Make this academic paper sound more conversational')}
-                      className="cursor-pointer p-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 text-left border border-green-200 dark:border-green-800"
-                    >
-                      <div className="flex items-center text-green-500 dark:text-green-400 mb-1 text-sm font-medium">
-                        <FiPlus className="mr-1.5" />
-                        <span>Academic Paper</span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Make it sound more conversational</p>
-                    </motion.div>
-                    
-                    <motion.div 
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => setText('Humanize this technical documentation')}
-                      className="cursor-pointer p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 text-left border border-blue-200 dark:border-blue-800"
-                    >
-                      <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 text-sm font-medium">
-                        <FiPlus className="mr-1.5" />
-                        <span>Technical Documentation</span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Make it easier to understand</p>
-                    </motion.div>
-                    
-                    <motion.div 
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => setText('Make this formal email more friendly')}
-                      className="cursor-pointer p-3 bg-teal-50 dark:bg-teal-900/20 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-900/30 text-left border border-teal-200 dark:border-teal-800"
-                    >
-                      <div className="flex items-center text-teal-500 dark:text-teal-400 mb-1 text-sm font-medium">
-                        <FiPlus className="mr-1.5" />
-                        <span>Formal Email</span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Make it more friendly</p>
-                    </motion.div>
-                    
-                    <motion.div 
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => setText('Rewrite this AI-generated text to sound more human')}
-                      className="cursor-pointer p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 text-left border border-purple-200 dark:border-purple-800"
-                    >
-                      <div className="flex items-center text-purple-500 dark:text-purple-400 mb-1 text-sm font-medium">
-                        <FiPlus className="mr-1.5" />
-                        <span>AI-Generated Text</span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Make it sound natural and human</p>
-                    </motion.div>
-                  </div>
                 </motion.div>
               )}
             </div>
@@ -550,44 +421,33 @@ const HumaniseTextPage: React.FC = () => {
 
       {/* Saved Content */}
       {savedContents.length > 0 && (
-        <div className="mt-10">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
+        <div className="mt-8">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
             <FiSave className="mr-2" />
-            Saved Content
-          </h2>
-          
+            {t('common.saved')} {t('humanizeText.result')}
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {savedContents.map((saved) => (
-              <motion.div 
+              <motion.div
                 key={saved.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => handleLoadSaved(saved.content)}
               >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-medium text-gray-800 dark:text-gray-200">{saved.title}</h3>
-                  <div className="flex space-x-1">
-                    <button
-                      onClick={() => handleLoadSaved(saved.content)}
-                      className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      title="Load"
-                    >
-                      <FiEdit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSaved(saved.id)}
-                      className="p-1.5 rounded-md text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      title="Delete"
-                    >
-                      <FiTrash className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                <div className="mb-2">
-                  <span className="text-xs font-medium bg-green-100 text-green-800 px-2 py-0.5 rounded-full dark:bg-green-900/30 dark:text-green-400">
-                    Humanised
-                  </span>
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+                    {saved.title}
+                  </h4>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteSaved(saved.id);
+                    }}
+                    className="text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <FiTrash className="w-4 h-4" />
+                  </button>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
                   {saved.content}

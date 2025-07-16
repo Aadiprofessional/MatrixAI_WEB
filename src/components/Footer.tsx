@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { 
   FiGithub, 
   FiTwitter, 
@@ -19,6 +20,7 @@ import {
 
 const Footer: React.FC = () => {
   const { darkMode } = useContext(ThemeContext);
+  const { t } = useLanguage();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   
   const toggleSection = (title: string) => {
@@ -32,28 +34,28 @@ const Footer: React.FC = () => {
   // Links grouped by category
   const footerSections = [
     {
-      title: "Company",
+      title: t('footer.company'),
       links: [
-        { text: "About Us", url: "/about", icon: <FiUsers size={14} /> },
-        { text: "Careers", url: "/careers", icon: <FiBookOpen size={14} /> },
-        { text: "Blog", url: "/blog", icon: <FiBookOpen size={14} /> },
+        { text: t('footer.about'), url: "/about", icon: <FiUsers size={14} /> },
+        { text: t('footer.careers'), url: "/careers", icon: <FiBookOpen size={14} /> },
+        { text: t('footer.blog'), url: "/blog", icon: <FiBookOpen size={14} /> },
       ]
     },
     
     {
-      title: "Legal",
+      title: t('footer.legal'),
       links: [
-        { text: "Privacy Policy", url: "/privacy", icon: <FiLock size={14} /> },
-        { text: "Terms of Service", url: "/terms", icon: <FiShield size={14} /> },
-        { text: "Cookie Policy", url: "/cookies", icon: <FiShield size={14} /> },
+        { text: t('footer.privacy'), url: "/privacy", icon: <FiLock size={14} /> },
+        { text: t('footer.terms'), url: "/terms", icon: <FiShield size={14} /> },
+        { text: t('footer.cookies'), url: "/cookies", icon: <FiShield size={14} /> },
       ]
     },
     {
-      title: "Support",
+      title: t('footer.support'),
       links: [
-        { text: "Help Center", url: "/help", icon: <FiHelpCircle size={14} /> },
-        { text: "Contact Us", url: "/contact", icon: <FiHeadphones size={14} /> },
-        { text: "Status", url: "/status", icon: <FiCpu size={14} /> },
+        { text: t('footer.help'), url: "/help", icon: <FiHelpCircle size={14} /> },
+        { text: t('footer.contact'), url: "/contact", icon: <FiHeadphones size={14} /> },
+        { text: t('footer.status'), url: "/status", icon: <FiCpu size={14} /> },
       ]
     }
   ];
@@ -76,8 +78,7 @@ const Footer: React.FC = () => {
               </span>
             </div>
             <p className={`mb-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              AI is a cutting-edge artificial intelligence platform designed to help you with creative tasks, 
-              data analysis, coding assistance, and much more.
+              {t('footer.description')}
             </p>
             <div className="flex space-x-4 mb-4">
               <a 
@@ -162,10 +163,10 @@ const Footer: React.FC = () => {
         {/* Bottom section */}
         <div className={`pt-6 mt-4 md:pt-8 md:mt-8 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} flex flex-col md:flex-row justify-between items-center`}>
           <div className={`text-xs md:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            © {new Date().getFullYear()} MatrixAI. All rights reserved.
+            {t('footer.copyright')}
           </div>
           <div className={`mt-2 md:mt-0 text-xs md:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            Made with ❤️ by the MatrixAI Team
+            {t('footer.madeWith')}
           </div>
         </div>
       </div>

@@ -48,6 +48,10 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 // Import UserProvider
 import { UserProvider, useUser } from './context/UserContext';
+// Import LanguageProvider
+import { LanguageProvider } from './context/LanguageContext';
+// Import AlertProvider
+import { AlertProvider } from './context/AlertContext';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -158,9 +162,11 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <UserProvider>
-          <Router>
+      <LanguageProvider>
+        <AuthProvider>
+          <UserProvider>
+            <AlertProvider>
+              <Router>
             <Routes>
               {/* Main site route */}
               <Route 
@@ -194,7 +200,9 @@ const App: React.FC = () => {
                 path="/chat" 
                 element={
                   <ProFeatureRoute>
-                    <ChatPage />
+                    <Layout>
+                      <ChatPage />
+                    </Layout>
                   </ProFeatureRoute>
                 } 
               />
@@ -204,7 +212,9 @@ const App: React.FC = () => {
                 path="/chat/:chatId" 
                 element={
                   <ProFeatureRoute>
-                    <ChatPage />
+                    <Layout>
+                      <ChatPage />
+                    </Layout>
                   </ProFeatureRoute>
                 } 
               />
@@ -480,9 +490,11 @@ const App: React.FC = () => {
               {/* 404 route */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
-          </Router>
-        </UserProvider>
-      </AuthProvider>
+            </Router>
+            </AlertProvider>
+          </UserProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 };

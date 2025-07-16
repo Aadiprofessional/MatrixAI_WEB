@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { FiDownload, FiShare2, FiTrash, FiChevronDown, FiImage, FiRefreshCw, FiList, FiX, FiClock } from 'react-icons/fi';
-import { Navbar, Sidebar, ProFeatureAlert } from '../components';
+import { ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -40,7 +40,6 @@ const ImageGeneratorPage: React.FC = () => {
   const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(3);
   
   // Image generation state
-  const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
   const [generationStatus, setGenerationStatus] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [processingProgress, setProcessingProgress] = useState(0);
@@ -57,19 +56,11 @@ const ImageGeneratorPage: React.FC = () => {
   const [hasMoreImages, setHasMoreImages] = useState(true);
   const [imagesPerPage] = useState(8);
   const [showHistory, setShowHistory] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Polling refs
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Cleanup polling on unmount
-  useEffect(() => {
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-      }
-    };
-  }, []);
+
+
+
 
   // Fade in animation
   const fadeInImage = () => {
@@ -89,149 +80,9 @@ const ImageGeneratorPage: React.FC = () => {
     return true;
   };
 
-  // Start polling for image status
-  const startPolling = (taskId: string) => {
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-    }
 
-    pollingIntervalRef.current = setInterval(async () => {
-      try {
-        if (!uid) return;
-        
-        const response = await imageService.getImageStatus(uid, taskId);
-        console.log('Image status response:', response);
-        
-        setGenerationStatus(response.status);
-        
-        // Update progress bar while processing
-        if (response.status === 'processing') {
-          setProcessingProgress(prev => {
-            const newProgress = prev + Math.random() * 2; // Slower increment during polling
-            return newProgress > 95 ? 95 : newProgress;
-          });
-        }
-        
-        // Check if images are completed
-        if (response.status === 'completed') {
-          // Images are ready
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-          }
-          
-          setProcessingProgress(100);
-          
-          // Check if images are returned in the response
-          if (response.images && response.images.length > 0) {
-            // Transform the image data to match expected format
-            const imageData = response.images.map((img: any) => ({
-              url: img.imageUrl,
-              image_id: img.imageId,
-              image_name: img.imageName,
-              image_url: img.imageUrl,
-              prompt: message,
-              created_at: new Date().toISOString()
-            }));
-            
-            // Store the images and update UI
-            localStorage.setItem("downloadedImages", JSON.stringify(imageData));
-            setImages(imageData.map((img: any) => img.url));
-            
-            // Show skeleton for 1 second before revealing the images
-            setTimeout(() => {
-              setShowSkeleton(false);
-              setLoading(false);
-              fadeInImage();
-            }, 1000);
-            
-          } else {
-            // Fallback: Images were generated but not returned in status response
-            // Fetch recent images from getAllImages endpoint
-            console.log('Images completed but empty array returned, fetching from database...');
-            
-            try {
-              const allImagesResponse = await imageService.getAllImages(uid);
-              
-              if (allImagesResponse.images && allImagesResponse.images.length > 0) {
-                // Get the most recent images (assuming they are the ones just generated)
-                const recentImages = allImagesResponse.images
-                  .slice(0, imageCount) // Get the number of images we requested
-                  .map((img: any) => ({
-                    url: img.image_url,
-                    image_id: img.image_id,
-                    image_name: img.image_name,
-                    image_url: img.image_url,
-                    prompt: img.prompt_text || message,
-                    created_at: img.created_at
-                  }));
-                
-                // Store the images and update UI
-                localStorage.setItem("downloadedImages", JSON.stringify(recentImages));
-                setImages(recentImages.map((img: any) => img.url));
-                
-                // Show skeleton for 1 second before revealing the images
-                setTimeout(() => {
-                  setShowSkeleton(false);
-                  setLoading(false);
-                  fadeInImage();
-                }, 1000);
-              } else {
-                // No images found even in database
-                setLoading(false);
-                setShowSkeleton(false);
-                setError('Images were generated but could not be retrieved. Please check your history or try again.');
-              }
-            } catch (fetchError) {
-              console.error('Error fetching images from database:', fetchError);
-              setLoading(false);
-              setShowSkeleton(false);
-              setError('Images were generated but could not be retrieved. Please check your history or try again.');
-            }
-          }
-          
-          // Decrease free generations left if user is not pro
-          if (!isPro) {
-            setFreeGenerationsLeft(prev => Math.max(0, prev - 1));
-          }
-          
-          // Refresh image history
-          fetchImageHistory(1);
-          
-        } else if (response.status === 'failed') {
-          // Image generation failed
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-          }
-          setLoading(false);
-          setShowSkeleton(false);
-          setError(response.error || 'Image generation failed. Please try again.');
-        }
-        // Continue polling if status is still 'processing'
-      } catch (error: any) {
-        console.error('Error checking image status:', error);
-        if (pollingIntervalRef.current) {
-          clearInterval(pollingIntervalRef.current);
-        }
-        setLoading(false);
-        setShowSkeleton(false);
-        setError('Failed to check image status. Please try again.');
-      }
-    }, 500); // Poll every 0.5 seconds (500ms)
 
-    // Clear interval after 2 minutes to prevent infinite polling
-    setTimeout(() => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        if (loading) {
-          setLoading(false);
-          setShowSkeleton(false);
-          setError('Image generation is taking longer than expected. Please try again later.');
-        }
-      }
-    }, 120000); // 2 minutes timeout
-  };
-
-  // Function to fetch and generate images
+  // Function to fetch and generate images using direct API
   const fetchAndStoreImages = async () => {
     try {
       // Clear any previously stored images when fetching new ones
@@ -240,8 +91,7 @@ const ImageGeneratorPage: React.FC = () => {
       setLoading(true);
       setShowSkeleton(true);
       setError(null);
-      setCurrentTaskId(null);
-      setGenerationStatus('');
+      setGenerationStatus('processing');
       setProcessingProgress(0);
       
       // Reset animation values
@@ -251,38 +101,87 @@ const ImageGeneratorPage: React.FC = () => {
       // Start progress animation
       const progressInterval = setInterval(() => {
         setProcessingProgress(prev => {
-          const newProgress = prev + Math.random() * 3;
-          return newProgress > 90 ? 90 : newProgress;
+          const newProgress = prev + Math.random() * 15;
+          return newProgress > 95 ? 95 : newProgress;
         });
-      }, 500);
+      }, 200);
       
       try {
-        // Step 1: Make API request to generate new images (this returns a taskId)
-        const generationResponse = await imageService.generateImage(uid, message, imageCount);
-        console.log('Image generation response:', generationResponse);
+        // Make direct API request to the new endpoint
+        const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/image/createImage', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            uid: uid,
+            promptText: message,
+            imageCount: imageCount
+          })
+        });
         
-        if (!generationResponse.taskId) {
-          throw new Error('No task ID received from generation request');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        setCurrentTaskId(generationResponse.taskId);
-        setGenerationStatus(generationResponse.status || 'processing');
+        const result = await response.json();
+        console.log('Image generation response:', result);
         
-        // Start polling for image status
-        startPolling(generationResponse.taskId);
+        if (!result.success) {
+          throw new Error(result.message || 'Failed to generate images');
+        }
         
-        // Clear the progress interval since we're now polling
+        // Clear progress interval and set completion
         clearInterval(progressInterval);
+        setProcessingProgress(100);
+        setGenerationStatus('completed');
         
-      } catch (apiError) {
-        console.error("Error from API:", apiError);
+        // Extract image URLs and update state
+        const generatedImageUrls = result.images.map((img: any) => img.imageUrl);
+        setImages(generatedImageUrls);
+        
+        // Store images for history
+        const imageData = result.images.map((img: any) => ({
+          image_id: img.imageId,
+          image_name: img.imageName,
+          image_url: img.imageUrl,
+          prompt_text: message,
+          created_at: new Date().toISOString(),
+          url: img.imageUrl
+        }));
+        
+        // Update history
+        setImageHistory(prev => [...imageData, ...prev]);
+        
+        // Store in localStorage
+        const existingHistory = JSON.parse(localStorage.getItem("imageHistory") || "[]");
+        const updatedHistory = [...imageData, ...existingHistory];
+        localStorage.setItem("imageHistory", JSON.stringify(updatedHistory));
+        
+        // Animate images in
+        setTimeout(() => {
+          imageOpacity.start({ opacity: 1 });
+          imageScale.start({ scale: 1 });
+        }, 300);
+        
         setLoading(false);
         setShowSkeleton(false);
-        setError("Failed to generate images. Please try again.");
+        
+        // Update free generations if not pro
+        if (!isPro) {
+          setFreeGenerationsLeft(prev => Math.max(0, prev - 1));
+        }
+        
+      } catch (apiError: any) {
+        console.error("Error from API:", apiError);
         clearInterval(progressInterval);
+        setLoading(false);
+        setShowSkeleton(false);
+        setGenerationStatus('failed');
+        setError(apiError.message || "Failed to generate images. Please try again.");
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching images:", error);
       setLoading(false);
       setShowSkeleton(false);
@@ -296,9 +195,6 @@ const ImageGeneratorPage: React.FC = () => {
     setShowSkeleton(false);
     setProcessingProgress(0);
     setError(null);
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-    }
   };
 
   // Function to get status text
@@ -517,10 +413,7 @@ const ImageGeneratorPage: React.FC = () => {
     }
   };
 
-  // Handle sidebar toggle
-  const handleSidebarToggle = (collapsed: boolean) => {
-    setSidebarCollapsed(collapsed);
-  };
+
 
   // Fetch image history on component mount
   useEffect(() => {
@@ -530,9 +423,7 @@ const ImageGeneratorPage: React.FC = () => {
   }, [uid]);
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar onToggle={handleSidebarToggle} activeLink="/tools/image-generator" />
-      
+    <div className="h-screen overflow-hidden">
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
        
         

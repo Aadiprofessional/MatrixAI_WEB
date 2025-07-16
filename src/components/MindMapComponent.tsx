@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { FiLoader, FiDownload, FiSave, FiRefreshCw } from 'react-icons/fi';
 
 interface MindMapNode {
@@ -27,6 +28,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
   onXmlDataGenerated 
 }) => {
   const { theme, getThemeColors } = useTheme();
+  const { t } = useLanguage();
   const colors = getThemeColors();
   
   const [graphData, setGraphData] = useState<MindMapNode[] | null>(null);
@@ -271,7 +273,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
       <div className="flex justify-center items-center h-64">
         <div className="flex flex-col items-center">
           <FiLoader className="animate-spin h-10 w-10 text-blue-500 mb-4" />
-          <span className="text-gray-600 dark:text-gray-400">Generating mind map...</span>
+          <span className="text-gray-600 dark:text-gray-400">{t('mindmap.generating')}</span>
         </div>
       </div>
     );
@@ -280,12 +282,12 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
   if (!graphData) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="text-gray-500 dark:text-gray-400 mb-4">No mind map data available</p>
+        <p className="text-gray-500 dark:text-gray-400 mb-4">{t('mindmap.noData')}</p>
         <button
           onClick={regenerateMindMap}
           className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center"
         >
-          <FiRefreshCw className="mr-2" /> Generate Mind Map
+          <FiRefreshCw className="mr-2" /> {t('mindmap.generate')}
         </button>
       </div>
     );

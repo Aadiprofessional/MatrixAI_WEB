@@ -1,299 +1,897 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   FiEdit, 
   FiCopy, 
   FiDownload, 
-  FiTrash, 
-  FiPlus, 
+  FiX, 
   FiSave,
   FiZap,
-  FiList,
-  FiBookOpen,
-  FiMessageSquare,
   FiFileText,
   FiSliders,
   FiRotateCw,
-  FiX
+  FiTrash,
+  FiSend,
+  FiPlus,
+  FiShare2,
+  FiChevronLeft,
+  FiChevronRight,
+  FiMail,
+  FiTwitter,
+  FiLinkedin,
+  FiFacebook,
+  FiLink
 } from 'react-icons/fi';
 import { ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
-import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
+import { useNavigate } from 'react-router-dom';
+import { userService } from '../services/userService';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import 'katex/dist/katex.min.css';
+import { toast } from 'react-hot-toast';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+import { saveAs } from 'file-saver';
 import './ContentWriterPage.css';
+
+interface ContentItem {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+}
+
+interface QuickQuestion {
+  id: string;
+  text: string;
+  description: string;
+  category: string;
+}
 
 const ContentWriterPage: React.FC = () => {
   const { userData, isPro } = useUser();
+  const { user } = useAuth();
+  const { t } = useLanguage();
+  const { darkMode } = useTheme();
+  const navigate = useNavigate();
+  const uid = user?.id;
+
+  // Content generation state
   const [prompt, setPrompt] = useState('');
   const [generatedContent, setGeneratedContent] = useState('');
+  const [editedContent, setEditedContent] = useState('');
   const [tone, setTone] = useState('professional');
-  const [contentType, setContentType] = useState('blog');
-  const [contentLength, setContentLength] = useState('medium');
+  const [contentType, setContentType] = useState('essay');
+  const [wordCount, setWordCount] = useState(500);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [savedContents, setSavedContents] = useState<{id: string, title: string, content: string}[]>([]);
-  const [editingTitle, setEditingTitle] = useState('');
-  const [showTitleEdit, setShowTitleEdit] = useState(false);
-  const [showContentSettings, setShowContentSettings] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [fontSize, setFontSize] = useState(16);
+  const [showPreview, setShowPreview] = useState(false);
+  const [streamingContent, setStreamingContent] = useState('');
+
+  // UI state
   const [showProAlert, setShowProAlert] = useState(false);
-  const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(1);
-  const [history, setHistory] = useState<string[]>([
-    'Write a blog post about sustainable living practices',
-    'Create a product description for a new fitness watch',
-    'Draft an email announcing a company event',
-    'Write a social media post about a new technology launch'
-  ]);
+  const [showInsufficientCoins, setShowInsufficientCoins] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [contentHistory, setContentHistory] = useState<ContentItem[]>([]);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [totalItems, setTotalItems] = useState(0);
 
-  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLTextAreaElement>(null);
+  const contentDisplayRef = useRef<HTMLDivElement>(null);
 
-  // Content types
-  const contentTypes = [
-    { id: 'blog', name: 'Blog Post' },
-    { id: 'email', name: 'Email' },
-    { id: 'social', name: 'Social Media Post' },
-    { id: 'product', name: 'Product Description' },
-    { id: 'academic', name: 'Academic Paper' },
-    { id: 'creative', name: 'Creative Writing' },
-    { id: 'press', name: 'Press Release' },
-    { id: 'ad', name: 'Advertisement' },
+  // Quick questions for content creation
+  const quickQuestions: QuickQuestion[] = [
+    {
+      id: 'blog-post',
+      text: 'Write a blog post about sustainable living tips',
+      description: 'Create an engaging blog post with practical advice',
+      category: 'Blog'
+    },
+    {
+      id: 'product-description',
+      text: 'Write a compelling product description for a new smartwatch',
+      description: 'Professional marketing copy that converts',
+      category: 'Marketing'
+    },
+    {
+      id: 'email-newsletter',
+      text: 'Create an email newsletter about the latest tech trends',
+      description: 'Informative and engaging newsletter content',
+      category: 'Email'
+    },
+    {
+      id: 'social-media',
+      text: 'Write social media captions for a new restaurant opening',
+      description: 'Catchy and shareable social media content',
+      category: 'Social Media'
+    },
+    {
+      id: 'business-proposal',
+      text: 'Draft a business proposal for a mobile app development project',
+      description: 'Professional proposal with clear structure',
+      category: 'Business'
+    },
+    {
+      id: 'essay-education',
+      text: 'Write an essay about the impact of artificial intelligence on education',
+      description: 'Academic essay with research-based insights',
+      category: 'Essay'
+    },
+    {
+      id: 'cover-letter',
+      text: 'Create a cover letter for a software engineer position',
+      description: 'Professional cover letter highlighting skills',
+      category: 'Professional'
+    },
+    {
+      id: 'creative-story',
+      text: 'Write a short story about time travel and its consequences',
+      description: 'Creative fiction with engaging narrative',
+      category: 'Creative'
+    }
   ];
+
+  // Check authentication on page load
+  useEffect(() => {
+    if (!user) {
+      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
+      return;
+    }
+    
+    if (!isPro) {
+      navigate('/subscription', { state: { feature: 'Content Writer' } });
+      return;
+    }
+  }, [user, isPro, navigate]);
 
   // Tone options
   const toneOptions = [
-    { id: 'professional', name: 'Professional' },
-    { id: 'casual', name: 'Casual' },
+    { id: 'professional', name: t('common.professional') || 'Professional' },
+    { id: 'casual', name: t('common.casual') || 'Casual' },
+    { id: 'friendly', name: t('common.friendly') || 'Friendly' },
     { id: 'formal', name: 'Formal' },
-    { id: 'friendly', name: 'Friendly' },
-    { id: 'humorous', name: 'Humorous' },
+    { id: 'creative', name: t('common.creative') || 'Creative' },
     { id: 'persuasive', name: 'Persuasive' },
-    { id: 'enthusiastic', name: 'Enthusiastic' },
-    { id: 'instructional', name: 'Instructional' },
   ];
 
-  // Length options
-  const lengthOptions = [
-    { id: 'short', name: 'Short (100-200 words)' },
-    { id: 'medium', name: 'Medium (300-500 words)' },
-    { id: 'long', name: 'Long (600-1000 words)' },
-    { id: 'detailed', name: 'Detailed (1000+ words)' },
+  // Content type options
+  const contentTypeOptions = [
+    { id: 'essay', name: 'Essay' },
+    { id: 'article', name: 'Article' },
+    { id: 'blog', name: 'Blog Post' },
+    { id: 'letter', name: 'Letter' },
+    { id: 'email', name: 'Email' },
+    { id: 'report', name: 'Report' },
+    { id: 'story', name: 'Story' },
+    { id: 'social', name: 'Social Media' },
+    { id: 'marketing', name: 'Marketing Copy' },
+    { id: 'proposal', name: 'Business Proposal' }
   ];
+
+  // Enhanced Code Block Component for markdown rendering
+  const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
+    const match = /language-(\w+)/.exec(className || '');
+    const language = match ? match[1] : '';
+    const codeString = String(children).replace(/\n$/, '');
+    
+    if (!inline && (language || codeString.includes('\n'))) {
+      return (
+        <div className="relative my-4 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+              {language || 'code'}
+            </span>
+          </div>
+          <SyntaxHighlighter
+            style={darkMode ? oneDark : oneLight}
+            language={language || 'text'}
+            PreTag="div"
+            className="!m-0 !bg-transparent"
+            {...props}
+          >
+            {codeString}
+          </SyntaxHighlighter>
+        </div>
+      );
+    }
+    
+    return (
+      <code 
+        className={`px-1.5 py-0.5 rounded text-sm font-mono ${
+          darkMode 
+            ? 'bg-gray-800 text-gray-300 border border-gray-700' 
+            : 'bg-gray-100 text-gray-800 border border-gray-200'
+        }`} 
+        {...props}
+      >
+        {children}
+      </code>
+    );
+  };
+
+  // Markdown components configuration
+  const MarkdownComponents = {
+    code: CodeBlock,
+    pre: ({ children }: any) => <div className="overflow-auto">{children}</div>,
+    h1: ({ children }: any) => (
+      <h1 className={`text-2xl font-bold mb-4 mt-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+        {children}
+      </h1>
+    ),
+    h2: ({ children }: any) => (
+      <h2 className={`text-xl font-bold mb-3 mt-5 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+        {children}
+      </h2>
+    ),
+    h3: ({ children }: any) => (
+      <h3 className={`text-lg font-semibold mb-2 mt-4 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+        {children}
+      </h3>
+    ),
+    p: ({ children }: any) => (
+      <p className={`mb-4 leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        {children}
+      </p>
+    ),
+    ul: ({ children }: any) => (
+      <ul className={`mb-4 ml-6 space-y-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        {children}
+      </ul>
+    ),
+    ol: ({ children }: any) => (
+      <ol className={`mb-4 ml-6 space-y-1 list-decimal ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        {children}
+      </ol>
+    ),
+    li: ({ children }: any) => (
+      <li className="mb-1">{children}</li>
+    ),
+    blockquote: ({ children }: any) => (
+      <blockquote className={`border-l-4 pl-4 py-2 my-4 italic ${
+        darkMode 
+          ? 'border-blue-400 bg-blue-900/20 text-blue-200' 
+          : 'border-blue-500 bg-blue-50 text-blue-800'
+      }`}>
+        {children}
+      </blockquote>
+    ),
+    strong: ({ children }: any) => (
+      <strong className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+        {children}
+      </strong>
+    ),
+    em: ({ children }: any) => (
+      <em className={`italic ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        {children}
+      </em>
+    ),
+  };
+
+  // Streaming API function similar to ChatPage
+  const sendContentRequest = async (promptText: string, onChunk?: (chunk: string) => void): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      try {
+        // Get the system prompt based on settings
+        const systemContent = `You are a professional content writer specialized in creating high-quality ${contentType} content. 
+
+Please create ${contentType} content with the following specifications:
+- Tone: ${tone}
+- Target word count: approximately ${wordCount} words
+- Style: Well-structured, engaging, and professional
+- Format: Use proper markdown formatting with headers, lists, and emphasis where appropriate
+
+Important formatting instructions:
+- Use # for main headings and ## for subheadings
+- Use **bold** for emphasis and *italic* for subtle emphasis  
+- Use bullet points and numbered lists for better organization
+- Use > for important quotes or key insights
+- Structure content with clear sections and proper spacing
+- Make the content comprehensive and valuable to the reader
+
+Create content that is original, well-researched, and engaging for the target audience.`;
+
+        // Prepare messages array
+        const messages = [
+          {
+            role: "system",
+            content: [
+              {
+                type: "text", 
+                text: systemContent
+              }
+            ]
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Please create content based on this prompt: ${promptText}`
+              }
+            ]
+          }
+        ];
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', true);
+        xhr.setRequestHeader('Authorization', 'Bearer sk-256fda005a1445628fe2ceafcda9e389');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        let fullContent = '';
+        let processedLength = 0;
+        let isFirstChunk = true;
+
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 3 || xhr.readyState === 4) {
+            const responseText = xhr.responseText;
+            
+            // Only process new content that we haven't seen before
+            const newContent = responseText.substring(processedLength);
+            if (newContent) {
+              processedLength = responseText.length;
+              const lines = newContent.split('\n');
+              
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const data = line.slice(6).trim();
+                  if (data === '[DONE]') {
+                    console.log('✅ Stream marked as DONE');
+                    continue;
+                  }
+                  
+                  try {
+                    const parsed = JSON.parse(data);
+                    const content_chunk = parsed.choices?.[0]?.delta?.content;
+                    
+                    if (content_chunk) {
+                      if (isFirstChunk) {
+                        console.log('📝 First content chunk received');
+                        isFirstChunk = false;
+                      }
+                      
+                      fullContent += content_chunk;
+                      
+                      // Call the chunk callback immediately for real-time updates
+                      if (onChunk) {
+                        onChunk(content_chunk);
+                      }
+                    }
+                  } catch (parseError) {
+                    // Skip invalid JSON lines
+                    continue;
+                  }
+                }
+              }
+            }
+            
+            // If request is complete
+            if (xhr.readyState === 4) {
+              if (xhr.status === 200) {
+                console.log('✅ Content generation completed successfully');
+                console.log('📊 Final content length:', fullContent.length);
+                resolve(fullContent.trim() || 'I apologize, but I could not generate content. Please try again.');
+              } else {
+                console.error('❌ API request failed:', xhr.status, xhr.statusText);
+                reject(new Error(`API call failed: ${xhr.status} ${xhr.statusText}`));
+              }
+            }
+          }
+        };
+
+        xhr.onerror = function() {
+          console.error('💥 XMLHttpRequest error');
+          reject(new Error('Failed to generate content. Please try again.'));
+        };
+
+        xhr.ontimeout = function() {
+          console.error('💥 XMLHttpRequest timeout');
+          reject(new Error('Request timed out. Please try again.'));
+        };
+
+        xhr.timeout = 60000; // 60 second timeout
+
+        const requestBody = JSON.stringify({
+          model: "qwen-vl-max",
+          messages: messages,
+          stream: true
+        });
+
+        console.log('📊 Sending request to streaming API...');
+        xhr.send(requestBody);
+
+      } catch (error) {
+        console.error('💥 Error in sendContentRequest:', error);
+        reject(new Error('Failed to generate content. Please try again.'));
+      }
+    });
+  };
 
   const handleGenerateContent = async () => {
-    if (!prompt.trim()) return;
-    
-    // If user is not pro and has used all free generations, show pro alert
-    if (!isPro && freeGenerationsLeft <= 0) {
-      setShowProAlert(true);
+    if (!prompt.trim()) {
+      toast.error('Please enter a prompt for content generation');
       return;
     }
     
     setIsGenerating(true);
+    setIsStreaming(true);
+    setError(null);
+    setStreamingContent('');
+    setGeneratedContent('');
+    setEditedContent('');
     
     try {
-      // Create request payload with all settings
-      const userMessageContent = {
-        prompt: prompt,
-        contentType: contentType,
-        tone: tone,
-        contentLength: contentLength
+      // Check coins
+      if (userData && (userData.user_coins || 0) < 2) {
+        setShowInsufficientCoins(true);
+        return;
+      }
+
+      // Deduct coins before generating
+      if (uid) {
+        try {
+          await userService.subtractCoins(uid, 2, 'content_generation');
+          toast.success('2 coins deducted for content generation');
+        } catch (coinError) {
+          console.error('Error deducting coins:', coinError);
+          toast.error('Could not deduct coins. Please check your balance.');
+          return;
+        }
+      }
+
+      // Define chunk handler for real-time updates
+      const handleChunk = (chunk: string) => {
+        setStreamingContent(prev => {
+          const newContent = prev + chunk;
+          setEditedContent(newContent);
+          return newContent;
+        });
+        
+        // Auto-scroll to bottom as content streams in
+        setTimeout(() => {
+          if (contentDisplayRef.current) {
+            contentDisplayRef.current.scrollTop = contentDisplayRef.current.scrollHeight;
+          }
+        }, 50);
+      };
+
+      // Get streaming response
+      const fullResponse = await sendContentRequest(prompt, handleChunk);
+      
+      // Finalize the content
+      setGeneratedContent(fullResponse);
+      setEditedContent(fullResponse);
+      setStreamingContent(fullResponse);
+      
+      // Add to content history
+      const newContentItem: ContentItem = {
+        id: Date.now().toString(),
+        title: prompt.length > 50 ? `${prompt.substring(0, 50)}...` : prompt,
+        content: fullResponse,
+        createdAt: new Date().toISOString()
       };
       
-      // Make API request to Supabase Function
-      const response = await axios.post(
-        'https://ddtgdhehxhgarkonvpfq.supabase.co/functions/v1/createContent',
-        {
-          prompt: userMessageContent
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      setContentHistory(prev => {
+        const updated = [newContentItem, ...prev];
+        setTotalItems(updated.length);
+        return updated;
+      });
       
-      // Set the generated content from API response
-      setGeneratedContent(response.data.output.text);
+      toast.success('Content generated successfully!');
       
-      // Add to history if not already there
-      if (!history.includes(prompt)) {
-        setHistory(prev => [prompt, ...prev.slice(0, 3)]);
-      }
-      
-      // Decrease free generations left if user is not pro
-      if (!isPro) {
-        setFreeGenerationsLeft(prev => prev - 1);
-      }
     } catch (error) {
       console.error('Error generating content:', error);
-      setGeneratedContent('Error generating content. Please try again later.');
+      setError('Error generating content. Please try again later.');
+      setGeneratedContent('');
+      setEditedContent('');
+      setStreamingContent('');
+      toast.error('Failed to generate content. Please try again.');
     } finally {
       setIsGenerating(false);
+      setIsStreaming(false);
     }
   };
 
-  const getContentTitle = () => {
-    // This would normally be generated by AI
-    const typeLabels: Record<string, string> = {
-      'blog': 'Blog Post:',
-      'email': 'Email:',
-      'social': 'Social Media Post:',
-      'product': 'Product Description:',
-      'academic': 'Academic Paper:',
-      'creative': 'Creative Writing Piece:',
-      'press': 'Press Release:',
-      'ad': 'Advertisement:'
-    };
-    
-    const typeLabel = typeLabels[contentType] || 'Content';
-    
-    let title = '';
-    if (prompt.length > 30) {
-      title = `${typeLabel} ${prompt.substring(0, 30)}...`;
-    } else {
-      title = `${typeLabel} ${prompt}`;
+  const handleQuickQuestion = (question: QuickQuestion) => {
+    setPrompt(question.text);
+    // Auto-set content type based on question category
+    switch (question.category.toLowerCase()) {
+      case 'blog':
+        setContentType('blog');
+        break;
+      case 'marketing':
+        setContentType('marketing');
+        break;
+      case 'email':
+        setContentType('email');
+        break;
+      case 'social media':
+        setContentType('social');
+        break;
+      case 'business':
+        setContentType('proposal');
+        break;
+      case 'essay':
+        setContentType('essay');
+        break;
+      case 'creative':
+        setContentType('story');
+        break;
+      default:
+        setContentType('article');
     }
-    
-    return title;
-  };
-
-  const getContentBody = () => {
-    // This would normally be generated by AI
-    // Create a placeholder based on content type, tone, and length
-    const wordCounts: Record<string, number> = {
-      'short': 150,
-      'medium': 400,
-      'long': 800,
-      'detailed': 1200
-    };
-    
-    const wordCount = wordCounts[contentLength] || 400;
-    
-    // Generate lorem ipsum style content with appropriate word count and paragraphs
-    let paragraphs = Math.ceil(wordCount / 100); // One paragraph per 100 words
-    paragraphs = Math.max(2, paragraphs); // At least 2 paragraphs
-    
-    const result = [];
-    
-    for (let i = 0; i < paragraphs; i++) {
-      const paraLength = Math.floor(wordCount / paragraphs);
-      let paragraph = '';
-      
-      // Start paragraph with different openings based on tone
-      switch (tone) {
-        case 'professional':
-          paragraph += "In a professional context, it's important to consider the impact of ";
-          break;
-        case 'casual':
-          paragraph += "Hey there! Let's talk about ";
-          break;
-        case 'formal':
-          paragraph += "It is hereby proposed that the consideration of ";
-          break;
-        case 'friendly':
-          paragraph += "I'm excited to share with you some thoughts on ";
-          break;
-        case 'humorous':
-          paragraph += "You won't believe what happened when I tried to ";
-          break;
-        case 'persuasive':
-          paragraph += "You absolutely need to understand why ";
-          break;
-        case 'enthusiastic':
-          paragraph += "I'm thrilled to announce the amazing ";
-          break;
-        case 'instructional':
-          paragraph += "Follow these steps to master ";
-          break;
-        default:
-          paragraph += "Let's explore the topic of ";
-      }
-      
-      paragraph += prompt.toLowerCase() + ". ";
-      
-      // Add some filler content
-      const fillerText = "This generated content provides valuable insights related to the topic. It covers key aspects and offers meaningful analysis. The content is tailored to meet the specified parameters and help achieve the intended goals.";
-      paragraph += fillerText.repeat(Math.ceil((paraLength - 20) / fillerText.length));
-      
-      result.push(paragraph);
-    }
-    
-    return result.join("\n\n");
-  };
-
-  const getContentConclusion = () => {
-    // This would normally be generated by AI
-    const conclusions: Record<string, string> = {
-      'professional': "In conclusion, this analysis provides a foundation for further discussion about " + prompt + ".",
-      'casual': "So there you have it! That's my take on " + prompt + ". What do you think?",
-      'formal': "Therefore, it is concluded that the aforementioned aspects of " + prompt + " warrant thorough consideration.",
-      'friendly': "Thanks for reading my thoughts on " + prompt + ". I'd love to hear your perspective!",
-      'humorous': "And that's how I ended up with a story about " + prompt + " that I'll never live down!",
-      'persuasive': "Don't wait any longer. The time to act on " + prompt + " is now.",
-      'enthusiastic': "I can't wait to see what amazing things will happen with " + prompt + " next!",
-      'instructional': "By following these steps, you'll master " + prompt + " in no time.",
-    };
-    
-    return conclusions[tone] || "In summary, these insights about " + prompt + " provide valuable perspective.";
   };
 
   const handleCopyContent = () => {
-    navigator.clipboard.writeText(generatedContent);
-    // Could add a toast notification here
+    navigator.clipboard.writeText(editedContent);
+    toast.success('Content copied to clipboard!');
   };
 
-  const handleDownloadContent = () => {
-    const element = document.createElement('a');
-    const file = new Blob([generatedContent], {type: 'text/markdown'});
-    element.href = URL.createObjectURL(file);
-    element.download = `${getContentTitle()}.md`.replace(/[^a-z0-9\s-]/gi, '').replace(/\s+/g, '-').toLowerCase();
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  };
+  const handleDownloadContent = async (format: 'txt' | 'pdf' | 'doc') => {
+    if (!editedContent) {
+      toast.error('No content to download');
+      return;
+    }
 
-  const handleSaveContent = () => {
-    const title = editingTitle || getContentTitle();
+    setIsDownloading(true);
     
-    setSavedContents(prev => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        title,
-        content: generatedContent
+    try {
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const filename = `content-${timestamp}`;
+
+      if (format === 'txt') {
+        // Plain text download with minimal formatting
+        let content = editedContent
+          .replace(/\*\*(.*?)\*\*/g, '$1')
+          .replace(/\*(.*?)\*/g, '$1')
+          .replace(/_{2,}(.*?)_{2,}/g, '$1')
+          .replace(/==(.*?)==/g, '$1')
+          .replace(/\n- (.*)/g, '• $1')
+          .replace(/\n\d+\. (.*)/g, '$1')
+          .replace(/#{1,6} (.*)/g, '$1');
+
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        saveAs(blob, `${filename}.txt`);
+
+      } else if (format === 'pdf') {
+        // PDF download with formatted content
+        await generatePDF(editedContent, filename);
+
+      } else if (format === 'doc') {
+        // DOCX download with formatted content
+        await generateDOCX(editedContent, filename);
       }
-    ]);
+
+      toast.success(`Content downloaded as ${format.toUpperCase()}!`);
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error(`Failed to download ${format.toUpperCase()} file`);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const generatePDF = async (content: string, filename: string) => {
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 20;
+    const maxWidth = pageWidth - 2 * margin;
+    let yPosition = margin;
+
+    // Title
+    pdf.setFontSize(20);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Generated Content', margin, yPosition);
+    yPosition += 15;
+
+    // Date
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, yPosition);
+    yPosition += 20;
+
+    // Process content by lines
+    const lines = content.split('\n');
+    pdf.setFontSize(12);
+
+    for (const line of lines) {
+      if (yPosition > pageHeight - margin) {
+        pdf.addPage();
+        yPosition = margin;
+      }
+
+      let processedLine = line;
+      let fontSize = 12;
+      let fontStyle = 'normal';
+
+      // Handle markdown formatting
+      if (line.startsWith('# ')) {
+        processedLine = line.replace('# ', '');
+        fontSize = 18;
+        fontStyle = 'bold';
+      } else if (line.startsWith('## ')) {
+        processedLine = line.replace('## ', '');
+        fontSize = 16;
+        fontStyle = 'bold';
+      } else if (line.startsWith('### ')) {
+        processedLine = line.replace('### ', '');
+        fontSize = 14;
+        fontStyle = 'bold';
+      } else if (line.startsWith('- ') || line.startsWith('* ')) {
+        processedLine = '• ' + line.replace(/^[*-] /, '');
+      }
+
+      // Remove other markdown formatting
+      processedLine = processedLine
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/\*(.*?)\*/g, '$1')
+        .replace(/`(.*?)`/g, '$1');
+
+      pdf.setFontSize(fontSize);
+      pdf.setFont('helvetica', fontStyle as any);
+
+      if (processedLine.trim()) {
+        const splitText = pdf.splitTextToSize(processedLine, maxWidth);
+        for (const textLine of splitText) {
+          if (yPosition > pageHeight - margin) {
+            pdf.addPage();
+            yPosition = margin;
+          }
+          pdf.text(textLine, margin, yPosition);
+          yPosition += fontSize * 0.6;
+        }
+      }
+      yPosition += 5;
+    }
+
+    pdf.save(`${filename}.pdf`);
+  };
+
+  const generateDOCX = async (content: string, filename: string) => {
+    const paragraphs: any[] = [];
+    const lines = content.split('\n');
+
+    // Add title
+    paragraphs.push(
+      new Paragraph({
+        text: 'Generated Content',
+        heading: HeadingLevel.TITLE,
+        spacing: { after: 200 }
+      })
+    );
+
+    // Add date
+    paragraphs.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `Generated on: ${new Date().toLocaleDateString()}`,
+            size: 20,
+            color: '666666'
+          })
+        ],
+        spacing: { after: 400 }
+      })
+    );
+
+    // Process content
+    for (const line of lines) {
+      if (!line.trim()) {
+        paragraphs.push(new Paragraph({ text: '' }));
+        continue;
+      }
+
+      let text = line;
+             let heading: typeof HeadingLevel[keyof typeof HeadingLevel] | undefined;
+      let isBold = false;
+
+      // Handle markdown formatting
+      if (line.startsWith('# ')) {
+        text = line.replace('# ', '');
+        heading = HeadingLevel.HEADING_1;
+      } else if (line.startsWith('## ')) {
+        text = line.replace('## ', '');
+        heading = HeadingLevel.HEADING_2;
+      } else if (line.startsWith('### ')) {
+        text = line.replace('### ', '');
+        heading = HeadingLevel.HEADING_3;
+      } else if (line.startsWith('- ') || line.startsWith('* ')) {
+        text = '• ' + line.replace(/^[*-] /, '');
+      }
+
+      // Remove markdown formatting for plain text
+      text = text
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/\*(.*?)\*/g, '$1')
+        .replace(/`(.*?)`/g, '$1');
+
+      const paragraph = new Paragraph({
+        children: [
+          new TextRun({
+            text: text,
+            bold: isBold,
+            size: heading ? 28 : 24
+          })
+        ],
+        heading: heading,
+        spacing: { after: 200 }
+      });
+
+      paragraphs.push(paragraph);
+    }
+
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: paragraphs
+      }]
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    saveAs(blob, `${filename}.docx`);
+  };
+
+  const preprocessContent = (content: string) => {
+    return content
+      .replace(/\*\*(.*?)\*\*/g, '**$1**')
+      .replace(/\*(.*?)\*/g, '*$1*')
+      .replace(/_{2,}(.*?)_{2,}/g, '**$1**')
+      .replace(/`(.*?)`/g, '`$1`');
+  };
+
+  const handleShareContent = (platform: string) => {
+    if (!editedContent) {
+      toast.error('No content to share');
+      return;
+    }
+
+    const shareText = editedContent
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/`(.*?)`/g, '$1')
+      .replace(/#{1,6}\s/g, '')
+      .substring(0, 500) + (editedContent.length > 500 ? '...' : '');
+
+    const shareUrl = window.location.href;
+    const encodedText = encodeURIComponent(shareText);
+    const encodedUrl = encodeURIComponent(shareUrl);
+
+    switch (platform) {
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`, '_blank');
+        break;
+      case 'linkedin':
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`, '_blank');
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank');
+        break;
+      case 'email':
+        window.open(`mailto:?subject=Generated Content&body=${encodedText}%0A%0A${encodedUrl}`, '_blank');
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+        toast.success('Content link copied to clipboard!');
+        break;
+      default:
+        break;
+    }
     
-    setShowTitleEdit(false);
-    setEditingTitle('');
+    setShowShareModal(false);
   };
 
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setGeneratedContent(e.target.value);
+  const clearContent = () => {
+    setPrompt('');
+    setGeneratedContent('');
+    setEditedContent('');
+    setStreamingContent('');
+    setError(null);
   };
 
-  const handleDeleteSaved = (id: string) => {
-    setSavedContents(prev => prev.filter(item => item.id !== id));
+  // Pagination helper functions
+  const getTotalPages = () => Math.ceil(totalItems / itemsPerPage);
+  
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= getTotalPages()) {
+      setCurrentPage(page);
+    }
   };
 
-  const handleLoadSaved = (content: string) => {
-    setGeneratedContent(content);
+  const getPaginatedItems = (items: any[]) => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return items.slice(startIndex, endIndex);
   };
+
+  const formatTime = (date: string) => {
+    return new Date(date).toLocaleDateString();
+  };
+
+  const getStatusText = () => {
+    if (isStreaming) {
+      return 'Generating content...';
+    }
+    return 'Ready to generate';
+  };
+
+  // Early return if not authenticated or not pro
+  if (!user || !isPro) {
+    return null;
+  }
 
   return (
     <div className="container mx-auto max-w-6xl p-4 py-8">
+      {/* Modals */}
       {showProAlert && (
         <ProFeatureAlert 
-          featureName="Professional Content Writing"
+          featureName={t('contentWriter.title')}
           onClose={() => setShowProAlert(false)}
         />
       )}
       
+      {showInsufficientCoins && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4 border border-gray-200 dark:border-gray-700">
+            <div className="text-center">
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+                <FiX className="w-6 h-6 text-red-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                {t('contentWriter.insufficientCoins')}
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                {t('contentWriter.needMoreCoins')}
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowInsufficientCoins(false)}
+                  className="flex-1 px-4 py-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowInsufficientCoins(false);
+                    navigate('/buy');
+                  }}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  {t('contentWriter.buyCoins')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
       <div className="mb-8">
         <motion.h1 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
         >
-          AI Content Writer
+          {t('contentWriter.title')}
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0, y: -10 }}
@@ -301,326 +899,547 @@ const ContentWriterPage: React.FC = () => {
           transition={{ delay: 0.1 }}
           className="text-gray-500 dark:text-gray-400"
         >
-          Create professional content for blogs, emails, social media, and more
+          {t('contentWriter.subtitle')}
         </motion.p>
-        
-        {!isPro && (
-          <div className="mt-2 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
-            <FiFileText className="mr-1.5" />
-            <span>{freeGenerationsLeft} free generation{freeGenerationsLeft !== 1 ? 's' : ''} left</span>
-            {freeGenerationsLeft === 0 && (
-              <button 
-                onClick={() => setShowProAlert(true)}
-                className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
-              >
-                Upgrade to Pro
-              </button>
-            )}
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* Content Generation Form */}
+        {/* Left Panel - Controls */}
         <div className="lg:col-span-2 order-2 lg:order-1">
           <div className="sticky top-6 space-y-6">
-            {/* Prompt Input */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-medium mb-4">Create Content</h2>
+            {/* Content Generation Form */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+              <h2 className="text-xl font-medium mb-4 flex items-center">
+                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1.5 rounded-md mr-2">
+                  <FiEdit className="w-5 h-5" />
+                </span>
+                {t('common.create')} Content
+              </h2>
               
               <div className="space-y-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <textarea
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      placeholder="Describe the content you want to generate..."
-                      className="w-full p-4 pr-12 border rounded-lg shadow-sm h-36 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      disabled={isGenerating}
-                    />
-                    <div className="absolute top-2 right-2">
-                      <button 
-                        onClick={() => setShowContentSettings(!showContentSettings)}
-                        className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('contentWriter.prompt')}</label>
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder={t('contentWriter.promptPlaceholder')}
+                    className="w-full p-3 border rounded-lg shadow-sm h-32 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isGenerating}
+                  />
+                </div>
+
+                {/* Quick Questions */}
+                <div>
+                  <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300 flex items-center">
+                    <FiZap className="w-4 h-4 mr-1" />
+                    Quick Content Ideas
+                  </label>
+                  <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                    {quickQuestions.map((question) => (
+                      <motion.button
+                        key={question.id}
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleQuickQuestion(question)}
                         disabled={isGenerating}
+                        className={`p-3 text-left rounded-lg border transition-all ${
+                          darkMode
+                            ? 'border-gray-600 bg-gray-700/50 hover:bg-gray-700 hover:border-blue-500'
+                            : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300'
+                        } ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-sm'}`}
                       >
-                        <FiSliders />
-                      </button>
-                    </div>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center mb-1">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium mr-2 ${
+                                darkMode
+                                  ? 'bg-blue-900/30 text-blue-300'
+                                  : 'bg-blue-100 text-blue-600'
+                              }`}>
+                                {question.category}
+                              </span>
+                            </div>
+                            <p className={`text-sm font-medium truncate ${
+                              darkMode ? 'text-gray-200' : 'text-gray-800'
+                            }`}>
+                              {question.text}
+                            </p>
+                            <p className={`text-xs mt-1 ${
+                              darkMode ? 'text-gray-400' : 'text-gray-500'
+                            }`}>
+                              {question.description}
+                            </p>
+                          </div>
+                          <FiPlus className={`w-4 h-4 ml-2 flex-shrink-0 ${
+                            darkMode ? 'text-gray-400' : 'text-gray-500'
+                          }`} />
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Settings panel */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('contentWriter.contentType')}</label>
+                    <select 
+                      value={contentType}
+                      onChange={(e) => setContentType(e.target.value)}
+                      className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isGenerating}
+                    >
+                      {contentTypeOptions.map(option => (
+                        <option key={option.id} value={option.id}>{option.name}</option>
+                      ))}
+                    </select>
                   </div>
 
-                  {showContentSettings && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="mt-4 p-4 border rounded-lg shadow-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('contentWriter.tone')}</label>
+                    <select 
+                      value={tone}
+                      onChange={(e) => setTone(e.target.value)}
+                      className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isGenerating}
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Content Type</label>
-                          <select 
-                            value={contentType}
-                            onChange={(e) => setContentType(e.target.value)}
-                            className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                            disabled={isGenerating}
-                          >
-                            {contentTypes.map(type => (
-                              <option key={type.id} value={type.id}>{type.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Tone</label>
-                          <select 
-                            value={tone}
-                            onChange={(e) => setTone(e.target.value)}
-                            className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                            disabled={isGenerating}
-                          >
-                            {toneOptions.map(option => (
-                              <option key={option.id} value={option.id}>{option.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Length</label>
-                          <select 
-                            value={contentLength}
-                            onChange={(e) => setContentLength(e.target.value)}
-                            className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                            disabled={isGenerating}
-                          >
-                            {lengthOptions.map(option => (
-                              <option key={option.id} value={option.id}>{option.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
+                      {toneOptions.map(option => (
+                        <option key={option.id} value={option.id}>{option.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('contentWriter.wordCount')}</label>
+                  <select 
+                    value={wordCount}
+                    onChange={(e) => setWordCount(Number(e.target.value))}
+                    className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isGenerating}
+                  >
+                    <option value={250}>250 words</option>
+                    <option value={500}>500 words</option>
+                    <option value={750}>750 words</option>
+                    <option value={1000}>1000 words</option>
+                    <option value={1500}>1500 words</option>
+                  </select>
                 </div>
                 
-                {history.length > 0 && (
-                  <div className="mt-4">
-                    <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Recent Prompts:</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {history.map((item, index) => (
-                        <button
-                          key={index}
-                          className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-800 dark:text-gray-200"
-                          onClick={() => setPrompt(item)}
-                          disabled={isGenerating}
-                        >
-                          {item.length > 25 ? item.substring(0, 25) + '...' : item}
-                        </button>
-                      ))}
+                <button
+                  onClick={handleGenerateContent}
+                  disabled={!prompt.trim() || isGenerating}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all ${
+                    !prompt.trim() || isGenerating
+                      ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]'
+                  }`}
+                >
+                  {isGenerating ? (
+                    <div className="flex items-center justify-center">
+                      <FiRotateCw className="w-4 h-4 mr-2 animate-spin" />
+                      {getStatusText()}
                     </div>
+                  ) : (
+                    <div className="flex items-center justify-center">
+                      <FiZap className="w-4 h-4 mr-2" />
+                      {t('contentWriter.generateContent')}
+                    </div>
+                  )}
+                </button>
+
+                {/* Streaming indicator */}
+                {isGenerating && (
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full animate-pulse"
+                      style={{ width: '100%' }}
+                    />
                   </div>
                 )}
               </div>
-            </div>
-            
-            <div>
-              <button
-                onClick={handleGenerateContent}
-                disabled={isGenerating || !prompt.trim()}
-                className={`px-4 py-4 min-w-24 rounded-lg font-medium shadow-sm transition-all flex items-center justify-center ${
-                  isGenerating || !prompt.trim()
-                    ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-                    : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:shadow-md'
-                }`}
-              >
-                {isGenerating ? 'Generating...' : 'Generate'}
-                {!isGenerating && <FiZap className="ml-2" />}
-              </button>
             </div>
           </div>
         </div>
-        
-        {/* Content Output */}
+
+        {/* Right Panel - Content Display */}
         <div className="lg:col-span-3 order-1 lg:order-2">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            {/* Content Header */}
-            <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
-              <div className="flex items-center">
-                <FiFileText className="text-gray-500 dark:text-gray-400 mr-2" />
-                <h2 className="font-medium">{generatedContent ? getContentTitle() : 'Generated Content'}</h2>
-              </div>
-              
-              <div className="flex space-x-1">
-                {generatedContent && (
-                  <>
+            {/* Header */}
+            <div className="border-b border-gray-200 dark:border-gray-700 p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
+                  <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1.5 rounded-md mr-2">
+                    <FiFileText className="w-5 h-5" />
+                  </span>
+                  Generated Content
+                </h3>
+                {editedContent && (
+                  <div className="flex space-x-2">
                     <button
                       onClick={handleCopyContent}
-                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                      title="Copy to clipboard"
+                      className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm"
                     >
-                      <FiCopy />
+                      <FiCopy className="w-4 h-4 mr-1" />
+                      Copy
                     </button>
+                    
+                    {/* Download Dropdown */}
+                    <div className="relative group">
+                      <button
+                        disabled={isDownloading}
+                        className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center text-sm disabled:opacity-50"
+                      >
+                        <FiDownload className="w-4 h-4 mr-1" />
+                        {isDownloading ? 'Downloading...' : 'Download'}
+                      </button>
+                      
+                      <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                        <button
+                          onClick={() => handleDownloadContent('txt')}
+                          disabled={isDownloading}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg disabled:opacity-50"
+                        >
+                          <FiFileText className="w-4 h-4 inline mr-2" />
+                          Text (.txt)
+                        </button>
+                        <button
+                          onClick={() => handleDownloadContent('pdf')}
+                          disabled={isDownloading}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                        >
+                          <FiFileText className="w-4 h-4 inline mr-2" />
+                          PDF (.pdf)
+                        </button>
+                        <button
+                          onClick={() => handleDownloadContent('doc')}
+                          disabled={isDownloading}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg disabled:opacity-50"
+                        >
+                          <FiFileText className="w-4 h-4 inline mr-2" />
+                          Word (.docx)
+                        </button>
+                      </div>
+                    </div>
+
                     <button
-                      onClick={handleDownloadContent}
-                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                      title="Download as Markdown"
+                      onClick={() => setShowShareModal(true)}
+                      className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center text-sm"
                     >
-                      <FiDownload />
+                      <FiShare2 className="w-4 h-4 mr-1" />
+                      Share
                     </button>
-                    <button
-                      onClick={() => setShowTitleEdit(!showTitleEdit)}
-                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                      title="Save content"
-                    >
-                      <FiSave />
-                    </button>
-                    <button
-                      onClick={() => {
-                        const textarea = contentRef.current;
-                        if (textarea) {
-                          textarea.classList.toggle('hidden');
-                          const markdownPreview = textarea.previousElementSibling;
-                          if (markdownPreview) markdownPreview.classList.toggle('hidden');
-                        }
-                      }}
-                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                      title="Toggle edit mode"
-                    >
-                      <FiEdit />
-                    </button>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
             
-            {/* Save Dialog */}
-            {showTitleEdit && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
-                <div className="flex items-center">
-                  <input
-                    type="text"
-                    value={editingTitle}
-                    onChange={(e) => setEditingTitle(e.target.value)}
-                    placeholder="Enter a title for your saved content"
-                    className="flex-1 p-2 border rounded-md mr-2 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <button
-                    onClick={handleSaveContent}
-                    className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setShowTitleEdit(false)}
-                    className="p-2 ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                  >
-                    <FiX />
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {/* Content Area */}
-            <div className="p-6">
-              {generatedContent ? (
+            <div className="p-6" ref={contentDisplayRef}>
+              {editedContent || isStreaming ? (
                 <div className="w-full min-h-[600px]">
                   <div className="prose prose-sm max-w-none dark:prose-invert mb-4 markdown-content">
-                    <ReactMarkdown>
-                      {generatedContent}
-                    </ReactMarkdown>
+                    {isStreaming ? (
+                      <div className="streaming-content">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm, remarkMath]}
+                          rehypePlugins={[rehypeKatex, rehypeRaw]}
+                          components={MarkdownComponents}
+                        >
+                          {preprocessContent(streamingContent)}
+                        </ReactMarkdown>
+                        <span className="typing-cursor animate-pulse ml-1 text-blue-500">▋</span>
+                      </div>
+                    ) : (
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm, remarkMath]}
+                        rehypePlugins={[rehypeKatex, rehypeRaw]}
+                        components={MarkdownComponents}
+                      >
+                        {preprocessContent(editedContent)}
+                      </ReactMarkdown>
+                    )}
                   </div>
-                  <textarea
-                    ref={contentRef}
-                    value={generatedContent}
-                    onChange={handleContentChange}
-                    className="w-full min-h-[600px] p-0 border-0 focus:ring-0 dark:bg-gray-800 dark:text-gray-200 font-mono text-sm resize-none hidden"
-                    spellCheck="false"
-                  />
+                  {!isStreaming && (
+                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Edit Mode</span>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={clearContent}
+                            className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm"
+                          >
+                            <FiTrash className="w-4 h-4 mr-1" />
+                            Clear
+                          </button>
+                        </div>
+                      </div>
+                      <textarea
+                        ref={editorRef}
+                        value={editedContent}
+                        onChange={(e) => setEditedContent(e.target.value)}
+                        className="w-full min-h-[300px] p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-200 font-mono text-sm resize-none"
+                        spellCheck="false"
+                        placeholder="Edit your generated content here..."
+                      />
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center text-center py-16">
-                  <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
-                    <FiEdit className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex flex-col items-center justify-center text-center py-16"
+                >
+                  <div className="h-20 w-20 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-opacity-10 flex items-center justify-center mb-4">
+                    <FiFileText className="h-10 w-10 text-blue-500 dark:text-blue-400" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Content Generated Yet</h3>
                   <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
-                    Enter your prompt and adjust content settings to generate text for blogs, emails, social media posts, and more.
+                    Enter a prompt, choose from quick content ideas, and configure your settings to generate high-quality content with AI.
                   </p>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl">
-                    <div onClick={() => setPrompt('Write a blog post about sustainable living practices')} className="cursor-pointer p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 text-left">
-                      <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 text-sm font-medium">
-                        <FiPlus className="mr-1.5" />
-                        <span>Blog Post</span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Write about sustainable living practices</p>
-                    </div>
-                    
-                    <div onClick={() => setPrompt('Create a product description for a new fitness watch')} className="cursor-pointer p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 text-left">
-                      <div className="flex items-center text-green-500 dark:text-green-400 mb-1 text-sm font-medium">
-                        <FiPlus className="mr-1.5" />
-                        <span>Product Description</span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Create a description for a fitness watch</p>
-                    </div>
-                    
-                    <div onClick={() => setPrompt('Draft an email announcing a company event')} className="cursor-pointer p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 text-left">
-                      <div className="flex items-center text-purple-500 dark:text-purple-400 mb-1 text-sm font-medium">
-                        <FiPlus className="mr-1.5" />
-                        <span>Email</span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Draft an email announcing a company event</p>
-                    </div>
-                    
-                    <div onClick={() => setPrompt('Write a social media post about a new technology launch')} className="cursor-pointer p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 text-left">
-                      <div className="flex items-center text-yellow-500 dark:text-yellow-400 mb-1 text-sm font-medium">
-                        <FiPlus className="mr-1.5" />
-                        <span>Social Media</span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Write about a new technology launch</p>
-                    </div>
+                  {/* Featured Quick Questions for Empty State */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-8 w-full max-w-2xl">
+                    {quickQuestions.slice(0, 4).map((question) => (
+                      <motion.button
+                        key={question.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleQuickQuestion(question)}
+                        className={`p-4 text-left rounded-lg border transition-all ${
+                          darkMode
+                            ? 'border-gray-600 bg-gray-700/30 hover:bg-gray-700/50 hover:border-blue-500'
+                            : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300'
+                        } hover:shadow-sm`}
+                      >
+                        <div className="flex items-center mb-2">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                            darkMode
+                              ? 'bg-blue-900/30 text-blue-300'
+                              : 'bg-blue-100 text-blue-600'
+                          }`}>
+                            {question.category}
+                          </span>
+                        </div>
+                        <p className={`text-sm font-medium ${
+                          darkMode ? 'text-gray-200' : 'text-gray-800'
+                        }`}>
+                          {question.text}
+                        </p>
+                        <p className={`text-xs mt-1 ${
+                          darkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>
+                          {question.description}
+                        </p>
+                      </motion.button>
+                    ))}
                   </div>
+                </motion.div>
+                              )}
+              </div>
+            </div>
+
+            {/* Content History Section */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+              <h2 className="text-xl font-medium mb-4 flex items-center">
+                <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
+                  <FiFileText className="w-5 h-5" />
+                </span>
+                Recent Content
+              </h2>
+              
+              {contentHistory.length > 0 ? (
+                <div className="space-y-3">
+                  {getPaginatedItems(contentHistory).map((item, index) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                        darkMode
+                          ? 'border-gray-600 bg-gray-700/30 hover:bg-gray-700/50 hover:border-purple-500'
+                          : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-purple-300'
+                      } hover:shadow-sm`}
+                      onClick={() => {
+                        setEditedContent(item.content);
+                        setGeneratedContent(item.content);
+                        toast.success('Content loaded from history');
+                      }}
+                    >
+                      <h4 className={`font-medium text-sm mb-1 ${
+                        darkMode ? 'text-gray-200' : 'text-gray-800'
+                      }`}>
+                        {item.title}
+                      </h4>
+                      <p className={`text-xs ${
+                        darkMode ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </p>
+                      <p className={`text-xs mt-1 line-clamp-2 ${
+                        darkMode ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
+                        {item.content.substring(0, 100)}...
+                      </p>
+                    </motion.div>
+                  ))}
+                  
+                  {/* Pagination Controls */}
+                  {getTotalPages() > 1 && (
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className={`p-2 rounded-md transition-colors ${
+                          currentPage === 1
+                            ? 'text-gray-400 cursor-not-allowed'
+                            : darkMode
+                            ? 'text-gray-300 hover:bg-gray-700'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <FiChevronLeft className="w-4 h-4" />
+                      </button>
+                      
+                      <div className="flex items-center space-x-2">
+                        {Array.from({ length: getTotalPages() }, (_, i) => i + 1)
+                          .filter(page => 
+                            page === 1 || 
+                            page === getTotalPages() || 
+                            Math.abs(page - currentPage) <= 1
+                          )
+                          .map((page, index, array) => (
+                            <React.Fragment key={page}>
+                              {index > 0 && array[index - 1] !== page - 1 && (
+                                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  ...
+                                </span>
+                              )}
+                              <button
+                                onClick={() => handlePageChange(page)}
+                                className={`w-8 h-8 rounded-md text-xs font-medium transition-colors ${
+                                  page === currentPage
+                                    ? 'bg-blue-500 text-white'
+                                    : darkMode
+                                    ? 'text-gray-300 hover:bg-gray-700'
+                                    : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            </React.Fragment>
+                          ))
+                        }
+                      </div>
+                      
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === getTotalPages()}
+                        className={`p-2 rounded-md transition-colors ${
+                          currentPage === getTotalPages()
+                            ? 'text-gray-400 cursor-not-allowed'
+                            : darkMode
+                            ? 'text-gray-300 hover:bg-gray-700'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <FiChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                    darkMode ? 'bg-gray-700' : 'bg-gray-100'
+                  }`}>
+                    <FiFileText className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                  </div>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    No content history yet
+                  </p>
+                  <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                    Generated content will appear here
+                  </p>
                 </div>
               )}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Saved Content */}
-      {savedContents.length > 0 && (
-        <div>
-          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Saved Content</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {savedContents.map((saved) => (
-              <div 
-                key={saved.id}
-                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow"
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4 border border-gray-200 dark:border-gray-700"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                Share Content
+              </h3>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-medium text-gray-800 dark:text-gray-200">{saved.title}</h3>
-                  <div className="flex space-x-1">
-                    <button
-                      onClick={() => handleLoadSaved(saved.content)}
-                      className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      title="Load"
-                    >
-                      <FiEdit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSaved(saved.id)}
-                      className="p-1.5 rounded-md text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      title="Delete"
-                    >
-                      <FiTrash className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
-                  {saved.content.replace(/(?:^|[\n\r])\s*#\s*(.*?)[\n\r]/g, '')}
-                </p>
-              </div>
-            ))}
-          </div>
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+              Share your generated content on social media or copy the link
+            </p>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => handleShareContent('twitter')}
+                className="flex items-center justify-center px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                <FiTwitter className="w-5 h-5 mr-2" />
+                Twitter
+              </button>
+              
+              <button
+                onClick={() => handleShareContent('linkedin')}
+                className="flex items-center justify-center px-4 py-3 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors"
+              >
+                <FiLinkedin className="w-5 h-5 mr-2" />
+                LinkedIn
+              </button>
+              
+              <button
+                onClick={() => handleShareContent('facebook')}
+                className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <FiFacebook className="w-5 h-5 mr-2" />
+                Facebook
+              </button>
+              
+              <button
+                onClick={() => handleShareContent('email')}
+                className="flex items-center justify-center px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <FiMail className="w-5 h-5 mr-2" />
+                Email
+              </button>
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => handleShareContent('copy')}
+                className="w-full flex items-center justify-center px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                <FiLink className="w-5 h-5 mr-2" />
+                Copy Link
+              </button>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>

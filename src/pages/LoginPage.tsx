@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiMoon, FiSun } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const { signIn, error, setError, user } = useAuth();
+  const { t } = useLanguage();
 
   // If user is already logged in, redirect to dashboard
   useEffect(() => {
@@ -26,7 +28,7 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     
     if (!email || !password) {
-      setError('Please fill in all fields');
+      setError(t('auth.emailRequired') + ' and ' + t('auth.passwordRequired'));
       return;
     }
 
@@ -92,7 +94,7 @@ const LoginPage: React.FC = () => {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="text-2xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
           >
-            Welcome to AI
+            {t('auth.loginTitle')}
           </motion.h1>
           
           <motion.p
@@ -101,7 +103,7 @@ const LoginPage: React.FC = () => {
             transition={{ delay: 0.3, duration: 0.5 }}
             className={`text-center mb-8 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}
           >
-            Your AI assistant for everything
+            {t('auth.loginSubtitle')}
           </motion.p>
           
           {error && (
@@ -124,7 +126,7 @@ const LoginPage: React.FC = () => {
                 transition={{ delay: 0.4, duration: 0.5 }}
               >
                 <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="email">
-                  Email
+                  {t('auth.email')}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -153,7 +155,7 @@ const LoginPage: React.FC = () => {
                 transition={{ delay: 0.5, duration: 0.5 }}
               >
                 <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="password">
-                  Password
+                  {t('auth.password')}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -201,7 +203,7 @@ const LoginPage: React.FC = () => {
                     className={`h-4 w-4 rounded border-gray-300 ${darkMode ? 'bg-gray-700 text-purple-500' : 'bg-white text-blue-600'}`}
                   />
                   <label htmlFor="remember-me" className={`ml-2 block text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Remember me
+                    {t('auth.rememberMe')}
                   </label>
                 </div>
                 
@@ -209,7 +211,7 @@ const LoginPage: React.FC = () => {
                   <Link to="/forgot-password" className={`font-medium ${
                     darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-blue-600 hover:text-blue-500'
                   }`}>
-                    Forgot password?
+                    {t('auth.forgotPassword')}
                   </Link>
                 </div>
               </motion.div>
@@ -239,7 +241,7 @@ const LoginPage: React.FC = () => {
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                   ) : (
-                    'Sign in'
+                    t('auth.loginButton')
                   )}
                   </span>
                 </button>
@@ -253,11 +255,11 @@ const LoginPage: React.FC = () => {
             transition={{ delay: 0.8, duration: 0.5 }}
             className={`mt-8 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}
           >
-            Don't have an account?{' '}
+            {t('auth.dontHaveAccount')}{' '}
             <Link to="/signup" className={`font-medium ${
               darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-blue-600 hover:text-blue-500'
             }`}>
-              Sign up
+              {t('auth.signup')}
             </Link>
           </motion.p>
         </motion.div>

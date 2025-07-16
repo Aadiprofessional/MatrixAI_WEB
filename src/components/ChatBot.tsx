@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiSend, FiPaperclip, FiImage, FiX, FiPlus, FiCopy, FiShare2 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../context/LanguageContext';
 import Lottie from 'lottie-react';
 
 interface Message {
@@ -25,6 +26,7 @@ interface ChatProps {
 }
 
 const ChatBot: React.FC<ChatProps> = ({ initialMessages = [], onNewChat, version }) => {
+  const { t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -324,14 +326,14 @@ const ChatBot: React.FC<ChatProps> = ({ initialMessages = [], onNewChat, version
       {/* Chat header */}
       <div className={`flex items-center px-4 py-3 border-b ${version === 'enterprise' ? 'bg-primary-700 text-white' : 'bg-primary-500 text-white'}`}>
         <div className="flex-1">
-          <h2 className="text-lg font-semibold">Matrix AI {version === 'enterprise' ? 'Enterprise' : 'Assistant'}</h2>
-          <p className="text-sm opacity-80">{currentRole ? `Role: ${roles.find(r => r.id === currentRole)?.emoji} ${roles.find(r => r.id === currentRole)?.name}` : 'General Assistant'}</p>
+          <h2 className="text-lg font-semibold">Matrix AI {version === 'enterprise' ? t('common.enterprise') || 'Enterprise' : t('common.assistant') || 'Assistant'}</h2>
+          <p className="text-sm opacity-80">{currentRole ? `${t('common.role') || 'Role'}: ${roles.find(r => r.id === currentRole)?.emoji} ${roles.find(r => r.id === currentRole)?.name}` : t('common.generalAssistant') || 'General Assistant'}</p>
         </div>
         <button 
           onClick={handleNewChat}
           className={`px-3 py-1 rounded-full text-sm ${version === 'enterprise' ? 'bg-primary-800 hover:bg-primary-900' : 'bg-primary-600 hover:bg-primary-700'} transition-colors`}
         >
-          New Chat
+          {t('chat.newChat')}
         </button>
       </div>
       
@@ -342,16 +344,16 @@ const ChatBot: React.FC<ChatProps> = ({ initialMessages = [], onNewChat, version
             <div className="w-24 h-24 mb-6 opacity-80">
               <Lottie animationData={require('../assets/ai-animation.json')} loop />
             </div>
-            <h3 className="text-xl font-bold text-gray-700 mb-2">Welcome to Matrix AI</h3>
+            <h3 className="text-xl font-bold text-gray-700 mb-2">{t('chat.welcomeToMatrixAI') || 'Welcome to Matrix AI'}</h3>
             <p className="text-gray-500 text-center mb-8 max-w-md">
               {version === 'enterprise' 
-                ? 'Your enterprise-grade AI assistant for advanced data insights and business intelligence.' 
-                : 'Your personal AI assistant for everyday tasks and questions.'}
+                ? t('chat.enterpriseDescription') || 'Your enterprise-grade AI assistant for advanced data insights and business intelligence.' 
+                : t('chat.personalDescription') || 'Your personal AI assistant for everyday tasks and questions.'}
             </p>
             
             {messages.length === 0 && (
               <div className="w-full max-w-md">
-                <h4 className="text-sm font-semibold text-gray-500 mb-2">You can select a specialized role:</h4>
+                <h4 className="text-sm font-semibold text-gray-500 mb-2">{t('chat.selectSpecializedRole') || 'You can select a specialized role:'}</h4>
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   {roles.map(role => (
                     <button
@@ -409,7 +411,7 @@ const ChatBot: React.FC<ChatProps> = ({ initialMessages = [], onNewChat, version
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
+              placeholder={t('chat.placeholder')}
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
               rows={1}
               style={{ 

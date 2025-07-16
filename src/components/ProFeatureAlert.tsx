@@ -3,6 +3,7 @@ import { FiStar, FiLock, FiX } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
+import { useLanguage } from '../context/LanguageContext';
 
 interface ProFeatureAlertProps {
   featureName: string;
@@ -12,6 +13,7 @@ interface ProFeatureAlertProps {
 const ProFeatureAlert: React.FC<ProFeatureAlertProps> = ({ featureName, onClose }) => {
   const { darkMode } = useContext(ThemeContext);
   const { userData } = useUser();
+  const { t } = useLanguage();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-70 backdrop-blur-sm">
@@ -36,10 +38,10 @@ const ProFeatureAlert: React.FC<ProFeatureAlertProps> = ({ featureName, onClose 
               <FiLock className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-white text-center mb-2">
-              Pro Feature Locked
+              {t('common.proFeatureLocked') || 'Pro Feature Locked'}
             </h3>
             <p className="text-white text-opacity-90 text-center">
-              Upgrade to access {featureName} and unlock your full creative potential
+              {t('common.upgradeToAccess') || 'Upgrade to access'} {featureName} {t('common.unlockCreativePotential') || 'and unlock your full creative potential'}
             </p>
             
             {/* Animated stars */}
@@ -64,7 +66,7 @@ const ProFeatureAlert: React.FC<ProFeatureAlertProps> = ({ featureName, onClose 
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
-              <p>Unlimited AI image generation</p>
+              <p>{t('common.unlimitedAIImageGeneration') || 'Unlimited AI image generation'}</p>
             </div>
             <div className={`flex items-center ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <div className="flex-shrink-0 w-5 h-5 text-green-500 mr-2">
@@ -72,7 +74,7 @@ const ProFeatureAlert: React.FC<ProFeatureAlertProps> = ({ featureName, onClose 
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
-              <p>Advanced video creation tools</p>
+              <p>{t('common.advancedVideoCreationTools') || 'Advanced video creation tools'}</p>
             </div>
             <div className={`flex items-center ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               <div className="flex-shrink-0 w-5 h-5 text-green-500 mr-2">
@@ -80,7 +82,7 @@ const ProFeatureAlert: React.FC<ProFeatureAlertProps> = ({ featureName, onClose 
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
-              <p>Professional content writing assistant</p>
+              <p>{t('common.professionalContentWritingAssistant') || 'Professional content writing assistant'}</p>
             </div>
           </div>
           
@@ -89,7 +91,7 @@ const ProFeatureAlert: React.FC<ProFeatureAlertProps> = ({ featureName, onClose 
               to="/subscription"
               className="flex items-center justify-center w-full px-4 py-3 text-base font-medium text-white bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-md hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 transition duration-300 transform hover:scale-[1.02]"
             >
-              Upgrade to PRO
+              {t('common.upgradeToPro') || 'Upgrade to PRO'}
             </Link>
             <button
               onClick={onClose}
@@ -99,7 +101,7 @@ const ProFeatureAlert: React.FC<ProFeatureAlertProps> = ({ featureName, onClose 
                   : 'border-gray-300 text-gray-700 hover:bg-gray-100'
               }`}
             >
-              Maybe Later
+              {t('common.maybeLater') || 'Maybe Later'}
             </button>
           </div>
         </div>

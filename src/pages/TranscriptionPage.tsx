@@ -154,26 +154,29 @@ const TableHeaderCell = ({ children, ...props }: any) => {
   );
 };
 
-// Enhanced Markdown Components
+// Enhanced Markdown Components with better styling
 const MarkdownComponents = {
-  // Headings
+  // Headings with improved styling and spacing
   h1: ({ children, ...props }: any) => (
-    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 mt-6 pb-2 border-b border-gray-200 dark:border-gray-700 first:mt-0" {...props}>
+    <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 mt-6 pb-2 border-b border-gray-200 dark:border-gray-700 first:mt-0" {...props}>
       {children}
     </h1>
   ),
   h2: ({ children, ...props }: any) => (
-    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 mt-5 pb-1 border-b border-gray-200 dark:border-gray-700" {...props}>
+    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 mt-5 flex items-center" {...props}>
+      <span className="w-1 h-4 bg-blue-500 rounded-full mr-2"></span>
       {children}
     </h2>
   ),
   h3: ({ children, ...props }: any) => (
-    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 mt-4" {...props}>
+    <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 mt-4 flex items-center" {...props}>
+      <span className="w-1 h-3 bg-blue-500 rounded-full mr-2"></span>
       {children}
     </h3>
   ),
   h4: ({ children, ...props }: any) => (
-    <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2 mt-3" {...props}>
+    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 mt-3 flex items-center" {...props}>
+      <span className="w-1 h-2 bg-blue-500 rounded-full mr-2"></span>
       {children}
     </h4>
   ),
@@ -183,47 +186,48 @@ const MarkdownComponents = {
     </h5>
   ),
   h6: ({ children, ...props }: any) => (
-    <h6 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 mt-2 uppercase tracking-wide" {...props}>
+    <h6 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 mt-2" {...props}>
       {children}
     </h6>
   ),
 
-  // Paragraphs
+  // Enhanced paragraphs with better spacing and typography
   p: ({ children, ...props }: any) => (
-    <p className="mb-3 text-gray-800 dark:text-gray-200 leading-relaxed" {...props}>
+    <p className="mb-3 text-gray-800 dark:text-gray-200 leading-relaxed text-sm" {...props}>
       {children}
     </p>
   ),
 
-  // Lists
+  // Enhanced lists with better styling and spacing
   ul: ({ children, ...props }: any) => (
-    <ul className="mb-3 ml-4 space-y-1 list-disc text-gray-800 dark:text-gray-200" {...props}>
+    <ul className="mb-4 ml-4 space-y-1 text-gray-800 dark:text-gray-200" {...props}>
       {children}
     </ul>
   ),
   ol: ({ children, ...props }: any) => (
-    <ol className="mb-3 ml-4 space-y-1 list-decimal text-gray-800 dark:text-gray-200" {...props}>
+    <ol className="mb-4 ml-4 space-y-1 text-gray-800 dark:text-gray-200 list-decimal" {...props}>
       {children}
     </ol>
   ),
   li: ({ children, ...props }: any) => (
-    <li className="leading-relaxed" {...props}>
-      {children}
+    <li className="leading-relaxed flex items-start text-sm" {...props}>
+      <span className="w-1 h-1 bg-blue-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+      <span className="flex-1">{children}</span>
     </li>
   ),
 
-  // Blockquotes
+  // Enhanced blockquotes with better visual design
   blockquote: ({ children, ...props }: any) => (
-    <blockquote className="border-l-4 border-blue-500 dark:border-blue-400 pl-4 py-2 my-3 bg-blue-50 dark:bg-blue-900/20 rounded-r-lg italic text-gray-700 dark:text-gray-300" {...props}>
+    <blockquote className="border-l-2 border-blue-500 dark:border-blue-400 pl-3 py-2 my-3 bg-blue-50 dark:bg-blue-900/20 rounded-r text-gray-700 dark:text-gray-300 italic text-sm" {...props}>
       {children}
     </blockquote>
   ),
 
-  // Links
+  // Enhanced links with better hover effects
   a: ({ children, href, ...props }: any) => (
     <a 
       href={href}
-      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline decoration-blue-500/30 hover:decoration-blue-500 transition-colors"
+      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline text-sm"
       target="_blank"
       rel="noopener noreferrer"
       {...props}
@@ -232,19 +236,21 @@ const MarkdownComponents = {
     </a>
   ),
 
-  // Horizontal rule
+  // Enhanced horizontal rule with gradient
   hr: ({ ...props }: any) => (
-    <hr className="my-6 border-0 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent" {...props} />
+    <div className="my-4 flex items-center" {...props}>
+      <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
+    </div>
   ),
 
-  // Emphasis and strong
+  // Enhanced emphasis and strong with better styling
   em: ({ children, ...props }: any) => (
-    <em className="italic text-gray-800 dark:text-gray-200" {...props}>
+    <em className="italic text-gray-800 dark:text-gray-200 font-medium" {...props}>
       {children}
     </em>
   ),
   strong: ({ children, ...props }: any) => (
-    <strong className="font-semibold text-gray-900 dark:text-gray-100" {...props}>
+    <strong className="font-bold text-gray-900 dark:text-gray-100" {...props}>
       {children}
     </strong>
   ),
@@ -252,7 +258,7 @@ const MarkdownComponents = {
   // Code blocks
   code: CodeBlock,
 
-  // Tables
+  // Tables with enhanced styling
   table: ({ children, ...props }: any) => <TableWrapper {...props}>{children}</TableWrapper>,
   thead: ({ children, ...props }: any) => <TableHead {...props}>{children}</TableHead>,
   tbody: ({ children, ...props }: any) => <TableBody {...props}>{children}</TableBody>,
@@ -260,25 +266,25 @@ const MarkdownComponents = {
   td: ({ children, ...props }: any) => <TableCell {...props}>{children}</TableCell>,
   th: ({ children, ...props }: any) => <TableHeaderCell {...props}>{children}</TableHeaderCell>,
 
-  // Images
+  // Enhanced images with better presentation
   img: ({ src, alt, ...props }: any) => (
     <div className="my-4">
       <img 
         src={src}
         alt={alt}
-        className="max-w-full h-auto rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
+        className="max-w-full h-auto rounded-lg shadow border border-gray-200 dark:border-gray-700"
         loading="lazy"
         {...props}
       />
       {alt && (
-        <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-2 italic">
+        <p className="text-xs text-gray-600 dark:text-gray-400 text-center mt-2 italic">
           {alt}
         </p>
       )}
     </div>
   ),
 
-  // Task lists
+  // Task lists with better styling
   input: ({ type, checked, ...props }: any) => {
     if (type === 'checkbox') {
       return (
@@ -286,7 +292,7 @@ const MarkdownComponents = {
           type="checkbox"
           checked={checked}
           readOnly
-          className="mr-2 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+          className="mr-2 rounded border-gray-300 dark:border-gray-600 text-blue-600 w-3 h-3"
           {...props}
         />
       );
@@ -299,21 +305,15 @@ const MarkdownComponents = {
 const preprocessContent = (content: string): string => {
   if (!content) return content;
   
-  // Clean up content and ensure proper formatting
+  // Minimal preprocessing to preserve markdown formatting
   let processed = content
-    // Fix math expressions
+    // Fix math expressions only
     .replace(/\\\(/g, '$')
     .replace(/\\\)/g, '$')
     .replace(/\\\[/g, '$$')
     .replace(/\\\]/g, '$$')
-    // Ensure proper line breaks for lists
-    .replace(/\n(\d+\.|\*|\-)\s/g, '\n\n$1 ')
-    // Ensure proper spacing around headers
-    .replace(/\n(#{1,6})\s/g, '\n\n$1 ')
-    // Clean up extra spaces
-    .replace(/\s+/g, ' ')
-    // Restore line breaks
-    .replace(/\n\s*\n/g, '\n\n');
+    // Preserve line breaks for markdown structure
+    .replace(/\n{3,}/g, '\n\n'); // Reduce excessive line breaks but preserve structure
   
   return processed.trim();
 };
@@ -406,18 +406,110 @@ const TranscriptionPage: React.FC = () => {
     }
   }, [chatMessages]);
 
-  // Add streaming API function similar to ChatPage
+  // Function to handle quick actions with formatted responses and language detection
+  const handleQuickAction = async (action: 'keypoints' | 'summary' | 'translate') => {
+    if (!transcription || isChatProcessing[action]) return;
+    
+    setIsChatProcessing({...isChatProcessing, [action]: true});
+    
+    try {
+      let prompt = '';
+      
+      switch(action) {
+        case 'keypoints':
+          prompt = `Please extract the key points from this transcription. Format your response with clear structure using markdown:
+
+# Key Points
+
+## Main Topics
+- Use bullet points for each key point
+- Group related points under appropriate subheadings
+- Highlight the most important insights
+
+## Key Insights
+- Provide deeper analysis of the main themes
+- Include any notable quotes or statements
+
+Transcription:
+${transcription}`;
+          break;
+        case 'summary':
+          prompt = `Please provide a comprehensive summary of this transcription. Format your response with clear structure using markdown:
+
+# Summary
+
+## Overview
+Brief overview of the content
+
+## Main Topics Discussed
+- Key topics covered
+- Important themes
+
+## Key Insights
+- Main takeaways
+- Notable points
+
+## Conclusion
+Summary of the overall message
+
+Transcription:
+${transcription}`;
+          break;
+        case 'translate':
+          prompt = `Please translate this transcription to ${translationLanguage}. Maintain the structure and meaning of the original text. Format your response with clear structure using markdown:
+
+# Translation to ${translationLanguage}
+
+## Original Content Summary
+Brief summary of what's being translated
+
+## Translated Content
+The full translation with proper formatting and structure
+
+## Translation Notes
+Any important notes about the translation or cultural context
+
+Transcription:
+${transcription}`;
+          break;
+      }
+      
+      // Using the streaming API to process the request
+      const result = await sendMessageToAI(prompt);
+      setChatResponses({...chatResponses, [action]: result});
+    } catch (error) {
+      console.error(`Error in ${action} quick action:`, error);
+      setChatResponses({...chatResponses, [action]: `Error: Could not process ${action} request.`});
+    } finally {
+      setIsChatProcessing({...isChatProcessing, [action]: false});
+    }
+  };
+
+  // Enhanced streaming API function (removed automatic language detection for AI responses)
   const sendMessageToAI = async (message: string, onChunk?: (chunk: string) => void): Promise<string> => {
     return new Promise((resolve, reject) => {
       try {
-        // Prepare messages array for streaming API
+        // Prepare messages array for streaming API with better formatting instructions
         const messages = [
           {
             role: "system",
             content: [
               {
                 type: "text", 
-                text: "You are a helpful assistant. The user is discussing a transcription of audio content. Format your responses with proper markdown when appropriate - use headings (# for main headings, ## for subheadings), bullet points, numbered lists, and emphasis where it enhances readability. Well-structured responses with clear headings are preferred."
+                text: `You are a helpful AI assistant specialized in analyzing and discussing audio transcriptions. 
+
+IMPORTANT FORMATTING INSTRUCTIONS:
+- Always format your responses using proper markdown structure
+- Use # for main headings and ## for subheadings  
+- Use ### for section headers and #### for subsections
+- Use **bold** for emphasis and *italic* for subtle emphasis
+- Use bullet points (•) and numbered lists for better organization
+- Use > for important quotes or key insights
+- Use code blocks with \`\`\` for any code or technical content
+- Structure your response with clear sections when appropriate
+- Add proper spacing between sections for better readability
+
+Always provide well-structured, comprehensive responses that are easy to read and understand. Make sure to use proper markdown formatting for all headings, lists, and emphasis.`
               }
             ]
           },
@@ -524,6 +616,50 @@ const TranscriptionPage: React.FC = () => {
         reject(new Error('Failed to get response from AI. Please try again.'));
       }
     });
+  };
+
+  // Simple language detection function
+  const detectLanguage = (text: string): string => {
+    if (!text) return 'English';
+    
+    // Simple language detection based on common patterns
+    const lowerText = text.toLowerCase();
+    
+    // Chinese characters
+    if (/[\u4e00-\u9fff]/.test(text)) return 'Chinese';
+    
+    // Japanese characters
+    if (/[\u3040-\u309f\u30a0-\u30ff]/.test(text)) return 'Japanese';
+    
+    // Korean characters
+    if (/[\uac00-\ud7af]/.test(text)) return 'Korean';
+    
+    // Spanish indicators
+    if (/\b(el|la|los|las|de|del|en|con|por|para|que|es|son|está|están|tiene|tienen|hacer|ser|estar)\b/.test(lowerText)) return 'Spanish';
+    
+    // French indicators
+    if (/\b(le|la|les|de|du|des|en|avec|pour|que|est|sont|avoir|être|faire|aller)\b/.test(lowerText)) return 'French';
+    
+    // German indicators
+    if (/\b(der|die|das|den|dem|des|ein|eine|einen|einem|einer|und|oder|aber|ist|sind|haben|sein|werden)\b/.test(lowerText)) return 'German';
+    
+    // Italian indicators
+    if (/\b(il|la|lo|gli|le|di|da|in|con|per|che|è|sono|ha|hanno|essere|avere|fare|andare)\b/.test(lowerText)) return 'Italian';
+    
+    // Portuguese indicators
+    if (/\b(o|a|os|as|de|da|do|em|com|para|que|é|são|tem|têm|ser|estar|ter|fazer|ir)\b/.test(lowerText)) return 'Portuguese';
+    
+    // Russian indicators (Cyrillic)
+    if (/[а-яё]/i.test(text)) return 'Russian';
+    
+    // Arabic indicators
+    if (/[\u0600-\u06ff]/.test(text)) return 'Arabic';
+    
+    // Hindi indicators (Devanagari)
+    if (/[\u0900-\u097f]/.test(text)) return 'Hindi';
+    
+    // Default to English
+    return 'English';
   };
 
   // Get state passed from the previous page
@@ -768,38 +904,7 @@ const TranscriptionPage: React.FC = () => {
     link.remove();
   };
 
-  // Function to handle quick actions with formatted responses
-  const handleQuickAction = async (action: 'keypoints' | 'summary' | 'translate') => {
-    if (!transcription || isChatProcessing[action]) return;
-    
-    setIsChatProcessing({...isChatProcessing, [action]: true});
-    
-    try {
-      let prompt = '';
-      switch(action) {
-        case 'keypoints':
-          prompt = `Extract the key points from this transcription. Format the response with a main heading "Key Points", and use bullet points for each key point. Group related points under appropriate subheadings if possible:\n\n${transcription}`;
-          break;
-        case 'summary':
-          prompt = `Provide a concise summary of this transcription. Format with a main heading "Summary", followed by an "Overview" section. Then include sections for "Main Topics", "Key Insights", and "Conclusion" as appropriate:\n\n${transcription}`;
-          break;
-        case 'translate':
-          prompt = `Translate this transcription to ${translationLanguage}. Maintain the structure of the original text as much as possible, using headings, paragraphs and formatting to enhance readability:\n\n${transcription}`;
-          break;
-      }
-      
-      // Using the streaming API to process the request
-      const result = await sendMessageToAI(prompt);
-      setChatResponses({...chatResponses, [action]: result});
-    } catch (error) {
-      console.error(`Error in ${action} quick action:`, error);
-      setChatResponses({...chatResponses, [action]: `Error: Could not process ${action} request.`});
-    } finally {
-      setIsChatProcessing({...isChatProcessing, [action]: false});
-    }
-  };
-
-  // Function to handle user chat messages
+  // Function to handle user chat messages with enhanced language support
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -853,12 +958,24 @@ const TranscriptionPage: React.FC = () => {
     };
 
     try {
-      // Build context with previous messages
-      const contextMessages = chatMessages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
-      const fullPrompt = contextMessages ? `${contextMessages}\nuser: ${currentInput}` : currentInput;
+      // Build context with transcription and previous messages
+      let contextPrompt = '';
+      
+      // Add transcription context if available
+      if (transcription) {
+        contextPrompt += `Context: Here is the transcription we're discussing:\n\n${transcription.substring(0, 2000)}${transcription.length > 2000 ? '...' : ''}\n\n`;
+      }
+      
+      // Add previous chat messages for context
+      const recentMessages = chatMessages.slice(-6).map(msg => `${msg.role}: ${msg.content}`).join('\n');
+      if (recentMessages) {
+        contextPrompt += `Previous conversation:\n${recentMessages}\n\n`;
+      }
+      
+      contextPrompt += `User question: ${currentInput}`;
       
       // Get streaming response
-      const fullResponse = await sendMessageToAI(fullPrompt, handleChunk);
+      const fullResponse = await sendMessageToAI(contextPrompt, handleChunk);
       
       // Finalize the streaming message
       setChatMessages(prev => prev.map(msg => 
@@ -1024,6 +1141,34 @@ const TranscriptionPage: React.FC = () => {
     }));
   };
 
+  // Convert words data to SRT format
+  const convertToSRT = (wordsData: any[], groupSize: number = 5) => {
+    if (!wordsData || wordsData.length === 0) return '';
+    
+    let srtContent = '';
+    for (let i = 0; i < wordsData.length; i += groupSize) {
+      const group = wordsData.slice(i, i + groupSize);
+      const startTime = group[0].start;
+      const endTime = group[group.length - 1].end;
+      const text = group.map(w => w.punctuated_word || w.word).join(' ');
+      
+      // Convert seconds to SRT time format (HH:MM:SS,mmm)
+      const formatSRTTime = (seconds: number) => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+        const ms = Math.floor((seconds % 1) * 1000);
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')},${ms.toString().padStart(3, '0')}`;
+      };
+      
+      srtContent += `${Math.floor(i / groupSize) + 1}\n`;
+      srtContent += `${formatSRTTime(startTime)} --> ${formatSRTTime(endTime)}\n`;
+      srtContent += `${text}\n\n`;
+    }
+    
+    return srtContent.trim();
+  };
+
   // Create paragraphs from word timings
   const createParagraphsFromWordsData = (wordsData: any[]) => {
     const allWords: WordTiming[] = processWordTimings(wordsData);
@@ -1117,6 +1262,18 @@ const TranscriptionPage: React.FC = () => {
     }
   }, [currentTime, wordTimings, paragraphs, activeParagraph]);
 
+  // Handle fullscreen changes (ESC key)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
   return (
     <div className={`min-h-screen bg-gradient-to-br ${
       theme === 'dark' 
@@ -1156,19 +1313,26 @@ const TranscriptionPage: React.FC = () => {
               <FiChevronLeft className="mr-1" /> Back
             </motion.button>
             
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/speech-to-text')}
-              className="px-3 md:px-4 py-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all flex items-center dark:text-gray-200 text-sm md:text-base"
-            >
-              <FiMic className="mr-1" /> Speech to Text
-            </motion.button>
+
             
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setIsFullscreen(!isFullscreen)}
+              onClick={() => {
+                if (!document.fullscreenElement) {
+                  document.documentElement.requestFullscreen().then(() => {
+                    setIsFullscreen(true);
+                  }).catch(err => {
+                    console.log('Error attempting to enable fullscreen:', err);
+                  });
+                } else {
+                  document.exitFullscreen().then(() => {
+                    setIsFullscreen(false);
+                  }).catch(err => {
+                    console.log('Error attempting to exit fullscreen:', err);
+                  });
+                }
+              }}
               className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all text-gray-700 dark:text-gray-200"
               title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
             >
@@ -1589,25 +1753,28 @@ const TranscriptionPage: React.FC = () => {
                             animate={{ opacity: 1, y: 0 }}
                             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                           >
-                            <div className={`max-w-[85%] flex ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                              {/* Avatar */}
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
+                            <div className={`max-w-[90%] flex ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                              {/* Enhanced Avatar */}
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md ${
                                 message.role === 'assistant' 
-                                  ? (theme === 'dark' ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white') 
-                                  : (theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700')
+                                  ? 'bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 text-white' 
+                                  : 'bg-gradient-to-br from-gray-600 to-gray-800 text-white'
                               } ${message.role === 'user' ? 'ml-3' : 'mr-3'}`}>
                                 {message.role === 'assistant' ? (
-                                  <FiCpu />
+                                  <FiCpu className="w-5 h-5" />
                                 ) : (
-                                  <FiUser />
+                                  <FiUser className="w-5 h-5" />
                                 )}
                               </div>
                               
-                              <div className={`rounded-2xl px-4 py-3 ${
+                              {/* Enhanced Message Bubble */}
+                              <div className={`rounded-2xl px-5 py-4 shadow-lg ${
                                 message.role === 'assistant' 
-                                  ? (theme === 'dark' ? 'bg-gray-800 border border-gray-700 text-gray-100' : 'bg-white border border-gray-200 shadow-sm text-gray-800') 
-                                  : (theme === 'dark' ? 'bg-gradient-to-r from-blue-800 to-purple-800 text-white' : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white')
-                              }`}>
+                                  ? (theme === 'dark' ? 'bg-gray-800 border border-gray-700 text-gray-100' : 'bg-white border border-gray-200 text-gray-800') 
+                                  : (theme === 'dark' ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white' : 'bg-gradient-to-br from-blue-500 to-purple-500 text-white')
+                              } max-w-none`}>
+                                
+                                {/* Message Content */}
                                 {message.role === 'assistant' ? (
                                   <div className={`prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
                                     {message.isStreaming ? (
@@ -1619,7 +1786,7 @@ const TranscriptionPage: React.FC = () => {
                                         >
                                           {preprocessContent(message.content)}
                                         </ReactMarkdown>
-                                        <span className="typing-cursor animate-pulse">▋</span>
+                                        <span className="typing-cursor animate-pulse ml-1 text-blue-500">▋</span>
                                       </div>
                                     ) : (
                                       <div>
@@ -1641,24 +1808,34 @@ const TranscriptionPage: React.FC = () => {
                                     )}
                                   </div>
                                 ) : (
-                                  <div className="whitespace-pre-wrap">{message.content}</div>
+                                  <div className="whitespace-pre-wrap text-white leading-relaxed">{message.content}</div>
                                 )}
                                 
-                                {/* Message footer */}
-                                <div className={`mt-2 flex items-center justify-between text-xs ${
+                                {/* Enhanced Message Footer */}
+                                <div className={`mt-3 pt-3 border-t ${
                                   message.role === 'assistant' 
-                                    ? (theme === 'dark' ? 'text-gray-500' : 'text-gray-500') 
-                                    : 'text-blue-200'
-                                }`}>
-                                  <span>{formatTimestamp(message.timestamp)}</span>
+                                    ? (theme === 'dark' ? 'border-gray-700' : 'border-gray-200') 
+                                    : 'border-white/20'
+                                } flex items-center justify-between text-xs`}>
+                                  <span className={`${
+                                    message.role === 'assistant' 
+                                      ? (theme === 'dark' ? 'text-gray-500' : 'text-gray-500') 
+                                      : 'text-white/70'
+                                  }`}>
+                                    {formatTimestamp(message.timestamp)}
+                                  </span>
                                   
                                   <div className="flex space-x-2">
                                     <button 
                                       onClick={() => navigator.clipboard.writeText(message.content)}
-                                      className={`p-1 rounded-full ${theme === 'dark' ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-                                      aria-label="Copy to clipboard"
+                                      className={`p-1.5 rounded-full transition-colors ${
+                                        message.role === 'assistant'
+                                          ? (theme === 'dark' ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700')
+                                          : 'hover:bg-white/20 text-white/70 hover:text-white'
+                                      }`}
+                                      title="Copy message"
                                     >
-                                      <FiCopy size={14} />
+                                      <FiCopy size={12} />
                                     </button>
                                     {message.role === 'assistant' && (
                                       <button 
@@ -1666,10 +1843,12 @@ const TranscriptionPage: React.FC = () => {
                                           const utterance = new SpeechSynthesisUtterance(message.content);
                                           window.speechSynthesis.speak(utterance);
                                         }}
-                                        className={`p-1 rounded-full ${theme === 'dark' ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-                                        aria-label="Speak message"
+                                        className={`p-1.5 rounded-full transition-colors ${
+                                          theme === 'dark' ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'
+                                        }`}
+                                        title="Speak message"
                                       >
-                                        <FiVolume2 size={14} />
+                                        <FiVolume2 size={12} />
                                       </button>
                                     )}
                                   </div>
@@ -1679,17 +1858,21 @@ const TranscriptionPage: React.FC = () => {
                           </motion.div>
                         ))}
                         
+                        {/* Enhanced typing indicator */}
                         {isAssistantTyping && (
                           <div className="flex justify-start">
-                            <div className="max-w-[85%] flex flex-row">
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-3 ${theme === 'dark' ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'}`}>
-                                <FiCpu />
+                            <div className="max-w-[90%] flex flex-row">
+                              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-3 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 text-white shadow-md">
+                                <FiCpu className="w-5 h-5" />
                               </div>
-                              <div className={`rounded-2xl px-6 py-4 ${theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm'}`}>
-                                <div className="flex space-x-2">
-                                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                              <div className={`rounded-2xl px-6 py-4 shadow-lg ${theme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}>
+                                <div className="flex items-center space-x-2">
+                                  <div className="flex space-x-1">
+                                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                  </div>
+                                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">AI is thinking...</span>
                                 </div>
                               </div>
                             </div>
@@ -1699,8 +1882,11 @@ const TranscriptionPage: React.FC = () => {
                     ) : (
                       !chatResponses.keypoints && !chatResponses.summary && !chatResponses.translate && (
                         <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-                          <FiMessageSquare className="w-12 h-12 mb-4" />
-                          <p>Start chatting or use the quick actions above</p>
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center mb-4">
+                            <FiMessageSquare className="w-8 h-8 text-white" />
+                          </div>
+                          <h3 className="text-lg font-semibold mb-2">Start a Conversation</h3>
+                          <p className="text-center max-w-md">Ask questions about the transcription or use the quick actions above to get started.</p>
                         </div>
                       )
                     )}
@@ -1746,83 +1932,124 @@ const TranscriptionPage: React.FC = () => {
                   animate={{ opacity: 1 }}
                   className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-200px)]"
                 >
-                  {/* Header */}
-                  <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Words Data (JSON)</h2>
-                    <div className="flex space-x-2">
-                      <button 
-                        onClick={() => {
-                          navigator.clipboard.writeText(JSON.stringify(wordsData, null, 2));
-                          alert('Words data copied to clipboard!');
-                        }}
-                        className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
-                        title="Copy JSON"
-                      >
-                        <FiCopy />
-                      </button>
-                      <button 
-                        onClick={() => {
-                          const dataStr = JSON.stringify(wordsData, null, 2);
-                          const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                          const url = URL.createObjectURL(dataBlob);
-                          const link = document.createElement('a');
-                          link.href = url;
-                          link.download = `words_data_${audioid}.json`;
-                          link.click();
-                          URL.revokeObjectURL(url);
-                        }}
-                        className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
-                        title="Download JSON"
-                      >
-                        <FiDownload />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* JSON Content */}
-                  <div className="flex-1 overflow-auto p-4">
-                    {wordsData && wordsData.length > 0 ? (
-                      <div className="relative">
+                  {wordsData && wordsData.length > 0 ? (
+                    <>
+                      {/* Header with Format Tabs */}
+                      <div className="border-b dark:border-gray-700">
+                        <div className="flex justify-between items-center p-4">
+                          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Words Data</h2>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => {
+                                const srtContent = convertToSRT(wordsData);
+                                navigator.clipboard.writeText(srtContent);
+                                alert('SRT format copied to clipboard!');
+                              }}
+                              className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                              title="Copy as SRT"
+                            >
+                              Copy SRT
+                            </button>
+                            <button 
+                              onClick={() => {
+                                const srtContent = convertToSRT(wordsData);
+                                const dataBlob = new Blob([srtContent], {type: 'text/plain'});
+                                const url = URL.createObjectURL(dataBlob);
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = `subtitles_${audioid}.srt`;
+                                link.click();
+                                URL.revokeObjectURL(url);
+                              }}
+                              className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                              title="Download SRT"
+                            >
+                              Download SRT
+                            </button>
+                            <button 
+                              onClick={() => {
+                                navigator.clipboard.writeText(JSON.stringify(wordsData, null, 2));
+                                alert('JSON data copied to clipboard!');
+                              }}
+                              className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                              title="Copy JSON"
+                            >
+                              <FiCopy />
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {/* Format selection tabs */}
+                        <div className="flex border-b dark:border-gray-700">
+                          <button 
+                            onClick={() => setActiveTab('wordsdata')}
+                            className={`px-4 py-2 text-sm font-medium transition-colors ${
+                              activeTab === 'wordsdata' 
+                                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' 
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                            }`}
+                          >
+                            SRT Format
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="flex-1 overflow-auto p-4">
                         {/* Statistics */}
-                        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
+                          <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Statistics</h3>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-600 dark:text-gray-400">Total Words:</span>
-                              <div className="font-bold text-gray-800 dark:text-gray-200">{wordsData.length}</div>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{wordsData.length}</div>
+                              <div className="text-gray-600 dark:text-gray-400">Total Words</div>
                             </div>
-                            <div>
-                              <span className="text-gray-600 dark:text-gray-400">Duration:</span>
-                              <div className="font-bold text-gray-800 dark:text-gray-200">{formatTime(duration)}</div>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{formatTime(duration)}</div>
+                              <div className="text-gray-600 dark:text-gray-400">Duration</div>
                             </div>
-                            <div>
-                              <span className="text-gray-600 dark:text-gray-400">Avg Word Length:</span>
-                              <div className="font-bold text-gray-800 dark:text-gray-200">
-                                {(wordsData.reduce((acc, word) => acc + word.word.length, 0) / wordsData.length).toFixed(1)} chars
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                                {(wordsData.reduce((acc, word) => acc + word.word.length, 0) / wordsData.length).toFixed(1)}
                               </div>
+                              <div className="text-gray-600 dark:text-gray-400">Avg Chars/Word</div>
                             </div>
-                            <div>
-                              <span className="text-gray-600 dark:text-gray-400">Words per Minute:</span>
-                              <div className="font-bold text-gray-800 dark:text-gray-200">
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                                 {duration > 0 ? Math.round((wordsData.length / duration) * 60) : 0}
                               </div>
+                              <div className="text-gray-600 dark:text-gray-400">Words/Minute</div>
                             </div>
                           </div>
                         </div>
                         
-                        {/* JSON Data */}
-                        <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg text-sm overflow-auto font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap mb-6">
-                          {JSON.stringify(wordsData, null, 2)}
-                        </pre>
+                        {/* SRT Format Display */}
+                        <div className="mb-6">
+                          <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">
+                            SRT Subtitles (5 words per subtitle)
+                          </h3>
+                          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 font-mono text-sm max-h-96 overflow-auto">
+                            <pre className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                              {convertToSRT(wordsData)}
+                            </pre>
+                          </div>
+                        </div>
                         
-                        {/* Interactive Word List */}
-                        <div className="mt-6">
-                          <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Interactive Word Timeline</h3>
-                          <div className="space-y-2 max-h-96 overflow-auto border dark:border-gray-600 rounded-lg">
+                        {/* Interactive Word Timeline */}
+                        <div>
+                          <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">
+                            Interactive Word Timeline
+                          </h3>
+                          <div className="grid gap-2 max-h-96 overflow-auto">
                             {wordsData.map((wordData, index) => (
-                              <div 
+                              <motion.div 
                                 key={index}
-                                className={`p-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 border-b dark:border-gray-700 transition-colors ${
-                                  activeWord === index ? 'bg-blue-100 dark:bg-blue-900/30' : ''
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className={`p-3 cursor-pointer rounded-lg border transition-all ${
+                                  activeWord === index 
+                                    ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600' 
+                                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:border-blue-200 dark:hover:border-blue-700'
                                 }`}
                                 onClick={() => {
                                   if (audioRef.current) {
@@ -1833,34 +2060,51 @@ const TranscriptionPage: React.FC = () => {
                               >
                                 <div className="flex justify-between items-center">
                                   <div className="flex items-center space-x-3">
-                                    <span className="text-gray-500 dark:text-gray-400 text-xs font-mono">
+                                    <span className="text-xs bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 px-2 py-1 rounded font-mono">
                                       #{index + 1}
                                     </span>
-                                    <span className="font-medium text-gray-800 dark:text-gray-200">
-                                      {wordData.word}
-                                    </span>
+                                    <div>
+                                      <span className="font-medium text-gray-800 dark:text-gray-200">
+                                        {wordData.punctuated_word || wordData.word}
+                                      </span>
+                                      {wordData.confidence && (
+                                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                                          Confidence: {(wordData.confidence * 100).toFixed(1)}%
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
-                                  <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                                    {formatTime(wordData.start)} - {formatTime(wordData.end)}
+                                  <div className="text-right">
+                                    <div className="text-xs text-blue-600 dark:text-blue-400 font-mono">
+                                      {formatTime(wordData.start)} → {formatTime(wordData.end)}
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                      {((wordData.end - wordData.start) * 1000).toFixed(0)}ms
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
+                              </motion.div>
                             ))}
                           </div>
                         </div>
                       </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
-                        <FiFileText size={48} className="mb-4" />
-                        <p className="text-lg font-medium mb-2">No Words Data Available</p>
-                        <p className="text-sm text-center">
-                          Words timing data is not available for this transcription. 
-                          This may happen if the transcription was processed with an older version 
-                          or if detailed timing information was not generated.
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                      <FiFileText size={64} className="mb-4 text-gray-300 dark:text-gray-600" />
+                      <h3 className="text-xl font-semibold mb-2">No Words Data Available</h3>
+                      <p className="text-sm text-center max-w-md">
+                        Detailed word timing data is not available for this transcription. 
+                        This feature is available for newer transcriptions with enhanced processing.
+                      </p>
+                      <button 
+                        onClick={() => setActiveTab('transcript')}
+                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                      >
+                        View Transcript Instead
+                      </button>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </div>

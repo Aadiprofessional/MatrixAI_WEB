@@ -1,47 +1,33 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FiSend, 
-  FiCpu, 
-  FiUser, 
-  FiChevronDown, 
-  FiX, 
-  FiCopy, 
-  FiRefreshCw,
-  FiDownload,
-  FiFile,
-  FiPlus,
-  FiClock,
-  FiMessageSquare,
-  FiLock,
-  FiMenu,
-  FiVolume,
-  FiVolume2,
-  FiPhone,
-  FiCreditCard,
-  FiSun,
-  FiMoon,
-  FiMic,
-  FiMicOff,
-  FiMusic,
-  FiSquare,
-  FiShare2
-} from 'react-icons/fi';
-import { Navbar, Sidebar, ProFeatureAlert } from '../components';
 import axios from 'axios';
+import OpenAI from 'openai';
+import { 
+  FiMessageSquare, FiSend, FiUser, FiCpu, FiChevronDown, FiPlus, FiClock, FiX,
+  FiCopy, FiShare2, FiVolume2, FiPause, FiPlay, FiDownload, FiUpload, FiImage,
+  FiMaximize, FiMinimize, FiSettings, FiChevronLeft, FiChevronRight, FiMoon, FiSun,
+  FiCreditCard, FiBookmark, FiStar, FiEdit, FiTrash2, FiCheck, FiRotateCcw, FiVolumeX,
+  FiMenu, FiHome, FiMic, FiFileText, FiVideo, FiZap, FiTrendingUp, FiTarget, FiSquare,
+  FiVolume, FiFile
+} from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import coinImage from '../assets/coin.png';
+import { useUser } from '../context/UserContext';
 import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import rehypeRaw from 'rehype-raw';
-import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
-import { useUser } from '../context/UserContext';
-import { useAuth } from '../context/AuthContext';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import 'katex/dist/katex.min.css';
+import { supabase } from '../supabaseClient';
+import { userService } from '../services/userService';
+import ProFeatureAlert from '../components/ProFeatureAlert';
+import ChargeModal from '../components/ChargeModal';
+import { useAlert } from '../context/AlertContext';
 import './ChatPage.css';
 
 
@@ -366,6 +352,7 @@ const preprocessContent = (content: string): string => {
 const ChatPage: React.FC = () => {
   const { userData, isPro } = useUser();
   const { user } = useAuth();
+  const { showSuccess, showError, showWarning } = useAlert();
   const navigate = useNavigate();
   const location = useLocation();
   const { chatId: routeChatId } = useParams<{ chatId: string }>();
@@ -406,17 +393,17 @@ const ChatPage: React.FC = () => {
   const [currentWordIndex, setCurrentWordIndex] = useState<{[key: number]: number}>({});
   const [wordChunks, setWordChunks] = useState<{[key: number]: string[][]}>({});
   const [showUserMenu, setShowUserMenu] = useState<boolean>(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(256); // 256px = 16rem (w-64)
-  const [isDesktop, setIsDesktop] = useState(false);
   const [isLoadingChats, setIsLoadingChats] = useState(true);
   const [chats, setChats] = useState<Chat[]>([]);
+  const [showChargeModal, setShowChargeModal] = useState(false);
+  const [coinsUsed, setCoinsUsed] = useState<{[key: number]: number}>({});
 
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch user chats from database
   const fetchUserChats = async () => {
@@ -767,11 +754,11 @@ const ChatPage: React.FC = () => {
       } else {
         // Fallback for browsers that don't support the Web Share API
         await navigator.clipboard.writeText(content);
-        alert('Message copied to clipboard!');
+        showSuccess('Message copied to clipboard!');
       }
     } catch (error) {
       console.error('Error sharing:', error);
-      alert('Failed to share message');
+              showError('Failed to share message');
     }
   };
 
@@ -827,8 +814,8 @@ const ChatPage: React.FC = () => {
 
   // Automatically scroll to bottom of messages
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
   }, [messages]);
 
@@ -1168,7 +1155,7 @@ const ChatPage: React.FC = () => {
           }
         } catch (error) {
           console.error('Error processing file:', error);
-          alert('Error uploading file. Please try again.');
+                      showError('Error uploading file. Please try again.');
           setIsLoading(false);
           return;
         }
@@ -1217,13 +1204,30 @@ const ChatPage: React.FC = () => {
         
         // Auto-scroll to bottom as content streams in
         setTimeout(() => {
-          if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+          if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
           }
         }, 50);
       };
 
       try {
+        // Deduct coins before making the API call
+        let coinsToDeduct = 1; // 1 coin for text message
+        if (imageUrl) {
+          coinsToDeduct = 2; // 2 coins for image message
+        }
+        
+        // Only deduct coins if user is authenticated
+        if (uid) {
+          try {
+            await userService.subtractCoins(uid, coinsToDeduct, imageUrl ? 'ai_chat_with_image' : 'ai_chat_message');
+          } catch (coinError) {
+            console.error('Error deducting coins:', coinError);
+            // If coin deduction fails, still continue but show warning
+            showWarning('Could not deduct coins. Please check your balance.');
+          }
+        }
+        
         // Get streaming response
         const fullResponse = await sendMessageToAI(
           userMessageContent + (imageUrl ? `\n\n[Image data: ${imageUrl}]` : ''), 
@@ -1237,6 +1241,11 @@ const ChatPage: React.FC = () => {
             ? { ...msg, content: fullResponse, isStreaming: false }
             : msg
         ));
+        
+        // Store coins used for this message (only if user is authenticated)
+        if (uid) {
+          setCoinsUsed(prev => ({ ...prev, [streamingMessageId]: coinsToDeduct }));
+        }
         
         // Save AI message to database
         await saveChatToDatabase(fullResponse, 'assistant');
@@ -1273,7 +1282,7 @@ const ChatPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error in message handling:', error);
-      alert('An error occurred while sending your message. Please try again.');
+              showError('An error occurred while sending your message. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -1414,13 +1423,13 @@ const ChatPage: React.FC = () => {
       
       // Check if it's an image
       if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
+        showWarning('Please select an image file');
         return;
       }
       
       // Check file size (limit to 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        alert('File too large. Please select a file smaller than 10MB');
+        showWarning('File too large. Please select a file smaller than 10MB');
         return;
       }
       
@@ -1473,7 +1482,7 @@ const ChatPage: React.FC = () => {
         console.error('Error sharing:', error);
         // Fallback
         navigator.clipboard.writeText(imageUrl);
-        alert('Image URL copied to clipboard!');
+        showSuccess('Image URL copied to clipboard!');
       }
     } else {
       // Fallback for browsers without share API
@@ -1807,38 +1816,6 @@ const ChatPage: React.FC = () => {
     return 'User';
   };
 
-  // Handle sidebar collapse state changes
-  const handleSidebarToggle = (collapsed: boolean) => {
-    setSidebarCollapsed(collapsed);
-    setSidebarWidth(collapsed ? 64 : 256); // 64px = 4rem (w-16), 256px = 16rem (w-64)
-  };
-
-  // Check if desktop on initial render and on resize
-  useEffect(() => {
-    const checkIfDesktop = () => {
-      setIsDesktop(window.innerWidth >= 768);
-    };
-    
-    // Initial check
-    checkIfDesktop();
-    
-    // Add resize listener
-    window.addEventListener('resize', checkIfDesktop);
-    
-    // Get initial sidebar state from the DOM if needed
-    const sidebarElement = document.querySelector('aside');
-    if (sidebarElement) {
-      const isCollapsed = sidebarElement.classList.contains('w-16');
-      setSidebarCollapsed(isCollapsed);
-      setSidebarWidth(isCollapsed ? 64 : 256);
-    }
-    
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', checkIfDesktop);
-    };
-  }, []);
-
   // Get role name from role ID
   const getRoleName = (roleId: string): string => {
     if (!roleId) return 'General Assistant';
@@ -1846,7 +1823,7 @@ const ChatPage: React.FC = () => {
     const role = roleOptions.find(r => r.id === roleId);
     return role ? role.name : 'General Assistant';
   };
-
+  
   // Modify renderChatHistoryItem to include role information
   const renderChatHistoryItem = (chat: {id: string, title: string, role: string, roleName?: string}, timeframe: string) => {
     const isSelected = chat.id === chatId;
@@ -1974,27 +1951,11 @@ const ChatPage: React.FC = () => {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Sidebar - always fixed on desktop, hidden on mobile when closed */}
-      <div className="md:block hidden">
-        <Sidebar onToggle={handleSidebarToggle} activeLink="/chat" />
-      </div>
-
-      {/* Mobile sidebar toggle button */}
-      <div className="md:hidden fixed top-3 left-3 z-[60]">
-        <button 
-          onClick={() => setShowChatHistory(!showChatHistory)}
-          className={`p-2 rounded-lg ${
-            darkMode 
-              ? 'bg-gray-800 text-white hover:bg-gray-700' 
-              : 'bg-white text-gray-800 hover:bg-gray-100'
-          } shadow-md`}
-          aria-label="Toggle mobile menu"
-        >
-          <FiMenu className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Mobile sidebar/chat history */}
+      {/* Remove duplicate sidebar - now handled by Layout */}
+      
+      {/* Mobile sidebar toggle button - Remove since Layout handles this */}
+      
+      {/* Mobile sidebar/chat history - Keep this as it's specific to chat */}
       {showChatHistory && (
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div 
@@ -2042,123 +2003,12 @@ const ChatPage: React.FC = () => {
         </div>
       )}
       
-      {/* Main content area with fixed navbar */}
-      <div className="flex-1 flex flex-col h-screen transition-all duration-300"
-          style={{ marginLeft: isDesktop ? `${sidebarWidth}px` : '0' }}>
-        {/* Fixed navbar */}
-        <div className={`${
-          darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'
-        } border-b w-full flex-none h-16 fixed top-0 right-0 z-40 transition-all duration-300`}
-        style={{ 
-          left: isDesktop ? `${sidebarWidth}px` : '0',
-          width: isDesktop ? `calc(100% - ${sidebarWidth}px)` : '100%'
-        }}>
-          <div className="h-full flex items-center justify-between px-4">
-            <div className="flex items-center">
-              {/* Brand Logo - Only visible on mobile */}
-              <div className="md:hidden flex items-center">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                  AI
-                </div>
-                {isPro && (
-                  <span className="ml-1 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5">
-                    PRO
-                  </span>
-                )}
-              </div>
-              
-              {/* Page title */}
-              <h1 className="text-lg font-semibold ml-4 md:ml-0">AI Chat</h1>
-            </div>
-
-            {/* Right Navigation */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              {/* User Coins */}
-              {userData && (
-                <div className={`hidden sm:flex items-center px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm ${
-                  darkMode 
-                    ? 'bg-amber-900/30 text-amber-300' 
-                    : 'bg-amber-100 text-amber-600'
-                }`}>
-                  <FiCreditCard className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
-                  <span className="font-medium">{userData.user_coins || 0}</span>
-                </div>
-              )}
-
-              {/* Dark Mode Toggle */}
-              <button 
-                onClick={toggleDarkMode}
-                className={`p-1.5 sm:p-2 rounded-lg ${
-                  darkMode 
-                    ? 'text-yellow-300 hover:bg-gray-700' 
-                    : 'text-gray-500 hover:bg-gray-100'
-                }`}
-                aria-label="Toggle dark mode"
-              >
-                {darkMode ? <FiSun className="w-4 h-4 sm:w-5 sm:h-5" /> : <FiMoon className="w-4 h-4 sm:w-5 sm:h-5" />}
-              </button>
-
-              {/* User Menu */}
-              <div className="relative">
-                <button 
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center"
-                >
-                  <span className="sr-only">Open user menu</span>
-                  {userData?.dp_url ? (
-                    <img 
-                      src={userData.dp_url} 
-                      alt={userData.name || 'User'} 
-                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border-2 border-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
-                    />
-                  ) : (
-                    <div className="relative w-7 h-7 sm:w-8 sm:h-8 overflow-hidden rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center">
-                      <span className="text-white font-medium">{getUserInitial()}</span>
-                    </div>
-                  )}
-                </button>
-
-                {/* User Menu Dropdown */}
-                {showUserMenu && (
-                  <div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg ring-1 focus:outline-none z-50 ${
-                    darkMode ? 'bg-gray-800 ring-gray-700' : 'bg-white ring-black ring-opacity-5'
-                  }`}>
-                    <div className={`py-3 px-4 text-sm border-b ${
-                      darkMode ? 'text-gray-200 border-gray-700' : 'text-gray-900 border-gray-200'
-                    }`}>
-                      <div className="font-medium">{getUserDisplayName()}</div>
-                      <div className={`truncate ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {userData?.email}
-                      </div>
-                      {userData?.user_plan && (
-                        <div className={`mt-1 px-2 py-0.5 text-xs rounded-full inline-block ${
-                          darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-600'
-                        }`}>
-                          {userData.user_plan} Plan
-                        </div>
-                      )}
-                    </div>
-                    <ul className="py-1 text-sm">
-                      <li>
-                        <Link to="/profile" className={`block py-2 px-4 ${
-                          darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                        }`}>Profile</Link>
-                      </li>
-                      <li>
-                        <Link to="/settings" className={`block py-2 px-4 ${
-                          darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                        }`}>Settings</Link>
-                      </li>
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Main content area with fixed navbar */}
-        <div className={`flex-1 flex flex-col overflow-hidden pt-16 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      {/* Main content area - Remove navbar and sidebar spacing */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Remove the fixed navbar since Layout handles it */}
+        
+        {/* Main content area */}
+        <div className={`flex-1 flex flex-col overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
           <div className="flex-1 overflow-hidden relative">
             {/* Show pro feature alert modal */}
             <AnimatePresence>
@@ -2169,6 +2019,19 @@ const ChatPage: React.FC = () => {
                 />
               )}
             </AnimatePresence>
+            
+            {/* Mobile menu button for chat history */}
+            <button 
+              onClick={() => setShowChatHistory(!showChatHistory)}
+              className={`md:hidden fixed top-20 left-4 z-[60] p-2 rounded-lg ${
+                darkMode 
+                  ? 'bg-gray-800 text-white hover:bg-gray-700' 
+                  : 'bg-white text-gray-800 hover:bg-gray-100'
+              } shadow-md`}
+              aria-label="Toggle chat history"
+            >
+              <FiMessageSquare className="w-5 h-5" />
+            </button>
             
             {/* Main chat container */}
             <div className="h-full max-w-6xl mx-auto px-4 pt-4 pb-0 flex flex-col">
@@ -2329,7 +2192,7 @@ const ChatPage: React.FC = () => {
                   </div>
                   
                   {/* Messages container with improved markdown */}
-                  <div className="flex-1 overflow-y-auto px-4 py-4">
+                  <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-4">
                     <div className="max-w-3xl mx-auto space-y-6">
                       {messages.map((message) => (
                         <motion.div
@@ -2402,6 +2265,24 @@ const ChatPage: React.FC = () => {
                                       />
                                     </div>
                                   )}
+                                </div>
+                              )}
+                              
+                              {/* Coin usage display for AI messages */}
+                              {message.role === 'assistant' && uid && coinsUsed[message.id] && (
+                                <div className={`mt-3 pt-2 border-t ${
+                                  darkMode ? 'border-gray-700' : 'border-gray-200'
+                                } flex items-center space-x-2`}>
+                                  <img 
+                                    src={coinImage} 
+                                    alt="Coin" 
+                                    className="w-4 h-4"
+                                  />
+                                  <span className={`text-xs ${
+                                    darkMode ? 'text-gray-400' : 'text-gray-500'
+                                  }`}>
+                                    {coinsUsed[message.id]} coin{coinsUsed[message.id] !== 1 ? 's' : ''} used
+                                  </span>
                                 </div>
                               )}
                               
@@ -2536,6 +2417,13 @@ const ChatPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Charge Modal */}
+      <ChargeModal
+        isOpen={showChargeModal}
+        onClose={() => setShowChargeModal(false)}
+        currentCoins={userData?.user_coins || 0}
+      />
     </div>
   );
 };

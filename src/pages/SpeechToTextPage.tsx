@@ -9,6 +9,7 @@ import {
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../supabaseClient';
 import { ProFeatureAlert } from '../components';
 
@@ -39,6 +40,7 @@ const SpeechToTextPage: React.FC = () => {
   const { userData, isPro } = useUser();
   const { user } = useAuth();
   const { theme, getThemeColors } = useTheme();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const colors = getThemeColors();
   
@@ -989,7 +991,7 @@ const SpeechToTextPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
           >
-            Speech to Text Converter
+            {t('transcription.title')}
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: -10 }}
@@ -997,7 +999,7 @@ const SpeechToTextPage: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="text-gray-500 dark:text-gray-400 text-lg max-w-2xl"
           >
-            Transform your audio files into accurate text transcriptions with AI-powered technology
+            {t('transcription.subtitle')}
           </motion.p>
           
           {!isPro && (
@@ -1008,13 +1010,13 @@ const SpeechToTextPage: React.FC = () => {
               className="mt-3 flex items-center text-sm text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded-md max-w-fit"
             >
               <FiMic className="mr-1.5" />
-              <span>{freeTranscriptionsLeft} free transcriptions left today</span>
+              <span>{freeTranscriptionsLeft} {freeTranscriptionsLeft === 1 ? t('transcription.freeLeft') || 'free transcription' : t('transcription.freeLeftPlural') || 'free transcriptions'} left today</span>
               {freeTranscriptionsLeft === 0 && (
                 <button 
                   onClick={() => setShowProAlert(true)}
                   className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
                 >
-                  Upgrade to Pro
+                                      {t('transcription.upgradeText') || 'Upgrade to Pro'}
                 </button>
               )}
             </motion.div>
