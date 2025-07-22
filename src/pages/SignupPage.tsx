@@ -209,11 +209,39 @@ const SignupPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-300 relative overflow-hidden`}>
-      {/* Background Elements */}
+      {/* Advanced AI Animated Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
-        <div className="absolute top-96 -right-24 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-24 left-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
+        {/* Single Color Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-purple-800/30 to-purple-900/30 animate-fadeIn"></div>
+        
+        {/* Enhanced Glowing Orbs */}
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-500/20 blur-2xl animate-float animate-pulse" style={{ animationDelay: '0s' }}></div>
+        <div className="absolute top-3/4 right-1/4 w-80 h-80 rounded-full bg-purple-600/20 blur-2xl animate-float animate-pulse" style={{ animationDelay: '-2s' }}></div>
+        <div className="absolute top-2/4 left-3/4 w-72 h-72 rounded-full bg-purple-700/20 blur-2xl animate-float animate-pulse" style={{ animationDelay: '-4s' }}></div>
+        <div className="absolute bottom-1/4 right-1/3 w-56 h-56 rounded-full bg-purple-400/20 blur-2xl animate-float animate-pulse" style={{ animationDelay: '-3s' }}></div>
+        <div className="absolute top-1/3 right-1/4 w-48 h-48 rounded-full bg-purple-300/20 blur-2xl animate-float animate-pulse" style={{ animationDelay: '-1s' }}></div>
+        
+        {/* Digital Particles */}
+        <div className="absolute inset-0 opacity-20">
+          {/* Enhanced Grid Pattern */}
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDUwIEwgNTAgNTAgTSA1MCAwIEwgNTAgNTAgTSAwIDAgTCA1MCAwIE0gMCAwIEwgMCA1MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIiAvPjwvc3ZnPg==')] animate-gridMove opacity-40"></div>
+          
+          {/* Enhanced Animated Dots */}
+          <div className="absolute top-1/3 left-1/5 w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
+          <div className="absolute top-2/3 left-3/5 w-3 h-3 bg-purple-500 rounded-full animate-pulse" style={{ animationDelay: '-1s' }}></div>
+          <div className="absolute top-1/5 left-4/5 w-3 h-3 bg-purple-600 rounded-full animate-pulse" style={{ animationDelay: '-2s' }}></div>
+          <div className="absolute top-4/5 left-1/5 w-3 h-3 bg-purple-300 rounded-full animate-pulse" style={{ animationDelay: '-3s' }}></div>
+          <div className="absolute top-2/5 left-2/5 w-3 h-3 bg-purple-700 rounded-full animate-pulse" style={{ animationDelay: '-0.5s' }}></div>
+          <div className="absolute top-3/5 left-4/5 w-3 h-3 bg-purple-800 rounded-full animate-pulse" style={{ animationDelay: '-2.5s' }}></div>
+        </div>
+        
+        {/* Enhanced Light Beams */}
+        <div className="absolute top-0 left-1/4 w-1 h-full bg-gradient-to-b from-transparent via-purple-400/40 to-transparent animate-verticalBeam"></div>
+        <div className="absolute top-0 left-2/3 w-1 h-full bg-gradient-to-b from-transparent via-purple-500/40 to-transparent animate-verticalBeam" style={{ animationDelay: '-2s' }}></div>
+        <div className="absolute top-0 left-1/2 w-1 h-full bg-gradient-to-b from-transparent via-purple-600/40 to-transparent animate-verticalBeam" style={{ animationDelay: '-3s' }}></div>
+        <div className="absolute top-1/3 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-400/40 to-transparent animate-beam"></div>
+        <div className="absolute top-2/3 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/40 to-transparent animate-beam" style={{ animationDelay: '-1.5s' }}></div>
+        <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-600/40 to-transparent animate-beam" style={{ animationDelay: '-2.5s' }}></div>
       </div>
       {/* Theme Toggle */}
       <button 

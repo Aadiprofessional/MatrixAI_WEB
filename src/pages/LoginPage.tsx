@@ -46,11 +46,61 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-300 relative overflow-hidden`}>
-      {/* Background Elements */}
+      {/* Advanced AI Animated Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
-        <div className="absolute top-96 -right-24 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-24 left-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
+        {/* Single Color Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-purple-800/30 to-purple-900/30 animate-fadeIn"></div>
+        
+        {/* Enhanced Animated floating elements */}
+        <div className="absolute inset-0">
+          {/* Enhanced Glowing orbs */}
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-float-slow"></div>
+          <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-600 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-float-medium"></div>
+          <div className="absolute top-2/3 left-1/3 w-72 h-72 bg-purple-700 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-float-fast"></div>
+          <div className="absolute bottom-1/4 right-1/3 w-56 h-56 bg-purple-400 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-float-medium"></div>
+          <div className="absolute top-1/3 right-1/4 w-48 h-48 bg-purple-300 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-float-slow"></div>
+          
+          {/* Enhanced Digital particles */}
+          <div className="absolute inset-0 opacity-40">
+            <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5"></path>
+                </pattern>
+                <radialGradient id="dotGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                  <stop offset="0%" stopColor="rgba(255,255,255,0.3)" />
+                  <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+                </radialGradient>
+              </defs>
+              <rect x="0" y="0" width="100%" height="100%" fill="url(#grid)" />
+              <g className="animate-pulse" style={{ animationDuration: '10s' }}>
+                <circle cx="20%" cy="30%" r="1.5" fill="url(#dotGradient)" />
+                <circle cx="80%" cy="40%" r="1.5" fill="url(#dotGradient)" />
+                <circle cx="50%" cy="70%" r="1.5" fill="url(#dotGradient)" />
+                <circle cx="30%" cy="60%" r="1.5" fill="url(#dotGradient)" />
+                <circle cx="70%" cy="20%" r="1.5" fill="url(#dotGradient)" />
+                <circle cx="40%" cy="50%" r="1.5" fill="url(#dotGradient)" />
+                <circle cx="60%" cy="80%" r="1.5" fill="url(#dotGradient)" />
+              </g>
+            </svg>
+          </div>
+          
+          {/* Enhanced Animated light beams */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-0 left-1/4 w-1 h-full bg-gradient-to-b from-purple-500/0 via-purple-500/40 to-purple-500/0 animate-light-beam" style={{ animationDuration: '8s' }}></div>
+            <div className="absolute top-0 left-2/4 w-1 h-full bg-gradient-to-b from-purple-600/0 via-purple-600/40 to-purple-600/0 animate-light-beam" style={{ animationDuration: '12s' }}></div>
+            <div className="absolute top-0 left-3/4 w-1 h-full bg-gradient-to-b from-purple-700/0 via-purple-700/40 to-purple-700/0 animate-light-beam" style={{ animationDuration: '10s' }}></div>
+            <div className="absolute top-0 left-1/3 w-1 h-full bg-gradient-to-b from-purple-400/0 via-purple-400/40 to-purple-400/0 animate-light-beam" style={{ animationDuration: '14s' }}></div>
+          </div>
+          
+          {/* Enhanced Horizontal light beams */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-1/4 left-0 w-full h-1 bg-gradient-to-r from-purple-500/0 via-purple-500/40 to-purple-500/0 animate-light-beam-horizontal" style={{ animationDuration: '15s' }}></div>
+            <div className="absolute top-2/4 left-0 w-full h-1 bg-gradient-to-r from-purple-600/0 via-purple-600/40 to-purple-600/0 animate-light-beam-horizontal" style={{ animationDuration: '20s' }}></div>
+            <div className="absolute top-3/4 left-0 w-full h-1 bg-gradient-to-r from-purple-700/0 via-purple-700/40 to-purple-700/0 animate-light-beam-horizontal" style={{ animationDuration: '18s' }}></div>
+            <div className="absolute top-1/3 left-0 w-full h-1 bg-gradient-to-r from-purple-400/0 via-purple-400/40 to-purple-400/0 animate-light-beam-horizontal" style={{ animationDuration: '22s' }}></div>
+          </div>
+        </div>
       </div>
       {/* Theme Toggle */}
       <button 

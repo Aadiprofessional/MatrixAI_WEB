@@ -172,11 +172,7 @@ const App: React.FC = () => {
               {/* Main site route */}
               <Route 
                 path="/" 
-                element={
-                  <Layout>
-                    <HomePage />
-                  </Layout>
-                } 
+                element={<HomePage />} 
               />
               
               {/* Auth routes */}

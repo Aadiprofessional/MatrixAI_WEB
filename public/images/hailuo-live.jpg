@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="gradient4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#34495e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7f8c8d;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="#34495e" opacity="0.8" />
+  <rect x="400" width="400" height="400" fill="#7f8c8d" opacity="0.8" />
+  <text x="400" y="200" font-family="Arial" font-size="24" fill="white" text-anchor="middle" dominant-baseline="middle">Sketch Animation</text>
+  
+  <!-- Left side: Static sketch of a train -->
+  <g opacity="0.8" stroke="white" stroke-width="2" fill="none">
+    <!-- Train body -->
+    <rect x="100" y="200" width="200" height="80" />
+    <!-- Train cabin -->
+    <rect x="250" y="150" width="50" height="50" />
+    <!-- Wheels -->
+    <circle cx="130" cy="280" r="20" />
+    <circle cx="180" cy="280" r="20" />
+    <circle cx="230" cy="280" r="20" />
+    <circle cx="280" cy="280" r="20" />
+    <!-- Smoke stack -->
+    <rect x="270" y="120" width="10" height="30" />
+    <!-- Smoke -->
+    <path d="M 275,120 Q 290,100 275,80 Q 260,60 275,40" />
+  </g>
+  
+  <!-- Right side: Animated sketch with motion lines -->
+  <g opacity="0.8" stroke="white" stroke-width="2" fill="none">
+    <!-- Train body with motion lines -->
+    <rect x="500" y="200" width="200" height="80" />
+    <path d="M 500,200 L 480,200 M 500,220 L 470,220 M 500,240 L 460,240 M 500,260 L 470,260 M 500,280 L 480,280" />
+    <!-- Train cabin -->
+    <rect x="650" y="150" width="50" height="50" />
+    <!-- Wheels with rotation lines -->
+    <circle cx="530" cy="280" r="20" />
+    <path d="M 530,280 L 530,260 M 530,280 L 550,280 M 530,280 L 530,300 M 530,280 L 510,280" />
+    <circle cx="580" cy="280" r="20" />
+    <path d="M 580,280 L 580,260 M 580,280 L 600,280 M 580,280 L 580,300 M 580,280 L 560,280" />
+    <circle cx="630" cy="280" r="20" />
+    <path d="M 630,280 L 630,260 M 630,280 L 650,280 M 630,280 L 630,300 M 630,280 L 610,280" />
+    <circle cx="680" cy="280" r="20" />
+    <path d="M 680,280 L 680,260 M 680,280 L 700,280 M 680,280 L 680,300 M 680,280 L 660,280" />
+    <!-- Smoke stack -->
+    <rect x="670" y="120" width="10" height="30" />
+    <!-- Animated smoke -->
+    <path d="M 675,120 Q 690,100 675,80 Q 660,60 675,40" />
+    <path d="M 675,120 Q 700,110 695,90 Q 690,70 705,50" />
+    <path d="M 675,120 Q 650,105 645,85 Q 640,65 635,45" />
+  </g>
+</svg>

@@ -223,6 +223,17 @@ export const zhCN = {
   'auth.emailVerification': '邮箱验证',
   'auth.verifyEmail': '请验证您的邮箱地址',
   'auth.resendVerification': '重新发送验证',
+  'auth.name': '姓名',
+  'auth.age': '年龄',
+  'auth.gender': '性别',
+  'auth.male': '男',
+  'auth.female': '女',
+  'auth.other': '其他',
+  'auth.preferNotToSay': '不愿透露',
+  'auth.referralCode': '推荐码',
+  'auth.createAccount': '创建账户',
+  'auth.creatingAccount': '正在创建账户...',
+  'auth.noAccount': '没有账户？',
   
   // Profile
   'profile.title': '个人资料',

@@ -223,6 +223,17 @@ export const zhTW = {
   'auth.emailVerification': '電子郵件驗證',
   'auth.verifyEmail': '請驗證您的電子郵件地址',
   'auth.resendVerification': '重新發送驗證',
+  'auth.name': '姓名',
+  'auth.age': '年齡',
+  'auth.gender': '性別',
+  'auth.male': '男',
+  'auth.female': '女',
+  'auth.other': '其他',
+  'auth.preferNotToSay': '不願透露',
+  'auth.referralCode': '推薦碼',
+  'auth.createAccount': '創建帳戶',
+  'auth.creatingAccount': '正在創建帳戶...',
+  'auth.noAccount': '沒有帳戶？',
   
   // Profile
   'profile.title': '個人資料',

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3498db;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f39c12;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="#3498db" opacity="0.8" />
+  <rect x="400" width="400" height="400" fill="#f39c12" opacity="0.8" />
+  <text x="400" y="200" font-family="Arial" font-size="24" fill="white" text-anchor="middle" dominant-baseline="middle">Rose Transformation</text>
+  <circle cx="200" cy="200" r="100" fill="white" opacity="0.2" />
+  <circle cx="600" cy="200" r="100" fill="white" opacity="0.2" />
+</svg>

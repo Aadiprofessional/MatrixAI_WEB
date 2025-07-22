@@ -1,0 +1,76 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4c1d95" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#7e22ce" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="studio-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#312e81" stop-opacity="0.7"/>
+    </linearGradient>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" />
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="400" fill="url(#bg-gradient)"/>
+  
+  <!-- Studio floor -->
+  <path d="M100,250 L700,250 L600,400 L200,400 Z" fill="url(#studio-gradient)"/>
+  
+  <!-- Studio lights -->
+  <circle cx="200" cy="100" r="30" fill="#fbbf24" opacity="0.8" filter="url(#blur)"/>
+  <circle cx="600" cy="100" r="30" fill="#fbbf24" opacity="0.8" filter="url(#blur)"/>
+  <circle cx="400" cy="80" r="20" fill="#fbbf24" opacity="0.6" filter="url(#blur)"/>
+  
+  <!-- Camera operator silhouette -->
+  <g transform="translate(400, 300)">
+    <!-- Head -->
+    <circle cx="0" cy="-50" r="15" fill="#1e293b"/>
+    
+    <!-- Body -->
+    <rect x="-10" y="-35" width="20" height="40" fill="#1e293b"/>
+    
+    <!-- Arms -->
+    <line x1="-10" y1="-25" x2="-40" y2="-15" stroke="#1e293b" stroke-width="8" stroke-linecap="round"/>
+    <line x1="10" y1="-25" x2="40" y2="-15" stroke="#1e293b" stroke-width="8" stroke-linecap="round"/>
+    
+    <!-- Legs -->
+    <line x1="-5" y1="5" x2="-15" y2="45" stroke="#1e293b" stroke-width="10" stroke-linecap="round"/>
+    <line x1="5" y1="5" x2="15" y2="45" stroke="#1e293b" stroke-width="10" stroke-linecap="round"/>
+    
+    <!-- Camera -->
+    <rect x="-30" y="-20" width="60" height="30" fill="#475569" rx="5"/>
+    <rect x="30" y="-15" width="20" height="20" fill="#475569" rx="2"/>
+    <circle cx="-10" cy="-5" r="5" fill="#94a3b8"/>
+    <circle cx="10" cy="-5" r="8" fill="#0f172a"/>
+  </g>
+  
+  <!-- Subject silhouette -->
+  <g transform="translate(250, 320)">
+    <!-- Head -->
+    <circle cx="0" cy="-50" r="15" fill="#1e293b"/>
+    
+    <!-- Body -->
+    <rect x="-15" y="-35" width="30" height="45" fill="#1e293b"/>
+    
+    <!-- Arms -->
+    <line x1="-15" y1="-25" x2="-40" y2="-15" stroke="#1e293b" stroke-width="8" stroke-linecap="round"/>
+    <line x1="15" y1="-25" x2="40" y2="-15" stroke="#1e293b" stroke-width="8" stroke-linecap="round"/>
+    
+    <!-- Legs -->
+    <line x1="-10" y1="10" x2="-20" y2="50" stroke="#1e293b" stroke-width="10" stroke-linecap="round"/>
+    <line x1="10" y1="10" x2="20" y2="50" stroke="#1e293b" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Light stand -->
+  <line x1="600" y1="100" x2="600" y2="250" stroke="#64748b" stroke-width="5"/>
+  <line x1="200" y1="100" x2="200" y2="250" stroke="#64748b" stroke-width="5"/>
+  <line x1="580" y1="250" x2="620" y2="250" stroke="#64748b" stroke-width="3"/>
+  <line x1="180" y1="250" x2="220" y2="250" stroke="#64748b" stroke-width="3"/>
+  
+  <!-- Overlay texture -->
+  <rect width="800" height="400" fill="#000000" opacity="0.2"/>
+</svg>

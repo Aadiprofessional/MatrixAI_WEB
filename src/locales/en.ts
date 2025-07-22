@@ -223,6 +223,17 @@ export const en = {
   'auth.emailVerification': 'Email Verification',
   'auth.verifyEmail': 'Please verify your email address',
   'auth.resendVerification': 'Resend Verification',
+  'auth.name': 'Name',
+  'auth.age': 'Age',
+  'auth.gender': 'Gender',
+  'auth.male': 'Male',
+  'auth.female': 'Female',
+  'auth.other': 'Other',
+  'auth.preferNotToSay': 'Prefer not to say',
+  'auth.referralCode': 'Referral Code',
+  'auth.createAccount': 'Create Account',
+  'auth.creatingAccount': 'Creating Account...',
+  'auth.noAccount': 'Don\'t have an account?',
   
   // Profile
   'profile.title': 'Profile',
