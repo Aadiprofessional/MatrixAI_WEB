@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { Layout } from '../components';
+import { userService } from '../services/userService';
 import { 
   FiCreditCard, 
   FiArrowDown, 
@@ -16,58 +16,76 @@ import {
   FiCornerLeftUp,
   FiCornerRightUp,
   FiCheckCircle,
-  FiXCircle
+  FiXCircle,
+  FiMessageSquare,
+  FiVideo,
+  FiFileText,
+  FiImage,
+  FiMic
 } from 'react-icons/fi';
 
 interface Transaction {
-  id: string;
-  amount: number;
-  type: string;
-  description: string;
-  time: string;
+  id: number;
+  uid: string;
+  transaction_name: string;
+  coin_amount: number;
+  remaining_coins: number;
+  description?: string;
+  created_at?: string;
+  time?: string;
   status: string;
 }
 
 // Mock transactions data for development or when API is unavailable
 const mockTransactions: Transaction[] = [
   {
-    id: '1',
-    amount: 500,
-    type: 'Credit',
+    id: 1,
+    uid: '',
+    transaction_name: 'Credit',
+    coin_amount: 500,
+    remaining_coins: 500,
     description: 'Welcome bonus',
-    time: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
+    created_at: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
     status: 'Completed'
   },
   {
-    id: '2',
-    amount: 50,
-    type: 'Debit',
+    id: 2,
+    uid: '',
+    transaction_name: 'Content generation',
+    coin_amount: -50,
+    remaining_coins: 450,
     description: 'Content generation',
-    time: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+    created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
     status: 'Completed'
   },
   {
-    id: '3',
-    amount: 100,
-    type: 'Credit',
+    id: 3,
+    uid: '',
+    transaction_name: 'Credit',
+    coin_amount: 100,
+    remaining_coins: 550,
     description: 'Referral reward',
-    time: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
+    created_at: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
     status: 'Completed'
   },
   {
-    id: '4',
-    amount: 200,
-    type: 'Subscription',
+    id: 4,
+    uid: '',
+    transaction_name: 'Subscription',
+    coin_amount: -200,
+    remaining_coins: 350,
     description: 'Monthly subscription',
-    time: new Date(Date.now() - 86400000 * 15).toISOString(), // 15 days ago
+    created_at: new Date(Date.now() - 86400000 * 15).toISOString(), // 15 days ago
     status: 'Completed'
   },
   {
-    id: '5',
-    amount: 75,
-    type: 'Refund',
+    id: 5,
+    uid: '',
+    transaction_name: 'Refund',
+    coin_amount: 75,
+    remaining_coins: 425,
     description: 'Service credit',
-    time: new Date(Date.now() - 86400000 * 3).toISOString(), // 3 days ago
+    created_at: new Date(Date.now() - 86400000 * 3).toISOString(), // 3 days ago
     status: 'Completed'
   }
 ];
@@ -90,26 +108,19 @@ const TransactionsPage: React.FC = () => {
     setError(null);
     
     try {
-      // Attempt to fetch from API
-      const response = await axios.post('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/AllTransactions', {
-        uid: user.id
-      });
+      // Use userService to fetch transactions
+      const response = await userService.getAllTransactions(user.id);
       
-      if (response.data.success) {
-        // Map API response to match our Transaction interface
-        const formattedTransactions = response.data.data.map((item: any) => ({
-          id: item.id?.toString() || '',
-          amount: item.coin_amount || 0,
-          // Set a default type based on transaction_name
-          type: 'Debit', // Default type
-          description: item.transaction_name || '',
-          time: item.time || new Date().toISOString(),
-          status: item.status || 'Completed'
-        }));
+      if (response.success) {
+        // Sort transactions by time (newest first)
+        const sortedTransactions = response.data.sort((a: Transaction, b: Transaction) => {
+          const timeA = a.created_at ? new Date(a.created_at).getTime() : 
+                      (a.time ? new Date(a.time).getTime() : 0);
+          const timeB = b.created_at ? new Date(b.created_at).getTime() : 
+                      (b.time ? new Date(b.time).getTime() : 0);
+          return timeB - timeA;
+        });
         
-        const sortedTransactions = formattedTransactions.sort((a: any, b: any) => 
-          new Date(b.time).getTime() - new Date(a.time).getTime()
-        );
         setTransactions(sortedTransactions);
       }
     } catch (error: any) {
@@ -135,8 +146,10 @@ const TransactionsPage: React.FC = () => {
     fetchTransactions();
   };
 
-  // Format date
-  const formatDate = (dateString: string) => {
+  // Format date string
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'N/A';
+    
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -150,49 +163,89 @@ const TransactionsPage: React.FC = () => {
   // Get filtered transactions
   const getFilteredTransactions = () => {
     if (filter === 'all') return transactions;
-    return transactions.filter(t => t.type.toLowerCase() === filter.toLowerCase());
+    
+    return transactions.filter(t => {
+      const transactionName = t.transaction_name?.toLowerCase() || '';
+      
+      switch(filter.toLowerCase()) {
+        case 'credit':
+          return t.coin_amount > 0;
+        case 'debit':
+          return t.coin_amount < 0;
+        case 'subscription':
+          return transactionName.includes('subscription');
+        case 'refund':
+          return transactionName.includes('refund');
+        default:
+          return true;
+      }
+    });
   };
 
   const filteredTransactions = getFilteredTransactions();
 
-  // Get transaction icon based on type
-  const getTransactionIcon = (type: string | undefined) => {
-    if (!type) return <FiCreditCard className="h-4 w-4" />;
+  // Get transaction icon based on transaction name and amount
+  const getTransactionIcon = (transaction: Transaction) => {
+    const name = transaction.transaction_name?.toLowerCase() || '';
+    const amount = transaction.coin_amount;
     
-    switch (type.toLowerCase()) {
-      case 'credit':
-        return <FiArrowDown className="h-4 w-4" />;
-      case 'debit':
-        return <FiArrowUp className="h-4 w-4" />;
-      case 'subscription':
+    if (amount > 0) {
+      return <FiArrowDown className="h-4 w-4" />; // Credit
+    } else if (amount < 0) {
+      if (name.includes('subscription')) {
         return <FiClock className="h-4 w-4" />;
-      case 'refund':
-        return <FiCornerLeftUp className="h-4 w-4" />;
-      case 'withdrawal':
-        return <FiCornerRightUp className="h-4 w-4" />;
-      default:
-        return <FiCreditCard className="h-4 w-4" />;
+      } else if (name.includes('chat') || name.includes('message')) {
+        return <FiMessageSquare className="h-4 w-4" />;
+      } else if (name.includes('video')) {
+        return <FiVideo className="h-4 w-4" />;
+      } else if (name.includes('content generation') || name.includes('content_generation')) {
+        return <FiFileText className="h-4 w-4" />;
+      } else if (name.includes('image')) {
+        return <FiImage className="h-4 w-4" />;
+      } else if (name.includes('audio') || name.includes('transcription')) {
+        return <FiMic className="h-4 w-4" />;
+      } else {
+        return <FiArrowUp className="h-4 w-4" />; // Generic debit
+      }
+    } else if (name.includes('refund')) {
+      return <FiCornerLeftUp className="h-4 w-4" />;
+    } else if (name.includes('withdrawal')) {
+      return <FiCornerRightUp className="h-4 w-4" />;
     }
+    
+    return <FiCreditCard className="h-4 w-4" />; // Default
   };
 
-  // Get transaction color based on type
-  const getTransactionColor = (type: string | undefined) => {
-    if (!type) return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600';
+  // Get transaction color based on transaction name and amount
+  const getTransactionColor = (transaction: Transaction) => {
+    const name = transaction.transaction_name?.toLowerCase() || '';
+    const amount = transaction.coin_amount;
     
-    switch (type.toLowerCase()) {
-      case 'credit':
-        return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-600';
-      case 'debit':
-        return darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-600';
-      case 'subscription':
+    if (amount > 0) {
+      return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-600'; // Credit
+    } else if (amount < 0) {
+      if (name.includes('subscription')) {
         return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600';
-      case 'refund':
+      } else if (name.includes('chat') || name.includes('message')) {
+        return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600';
+      } else if (name.includes('video')) {
         return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600';
-      case 'withdrawal':
-        return darkMode ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-600';
-      default:
-        return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600';
+      } else if (name.includes('content generation') || name.includes('content_generation')) {
+        return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-600';
+      } else if (name.includes('image')) {
+        return darkMode ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-600';
+      } else if (name.includes('audio') || name.includes('transcription')) {
+        return darkMode ? 'bg-orange-900/50 text-orange-300' : 'bg-orange-100 text-orange-600';
+      } else {
+        return darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-600'; // Generic debit
+      }
+    } else if (name.includes('refund')) {
+      return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600';
+    } else if (name.includes('withdrawal')) {
+      return darkMode ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-600';
     }
+    
+    return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'; // Default
   };
 
   // Get status icon and color
@@ -417,7 +470,10 @@ const TransactionsPage: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-700">
                     {filteredTransactions.map((transaction, index) => {
-                      const statusInfo = getStatusInfo(transaction.status);
+                      // Default status to 'completed' if not provided
+                      const status = transaction.status || 'completed';
+                      const statusInfo = getStatusInfo(status);
+                      const transactionType = transaction.coin_amount > 0 ? 'Credit' : 'Debit';
                       
                       return (
                         <tr 
@@ -426,38 +482,43 @@ const TransactionsPage: React.FC = () => {
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className={`p-2 rounded-lg mr-3 ${getTransactionColor(transaction.type)}`}>
-                                {getTransactionIcon(transaction.type)}
+                              <div className={`p-2 rounded-lg mr-3 ${getTransactionColor(transaction)}`}>
+                                {getTransactionIcon(transaction)}
                               </div>
                               <div className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                {transaction.type}
+                                {transaction.transaction_name ? 
+                                  transaction.transaction_name.split('_').map(word => 
+                                    word.charAt(0).toUpperCase() + word.slice(1)
+                                  ).join(' ') : 
+                                  transactionType
+                                }
                               </div>
                             </div>
                           </td>
                           <td className={`px-6 py-4 whitespace-nowrap text-sm ${
                             darkMode ? 'text-gray-300' : 'text-gray-600'
                           }`}>
-                            {transaction.description}
+                            {transaction.description || transaction.transaction_name || 'Transaction'}
                           </td>
                           <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                            transaction.type && (transaction.type.toLowerCase() === 'credit' || transaction.type.toLowerCase() === 'refund')
+                            transaction.coin_amount > 0
                               ? (darkMode ? 'text-green-400' : 'text-green-600')
                               : (darkMode ? 'text-red-400' : 'text-red-600')
                           }`}>
-                            {transaction.type && (transaction.type.toLowerCase() === 'credit' || transaction.type.toLowerCase() === 'refund')
-                              ? `+${transaction.amount}`
-                              : `-${transaction.amount}`
+                            {transaction.coin_amount > 0
+                              ? `+${transaction.coin_amount}`
+                              : transaction.coin_amount
                             } Coins
                           </td>
                           <td className={`px-6 py-4 whitespace-nowrap text-sm ${
                             darkMode ? 'text-gray-300' : 'text-gray-600'
                           }`}>
-                            {formatDate(transaction.time)}
+                            {formatDate(transaction.created_at || transaction.time)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <div className={`flex items-center ${statusInfo.color}`}>
                               {statusInfo.icon}
-                              <span className="ml-1.5">{transaction.status}</span>
+                              <span className="ml-1.5">{status}</span>
                             </div>
                           </td>
                         </tr>
@@ -474,4 +535,4 @@ const TransactionsPage: React.FC = () => {
   );
 };
 
-export default TransactionsPage; 
+export default TransactionsPage;

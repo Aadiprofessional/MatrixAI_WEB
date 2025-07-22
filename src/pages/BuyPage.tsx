@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { ThemeContext } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { FiInfo, FiArrowLeft, FiCheck, FiPackage } from 'react-icons/fi';
 import { Layout } from '../components';
 import { motion } from 'framer-motion';
@@ -20,6 +21,7 @@ const BuyPage: React.FC = () => {
   const { darkMode } = useContext(ThemeContext);
   const { user } = useAuth();
   const { userData } = useUser();
+  const { t } = useLanguage();
   
   // Always set plan to Addon since this is specifically for addon purchases
   const uid = user?.id;
@@ -62,10 +64,10 @@ const BuyPage: React.FC = () => {
 
   const getPlanDetails = () => {
     return {
-      title: 'Addon Pack',
-      coins: '550 coins',
-      duration: 'Until end of month',
-      expiry: 'Coins will expire at end of the current month',
+      title: t('payment.addon_pack') || 'Addon Pack',
+      coins: t('payment.addon_coins', { count: 550 }) || '550 coins',
+      duration: t('payment.until_month_end') || 'Until end of month',
+      expiry: t('payment.coins_expire_month_end') || 'Coins will expire at end of the current month',
       price: price
     };
   };
@@ -170,7 +172,7 @@ const BuyPage: React.FC = () => {
             <FiArrowLeft className={`w-5 h-5 ${darkMode ? 'text-white' : 'text-gray-700'}`} />
           </button>
           <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Buy Additional Coins
+            {t('payment.buy_additional_coins') || 'Buy Additional Coins'}
           </h1>
         </div>
         
@@ -191,10 +193,10 @@ const BuyPage: React.FC = () => {
             </div>
             <div>
               <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Addon Pack
+                {t('payment.addon_pack') || 'Addon Pack'}
               </h3>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Expires at month end
+                {t('payment.expires_month_end') || 'Expires at month end'}
               </p>
             </div>
           </div>
@@ -226,7 +228,7 @@ const BuyPage: React.FC = () => {
           </div>
 
           <p className={`mb-5 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            These coins will be added to your existing balance and expire at the end of this month.
+            {t('payment.coins_added_expire') || 'These coins will be added to your existing balance and expire at the end of this month.'}
           </p>
         </motion.div>
 
@@ -234,7 +236,7 @@ const BuyPage: React.FC = () => {
         <div className={`rounded-xl overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'} mb-8`}>
           <div className="p-6">
             <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Apply Coupon
+              {t('payment.apply_coupon') || 'Apply Coupon'}
             </h2>
             
             <div className="flex mb-4">
@@ -242,7 +244,7 @@ const BuyPage: React.FC = () => {
                 type="text"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
-                placeholder="Enter coupon code"
+                placeholder={t('payment.enter_coupon') || "Enter coupon code"}
                 className={`flex-grow p-2.5 rounded-l-lg border-r-0 ${
                   darkMode 
                     ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
@@ -259,7 +261,7 @@ const BuyPage: React.FC = () => {
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >
-                Apply
+                {t('payment.apply') || 'Apply'}
               </button>
             </div>
             
@@ -267,13 +269,13 @@ const BuyPage: React.FC = () => {
               <div className={`flex justify-between items-center p-3 mb-4 rounded-lg bg-green-100 border border-green-200 text-green-800`}>
                 <div className="flex items-center">
                   <FiCheck className="w-5 h-5 mr-2" />
-                  <span>Coupon "{appliedCoupon.coupon_name}" applied successfully!</span>
+                  <span>{t('payment.coupon_applied_success', {coupon: appliedCoupon.coupon_name}) || `Coupon "${appliedCoupon.coupon_name}" applied successfully!`}</span>
                 </div>
                 <button
                   onClick={removeCoupon}
                   className="text-sm text-green-700 hover:text-green-900 underline"
                 >
-                  Remove
+                  {t('payment.remove') || 'Remove'}
                 </button>
               </div>
             )}
@@ -282,7 +284,7 @@ const BuyPage: React.FC = () => {
             {suggestedCoupons.length > 0 && (
               <div>
                 <h3 className={`text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Available Coupons for You
+                  {t('payment.available_coupons') || 'Available Coupons for You'}
                 </h3>
                 <div className="space-y-2">
                   {suggestedCoupons.map((coupon, index) => (
@@ -305,7 +307,7 @@ const BuyPage: React.FC = () => {
                           ? removeCoupon() 
                           : applyCoupon(coupon)}
                       >
-                        {appliedCoupon && appliedCoupon.coupon_name === coupon.coupon_name ? 'Applied' : 'Apply'}
+                        {appliedCoupon && appliedCoupon.coupon_name === coupon.coupon_name ? (t('payment.applied') || 'Applied') : (t('payment.apply') || 'Apply')}
                       </button>
                     </div>
                   ))}
@@ -318,7 +320,7 @@ const BuyPage: React.FC = () => {
         {/* Price Section */}
         <div className={`rounded-xl p-6 mb-8 ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <div className="flex justify-between items-center mb-3">
-            <div className={`text-base ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Original Price</div>
+            <div className={`text-base ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('payment.original_price') || 'Original Price'}</div>
             <div className={`text-base ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               {originalPrice} HKD
             </div>
@@ -326,7 +328,7 @@ const BuyPage: React.FC = () => {
           
           {discount > 0 && (
             <div className="flex justify-between items-center mb-3">
-              <div className={`text-base ${darkMode ? 'text-green-400' : 'text-green-600'}`}>Discount</div>
+              <div className={`text-base ${darkMode ? 'text-green-400' : 'text-green-600'}`}>{t('payment.discount') || 'Discount'}</div>
               <div className={`text-base ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
                 -{discount}%
               </div>
@@ -334,7 +336,7 @@ const BuyPage: React.FC = () => {
           )}
           
           <div className="flex justify-between items-center pt-3 border-t border-dashed mt-3 mb-6">
-            <div className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Total Price</div>
+            <div className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('payment.total') || 'Total Price'}</div>
             <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               {finalPrice} HKD
             </div>
@@ -345,7 +347,7 @@ const BuyPage: React.FC = () => {
             disabled={processing}
             className="w-full py-3 rounded-lg bg-gradient-to-r from-purple-500 to-blue-600 text-white font-medium hover:opacity-90 transition-opacity flex justify-center items-center"
           >
-            {processing ? 'Processing...' : 'Proceed to Payment'}
+            {processing ? (t('payment.processing') || 'Processing...') : (t('payment.proceed_to_payment') || 'Proceed to Payment')}
           </button>
         </div>
       </div>
@@ -353,4 +355,4 @@ const BuyPage: React.FC = () => {
   );
 };
 
-export default BuyPage; 
+export default BuyPage;

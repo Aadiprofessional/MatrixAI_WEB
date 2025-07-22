@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiGlobe, FiChevronDown } from 'react-icons/fi';
+import { FiGlobe, FiChevronDown, FiCheck } from 'react-icons/fi';
 import { useLanguage, Language } from '../context/LanguageContext';
 import { useContext } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
@@ -9,15 +9,21 @@ const LanguageSelector: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
   const { darkMode } = useContext(ThemeContext);
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedLang, setSelectedLang] = useState<Language>(language);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Update selected language when context language changes
+  useEffect(() => {
+    setSelectedLang(language);
+  }, [language]);
+
   const languages = [
-    { code: 'en' as Language, name: 'English', flag: '🇺🇸' },
-    { code: 'zh-CN' as Language, name: '简体中文', flag: '🇨🇳' },
-    { code: 'zh-TW' as Language, name: '繁體中文', flag: '🇹🇼' }
+    { code: 'en' as Language, name: 'English' },
+    { code: 'zh-CN' as Language, name: '简体中文' },
+    { code: 'zh-TW' as Language, name: '繁體中文' }
   ];
 
-  const currentLanguage = languages.find(lang => lang.code === language) || languages[0];
+  const currentLanguage = languages.find(lang => lang.code === selectedLang) || languages[0];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -31,9 +37,27 @@ const LanguageSelector: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Handle ESC key to close dropdown
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+    return () => document.removeEventListener('keydown', handleEscKey);
+  }, [isOpen]);
+
   const handleLanguageChange = (langCode: Language) => {
+    console.log('Language changed to:', langCode);
+    setSelectedLang(langCode);
     setLanguage(langCode);
     setIsOpen(false);
+    
+    // Force reload the page to ensure all components update
+    // This is a fallback in case context updates aren't propagating
+    window.location.reload();
   };
 
   return (
@@ -47,9 +71,12 @@ const LanguageSelector: React.FC = () => {
             ? 'bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700'
             : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 shadow-sm'
         }`}
+        aria-label="Select language"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
       >
         <FiGlobe className="w-4 h-4" />
-        <span className="text-sm font-medium">{currentLanguage.flag}</span>
+      
         <span className="text-sm hidden sm:block">{currentLanguage.name}</span>
         <FiChevronDown 
           className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
@@ -68,12 +95,15 @@ const LanguageSelector: React.FC = () => {
                 ? 'bg-gray-800 border-gray-700'
                 : 'bg-white border-gray-200'
             }`}
+            role="menu"
+            aria-orientation="vertical"
+            aria-labelledby="language-menu"
           >
             <div className="py-2">
               <div className={`px-3 py-2 text-xs font-semibold uppercase tracking-wide ${
                 darkMode ? 'text-gray-400' : 'text-gray-500'
               }`}>
-                {t('language.select')}
+                {t('language.select') || 'Select Language'}
               </div>
               {languages.map((lang) => (
                 <motion.button
@@ -81,7 +111,7 @@ const LanguageSelector: React.FC = () => {
                   whileHover={{ backgroundColor: darkMode ? '#374151' : '#f3f4f6' }}
                   onClick={() => handleLanguageChange(lang.code)}
                   className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${
-                    language === lang.code
+                    selectedLang === lang.code
                       ? darkMode
                         ? 'bg-blue-900/50 text-blue-400'
                         : 'bg-blue-50 text-blue-600'
@@ -89,17 +119,20 @@ const LanguageSelector: React.FC = () => {
                         ? 'text-gray-200 hover:text-white'
                         : 'text-gray-700 hover:text-gray-900'
                   }`}
+                  role="menuitem"
                 >
-                  <span className="text-lg">{lang.flag}</span>
+         
                   <span className="text-sm font-medium">{lang.name}</span>
-                  {language === lang.code && (
+                  {selectedLang === lang.code && (
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className={`ml-auto w-2 h-2 rounded-full ${
-                        darkMode ? 'bg-blue-400' : 'bg-blue-600'
-                      }`}
-                    />
+                      className="ml-auto"
+                    >
+                      <FiCheck className={`w-4 h-4 ${
+                        darkMode ? 'text-blue-400' : 'text-blue-600'
+                      }`} />
+                    </motion.div>
                   )}
                 </motion.button>
               ))}
@@ -111,4 +144,4 @@ const LanguageSelector: React.FC = () => {
   );
 };
 
-export default LanguageSelector; 
+export default LanguageSelector;

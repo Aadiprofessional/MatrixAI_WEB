@@ -148,4 +148,42 @@ export const updateUserProfile = async (userId: string, userData: any) => {
     console.error('Error updating user profile:', error);
     throw error;
   }
-}; 
+};
+
+// ===== Storage functions =====
+
+// Upload file to Supabase storage
+export const uploadImageToStorage = async (file: File, userId: string) => {
+  try {
+    // Create a unique file name
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+    const filePath = `user-uploads/${fileName}`;
+    
+    // Upload the file
+    const { data, error } = await supabase.storage
+      .from('user-uploads')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('user-uploads')
+      .getPublicUrl(filePath);
+    
+    return {
+      fileName,
+      filePath,
+      publicUrl
+    };
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    throw error;
+  }
+};

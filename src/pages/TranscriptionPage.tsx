@@ -3,6 +3,8 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import OpenAI from 'openai';
+import { userService } from '../services/userService';
+import { supabase } from '../supabaseClient';
 import { 
   FiPlay, FiPause, FiDownload, FiCopy, FiShare2, 
   FiChevronLeft, FiChevronRight, FiRefreshCw, FiLoader,
@@ -708,13 +710,39 @@ Always provide well-structured, comprehensive responses that are easy to read an
   // Toggle translation for all paragraphs
   const toggleTranslation = async () => {
     if (!isTranslationEnabled) {
-      // Enable translation and translate all paragraphs
-      setIsTranslationEnabled(true);
-      setTranslations(new Array(paragraphs.length).fill(''));
+      // Check if user is logged in
+      if (!user) {
+        // Redirect to login page
+        navigate('/login', { state: { from: location } });
+        return;
+      }
       
-      // Translate all paragraphs
-      for (let i = 0; i < paragraphs.length; i++) {
-        await handleTranslateParagraph(i);
+      try {
+        // Deduct 1 coin for translation
+        const response = await userService.subtractCoins(uid, 1, 'transcription_translation');
+        
+        if (!response.success) {
+          // Show warning if coin deduction failed
+          alert('Failed to deduct coins. Please try again.');
+          return;
+        }
+        
+        // Enable translation and translate all paragraphs
+        setIsTranslationEnabled(true);
+        setTranslations(new Array(paragraphs.length).fill(''));
+        
+        // Translate all paragraphs
+        for (let i = 0; i < paragraphs.length; i++) {
+          await handleTranslateParagraph(i);
+        }
+      } catch (error: any) {
+        // Check if error is due to insufficient coins
+        if (error.message && error.message.includes('insufficient')) {
+          alert('You don\'t have enough coins. Please purchase more coins to use this feature.');
+        } else {
+          console.error('Error during translation:', error);
+          alert('An error occurred during translation. Please try again.');
+        }
       }
     } else {
       // Disable translation
@@ -910,6 +938,28 @@ Always provide well-structured, comprehensive responses that are easy to read an
     
     if (!chatInput.trim() || isAssistantTyping) return;
     
+    // Check if user is logged in
+    if (!user) {
+      // Redirect to login page
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+    
+    // Deduct coins for chat
+    try {
+      // Deduct 1 coin for chat
+      const coinResponse = await userService.subtractCoins(uid, 1, 'transcription_chat');
+      
+      if (!coinResponse.success) {
+        alert('Failed to deduct coins. Please try again.');
+        return;
+      }
+    } catch (error) {
+      console.error('Error deducting coins:', error);
+      alert('Failed to deduct coins. You may have insufficient balance.');
+      return;
+    }
+    
     // Add user message to chat
     const userMessage: ChatMessage = {
       role: 'user',
@@ -922,6 +972,9 @@ Always provide well-structured, comprehensive responses that are easy to read an
     const currentInput = chatInput.trim();
     setChatInput(''); // Clear input immediately
     setIsAssistantTyping(true);
+    
+    // Save user message to database
+    await saveChatToDatabase(currentInput, 'user');
     
     // Create a streaming assistant message that will be updated in real-time
     const streamingMessageId = Date.now() + 1;
@@ -984,6 +1037,9 @@ Always provide well-structured, comprehensive responses that are easy to read an
           : msg
       ));
       
+      // Save assistant response to database
+      await saveChatToDatabase(fullResponse, 'assistant');
+      
     } catch (error) {
       console.error('Error in chat:', error);
       
@@ -1003,6 +1059,115 @@ Always provide well-structured, comprehensive responses that are easy to read an
   };
   
   // Function to reset chat
+  // Function to save chat to database
+  const saveChatToDatabase = async (messageContent: string, role: 'user' | 'assistant') => {
+    try {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user?.id || !audioid) {
+        console.log('No authenticated user or audioid, skipping database save');
+        return;
+      }
+      
+      const userId = session.user.id;
+      const timestamp = new Date().toISOString();
+      
+      // Check if this chat exists in the database
+      const { data: existingChat, error: chatError } = await supabase
+        .from('transcription_chats')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('audio_id', audioid)
+        .single();
+      
+      if (chatError && chatError.code !== 'PGRST116') { // PGRST116 is "not found" error
+        console.error('Error checking chat existence:', chatError);
+      }
+      
+      // New message object for database storage
+      const newMessage = {
+        sender: role, // 'user' or 'assistant'
+        text: messageContent,
+        timestamp: timestamp
+      };
+      
+      console.log('Saving message to database:', {
+        role,
+        contentLength: messageContent.length,
+        audioid
+      });
+      
+      if (existingChat) {
+        // Update existing chat
+        // Ensure messages is an array
+        const existingMessages = Array.isArray(existingChat.messages) ? existingChat.messages : [];
+        
+        // Limit to 50 messages to prevent database size issues
+        const updatedMessages = [...existingMessages, newMessage].slice(-50);
+        
+        const { error: updateError } = await supabase
+          .from('transcription_chats')
+          .update({
+            messages: updatedMessages,
+            updated_at: timestamp
+          })
+          .eq('user_id', userId)
+          .eq('audio_id', audioid);
+        
+        if (updateError) {
+          console.error('Error updating chat:', updateError);
+          
+          // If error is related to size, try with fewer messages
+          if (updateError.message && updateError.message.includes('size')) {
+            console.log('Trying with fewer messages due to size constraint');
+            
+            // Try again with only 10 most recent messages
+            const reducedMessages = [...existingMessages, newMessage].slice(-10);
+            
+            const { error: retryError } = await supabase
+              .from('transcription_chats')
+              .update({
+                messages: reducedMessages,
+                updated_at: timestamp
+              })
+              .eq('user_id', userId)
+              .eq('audio_id', audioid);
+            
+            if (retryError) {
+              console.error('Error on retry with reduced messages:', retryError);
+            } else {
+              console.log('Successfully saved reduced chat history');
+            }
+          }
+        } else {
+          console.log('Successfully updated chat history');
+        }
+      } else {
+        // Create new chat
+        const newChat = {
+          user_id: userId,
+          audio_id: audioid,
+          messages: [newMessage],
+          created_at: timestamp,
+          updated_at: timestamp
+        };
+        
+        const { error: insertError } = await supabase
+          .from('transcription_chats')
+          .insert(newChat);
+        
+        if (insertError) {
+          console.error('Error creating new chat:', insertError);
+        } else {
+          console.log('Successfully created new chat history');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving to database:', error);
+    }
+  };
+  
   const resetChat = () => {
     if (chatMessages.length > 0 && window.confirm('Are you sure you want to clear the chat history?')) {
       setChatMessages([]);
@@ -1207,10 +1372,60 @@ Always provide well-structured, comprehensive responses that are easy to read an
     return { paragraphs, words: allWords };
   };
 
-  // Fetch transcription data
+  // Function to load chat history from database
+  const loadChatFromDatabase = async () => {
+    try {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user?.id || !audioid) {
+        console.log('No authenticated user or audioid, skipping chat history load');
+        return;
+      }
+      
+      const userId = session.user.id;
+      
+      // Check if this chat exists in the database
+      const { data: existingChat, error: chatError } = await supabase
+        .from('transcription_chats')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('audio_id', audioid)
+        .single();
+      
+      if (chatError && chatError.code !== 'PGRST116') { // PGRST116 is the error code for no rows returned
+        console.error('Error fetching chat history:', chatError);
+        return;
+      }
+      
+      if (existingChat && existingChat.messages && Array.isArray(existingChat.messages)) {
+        // Convert database message format to ChatMessage format
+        const formattedMessages: ChatMessage[] = existingChat.messages.map((msg: any) => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.text,
+          timestamp: new Date(msg.timestamp).getTime(),
+          id: Math.random() // Generate a random ID for each message
+        }));
+        
+        // Set chat messages from database
+        setChatMessages(formattedMessages);
+        console.log('Chat history loaded from database:', formattedMessages.length, 'messages');
+        
+        // If there are messages, automatically switch to the chat tab
+        if (formattedMessages.length > 0) {
+          setActiveTab('chat');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    }
+  };
+
+  // Fetch transcription data and chat history
   useEffect(() => {
     if (uid && audioid) {
       fetchAudioMetadata(uid, audioid);
+      loadChatFromDatabase(); // Load chat history
     } else if (locationState?.transcription && locationState?.audio_url) {
       // Use data passed from the previous page if available
       setTranscription(locationState.transcription);
@@ -2406,4 +2621,4 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(styleElement);
 }
 
-export default TranscriptionPage; 
+export default TranscriptionPage;

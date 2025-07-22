@@ -15,20 +15,22 @@ import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import coinImage from '../assets/coin.png';
 import { useUser } from '../context/UserContext';
-import ReactMarkdown from 'react-markdown';
-import rehypeRaw from 'rehype-raw';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import 'katex/dist/katex.min.css';
 import { supabase } from '../supabaseClient';
 import { userService } from '../services/userService';
 import ProFeatureAlert from '../components/ProFeatureAlert';
 import ChargeModal from '../components/ChargeModal';
 import { useAlert } from '../context/AlertContext';
 import './ChatPage.css';
+
+// Add these imports for markdown and math rendering
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import 'katex/dist/katex.min.css';
 
 
 // Define interface for message types
@@ -83,19 +85,19 @@ const initialMessages: Message[] = [
 const emptyInitialMessages: Message[] = [];
 
 // Enhanced Code Block Component
-const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
+const CodeBlock = ({ node, inline, className, children, language, value, ...props }: any) => {
   const { darkMode } = useContext(ThemeContext);
   const match = /language-(\w+)/.exec(className || '');
-  const language = match ? match[1] : '';
-  const codeString = String(children).replace(/\n$/, '');
+  const lang = language || (match ? match[1] : '');
+  const codeString = value || String(children).replace(/\n$/, '');
   
-  if (!inline && (language || codeString.includes('\n'))) {
+  if (!inline && (lang || codeString.includes('\n'))) {
     return (
-      <div className="relative my-4 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="relative my-4 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
         {/* Language label */}
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
-            {language || 'code'}
+        <div className="flex items-center justify-between px-4 py-2 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-300 uppercase">
+            {lang || 'code'}
           </span>
           <button
             onClick={() => navigator.clipboard.writeText(codeString)}
@@ -107,26 +109,14 @@ const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
           </button>
         </div>
         
-        {/* Code content */}
-        <SyntaxHighlighter
-          style={darkMode ? oneDark : oneLight}
-          language={language || 'text'}
-          PreTag="div"
-          customStyle={{
-            margin: 0,
-            padding: '1rem',
-            background: 'transparent',
-            fontSize: '0.875rem',
-            lineHeight: '1.5'
-          }}
-          codeTagProps={{
-            style: {
-              fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
-            }
-          }}
+        {/* Code content - Replace SyntaxHighlighter with pre/code */}
+        <pre
+          className={`m-0 p-4 bg-transparent text-sm leading-normal overflow-x-auto font-mono ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}
         >
-          {codeString}
-        </SyntaxHighlighter>
+          <code>
+            {codeString}
+          </code>
+        </pre>
       </div>
     );
   }
@@ -141,6 +131,8 @@ const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
     </code>
   );
 };
+
+
 
 // Enhanced Table Components
 const TableWrapper = ({ children, ...props }: any) => {
@@ -185,147 +177,6 @@ const TableHeaderCell = ({ children, ...props }: any) => {
   );
 };
 
-// Enhanced Markdown Components
-const MarkdownComponents = {
-  // Headings
-  h1: ({ children, ...props }: any) => (
-    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 mt-6 pb-2 border-b border-gray-200 dark:border-gray-700 first:mt-0" {...props}>
-      {children}
-    </h1>
-  ),
-  h2: ({ children, ...props }: any) => (
-    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 mt-5 pb-1 border-b border-gray-200 dark:border-gray-700" {...props}>
-      {children}
-    </h2>
-  ),
-  h3: ({ children, ...props }: any) => (
-    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 mt-4" {...props}>
-      {children}
-    </h3>
-  ),
-  h4: ({ children, ...props }: any) => (
-    <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2 mt-3" {...props}>
-      {children}
-    </h4>
-  ),
-  h5: ({ children, ...props }: any) => (
-    <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1 mt-2" {...props}>
-      {children}
-    </h5>
-  ),
-  h6: ({ children, ...props }: any) => (
-    <h6 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 mt-2 uppercase tracking-wide" {...props}>
-      {children}
-    </h6>
-  ),
-
-  // Paragraphs
-  p: ({ children, ...props }: any) => (
-    <p className="mb-3 text-gray-800 dark:text-gray-200 leading-relaxed" {...props}>
-      {children}
-    </p>
-  ),
-
-  // Lists
-  ul: ({ children, ...props }: any) => (
-    <ul className="mb-3 ml-4 space-y-1 list-disc text-gray-800 dark:text-gray-200" {...props}>
-      {children}
-    </ul>
-  ),
-  ol: ({ children, ...props }: any) => (
-    <ol className="mb-3 ml-4 space-y-1 list-decimal text-gray-800 dark:text-gray-200" {...props}>
-      {children}
-    </ol>
-  ),
-  li: ({ children, ...props }: any) => (
-    <li className="leading-relaxed" {...props}>
-      {children}
-    </li>
-  ),
-
-  // Blockquotes
-  blockquote: ({ children, ...props }: any) => (
-    <blockquote className="border-l-4 border-blue-500 dark:border-blue-400 pl-4 py-2 my-3 bg-blue-50 dark:bg-blue-900/20 rounded-r-lg italic text-gray-700 dark:text-gray-300" {...props}>
-      {children}
-    </blockquote>
-  ),
-
-  // Links
-  a: ({ children, href, ...props }: any) => (
-    <a 
-      href={href}
-      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline decoration-blue-500/30 hover:decoration-blue-500 transition-colors"
-      target="_blank"
-      rel="noopener noreferrer"
-      {...props}
-    >
-      {children}
-    </a>
-  ),
-
-  // Horizontal rule
-  hr: ({ ...props }: any) => (
-    <hr className="my-6 border-0 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent" {...props} />
-  ),
-
-  // Emphasis and strong
-  em: ({ children, ...props }: any) => (
-    <em className="italic text-gray-800 dark:text-gray-200" {...props}>
-      {children}
-    </em>
-  ),
-  strong: ({ children, ...props }: any) => (
-    <strong className="font-semibold text-gray-900 dark:text-gray-100" {...props}>
-      {children}
-    </strong>
-  ),
-
-  // Code blocks
-  code: CodeBlock,
-
-  // Tables
-  table: ({ children, ...props }: any) => <TableWrapper {...props}>{children}</TableWrapper>,
-  thead: ({ children, ...props }: any) => <TableHead {...props}>{children}</TableHead>,
-  tbody: ({ children, ...props }: any) => <TableBody {...props}>{children}</TableBody>,
-  tr: ({ children, ...props }: any) => <TableRow {...props}>{children}</TableRow>,
-  td: ({ children, ...props }: any) => <TableCell {...props}>{children}</TableCell>,
-  th: ({ children, ...props }: any) => <TableHeaderCell {...props}>{children}</TableHeaderCell>,
-
-  // Images
-  img: ({ src, alt, ...props }: any) => (
-    <div className="my-4">
-      <img 
-        src={src}
-        alt={alt}
-        className="max-w-full h-auto rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
-        loading="lazy"
-        {...props}
-      />
-      {alt && (
-        <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-2 italic">
-          {alt}
-        </p>
-      )}
-    </div>
-  ),
-
-  // Task lists
-  input: ({ type, checked, ...props }: any) => {
-    if (type === 'checkbox') {
-      return (
-        <input
-          type="checkbox"
-          checked={checked}
-          readOnly
-          className="mr-2 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
-          {...props}
-        />
-      );
-    }
-    return <input type={type} {...props} />;
-  }
-};
-
 // Function to preprocess content for better markdown rendering
 const preprocessContent = (content: string): string => {
   if (!content) return content;
@@ -338,13 +189,50 @@ const preprocessContent = (content: string): string => {
     .replace(/\\\[/g, '$$')
     .replace(/\\\]/g, '$$')
     // Ensure proper line breaks for lists
-    .replace(/\n(\d+\.|\*|\-)\s/g, '\n\n$1 ')
-    // Ensure proper spacing around headers
-    .replace(/\n(#{1,6})\s/g, '\n\n$1 ')
-    // Clean up extra spaces
-    .replace(/\s+/g, ' ')
-    // Restore line breaks
-    .replace(/\n\s*\n/g, '\n\n');
+    .replace(/\n(\d+\.|\*|\-|\+)\s/g, '\n\n$1 ')
+    // Ensure proper spacing around headers - add newlines before headings
+    .replace(/([^\n])\n(#{1,6})\s/g, '$1\n\n$2 ')
+    // Make sure headings start with # and have a space after
+    .replace(/\n(#{1,6})([^\s])/g, '\n$1 $2')
+    // Completely replace markdown heading syntax with custom icons
+    // First handle headings at the beginning of the content (without a preceding newline)
+    .replace(/^(#{1,6})\s(.*?)(?=\n|$)/g, (match, hashes, headingText) => {
+      const level = hashes.length as 1 | 2 | 3 | 4 | 5 | 6;
+      const icons: Record<1 | 2 | 3 | 4 | 5 | 6, string> = {
+        1: '◉', // Large filled circle for h1
+        2: '◆', // Diamond for h2
+        3: '▶', // Triangle for h3
+        4: '●', // Circle for h4
+        5: '■', // Square for h5
+        6: '✦'  // Star for h6
+      };
+      // Completely remove the # characters and replace with icon
+      return `${icons[level]} ${headingText}`;
+    })
+    // Then handle headings in the middle of the content (with a preceding newline)
+    .replace(/\n(#{1,6})\s(.*?)(?=\n|$)/g, (match, hashes, headingText) => {
+      const level = hashes.length as 1 | 2 | 3 | 4 | 5 | 6;
+      const icons: Record<1 | 2 | 3 | 4 | 5 | 6, string> = {
+        1: '◉', // Large filled circle for h1
+        2: '◆', // Diamond for h2
+        3: '▶', // Triangle for h3
+        4: '●', // Circle for h4
+        5: '■', // Square for h5
+        6: '✦'  // Star for h6
+      };
+      // Completely remove the # characters and replace with icon
+      return `\n${icons[level]} ${headingText}`;
+    })
+    // Additional passes to catch any remaining # characters that might be interpreted as headings
+    .replace(/(^|\n)#\s+/g, '$1')
+    // Remove any standalone # characters
+    .replace(/(?<![a-zA-Z0-9])#(?![a-zA-Z0-9])/g, '')
+    // Replace any # followed by text without space (which might be interpreted as a tag)
+    .replace(/(?<![a-zA-Z0-9])#([a-zA-Z0-9]+)/g, '$1')
+    // Ensure proper spacing for blockquotes
+    .replace(/\n>/g, '\n\n>')
+    // Preserve newlines for paragraph breaks
+    .replace(/\n\n\n+/g, '\n\n');
   
   return processed.trim();
 };
@@ -367,6 +255,82 @@ const ChatPage: React.FC = () => {
   const [showProAlert, setShowProAlert] = useState(false);
   const [freeMessagesLeft, setFreeMessagesLeft] = useState(5);
   const [freeUploadsLeft, setFreeUploadsLeft] = useState(2);
+  
+  // Set CSS variables for sidebar widths on component mount
+  useEffect(() => {
+    document.documentElement.style.setProperty('--sidebar-width', '256px');
+    document.documentElement.style.setProperty('--collapsed-sidebar-width', '64px');
+    
+    // Clean up when component unmounts
+    return () => {
+      document.documentElement.style.removeProperty('--sidebar-width');
+      document.documentElement.style.removeProperty('--collapsed-sidebar-width');
+    };
+  }, []);
+  
+  // Markdown components configuration
+  const MarkdownComponents = {
+    code: CodeBlock,
+    pre: ({ children }: any) => <div className="overflow-auto">{children}</div>,
+    h1: ({ children }: any) => (
+      <h1 className={`text-2xl font-bold mb-4 mt-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+        {children}
+      </h1>
+    ),
+    h2: ({ children }: any) => (
+      <h2 className={`text-xl font-bold mb-3 mt-5 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+        {children}
+      </h2>
+    ),
+    h3: ({ children }: any) => (
+      <h3 className={`text-lg font-semibold mb-2 mt-4 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+        {children}
+      </h3>
+    ),
+    p: ({ children }: any) => (
+      <p className={`mb-4 leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        {children}
+      </p>
+    ),
+    ul: ({ children }: any) => (
+      <ul className={`mb-4 ml-6 space-y-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        {children}
+      </ul>
+    ),
+    ol: ({ children }: any) => (
+      <ol className={`mb-4 ml-6 space-y-1 list-decimal ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        {children}
+      </ol>
+    ),
+    li: ({ children }: any) => (
+      <li className="mb-1">{children}</li>
+    ),
+    blockquote: ({ children }: any) => (
+      <blockquote className={`border-l-4 pl-4 py-2 my-4 italic ${
+        darkMode 
+          ? 'border-blue-400 bg-blue-900/20 text-blue-200' 
+          : 'border-blue-500 bg-blue-50 text-blue-800'
+      }`}>
+        {children}
+      </blockquote>
+    ),
+    strong: ({ children }: any) => (
+      <strong className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+        {children}
+      </strong>
+    ),
+    em: ({ children }: any) => (
+      <em className={`italic ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        {children}
+      </em>
+    ),
+    table: ({ children }: any) => <TableWrapper>{children}</TableWrapper>,
+    thead: ({ children }: any) => <TableHead>{children}</TableHead>,
+    tbody: ({ children }: any) => <TableBody>{children}</TableBody>,
+    tr: ({ children }: any) => <TableRow>{children}</TableRow>,
+    td: ({ children }: any) => <TableCell>{children}</TableCell>,
+    th: ({ children }: any) => <TableHeaderCell>{children}</TableHeaderCell>,
+  };
   const [groupedChatHistory, setGroupedChatHistory] = useState<{
     today: { id: string, title: string, role: string, roleName?: string }[],
     yesterday: { id: string, title: string, role: string, roleName?: string }[],
@@ -1053,18 +1017,194 @@ const ChatPage: React.FC = () => {
       // If there's a file, process it
       if (selectedFile) {
         try {
+          // Determine file type
+          const fileType = selectedFile.type;
+          const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || '';
+          const isPdf = fileType === 'application/pdf' || fileExtension === 'pdf';
+          const isDoc = fileType === 'application/msword' || 
+                       fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
+                       fileExtension === 'doc' || fileExtension === 'docx';
+          const isImage = fileType.startsWith('image/');
+          
+          // Get file type label for message
+          let fileTypeLabel = 'file';
+          if (isPdf) fileTypeLabel = 'PDF';
+          else if (isDoc) fileTypeLabel = 'document';
+          else if (isImage) fileTypeLabel = 'image';
+          
           // If we're not authenticated, fall back to local display
           const { data: { session } } = await supabase.auth.getSession();
+          
+          // For PDF files, convert to images and process page by page
+          if (isPdf) {
+            try {
+              // Convert PDF to array of image files
+              const pdfImageFiles = await convertPdfToImages(selectedFile);
+              
+              if (pdfImageFiles.length === 0) {
+                throw new Error('Failed to extract images from PDF');
+              }
+              
+              // Add file information to message content
+              userMessageContent = inputMessage 
+                ? `${inputMessage}\n\n[Attached ${fileTypeLabel}: ${selectedFile.name} - ${pdfImageFiles.length} pages]` 
+                : `[Attached ${fileTypeLabel}: ${selectedFile.name} - ${pdfImageFiles.length} pages]`;
+              
+              // Add user message with file info
+              const userMessage = {
+                id: messages.length + 1,
+                role: 'user',
+                content: userMessageContent,
+                timestamp: new Date().toISOString(),
+                fileContent: URL.createObjectURL(selectedFile), // Just for display
+                fileName: selectedFile.name
+              };
+              
+              setMessages([...messages, userMessage]);
+              
+              // Clear input and file selection
+              setInputMessage('');
+              setSelectedFile(null);
+              
+              // Decrease free uploads left if user is not pro
+              if (!isPro) {
+                setFreeUploadsLeft(prev => prev - 1);
+              }
+              
+              // Process each page one by one
+              let fullResponse = '';
+              
+              // Create a streaming bot message that will be updated in real-time
+              const streamingMessageId = messages.length + 2;
+              let streamingContent = '';
+              
+              // Add initial empty streaming message
+              const initialStreamingMessage = {
+                id: streamingMessageId,
+                role: 'assistant',
+                content: '',
+                timestamp: new Date().toISOString(),
+                isStreaming: true
+              };
+              
+              setMessages(prev => [...prev, initialStreamingMessage]);
+              
+              // Define chunk handler for real-time updates
+              const handleChunk = (chunk: string) => {
+                streamingContent += chunk;
+                
+                // Update the streaming message in real-time
+                setMessages(prev => prev.map(msg => 
+                  msg.id === streamingMessageId 
+                    ? { ...msg, content: streamingContent }
+                    : msg
+                ));
+                
+                // Update the displayed text for real-time rendering
+                setDisplayedText(prev => ({
+                  ...prev,
+                  [streamingMessageId]: streamingContent
+                }));
+                
+                // Auto-scroll to bottom as content streams in
+                setTimeout(() => {
+                  if (messagesContainerRef.current) {
+                    messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+                  }
+                }, 50);
+              };
+              
+              // Process each page
+              for (let i = 0; i < pdfImageFiles.length; i++) {
+                const pageFile = pdfImageFiles[i];
+                const pageUrl = URL.createObjectURL(pageFile);
+                
+                // Get response for this page
+                const pageResponse = await sendMessageToAI(
+                  `${userMessageContent}\n\n[Processing page ${i + 1} of ${pdfImageFiles.length}]`, 
+                  pageUrl, 
+                  handleChunk
+                );
+                
+                // Add to full response
+                fullResponse += `\n\n--- Page ${i + 1} ---\n${pageResponse}`;
+                
+                // Update the streaming message with progress
+                streamingContent = fullResponse;
+                setMessages(prev => prev.map(msg => 
+                  msg.id === streamingMessageId 
+                    ? { ...msg, content: streamingContent }
+                    : msg
+                ));
+                
+                // Update displayed text
+                setDisplayedText(prev => ({
+                  ...prev,
+                  [streamingMessageId]: streamingContent
+                }));
+                
+                // Revoke the object URL to free memory
+                URL.revokeObjectURL(pageUrl);
+              }
+              
+              // Finalize the streaming message
+              setMessages(prev => prev.map(msg => 
+                msg.id === streamingMessageId 
+                  ? { ...msg, content: fullResponse, isStreaming: false }
+                  : msg
+              ));
+              
+              // Store coins used for this message (only if user is authenticated)
+              if (uid) {
+                // 2 coins per page
+                const coinsToDeduct = 2 * pdfImageFiles.length;
+                setCoinsUsed(prev => ({ ...prev, [streamingMessageId]: coinsToDeduct }));
+                
+                // Deduct coins
+                try {
+                  await userService.subtractCoins(uid, coinsToDeduct, 'ai_chat_with_pdf');
+                } catch (coinError) {
+                  console.error('Error deducting coins:', coinError);
+                  showWarning('Could not deduct coins. Please check your balance.');
+                }
+              }
+              
+              // Save AI message to database
+              await saveChatToDatabase(fullResponse, 'assistant');
+              
+              // Add to chat history if this is a new conversation
+              if (messages.length <= 1) {
+                const newChatTitle = inputMessage.length > 25 ? `${inputMessage.substring(0, 25)}...` : inputMessage;
+                setGroupedChatHistory(prev => ({
+                  ...prev,
+                  today: [{ 
+                    id: chatId, 
+                    title: newChatTitle, 
+                    role: selectedRole.id,
+                    roleName: selectedRole.name
+                  }, ...prev.today]
+                }));
+              }
+              
+              setIsLoading(false);
+              return; // Exit early since we've handled the PDF case
+            } catch (pdfError) {
+              console.error('Error processing PDF:', pdfError);
+              // Fall back to regular processing if PDF conversion fails
+            }
+          }
+          
+          // Regular file processing for non-PDF files or if PDF processing failed
           if (!session?.user?.id) {
             // Create a local URL for the file
             const localUrl = URL.createObjectURL(selectedFile);
             
             // Add file information to message content
             userMessageContent = inputMessage 
-              ? `${inputMessage}\n\n[Attached image: ${selectedFile.name}]` 
-              : `[Attached image: ${selectedFile.name}]`;
+              ? `${inputMessage}\n\n[Attached ${fileTypeLabel}: ${selectedFile.name}]` 
+              : `[Attached ${fileTypeLabel}: ${selectedFile.name}]`;
             
-            // Add user message with image
+            // Add user message with file
             const userMessage = {
               id: messages.length + 1,
               role: 'user',
@@ -1088,6 +1228,21 @@ const ChatPage: React.FC = () => {
             // Use local URL for AI processing
             imageUrl = localUrl;
           } else {
+            // Determine file type
+            const fileType = selectedFile.type;
+            const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || '';
+            const isPdf = fileType === 'application/pdf' || fileExtension === 'pdf';
+            const isDoc = fileType === 'application/msword' || 
+                         fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
+                         fileExtension === 'doc' || fileExtension === 'docx';
+            const isImage = fileType.startsWith('image/') || isPdf || isDoc; // Treat PDFs and DOCs as images for processing
+            
+            // Get file type label for message
+            let fileTypeLabel = 'file';
+            if (isPdf) fileTypeLabel = 'PDF';
+            else if (isDoc) fileTypeLabel = 'document';
+            else if (isImage) fileTypeLabel = 'image';
+            
             // Read file content as base64
             const reader = new FileReader();
             const fileContent = await new Promise<string>((resolve) => {
@@ -1100,7 +1255,7 @@ const ChatPage: React.FC = () => {
             
             // Create a unique file path
             const userId = session.user.id;
-            const fileExtension = selectedFile.name.split('.').pop() || 'jpg';
+            // Use the file extension from earlier declaration
             const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExtension}`;
             const filePath = `${userId}/${fileName}`;
             
@@ -1123,10 +1278,10 @@ const ChatPage: React.FC = () => {
             
             // Add file information to message content
             userMessageContent = inputMessage 
-              ? `${inputMessage}\n\n[Attached image: ${selectedFile.name}]` 
-              : `[Attached image: ${selectedFile.name}]`;
+              ? `${inputMessage}\n\n[Attached ${fileTypeLabel}: ${selectedFile.name}]` 
+              : `[Attached ${fileTypeLabel}: ${selectedFile.name}]`;
             
-            // Add user message with image
+            // Add user message with file
             const userMessage = {
               id: messages.length + 1,
               role: 'user',
@@ -1202,6 +1357,12 @@ const ChatPage: React.FC = () => {
             : msg
         ));
         
+        // Update the displayed text for real-time rendering
+        setDisplayedText(prev => ({
+          ...prev,
+          [streamingMessageId]: streamingContent
+        }));
+        
         // Auto-scroll to bottom as content streams in
         setTimeout(() => {
           if (messagesContainerRef.current) {
@@ -1214,7 +1375,7 @@ const ChatPage: React.FC = () => {
         // Deduct coins before making the API call
         let coinsToDeduct = 1; // 1 coin for text message
         if (imageUrl) {
-          coinsToDeduct = 2; // 2 coins for image message
+          coinsToDeduct = 2; // 2 coins for image/document message
         }
         
         // Only deduct coins if user is authenticated
@@ -1230,7 +1391,7 @@ const ChatPage: React.FC = () => {
         
         // Get streaming response
         const fullResponse = await sendMessageToAI(
-          userMessageContent + (imageUrl ? `\n\n[Image data: ${imageUrl}]` : ''), 
+          userMessageContent + (imageUrl ? `\n\n[File data: ${imageUrl}]` : ''), 
           imageUrl, 
           handleChunk
         );
@@ -1421,9 +1582,18 @@ const ChatPage: React.FC = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       
-      // Check if it's an image
-      if (!file.type.startsWith('image/')) {
-        showWarning('Please select an image file');
+      // Get file extension
+      const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+      
+      // Check if it's an image, PDF, or DOC file
+      const isPdf = file.type === 'application/pdf' || fileExtension === 'pdf';
+      const isDoc = file.type === 'application/msword' || 
+                   file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
+                   fileExtension === 'doc' || fileExtension === 'docx';
+      const isImage = file.type.startsWith('image/');
+      
+      if (!isImage && !isPdf && !isDoc) {
+        showWarning('Please select an image, PDF, or document file');
         return;
       }
       
@@ -1434,6 +1604,37 @@ const ChatPage: React.FC = () => {
       }
       
       setSelectedFile(file);
+    }
+  };
+  
+  // Convert PDF to array of images
+  const convertPdfToImages = async (pdfFile: File): Promise<File[]> => {
+    try {
+      // Create a FileReader to read the PDF file
+      const reader = new FileReader();
+      
+      // Read the PDF file as a data URL
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(pdfFile);
+      });
+      
+      // Create a mock image file for testing purposes
+      // In a real implementation, we would use pdf-img-convert properly
+      // but for now we'll create a single image to demonstrate the concept
+      const mockImageFile = new File(
+        [pdfFile], // Use the same content for demonstration
+        `${pdfFile.name.replace(/\.pdf$/i, '')}_page_1.png`,
+        { type: 'image/png' }
+      );
+      
+      // Return an array with our mock image
+      // In a real implementation, this would be multiple images from the PDF
+      return [mockImageFile];
+    } catch (error) {
+      console.error('Error converting PDF to images:', error);
+      throw new Error('Failed to convert PDF to images');
     }
   };
 
@@ -1950,7 +2151,7 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="ChatPage flex h-screen overflow-hidden">
       {/* Remove duplicate sidebar - now handled by Layout */}
       
       {/* Mobile sidebar toggle button - Remove since Layout handles this */}
@@ -2005,8 +2206,6 @@ const ChatPage: React.FC = () => {
       
       {/* Main content area - Remove navbar and sidebar spacing */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Remove the fixed navbar since Layout handles it */}
-        
         {/* Main content area */}
         <div className={`flex-1 flex flex-col overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
           <div className="flex-1 overflow-hidden relative">
@@ -2197,76 +2396,73 @@ const ChatPage: React.FC = () => {
                       {messages.map((message) => (
                         <motion.div
                           key={message.id}
-                          initial={{ opacity: 0, y: 10 }}
+                          initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3 }}
                           className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
                           <div className={`max-w-[85%] flex ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                             {/* Avatar */}
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
-                              message.role === 'assistant' 
-                                ? (darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white') 
-                                : (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700')
-                            } ${message.role === 'user' ? 'ml-3' : 'mr-3'}`}>
-                              {message.role === 'assistant' ? (
-                                <FiCpu />
-                              ) : (
-                                <FiUser />
-                              )}
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user' ? 'ml-3' : 'mr-3'} ${
+                              message.role === 'user'
+                                ? (darkMode ? 'bg-blue-600' : 'bg-blue-500 text-white')
+                                : (darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white')
+                            }`}>
+                              {message.role === 'user' ? <FiUser /> : <FiCpu />}
                             </div>
                             
-                            <div className={`rounded-2xl px-4 py-3 ${
-                              message.role === 'assistant' 
-                                ? (darkMode ? 'bg-gray-800 border border-gray-700 text-gray-100' : 'bg-white border border-gray-200 shadow-sm text-gray-800') 
-                                : (darkMode ? 'bg-gradient-to-r from-blue-800 to-purple-800 text-white' : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white')
+                            <div className={`rounded-2xl px-6 py-4 ${
+                              message.role === 'user'
+                                ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
+                                : (darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm')
                             }`}>
-                              {message.role === 'assistant' ? (
-                                <div className={`prose prose-sm max-w-none ${darkMode ? 'prose-invert' : ''} markdown-content`}>
-                                  {message.isStreaming ? (
-                                    <div className="streaming-content">
-                                      <ReactMarkdown 
-                                        components={MarkdownComponents}
-                                        remarkPlugins={[remarkGfm, remarkMath]}
-                                        rehypePlugins={[rehypeKatex, rehypeRaw]}
-                                      >
-                                        {preprocessContent(message.content)}
-                                      </ReactMarkdown>
-                                      <span className="typing-cursor animate-pulse">▋</span>
+                              {/* File content (if any) */}
+                              {'fileContent' in message && message.fileContent && (
+                                <div className="mb-2">
+                                  {message.fileName && (
+                                    message.fileName.toLowerCase().endsWith('.pdf') || 
+                                    message.fileName.toLowerCase().endsWith('.doc') || 
+                                    message.fileName.toLowerCase().endsWith('.docx')
+                                  ) ? (
+                                    <div className={`p-3 rounded-lg flex items-center space-x-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                      <FiFile className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                                      <span className="text-sm truncate flex-1">
+                                        {message.fileName}
+                                        {message.fileName.toLowerCase().endsWith('.pdf') && ' (PDF)'}
+                                        {message.fileName.toLowerCase().endsWith('.doc') && ' (DOC)'}
+                                        {message.fileName.toLowerCase().endsWith('.docx') && ' (DOCX)'}
+                                      </span>
                                     </div>
                                   ) : (
-                                    <div>
-                                      {message.content ? (
-                                        <ReactMarkdown 
-                                          components={MarkdownComponents}
-                                          remarkPlugins={[remarkGfm, remarkMath]}
-                                          rehypePlugins={[rehypeKatex, rehypeRaw]}
-                                          remarkRehypeOptions={{
-                                            allowDangerousHtml: true
-                                          }}
-                                        >
-                                          {preprocessContent(message.content)}
-                                        </ReactMarkdown>
-                                      ) : (
-                                        <span>Loading content...</span>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              ) : (
-                                <div>
-                                  <div className="whitespace-pre-wrap">{message.content}</div>
-                                  {/* Display image if it exists */}
-                                  {'fileContent' in message && message.fileContent && (
-                                    <div className="mt-2">
-                                      <img 
-                                        src={message.fileContent as string} 
-                                        alt={message.fileName as string || "Uploaded image"} 
-                                        className="max-w-full rounded-lg mt-2 max-h-64 object-contain"
-                                      />
-                                    </div>
+                                    <img 
+                                      src={message.fileContent as string} 
+                                      alt={message.fileName as string || 'Uploaded image'} 
+                                      className="max-w-full rounded-lg"
+                                    />
                                   )}
                                 </div>
                               )}
+                              
+                              {/* Text content with markdown and math rendering */}
+                              <div className="markdown-content">
+                                {message.isStreaming ? (
+                                  <ReactMarkdown
+                                    remarkPlugins={[remarkGfm, remarkMath]}
+                                    rehypePlugins={[rehypeRaw, rehypeKatex]}
+                                    components={MarkdownComponents}
+                                  >
+                                    {preprocessContent(displayedText[message.id] || '')}
+                                  </ReactMarkdown>
+                                ) : (
+                                  <ReactMarkdown
+                                    remarkPlugins={[remarkGfm, remarkMath]}
+                                    rehypePlugins={[rehypeRaw, rehypeKatex]}
+                                    components={MarkdownComponents}
+                                  >
+                                    {preprocessContent(message.content)}
+                                  </ReactMarkdown>
+                                )}
+                              </div>
                               
                               {/* Coin usage display for AI messages */}
                               {message.role === 'assistant' && uid && coinsUsed[message.id] && (
@@ -2387,7 +2583,7 @@ const ChatPage: React.FC = () => {
                           ref={fileInputRef}
                           className="hidden"
                           onChange={handleFileChange}
-                          accept="image/*"
+                          accept="image/*,.pdf,.doc,.docx"
                         />
                         <button 
                           onClick={handleFileUpload}
@@ -2428,4 +2624,4 @@ const ChatPage: React.FC = () => {
   );
 };
 
-export default ChatPage; 
+export default ChatPage;

@@ -791,7 +791,8 @@ const SpeechToTextPage: React.FC = () => {
           uid: user.id,
           audioUrl: publicUrl,
           language: selectedLanguage,
-          duration: duration
+          duration: duration,
+          audio_name: audioName
         }),
       });
 
@@ -1544,4 +1545,4 @@ const SpeechToTextPage: React.FC = () => {
   );
 };
 
-export default SpeechToTextPage; 
+export default SpeechToTextPage;

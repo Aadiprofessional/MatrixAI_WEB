@@ -6,6 +6,9 @@ interface VideoCreationResponse {
   status?: string; // Keep this for backward compatibility
   requestId?: string;
   coinsDeducted?: number;
+  imageUrl?: string; // For image-to-video API
+  videoUrl?: string; // For immediate video URL response
+  error?: string; // For error responses
 }
 
 interface VideoStatusResponse {
@@ -19,6 +22,15 @@ interface VideoStatusResponse {
   endTime?: string;
   origPrompt?: string;
   actualPrompt?: string;
+  imageUrl?: string; // For image-to-video API
+  details?: {
+    task_id: string;
+    task_status: string;
+    submit_time: string;
+    scheduled_time: string;
+  };
+  promptText?: string;
+  createdAt?: string;
 }
 
 interface VideoListResponse {
@@ -91,6 +103,28 @@ export const videoService = {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || errorData.error || 'Failed to create video');
+    }
+
+    return response.json();
+  },
+  
+  // Create video with image URL
+  createVideoWithUrl: async (uid: string, promptText: string, image_url: string): Promise<VideoCreationResponse> => {
+    const response = await fetch(`${API_BASE_URL}/api/video/createVideowithurl`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        uid,
+        promptText,
+        image_url
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || 'Failed to create video from image');
     }
 
     return response.json();
@@ -174,4 +208,4 @@ export const videoService = {
 
     return response.json();
   }
-}; 
+};

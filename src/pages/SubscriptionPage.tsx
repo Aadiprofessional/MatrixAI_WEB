@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -40,6 +41,7 @@ const PlanCard: React.FC<PlanProps> = ({
   onSelect 
 }) => {
   const { darkMode } = useContext(ThemeContext);
+  const { t } = useLanguage();
 
   return (
     <motion.div
@@ -130,7 +132,7 @@ const PlanCard: React.FC<PlanProps> = ({
             : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
         }`}
       >
-        {selected ? 'Selected' : 'Select Plan'}
+        {selected ? t('subscription.selected', 'Selected') : t('subscription.select_plan', 'Select Plan')}
       </button>
     </motion.div>
   );
@@ -145,6 +147,7 @@ interface AddonCardProps {
 
 const AddonCard: React.FC<AddonCardProps> = ({ price, coins, description, onSelect }) => {
   const { darkMode } = useContext(ThemeContext);
+  const { t } = useLanguage();
 
   return (
     <motion.div
@@ -162,10 +165,10 @@ const AddonCard: React.FC<AddonCardProps> = ({ price, coins, description, onSele
         </div>
         <div>
           <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Addon Pack
+            {t('subscription.addon_pack', 'Addon Pack')}
           </h3>
           <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Expires at month end
+            {t('subscription.expires_month_end', 'Expires at month end')}
           </p>
         </div>
       </div>
@@ -204,7 +207,7 @@ const AddonCard: React.FC<AddonCardProps> = ({ price, coins, description, onSele
         onClick={onSelect}
         className="w-full py-2.5 rounded-lg font-medium bg-gradient-to-r from-purple-500 to-blue-600 text-white hover:opacity-90 transition-opacity"
       >
-        Add Coins
+        {t('subscription.add_coins', 'Add Coins')}
       </button>
     </motion.div>
   );
@@ -215,6 +218,7 @@ const SubscriptionPage: React.FC = () => {
   const { userData, isPro } = useUser();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   
   const [selectedPlan, setSelectedPlan] = useState<'Tester' | 'Monthly' | 'Yearly'>('Monthly');
   const [showTnC, setShowTnC] = useState(false);
@@ -232,11 +236,11 @@ const SubscriptionPage: React.FC = () => {
   const getPlanText = () => {
     switch (selectedPlan) {
       case 'Tester':
-        return 'Perfect for those who want to try our service. Get 450 coins valid for 15 days.';
+        return t('subscription.tester_description', 'Perfect for those who want to try our service. Get 450 coins valid for 15 days.');
       case 'Monthly':
-        return 'Ideal for regular users. Get 1380 coins each month.';
+        return t('subscription.monthly_description', 'Ideal for regular users. Get 1380 coins each month.');
       case 'Yearly':
-        return 'Best value for committed users. Get 1380 coins each month for a full year with 10% discount.';
+        return t('subscription.yearly_description', 'Best value for committed users. Get 1380 coins each month for a full year with 10% discount.');
       default:
         return '';
     }
@@ -245,11 +249,11 @@ const SubscriptionPage: React.FC = () => {
   const getButtonPrice = () => {
     switch (selectedPlan) {
       case 'Tester':
-        return '$50 HKD';
+        return t('subscription.tester_price', '$50 HKD');
       case 'Monthly':
-        return '$138 HKD';
+        return t('subscription.monthly_price', '$138 HKD');
       case 'Yearly':
-        return '$1490 HKD';
+        return t('subscription.yearly_price', '$1490 HKD');
       default:
         return '';
     }
@@ -301,10 +305,10 @@ const SubscriptionPage: React.FC = () => {
             className="text-center mb-16"
           >
             <h1 className={`text-4xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Choose Your Perfect Plan
+              {t('subscription.choose_plan_heading', 'Choose Your Perfect Plan')}
             </h1>
             <p className={`text-lg max-w-3xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Unlock the full potential of MatrixAI with our flexible subscription options
+              {t('subscription.unlock_potential', 'Unlock the full potential of MatrixAI with our flexible subscription options')}
             </p>
           </motion.div>
 
@@ -317,33 +321,33 @@ const SubscriptionPage: React.FC = () => {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                 <PlanCard 
-                  name="Tester"
+                  name={t('subscription.tester_plan', 'Tester')}
                   price="50"
                   coins={450}
                   period=""
-                  description="Try our service with a small package of coins. Valid for 15 days."
+                  description={t('subscription.tester_plan_desc', 'Try our service with a small package of coins. Valid for 15 days.')}
                   selected={selectedPlan === 'Tester'}
                   onSelect={() => setSelectedPlan('Tester')}
                 />
                 
                 <PlanCard 
-                  name="Monthly"
+                  name={t('subscription.monthly_plan', 'Monthly')}
                   price="138"
                   coins={1380}
                   period=""
-                  description="Perfect for regular users. Get a monthly allocation of coins."
+                  description={t('subscription.monthly_plan_desc', 'Perfect for regular users. Get a monthly allocation of coins.')}
                   selected={selectedPlan === 'Monthly'}
                   onSelect={() => setSelectedPlan('Monthly')}
                 />
                 
                 <PlanCard 
-                  name="Yearly"
+                  name={t('subscription.yearly_plan', 'Yearly')}
                   price="1490"
                   coins={1380}
-                  period="/month"
+                  period={t('subscription.per_month', '/month')}
                   originalPrice="1656"
-                  discount="Save 10%"
-                  description="Our best value plan. 1380 coins delivered every month for a full year."
+                  discount={t('subscription.save_percent', 'Save 10%')}
+                  description={t('subscription.yearly_plan_desc', 'Our best value plan. 1380 coins delivered every month for a full year.')}
                   selected={selectedPlan === 'Yearly'}
                   onSelect={() => setSelectedPlan('Yearly')}
                 />
@@ -360,7 +364,7 @@ const SubscriptionPage: React.FC = () => {
                   
                   <div>
                     <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      Plan Details
+                      {t('subscription.plan_details', 'Plan Details')}
                     </h3>
                     <p className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-4`}>
                       {getPlanText()}
@@ -371,7 +375,7 @@ const SubscriptionPage: React.FC = () => {
                         className="text-sm flex items-center text-blue-500 hover:text-blue-400 mb-4 md:mb-0"
                         onClick={handleTermsAndConditions}
                       >
-                        Terms & Conditions Apply
+                        {t('subscription.terms_conditions', 'Terms & Conditions Apply')}
                         <FiArrowLeft className="ml-1 transform rotate-180 h-4 w-4" />
                       </button>
                       
@@ -379,7 +383,7 @@ const SubscriptionPage: React.FC = () => {
                         onClick={() => handleSubscribe(selectedPlan)}
                         className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
                       >
-                        Buy Now <span className="ml-1 font-bold">{getButtonPrice()}</span>
+                        {t('subscription.buy_now', 'Buy Now')} <span className="ml-1 font-bold">{getButtonPrice()}</span>
                       </button>
                     </div>
                   </div>
@@ -398,17 +402,17 @@ const SubscriptionPage: React.FC = () => {
             >
               <div className="text-center mb-8">
                 <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Need Extra Coins?
+                  {t('subscription.need_extra_coins', 'Need Extra Coins?')}
                 </h2>
                 <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Add more coins to your current subscription
+                  {t('subscription.add_more_coins', 'Add more coins to your current subscription')}
                 </p>
               </div>
               
               <AddonCard 
                 price="50"
                 coins={550}
-                description="These coins will be added to your existing balance and expire at the end of this month."
+                description={t('subscription.addon_description', 'These coins will be added to your existing balance and expire at the end of this month.')}
                 onSelect={handleAddonPurchase}
               />
               
@@ -417,7 +421,7 @@ const SubscriptionPage: React.FC = () => {
                   onClick={() => setShowAddon(false)}
                   className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
                 >
-                  Looking for a different plan? View all plans
+                  {t('subscription.view_all_plans', 'Looking for a different plan? View all plans')}
                 </button>
               </div>
             </motion.div>
@@ -426,7 +430,7 @@ const SubscriptionPage: React.FC = () => {
           {/* Features Section */}
           <div className="mt-16">
             <h2 className={`text-2xl font-bold text-center mb-10 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              What's Included in All Plans
+              {t('subscription.whats_included', 'What\'s Included in All Plans')}
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -442,10 +446,10 @@ const SubscriptionPage: React.FC = () => {
                   <FiStar className="h-6 w-6" />
                 </div>
                 <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Premium AI Features
+                  {t('subscription.premium_ai_features', 'Premium AI Features')}
                 </h3>
                 <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Access to all our advanced AI tools including image and video generation
+                  {t('subscription.premium_ai_desc', 'Access to all our advanced AI tools including image and video generation')}
                 </p>
               </motion.div>
               
@@ -461,10 +465,10 @@ const SubscriptionPage: React.FC = () => {
                   <FiCreditCard className="h-6 w-6" />
                 </div>
                 <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Flexible Coin System
+                  {t('subscription.flexible_coin_system', 'Flexible Coin System')}
                 </h3>
                 <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Use coins across any AI service based on your specific needs
+                  {t('subscription.flexible_coin_desc', 'Use coins across any AI service based on your specific needs')}
                 </p>
               </motion.div>
               
@@ -480,10 +484,10 @@ const SubscriptionPage: React.FC = () => {
                   <FiCalendar className="h-6 w-6" />
                 </div>
                 <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Regular Updates
+                  {t('subscription.regular_updates', 'Regular Updates')}
                 </h3>
                 <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Access to new features and improvements as they're released
+                  {t('subscription.regular_updates_desc', 'Access to new features and improvements as they\'re released')}
                 </p>
               </motion.div>
             </div>
@@ -492,7 +496,7 @@ const SubscriptionPage: React.FC = () => {
           {/* FAQ Section */}
           <div className="mt-20">
             <h2 className={`text-2xl font-bold text-center mb-10 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Frequently Asked Questions
+              {t('subscription.faq', 'Frequently Asked Questions')}
             </h2>
             
             <div className={`space-y-6 max-w-4xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-800'}`}>
@@ -502,9 +506,9 @@ const SubscriptionPage: React.FC = () => {
                   darkMode ? 'bg-gray-800/50 border border-gray-700' : 'bg-white border border-gray-100'
                 }`}
               >
-                <h3 className="text-lg font-semibold mb-2">How do coins work?</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('subscription.faq_coins_work', 'How do coins work?')}</h3>
                 <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Coins are the currency used within MatrixAI. Each AI operation costs a certain number of coins depending on complexity. Coins are valid for the duration of your subscription period.
+                  {t('subscription.faq_coins_work_answer', 'Coins are the currency used within MatrixAI. Each AI operation costs a certain number of coins depending on complexity. Coins are valid for the duration of your subscription period.')}
                 </p>
               </motion.div>
               
@@ -514,9 +518,9 @@ const SubscriptionPage: React.FC = () => {
                   darkMode ? 'bg-gray-800/50 border border-gray-700' : 'bg-white border border-gray-100'
                 }`}
               >
-                <h3 className="text-lg font-semibold mb-2">Can I cancel my subscription?</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('subscription.faq_cancel', 'Can I cancel my subscription?')}</h3>
                 <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Yes, you can cancel your subscription at any time. Your subscription will remain active until the end of your current billing period.
+                  {t('subscription.faq_cancel_answer', 'Yes, you can cancel your subscription at any time. Your subscription will remain active until the end of your current billing period.')}
                 </p>
               </motion.div>
               
@@ -526,9 +530,9 @@ const SubscriptionPage: React.FC = () => {
                   darkMode ? 'bg-gray-800/50 border border-gray-700' : 'bg-white border border-gray-100'
                 }`}
               >
-                <h3 className="text-lg font-semibold mb-2">Do unused coins roll over?</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('subscription.faq_rollover', 'Do unused coins roll over?')}</h3>
                 <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Monthly coins expire at the end of each billing cycle. Yearly plan users receive a fresh allocation of 1380 coins at the beginning of each month.
+                  {t('subscription.faq_rollover_answer', 'Monthly coins expire at the end of each billing cycle. Yearly plan users receive a fresh allocation of 1380 coins at the beginning of each month.')}
                 </p>
               </motion.div>
             </div>
@@ -547,7 +551,7 @@ const SubscriptionPage: React.FC = () => {
             }`}
           >
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Terms and Conditions</h2>
+              <h2 className="text-xl font-bold">{t('subscription.terms_and_conditions', 'Terms and Conditions')}</h2>
               <button 
                 onClick={() => setShowTnC(false)}
                 className={`p-2 rounded-full ${
@@ -561,24 +565,24 @@ const SubscriptionPage: React.FC = () => {
             <div className={`max-h-96 overflow-y-auto pr-4 ${
               darkMode ? 'text-gray-300' : 'text-gray-700'
             }`}>
-              <h3 className="font-semibold mb-2">1. Subscription Terms</h3>
+              <h3 className="font-semibold mb-2">{t('subscription.terms_subscription', '1. Subscription Terms')}</h3>
               <p className="mb-4 text-sm">
-                Subscriptions automatically renew at the end of each billing period. You will be charged at the rate stated at the time of purchase. For monthly plans, your subscription will renew monthly. For yearly plans, your subscription will renew annually.
+                {t('subscription.terms_subscription_desc', 'Subscriptions automatically renew at the end of each billing period. You will be charged at the rate stated at the time of purchase. For monthly plans, your subscription will renew monthly. For yearly plans, your subscription will renew annually.')}
               </p>
               
-              <h3 className="font-semibold mb-2">2. Coin Allocation</h3>
+              <h3 className="font-semibold mb-2">{t('subscription.terms_coin_allocation', '2. Coin Allocation')}</h3>
               <p className="mb-4 text-sm">
-                Coins are allocated at the beginning of each billing period and expire at the end of the period. Unused coins do not roll over to the next billing period.
+                {t('subscription.terms_coin_allocation_desc', 'Coins are allocated at the beginning of each billing period and expire at the end of the period. Unused coins do not roll over to the next billing period.')}
               </p>
               
-              <h3 className="font-semibold mb-2">3. Cancellation Policy</h3>
+              <h3 className="font-semibold mb-2">{t('subscription.terms_cancellation', '3. Cancellation Policy')}</h3>
               <p className="mb-4 text-sm">
-                You can cancel your subscription at any time. Upon cancellation, you will continue to have access to your subscription benefits until the end of your current billing period. No refunds are provided for partial subscription periods.
+                {t('subscription.terms_cancellation_desc', 'You can cancel your subscription at any time. Upon cancellation, you will continue to have access to your subscription benefits until the end of your current billing period. No refunds are provided for partial subscription periods.')}
               </p>
               
-              <h3 className="font-semibold mb-2">4. Addon Pack</h3>
+              <h3 className="font-semibold mb-2">{t('subscription.terms_addon', '4. Addon Pack')}</h3>
               <p className="mb-4 text-sm">
-                Addon Packs provide additional coins that expire at the end of the current month, regardless of when they were purchased. Addon Packs are non-refundable.
+                {t('subscription.terms_addon_desc', 'Addon Packs provide additional coins that expire at the end of the current month, regardless of when they were purchased. Addon Packs are non-refundable.')}
               </p>
               
               <h3 className="font-semibold mb-2">5. Price Changes</h3>
@@ -597,7 +601,7 @@ const SubscriptionPage: React.FC = () => {
                 onClick={() => setShowTnC(false)}
                 className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg"
               >
-                I Understand
+                {t('subscription.i_understand', 'I Understand')}
               </button>
             </div>
           </motion.div>
@@ -607,4 +611,4 @@ const SubscriptionPage: React.FC = () => {
   );
 };
 
-export default SubscriptionPage; 
+export default SubscriptionPage;

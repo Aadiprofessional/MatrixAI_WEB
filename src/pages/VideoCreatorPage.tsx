@@ -1,12 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FiVideo, FiUpload, FiPlay, FiPause, FiDownload, FiSliders, FiPlus, FiTrash, FiX, FiCheck, FiClock, FiList, FiVolume2, FiVolumeX, FiMaximize, FiMinimize, FiLoader } from 'react-icons/fi';
+import { FiVideo, FiUpload, FiPlay, FiPause, FiDownload, FiSliders, FiPlus, FiTrash, FiX, FiCheck, FiClock, FiList, FiVolume2, FiVolumeX, FiMaximize, FiMinimize, FiLoader, FiImage } from 'react-icons/fi';
 import { ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
+import { useAlert } from '../context/AlertContext';
 import { videoService } from '../services/videoService';
+import { uploadImageToStorage } from '../supabaseClient';
 
 interface VideoHistoryItem {
   videoId: string;
@@ -17,16 +19,16 @@ interface VideoHistoryItem {
   statusDisplay: string;
   isReady: boolean;
   hasVideo: boolean;
-  videoUrl: string;
+  videoUrl?: string; // Make videoUrl optional to match the enhanced API response
   createdAt: string;
   ageDisplay: string;
   apiType: string;
-  requestId: string;
-  submitTime: string;
-  scheduledTime: string;
-  endTime: string;
-  origPrompt: string;
-  actualPrompt: string;
+  requestId?: string; // Make optional to match enhanced API
+  submitTime?: string; // Make optional to match enhanced API
+  scheduledTime?: string; // Make optional to match enhanced API
+  endTime?: string; // Make optional to match enhanced API
+  origPrompt?: string; // Make optional to match enhanced API
+  actualPrompt?: string; // Make optional to match enhanced API
   imageUrl?: string;
   ratio?: string;
   duration?: string;
@@ -34,9 +36,11 @@ interface VideoHistoryItem {
 }
 
 const VideoCreatorPage: React.FC = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userData, isPro } = useUser();
   const { user } = useAuth();
   const { t } = useLanguage();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { darkMode } = useTheme();
   const [prompt, setPrompt] = useState('');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -45,7 +49,12 @@ const VideoCreatorPage: React.FC = () => {
   const [duration, setDuration] = useState(5);
   const [resolution, setResolution] = useState('720p');
   const [isPlaying, setIsPlaying] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [uploadedVideo, setUploadedVideo] = useState<File | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [style, setStyle] = useState('cinematic');
   const [videoProgress, setVideoProgress] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
@@ -66,6 +75,7 @@ const VideoCreatorPage: React.FC = () => {
   ]);
   
   // Video generation state
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
   const [taskStatus, setTaskStatus] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +88,7 @@ const VideoCreatorPage: React.FC = () => {
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Style options for video
@@ -97,12 +108,129 @@ const VideoCreatorPage: React.FC = () => {
     { id: '1080p', name: '1080p (Full HD)', width: 1920, height: 1080 },
   ];
 
+  // Transform API video data to match VideoHistoryItem interface
+  // This is used for the regular API response
+  const transformVideoData = useCallback((apiVideo: any): VideoHistoryItem => {
+    // Format date properly - handle different date formats from API
+    const formatDate = (dateStr: string) => {
+      if (!dateStr) return 'Unknown';
+      try {
+        // Handle different date formats
+        // ISO format: 2025-07-18T23:41:13.702
+        // Standard format: 2025-07-19 07:41:14.382
+        const date = new Date(dateStr);
+        
+        // Check if date is valid before formatting
+        if (isNaN(date.getTime())) {
+          return 'Unknown';
+        }
+        
+        // Calculate time difference
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
+        if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+        if (diffDays < 30) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+        
+        // Fall back to standard date format
+        return date.toLocaleDateString();
+      } catch (e) {
+        console.warn('Error parsing date:', dateStr, e);
+        return 'Unknown';
+      }
+    };
+
+    // Format status for display
+    const getStatusDisplay = (status: string) => {
+      if (!status) return 'Unknown';
+      
+      // Normalize status to uppercase for consistent comparison
+      const normalizedStatus = status.toUpperCase();
+      
+      switch(normalizedStatus) {
+        case 'SUCCEEDED':
+        case 'COMPLETED':
+          return 'Ready';
+        case 'RUNNING':
+        case 'GENERATING':
+          return 'Processing';
+        case 'PENDING':
+        case 'QUEUED':
+          return 'Queued';
+        case 'FAILED':
+          return 'Failed';
+        default:
+          return status;
+      }
+    };
+    
+    // Handle both camelCase and snake_case API responses
+    return {
+      videoId: apiVideo.videoId || apiVideo.video_id,
+      promptText: apiVideo.promptText || apiVideo.prompt_text,
+      size: apiVideo.size || '1280*720',
+      taskId: apiVideo.taskId || apiVideo.task_id || '',
+      taskStatus: apiVideo.taskStatus || apiVideo.task_status || apiVideo.status || 'unknown',
+      statusDisplay: getStatusDisplay(apiVideo.taskStatus || apiVideo.task_status || apiVideo.status || 'unknown'),
+      isReady: (apiVideo.taskStatus || apiVideo.task_status) === 'SUCCEEDED' || apiVideo.status === 'completed',
+      hasVideo: !!(apiVideo.videoUrl || apiVideo.video_url),
+      videoUrl: apiVideo.videoUrl || apiVideo.video_url || '',
+      createdAt: apiVideo.createdAt || apiVideo.created_at,
+      ageDisplay: formatDate(apiVideo.createdAt || apiVideo.created_at),
+      apiType: apiVideo.apiType || 'video',
+      requestId: apiVideo.requestId || apiVideo.request_id || '',
+      submitTime: apiVideo.submitTime || apiVideo.submit_time || apiVideo.createdAt || apiVideo.created_at,
+      scheduledTime: apiVideo.scheduledTime || apiVideo.scheduled_time || '',
+      endTime: apiVideo.endTime || apiVideo.end_time || '',
+      origPrompt: apiVideo.origPrompt || apiVideo.prompt_text,
+      actualPrompt: apiVideo.actualPrompt || apiVideo.prompt_text || '',
+      imageUrl: apiVideo.imageUrl || apiVideo.image_url,
+      ratio: apiVideo.ratio,
+      duration: apiVideo.duration,
+      videoStyle: apiVideo.videoStyle || apiVideo.video_style
+    };
+  }, []);
+  
+  const fetchVideoHistory = useCallback(async () => {
+    if (!user?.id) return;
+    
+    setIsLoadingHistory(true);
+    setHistoryError(null);
+    
+    try {
+      // Use the POST method API endpoint
+      const response = await videoService.getAllVideos(user.id);
+      
+      // Check if response has videos array
+      if (!response.videos || !Array.isArray(response.videos)) {
+        throw new Error('Invalid response format: missing videos array');
+      }
+      
+      // Transform the video data to match our interface
+      const transformedVideos = response.videos.map(transformVideoData);
+      setVideoHistory(transformedVideos);
+    } catch (err: any) {
+      console.error('Error fetching video history:', err);
+      setHistoryError(err.message || 'Failed to fetch video history');
+      setVideoHistory([]);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, [user?.id, transformVideoData]);
+
   // Fetch video history when component mounts or when history is toggled
   useEffect(() => {
     if (showHistory && user?.id) {
+      // Fetch video history for the current user
+      // This will now use the enhanced API endpoint
       fetchVideoHistory();
     }
-  }, [showHistory, user?.id]);
+  }, [showHistory, user?.id, fetchVideoHistory]);
 
   // Cleanup polling on unmount
   useEffect(() => {
@@ -112,52 +240,6 @@ const VideoCreatorPage: React.FC = () => {
       }
     };
   }, []);
-
-  // Transform API video data to match VideoHistoryItem interface
-  const transformVideoData = (apiVideo: any): VideoHistoryItem => {
-    return {
-      videoId: apiVideo.video_id,
-      promptText: apiVideo.prompt_text,
-      size: apiVideo.size || '1280*720',
-      taskId: apiVideo.task_id || '',
-      taskStatus: apiVideo.task_status || apiVideo.status || 'unknown',
-      statusDisplay: apiVideo.task_status || apiVideo.status || 'unknown',
-      isReady: apiVideo.task_status === 'SUCCEEDED' || apiVideo.status === 'completed',
-      hasVideo: !!(apiVideo.video_url),
-      videoUrl: apiVideo.video_url || '',
-      createdAt: apiVideo.created_at,
-      ageDisplay: new Date(apiVideo.created_at).toLocaleDateString(),
-      apiType: 'video',
-      requestId: apiVideo.request_id || '',
-      submitTime: apiVideo.submit_time || apiVideo.created_at,
-      scheduledTime: apiVideo.scheduled_time || '',
-      endTime: apiVideo.end_time || '',
-      origPrompt: apiVideo.prompt_text,
-      actualPrompt: apiVideo.prompt_text,
-      imageUrl: apiVideo.image_url,
-      ratio: apiVideo.ratio,
-      duration: apiVideo.duration,
-      videoStyle: apiVideo.video_style
-    };
-  };
-
-  const fetchVideoHistory = async () => {
-    if (!user?.id) return;
-    
-    setIsLoadingHistory(true);
-    setHistoryError(null);
-    
-    try {
-      const response = await videoService.getAllVideos(user.id);
-      const transformedVideos = (response.videos || []).map(transformVideoData);
-      setVideoHistory(transformedVideos);
-    } catch (err: any) {
-      console.error('Error fetching video history:', err);
-      setHistoryError(err.message);
-    } finally {
-      setIsLoadingHistory(false);
-    }
-  };
 
   const startPolling = (videoId: string) => {
     if (pollingIntervalRef.current) {
@@ -172,7 +254,10 @@ const VideoCreatorPage: React.FC = () => {
         console.log('Video status response:', response);
         
         // Update task status - server returns taskStatus, not status
-        const currentTaskStatus = response.taskStatus || response.status || '';
+        // Handle both direct taskStatus and nested details.task_status
+        const currentTaskStatus = response.taskStatus || 
+                                 (response.details && response.details.task_status) || 
+                                 response.status || '';
         setTaskStatus(currentTaskStatus);
         
         // Update progress bar while processing
@@ -184,7 +269,7 @@ const VideoCreatorPage: React.FC = () => {
         }
         
         // Check if video is completed - server returns 'SUCCEEDED' status and videoUrl
-        if (currentTaskStatus === 'SUCCEEDED' && response.videoUrl) {
+        if ((currentTaskStatus === 'SUCCEEDED' || currentTaskStatus === 'COMPLETED') && response.videoUrl) {
           // Video is ready
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -222,7 +307,7 @@ const VideoCreatorPage: React.FC = () => {
         setIsGenerating(false);
         setError('Failed to check video status. Please try again.');
       }
-    }, 500); // Poll every 0.5 seconds (500ms)
+    }, 1000); // Poll every 1 second as requested
 
     // Clear interval after 5 minutes to prevent infinite polling
     setTimeout(() => {
@@ -248,6 +333,7 @@ const VideoCreatorPage: React.FC = () => {
     setIsGenerating(true);
     setProcessingProgress(0);
     setError(null);
+    setApiError(null);
     setVideoUrl(null);
     setCurrentVideoId(null);
     setTaskStatus('');
@@ -265,9 +351,55 @@ const VideoCreatorPage: React.FC = () => {
       const selectedResolution = resolutionOptions.find(r => r.id === resolution);
       const size = selectedResolution ? `${selectedResolution.width}*${selectedResolution.height}` : '1280*720';
       
-      // Initiate video generation
-      const response = await videoService.createVideo(user.id, prompt, size);
-      console.log('Create video response:', response);
+      let response;
+      
+      // Check if we have an uploaded image
+      if (uploadedImageUrl) {
+        try {
+          // Use the image-to-video API
+          // Log the image URL being sent to the API
+          console.log('Sending image URL to API:', uploadedImageUrl);
+          
+          // Ensure the image URL doesn't have extra spaces
+          const cleanImageUrl = uploadedImageUrl.trim();
+          
+          // Use the videoService method instead of direct fetch
+          response = await videoService.createVideoWithUrl(user.id, prompt, cleanImageUrl);
+          console.log('Create video with image response:', response);
+          
+          // Check for error in response
+          if (response.error) {
+            setError(`Video generation failed: ${response.message || 'The server could not process your image. Please try a different image or prompt.'}`);
+            setIsGenerating(false);
+            return;
+          }
+          
+          // If the API returns success immediately
+          if (response.videoUrl && response.taskStatus === 'SUCCEEDED') {
+            setVideoUrl(response.videoUrl);
+            setProcessingProgress(100);
+            setIsGenerating(false);
+            clearInterval(progressInterval);
+            return;
+          }
+        } catch (apiError: any) {
+          console.error('API error:', apiError);
+          
+          // Handle different error status codes
+          if (apiError.message.includes('500')) {
+            setError('Server error: The video generation service is currently experiencing issues. This may be due to high demand or server maintenance. Please try again later.');
+          } else {
+            setError(apiError.message || 'Failed to connect to video generation service. Please check your internet connection and try again.');
+          }
+          
+          setIsGenerating(false);
+          return;
+        }
+      } else {
+        // Use the standard text-to-video API
+        response = await videoService.createVideo(user.id, prompt, size);
+        console.log('Create video response:', response);
+      }
       
       if (response.videoId) {
         setCurrentVideoId(response.videoId);
@@ -284,25 +416,41 @@ const VideoCreatorPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error generating video:', error);
-      setError(error.message);
+      let errorMessage = error.message;
+      
+      // Make error messages more user-friendly
+      if (errorMessage.includes('API error')) {
+        errorMessage = 'Server error: Unable to process your request. Please try again later.';
+      } else if (errorMessage.includes('Failed to connect')) {
+        errorMessage = 'Connection error: Please check your internet connection and try again.';
+      } else if (errorMessage.includes('Video generation failed')) {
+        errorMessage = 'Video generation failed. The server may be busy or your image may not be suitable.';
+      }
+      
+      setError(errorMessage);
       setIsGenerating(false);
       clearInterval(progressInterval);
     }
   };
 
+  const { showConfirmation, showError } = useAlert();
+
   const handleRemoveVideo = async (videoId: string) => {
     if (!user?.id) return;
     
-    if (window.confirm('Are you sure you want to remove this video?')) {
-      try {
-        await videoService.removeVideo(user.id, videoId);
-        // Remove the video from the local state
-        setVideoHistory(prev => prev.filter(video => video.videoId !== videoId));
-      } catch (error: any) {
-        console.error('Error removing video:', error);
-        alert('Failed to remove the video. Please try again.');
+    showConfirmation(
+      'Are you sure you want to remove this video?',
+      async () => {
+        try {
+          await videoService.removeVideo(user.id!, videoId);
+          // Remove the video from the local state
+          setVideoHistory(prev => prev.filter(video => video.videoId !== videoId));
+        } catch (error: any) {
+          console.error('Error removing video:', error);
+          showError('Failed to remove the video. Please try again.');
+        }
       }
-    }
+    );
   };
   
   const handlePlayPause = async () => {
@@ -405,11 +553,11 @@ const VideoCreatorPage: React.FC = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
   
-  const handleUploadClick = () => {
+  const handleUploadVideoClick = () => {
     fileInputRef.current?.click();
   };
   
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedVideo(file);
@@ -417,10 +565,73 @@ const VideoCreatorPage: React.FC = () => {
       const url = URL.createObjectURL(file);
       setVideoUrl(url);
       
+      // Reset image upload when video is uploaded
+      setUploadedImage(null);
+      setUploadedImageUrl(null);
+      
       // Clean up old video URL if needed
       return () => {
         URL.revokeObjectURL(url);
       };
+    }
+  };
+  
+  const handleUploadImageClick = () => {
+    imageInputRef.current?.click();
+  };
+  
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && user?.id) {
+      try {
+        setIsUploadingImage(true);
+        setError(null);
+        setApiError(null);
+        setUploadedImage(file);
+        
+        console.log('Selected image file:', file.name, file.type, file.size);
+        
+        // Validate file size and type
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+          throw new Error('Image size exceeds 10MB limit. Please choose a smaller image.');
+        }
+        
+        if (!file.type.startsWith('image/')) {
+          throw new Error('Invalid file type. Please upload an image file.');
+        }
+        
+        // Check if the file is HEIC format
+        const isHeic = file.type === 'image/heic' || 
+                      file.name.toLowerCase().endsWith('.heic') || 
+                      file.name.toLowerCase().endsWith('.heif');
+        
+        if (isHeic) {
+          setError('HEIC image format is not supported by the video generation API. Please convert your image to JPG or PNG format before uploading.');
+          setUploadedImage(null);
+          setIsUploadingImage(false);
+          return;
+        }
+        
+        // Upload image to Supabase storage
+        console.log('Uploading image to Supabase storage...');
+        const result = await uploadImageToStorage(file, user.id);
+        console.log('Image upload successful, public URL:', result.publicUrl);
+        
+        // Ensure the URL is properly formatted and trimmed
+        const cleanUrl = result.publicUrl.trim();
+        setUploadedImageUrl(cleanUrl);
+        
+        // Reset video upload when image is uploaded
+        setUploadedVideo(null);
+        setVideoUrl(null);
+        
+        setIsUploadingImage(false);
+      } catch (error: any) {
+        console.error('Error uploading image:', error);
+        setError(error.message || 'Failed to upload image. Please try again.');
+        setUploadedImage(null);
+        setIsUploadingImage(false);
+      }
     }
   };
   
@@ -516,21 +727,28 @@ const VideoCreatorPage: React.FC = () => {
   };
 
   const getStatusText = () => {
-    switch (taskStatus) {
-      case 'PENDING':
-        return 'Initializing video generation...';
-      case 'RUNNING':
-        return 'Generating video...';
-      case 'SUCCEEDED':
-        return 'Video generated successfully!';
-      case 'FAILED':
-        return 'Video generation failed';
+    // Special case for image upload
+    if (uploadedImageUrl && isGenerating) {
+      if (taskStatus === 'PENDING' || taskStatus === 'pending') {
+        return 'Preparing your image for animation...';
+      } else if (taskStatus === 'RUNNING' || taskStatus === 'PROCESSING' || taskStatus === 'processing') {
+        return 'Animating your image...';
+      } else if (taskStatus === 'FAILED' || taskStatus === 'failed') {
+        return 'Animation failed. Please try a different image or prompt.';
+      }
+    }
+    
+    // Normalize status to lowercase for consistent comparison
+    const normalizedStatus = taskStatus.toLowerCase();
+    
+    switch (normalizedStatus) {
       case 'pending':
         return 'Initializing video generation...';
+      case 'running':
       case 'processing':
-        return 'Setting up video generation...';
       case 'generating':
         return 'Generating video...';
+      case 'succeeded':
       case 'completed':
         return 'Video generated successfully!';
       case 'failed':
@@ -706,28 +924,71 @@ const VideoCreatorPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 aspect-video flex flex-col items-center justify-center text-center p-6">
-              <FiVideo className="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4" />
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No video generated yet</h3>
-              <p className="text-gray-500 dark:text-gray-400 max-w-md mb-4">
-                Enter a prompt describing the video you want to create, or upload a video to enhance
-              </p>
-              <div className="flex space-x-3">
+            <div className="rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 aspect-video flex flex-col items-center justify-center text-center p-6 relative overflow-hidden shadow-xl">
+              {uploadedImageUrl ? (
+                <>
+                  <div className="relative w-full h-full overflow-hidden rounded-lg shadow-xl">
+                    <img 
+                      src={uploadedImageUrl} 
+                      alt="Uploaded" 
+                      className="max-h-full max-w-full object-contain z-10 mx-auto" 
+                      onError={(e) => {
+                        console.error('Image failed to load:', uploadedImageUrl);
+                        e.currentTarget.onerror = null; // Prevent infinite error loop
+                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNMTAwIDcwQzExNy42NyA3MCAxMzIgODQuMzMgMTMyIDEwMkMxMzIgMTE5LjY3IDExNy42NyAxMzQgMTAwIDEzNEM4Mi4zMyAxMzQgNjggMTE5LjY3IDY4IDEwMkM2OCA4NC4zMyA4Mi4zMyA3MCAxMDAgNzBaIiBmaWxsPSIjOTRBM0IzIi8+PHBhdGggZD0iTTYwIDEzNkM2MCAxMjIuNzQ1IDcwLjc0NSAxMTIgODQgMTEySDExNkMxMjkuMjU1IDExMiAxNDAgMTIyLjc0NSAxNDAgMTM2VjE0MEg2MFYxMzZaIiBmaWxsPSIjOTRBM0IzIi8+PC9zdmc+'; // Fallback image
+                      }}
+                    />
+                    {isGenerating && (
+                      <>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 animate-pulse flex items-center justify-center z-20"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-slide-right z-30"></div>
+                        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-white text-lg font-medium bg-black/70 px-6 py-3 rounded-full z-40 shadow-xl flex items-center">
+                          <FiLoader className="animate-spin mr-3" size={20} />
+                          {getStatusText()}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <FiVideo className="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No video generated yet</h3>
+                  <p className="text-gray-500 dark:text-gray-400 max-w-md mb-4">
+                    Enter a prompt describing the video you want to create, upload an image to animate, or upload a video to enhance
+                  </p>
+                </>
+              )}
+              {!uploadedImageUrl && (
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleUploadImageClick}
+                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90 flex items-center shadow-lg transform transition-transform hover:scale-105"
+                  >
+                    <FiImage className="mr-2" />
+                    Upload Image
+                  </button>
+                  <input
+                    type="file"
+                    ref={imageInputRef}
+                    onChange={handleImageFileChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                </div>
+              )}
+              {uploadedImageUrl && !isGenerating && (
                 <button
-                  onClick={handleUploadClick}
-                  className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center"
+                  onClick={() => {
+                    setUploadedImage(null);
+                    setUploadedImageUrl(null);
+                  }}
+                  className="mt-4 px-4 py-2 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 flex items-center"
                 >
-                  <FiUpload className="mr-2" />
-                  Upload Video
+                  <FiTrash className="mr-2" />
+                  Remove Image
                 </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept="video/*"
-                  className="hidden"
-                />
-              </div>
+              )}
             </div>
           )}
         </div>
@@ -812,15 +1073,33 @@ const VideoCreatorPage: React.FC = () => {
             </div>
             
             {/* Error Display */}
-            {error && (
-              <div className="p-3 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg">
-                <p className="text-red-700 dark:text-red-300 text-sm">{error}</p>
+            {(error || apiError) && (
+              <div className="p-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg shadow-md mt-4">
+                <p className="text-red-700 dark:text-red-300 font-medium flex items-center">
+                  <FiX className="mr-2 flex-shrink-0 text-red-500" size={18} />
+                  {error || apiError}
+                </p>
+                {(error?.includes('Video generation failed') || error?.includes('Task processing failed')) && (
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400 pl-6">
+                    This may be due to server issues or the image not being suitable for animation. Try using a different image with a clear subject or try again later.
+                  </p>
+                )}
+                {(error?.includes('HEIC image format')) && (
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400 pl-6">
+                    HEIC is an Apple image format that is not widely supported by web browsers and APIs. 
+                    Please convert your image to JPG or PNG using an image converter tool before uploading.
+                    <br/><br/>
+                    <strong>Why this happens:</strong> HEIC images from iPhones are not compatible with our video generation API.
+                    <br/>
+                    <strong>How to fix:</strong> Use an image converter app or website to convert your HEIC image to JPG or PNG format.
+                  </p>
+                )}
               </div>
             )}
             
             {/* Generate Button */}
             <div>
-              {isGenerating ? (
+              {isGenerating && !uploadedImageUrl ? (
                 <div className="space-y-3">
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-4">
                     <div 
@@ -843,15 +1122,24 @@ const VideoCreatorPage: React.FC = () => {
               ) : (
                 <button
                   onClick={handleGenerateVideo}
-                  disabled={!prompt.trim() || !user?.id}
+                  disabled={!prompt.trim() || !user?.id || isUploadingImage}
                   className={`w-full py-3 rounded-lg font-medium flex items-center justify-center ${
-                    !prompt.trim() || !user?.id
+                    !prompt.trim() || !user?.id || isUploadingImage
                       ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                       : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90'
                   } transition`}
                 >
-                  <FiVideo className="mr-2" />
-                  Generate Video
+                  {isUploadingImage ? (
+                    <>
+                      <FiLoader className="animate-spin mr-2" />
+                      Uploading Image...
+                    </>
+                  ) : (
+                    <>
+                      <FiVideo className="mr-2" />
+                      Generate Video
+                    </>
+                  )}
                 </button>
               )}
             </div>
@@ -916,7 +1204,7 @@ const VideoCreatorPage: React.FC = () => {
                     {videoHistory.map((video) => (
                       <div key={video.videoId} className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         {/* Video Thumbnail */}
-                        {video.videoUrl && video.isReady && (
+                        {video.videoUrl && (video.isReady || video.statusDisplay === 'Ready') && (
                           <div className="flex-shrink-0">
                             <video
                               src={video.videoUrl}
@@ -941,28 +1229,27 @@ const VideoCreatorPage: React.FC = () => {
                           </div>
                           <div className="flex items-center space-x-2 mt-1">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              video.taskStatus === 'SUCCEEDED' || video.taskStatus === 'completed'
+                              video.taskStatus === 'SUCCEEDED' || video.taskStatus === 'completed' || video.statusDisplay === 'Ready'
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                : video.taskStatus === 'RUNNING' || video.taskStatus === 'PENDING' || video.taskStatus === 'processing'
+                                : video.taskStatus === 'RUNNING' || video.taskStatus === 'PENDING' || 
+                                  video.taskStatus === 'processing' || video.taskStatus === 'generating' ||
+                                  video.statusDisplay === 'Processing' || video.statusDisplay === 'Queued'
                                 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                : video.taskStatus === 'FAILED' || video.taskStatus === 'failed'
+                                : video.taskStatus === 'FAILED' || video.taskStatus === 'failed' || video.statusDisplay === 'Failed'
                                 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                 : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                             }`}>
-                              {video.taskStatus === 'SUCCEEDED' ? 'Ready' : 
-                               video.taskStatus === 'RUNNING' ? 'Generating' :
-                               video.taskStatus === 'PENDING' ? 'Pending' :
-                               video.taskStatus === 'FAILED' ? 'Failed' :
-                               video.statusDisplay}
+                              {/* Use the statusDisplay field which is already formatted by transformVideoData */}
+                              {video.statusDisplay}
                             </span>
                           </div>
                         </div>
                         
                         <div className="flex space-x-2">
-                          {video.videoUrl && (video.taskStatus === 'SUCCEEDED' || video.taskStatus === 'completed') && (
+                          {video.videoUrl && (video.taskStatus === 'SUCCEEDED' || video.taskStatus === 'completed' || video.statusDisplay === 'Ready') && (
                             <>
                               <button
-                                onClick={() => setVideoUrl(video.videoUrl)}
+                                onClick={() => setVideoUrl(video.videoUrl || null)}
                                 className="text-blue-500 hover:text-blue-700 dark:text-blue-400"
                                 title="Load video"
                               >
@@ -1091,4 +1378,4 @@ const VideoCreatorPage: React.FC = () => {
   );
 };
 
-export default VideoCreatorPage; 
+export default VideoCreatorPage;

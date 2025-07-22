@@ -6,6 +6,16 @@ interface ImageGenerationResponse {
   coinsDeducted: number;
 }
 
+interface ImageEnhancementResponse {
+  message: string;
+  imageId: string;
+  imageName: string;
+  imageUrl: string;
+  imagePath: string;
+  userImageUrl: string;
+  coinsDeducted: number;
+}
+
 interface ImageStatusResponse {
   message: string;
   images?: Array<{
@@ -222,5 +232,27 @@ export const imageService = {
     }
 
     return response.json();
+  },
+
+  // Enhance image from URL
+  enhanceImageFromUrl: async (uid: string, promptText: string, userImageUrl: string): Promise<ImageEnhancementResponse> => {
+    const response = await fetch(`${API_BASE_URL}/api/image/createImageFromUrl`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        uid,
+        promptText,
+        userImageUrl
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || 'Failed to enhance image');
+    }
+
+    return response.json();
   }
-}; 
+};

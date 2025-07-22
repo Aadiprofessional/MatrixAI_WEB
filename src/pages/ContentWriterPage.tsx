@@ -1,27 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  FiEdit, 
-  FiCopy, 
-  FiDownload, 
-  FiX, 
-  FiSave,
-  FiZap,
-  FiFileText,
-  FiSliders,
-  FiRotateCw,
-  FiTrash,
-  FiSend,
-  FiPlus,
-  FiShare2,
-  FiChevronLeft,
-  FiChevronRight,
-  FiMail,
-  FiTwitter,
-  FiLinkedin,
-  FiFacebook,
-  FiLink
-} from 'react-icons/fi';
+import { FiFileText, FiZap, FiCopy, FiDownload, FiShare2, FiTrash, FiRotateCw, FiEdit, FiCheck, FiX, FiSave, FiSliders, FiSend, FiPlus, FiChevronLeft, FiChevronRight, FiMail, FiTwitter, FiLinkedin, FiFacebook, FiLink } from 'react-icons/fi';
 import { ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -78,6 +57,9 @@ const ContentWriterPage: React.FC = () => {
   const [fontSize, setFontSize] = useState(16);
   const [showPreview, setShowPreview] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [contentTitle, setContentTitle] = useState('Untitled Content');
 
   // UI state
   const [showProAlert, setShowProAlert] = useState(false);
@@ -468,7 +450,10 @@ Create content that is original, well-researched, and engaging for the target au
         // Auto-scroll to bottom as content streams in
         setTimeout(() => {
           if (contentDisplayRef.current) {
-            contentDisplayRef.current.scrollTop = contentDisplayRef.current.scrollHeight;
+            const contentContainer = contentDisplayRef.current.querySelector('[data-content-container="true"]');
+            if (contentContainer) {
+              contentContainer.scrollTop = contentContainer.scrollHeight;
+            }
           }
         }, 50);
       };
@@ -1086,6 +1071,14 @@ Create content that is original, well-researched, and engaging for the target au
                       Copy
                     </button>
                     
+                    <button
+                      onClick={() => setIsEditing(!isEditing)}
+                      className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm"
+                    >
+                      <FiEdit className="w-4 h-4 mr-1" />
+                      {isEditing ? 'View' : 'Edit'}
+                    </button>
+                    
                     {/* Download Dropdown */}
                     <div className="relative group">
                       <button
@@ -1138,20 +1131,47 @@ Create content that is original, well-researched, and engaging for the target au
             
             <div className="p-6" ref={contentDisplayRef}>
               {editedContent || isStreaming ? (
-                <div className="w-full min-h-[600px]">
-                  <div className="prose prose-sm max-w-none dark:prose-invert mb-4 markdown-content">
-                    {isStreaming ? (
-                      <div className="streaming-content">
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm, remarkMath]}
-                          rehypePlugins={[rehypeKatex, rehypeRaw]}
-                          components={MarkdownComponents}
+                <div className="w-full h-[600px] overflow-y-auto" data-content-container="true">
+                  {isStreaming ? (
+                    <div className="prose prose-sm max-w-none dark:prose-invert mb-4 markdown-content streaming-content">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm, remarkMath]}
+                        rehypePlugins={[rehypeKatex, rehypeRaw]}
+                        components={MarkdownComponents}
+                      >
+                        {preprocessContent(streamingContent)}
+                      </ReactMarkdown>
+                      <span className="typing-cursor animate-pulse ml-1 text-blue-500">▋</span>
+                    </div>
+                  ) : isEditing ? (
+                    <div className="mt-2">
+                      <textarea
+                        ref={editorRef}
+                        value={editedContent}
+                        onChange={(e) => setEditedContent(e.target.value)}
+                        className="w-full min-h-[600px] p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-200 font-mono text-sm resize-none"
+                        spellCheck="false"
+                        placeholder="Edit your generated content here..."
+                      />
+                      <div className="mt-4 flex justify-end">
+                        <button
+                          onClick={clearContent}
+                          className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm mr-2"
                         >
-                          {preprocessContent(streamingContent)}
-                        </ReactMarkdown>
-                        <span className="typing-cursor animate-pulse ml-1 text-blue-500">▋</span>
+                          <FiTrash className="w-4 h-4 mr-1" />
+                          Clear
+                        </button>
+                        <button
+                          onClick={() => setIsEditing(false)}
+                          className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center text-sm"
+                        >
+                          <FiCheck className="w-4 h-4 mr-1" />
+                          Done
+                        </button>
                       </div>
-                    ) : (
+                    </div>
+                  ) : (
+                    <div className="prose prose-sm max-w-none dark:prose-invert mb-4 markdown-content">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm, remarkMath]}
                         rehypePlugins={[rehypeKatex, rehypeRaw]}
@@ -1159,30 +1179,6 @@ Create content that is original, well-researched, and engaging for the target au
                       >
                         {preprocessContent(editedContent)}
                       </ReactMarkdown>
-                    )}
-                  </div>
-                  {!isStreaming && (
-                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Edit Mode</span>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={clearContent}
-                            className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm"
-                          >
-                            <FiTrash className="w-4 h-4 mr-1" />
-                            Clear
-                          </button>
-                        </div>
-                      </div>
-                      <textarea
-                        ref={editorRef}
-                        value={editedContent}
-                        onChange={(e) => setEditedContent(e.target.value)}
-                        className="w-full min-h-[300px] p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-200 font-mono text-sm resize-none"
-                        spellCheck="false"
-                        placeholder="Edit your generated content here..."
-                      />
                     </div>
                   )}
                 </div>
@@ -1446,4 +1442,4 @@ Create content that is original, well-researched, and engaging for the target au
   );
 };
 
-export default ContentWriterPage; 
+export default ContentWriterPage;

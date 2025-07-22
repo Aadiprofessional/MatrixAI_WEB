@@ -6,6 +6,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { FiLoader, FiDownload, FiSave, FiRefreshCw } from 'react-icons/fi';
+import { userService } from '../services/userService';
 
 interface MindMapNode {
   name: string;
@@ -204,32 +205,185 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     }
   };
 
+  // Helper function to ensure iframe is fully loaded
+  const ensureIframeLoaded = (iframe: HTMLIFrameElement): Promise<void> => {
+    return new Promise((resolve) => {
+      // If iframe is already loaded
+      if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
+        console.log('Iframe already loaded');
+        resolve();
+        return;
+      }
+
+      console.log('Waiting for iframe to load...');
+      // Set up load event handler
+      const loadHandler = () => {
+        console.log('Iframe load event fired');
+        resolve();
+      };
+
+      iframe.addEventListener('load', loadHandler);
+
+      // Also set a timeout in case the load event doesn't fire
+      setTimeout(() => {
+        iframe.removeEventListener('load', loadHandler);
+        console.log('Iframe load timeout - proceeding anyway');
+        resolve();
+      }, 3000);
+    });
+  };
+
   const downloadPDF = async () => {
-    if (!graphData) return;
+    if (!graphData) {
+      alert('No mind map data available. Please generate a mind map first.');
+      return;
+    }
+    
+    // Check if user ID is available
+    if (!uid) {
+      alert('Please log in to download the PDF.');
+      return;
+    }
     
     setIsDownloading(true);
+    console.log('Starting PDF download process...');
     
     try {
-      const response = await axios.post('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/generateMindMapPdf', {
-        uid,
-        audioid,
-        xmlData: currentXmlData || JSON.stringify(graphData)
-      }, {
-        responseType: 'blob'
-      });
+      // Deduct 1 coin for PDF download
+      console.log('Deducting coins...');
+      const coinResponse = await userService.subtractCoins(uid, 1, 'mindmap_pdf_download');
       
-      // Create blob link to download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `mindmap_${audioid || Date.now()}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      if (!coinResponse.success) {
+        alert('Failed to deduct coins. Please try again.');
+        setIsDownloading(false);
+        return;
+      }
       
-    } catch (error) {
+      console.log('Coins deducted successfully, preparing to capture chart...');
+      
+      // Get the iframe element that contains the chart
+      const iframe = webViewRef.current;
+      if (!iframe) {
+        throw new Error('Chart iframe not found');
+      }
+      
+      console.log('Iframe found, ensuring it\'s fully loaded...');
+      
+      // Make sure iframe is fully loaded
+      await ensureIframeLoaded(iframe);
+      
+      // Make sure iframe content is accessible
+      if (!iframe.contentDocument) {
+        throw new Error('Cannot access iframe content document - possible CORS issue');
+      }
+      
+      console.log('Iframe content document accessible, getting chart element...');
+      
+      // Get the chart element from the iframe
+      const chartElement = iframe.contentDocument.getElementById('chart');
+      if (!chartElement) {
+        console.error('Available elements in iframe:', iframe.contentDocument.body.innerHTML);
+        throw new Error('Chart element not found in iframe - check element ID');
+      }
+      
+      console.log('Chart element found, importing libraries...');
+      
+      // Import libraries
+      let html2canvas;
+      let jsPDF;
+      
+      try {
+        // Import html2canvas
+        const html2canvasModule = await import('html2canvas');
+        html2canvas = html2canvasModule.default;
+        console.log('html2canvas imported successfully');
+        
+        // Import jsPDF
+        const jsPDFModule = await import('jspdf');
+        jsPDF = jsPDFModule.default;
+        console.log('jsPDF imported successfully');
+      } catch (importError: any) {
+        console.error('Error importing libraries:', importError);
+        throw new Error(`Failed to import required libraries: ${importError?.message || 'Unknown error'}`);
+      }
+      
+      console.log('Libraries imported, capturing chart as image...');
+      
+      // Capture the chart as an image
+      let canvas;
+      try {
+        // Try to get dimensions of the chart
+        const chartWidth = chartElement.scrollWidth || chartElement.clientWidth;
+        const chartHeight = chartElement.scrollHeight || chartElement.clientHeight;
+        console.log(`Chart dimensions: ${chartWidth}x${chartHeight}`);
+        
+        // Fallback to direct DOM capture if html2canvas fails
+        canvas = await html2canvas(chartElement, {
+          allowTaint: true,
+          useCORS: true,
+          scale: 1, // Lower scale for better performance
+          backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
+          logging: true, // Enable logging for debugging
+          width: chartWidth,
+          height: chartHeight
+        });
+        console.log('Chart captured successfully');
+      } catch (canvasError: any) {
+        console.error('Error capturing chart:', canvasError);
+        throw new Error(`Failed to capture chart: ${canvasError?.message || 'Unknown error'}`);
+      }
+      
+      console.log('Creating PDF...');
+      
+      // Create PDF
+      try {
+        // Get image data
+        const imgData = canvas.toDataURL('image/png');
+        console.log('Image data created');
+        
+        // Create PDF document
+        const pdf = new jsPDF({
+          orientation: 'landscape',
+          unit: 'mm',
+        });
+        
+        // Calculate dimensions
+        const imgWidth = pdf.internal.pageSize.getWidth() - 20; // Add some margin
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        // Add title
+        pdf.setFontSize(16);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Mind Map Visualization', 10, 10);
+        
+        // Add date
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 10, 18);
+        
+        // Add the image
+        pdf.addImage(imgData, 'PNG', 10, 25, imgWidth, imgHeight);
+        
+        console.log('PDF created, saving file...');
+        
+        // Save the PDF
+        pdf.save(`mindmap_${audioid || Date.now()}.pdf`);
+        
+        console.log('PDF downloaded successfully');
+      } catch (pdfError: any) {
+        console.error('Error creating PDF:', pdfError);
+        throw new Error(`Failed to create PDF: ${pdfError?.message || 'Unknown error'}`);
+      }
+      
+    } catch (error: any) {
       console.error('Error downloading mind map PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
+      
+      // Check if error is due to insufficient coins
+      if (error.message && error.message.includes('insufficient')) {
+        alert('You don\'t have enough coins. Please purchase more coins to use this feature.');
+      } else {
+        alert('Failed to generate PDF: ' + (error.message || 'Unknown error'));
+      }
     } finally {
       setIsDownloading(false);
     }
@@ -546,6 +700,124 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     </html>
   `;
 
+  const downloadPDFDirectly = async () => {
+    if (!graphData) {
+      alert('No mind map data available. Please generate a mind map first.');
+      return;
+    }
+    
+    // Check if user ID is available
+    if (!uid) {
+      alert('Please log in to download the PDF.');
+      return;
+    }
+    
+    setIsDownloading(true);
+    console.log('Starting direct PDF download process...');
+    
+    try {
+      // Deduct 1 coin for PDF download
+      console.log('Deducting coins...');
+      const coinResponse = await userService.subtractCoins(uid, 1, 'mindmap_pdf_download');
+      
+      if (!coinResponse.success) {
+        alert('Failed to deduct coins. Please try again.');
+        setIsDownloading(false);
+        return;
+      }
+      
+      console.log('Coins deducted successfully, importing libraries...');
+      
+      // Import libraries
+       let jsPDF;
+       try {
+         const jsPDFModule = await import('jspdf');
+         jsPDF = jsPDFModule.default;
+         console.log('jsPDF imported successfully');
+       } catch (importError: any) {
+         console.error('Error importing jsPDF:', importError);
+         throw new Error(`Failed to import jsPDF: ${importError?.message || 'Unknown error'}`);
+       }
+      
+      // Create PDF document
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+      });
+      
+      // Add title
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Mind Map Visualization', 10, 10);
+      
+      // Add date
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 10, 18);
+      
+      // Add mind map content as text
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      
+      const addNodeToPDF = (node: MindMapNode, level = 0, y = 30) => {
+        const indent = level * 10;
+        const prefix = level > 0 ? '- ' : '';
+        
+        // Add the node name
+        pdf.setFont('helvetica', level === 0 ? 'bold' : 'normal');
+        pdf.text(`${prefix}${node.name}`, 10 + indent, y);
+        
+        let newY = y + 8;
+        
+        // Add children recursively
+        if (node.children && node.children.length > 0) {
+          node.children.forEach(child => {
+            // Check if we need a new page
+            if (newY > 180) {
+              pdf.addPage();
+              newY = 30;
+            }
+            newY = addNodeToPDF(child, level + 1, newY);
+          });
+        }
+        
+        return newY;
+      };
+      
+      // Process each top-level node
+      let currentY = 30;
+      graphData.forEach(node => {
+        currentY = addNodeToPDF(node, 0, currentY);
+        currentY += 10; // Add extra space between top-level nodes
+        
+        // Add a new page if needed
+        if (currentY > 180) {
+          pdf.addPage();
+          currentY = 30;
+        }
+      });
+      
+      console.log('PDF created, saving file...');
+      
+      // Save the PDF
+      pdf.save(`mindmap_${audioid || Date.now()}.pdf`);
+      
+      console.log('PDF downloaded successfully');
+      
+    } catch (error: any) {
+      console.error('Error downloading mind map PDF:', error);
+      
+      // Check if error is due to insufficient coins
+      if (error.message && error.message.includes('insufficient')) {
+        alert('You don\'t have enough coins. Please purchase more coins to use this feature.');
+      } else {
+        alert('Failed to generate PDF: ' + (error.message || 'Unknown error'));
+      }
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -571,7 +843,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
             <FiSave />
           </button>
           <button 
-            onClick={downloadPDF}
+            onClick={downloadPDFDirectly} /* Changed to use the direct PDF generation method */
             disabled={isDownloading}
             className={`p-2 ${
               isDownloading
@@ -599,4 +871,4 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
   );
 };
 
-export default MindMapComponent; 
+export default MindMapComponent;

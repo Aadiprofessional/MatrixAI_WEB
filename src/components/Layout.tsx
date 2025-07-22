@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Navbar, Sidebar, Footer } from './';
 import { ThemeContext } from '../context/ThemeContext';
 import { FiMenu, FiX } from 'react-icons/fi';
+import { useLocation } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(256); // 256px = 16rem (w-64)
   const [isDesktop, setIsDesktop] = useState(false);
+  const location = useLocation();
+  
+  // Check if current route is chat-related
+  const isChatRoute = location.pathname.includes('/chat');
 
   // Check if desktop on initial render and on resize
   useEffect(() => {
@@ -51,7 +56,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'} ${isDesktop && sidebarWidth === 64 ? 'sidebar-collapsed' : ''}`}>
       {/* Mobile sidebar overlay */}
       {isMobileSidebarOpen && (
         <div 
@@ -93,12 +98,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {children}
           </div>
         </main>
-        <div className="w-full z-20">
-          <Footer />
-        </div>
+        {/* Only render Footer if not on a chat route */}
+        {!isChatRoute && (
+          <div className="w-full z-20">
+            <Footer />
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default Layout; 
+export default Layout;

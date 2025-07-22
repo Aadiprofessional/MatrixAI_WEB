@@ -1,20 +1,11 @@
+import { antomPaymentService } from './antomPaymentService';
 import axios, { AxiosError } from 'axios';
 
 // Set this to true to use mock implementation instead of real API calls
-const USE_MOCK_MODE = true;
+const USE_MOCK_MODE = process.env.NODE_ENV === 'development';
 
-// Airwallex API base URL
-const API_BASE_URL = 'https://api-demo.airwallex.com/api/v1';
-const CLIENT_ID = 'hwXGNN6uQ_-P5j2bvb-bpg';
-const API_KEY = 'c2e4d1d8dbdcd0097e83033a56cd681d467c93d275bbe63f9ab04e6632c0e9cc394dcea9bb65528b567c9c2857b1b524';
-
-// Store the token and its expiry time
-let authToken: string | null = null;
-let tokenExpiry: Date | null = null;
-
-interface AuthResponse {
-  token: string;
-}
+// API base URL
+const API_BASE_URL = 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run';
 
 interface ApiErrorResponse {
   message: string;
@@ -26,6 +17,7 @@ interface TransferStatus {
   created_at: string;
   amount: number;
   currency: string;
+  paymentRequestId?: string;
 }
 
 interface PaymentIntent {
@@ -34,6 +26,8 @@ interface PaymentIntent {
   amount: number;
   currency: string;
   quote_id: string;
+  paymentUrl?: string;
+  redirectUrl?: string;
 }
 
 interface BalanceInfo {
@@ -66,49 +60,11 @@ interface VirtualCard {
 }
 
 /**
- * Authenticate with Airwallex API and get access token
+ * Authenticate with Antom API and get access token
  */
 export const authenticate = async (): Promise<string> => {
-  // If in mock mode, return a fake token
-  if (USE_MOCK_MODE) {
-    console.log('[MOCK] Generating mock authentication token');
-    authToken = 'mock_token_' + Date.now();
-    tokenExpiry = new Date(new Date().getTime() + 3600 * 1000); // 1 hour from now
-    return authToken;
-  }
-
-  try {
-    // If token exists and is still valid, return it
-    if (authToken && tokenExpiry && new Date() < tokenExpiry) {
-      return authToken;
-    }
-
-    // Request new token
-    const response = await axios.post<AuthResponse>(
-      `${API_BASE_URL}/authentication/login`,
-      {},
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'x-client-id': CLIENT_ID,
-          'x-api-key': API_KEY
-        }
-      }
-    );
-
-    if (response.data && response.data.token) {
-      authToken = response.data.token;
-      // Set token expiry to 1 hour from now (typical Airwallex token lifetime)
-      tokenExpiry = new Date(new Date().getTime() + 55 * 60 * 1000); // 55 minutes to be safe
-      return authToken;
-    } else {
-      throw new Error('Authentication failed: No token received');
-    }
-  } catch (error) {
-    console.error('Authentication error:', error);
-    const axiosError = error as AxiosError<ApiErrorResponse>;
-    throw new Error(axiosError.response?.data?.message || 'Authentication failed');
-  }
+  // No authentication needed for Antom API as it's handled by the backend
+  return 'antom_auth_token';
 };
 
 /**
@@ -126,151 +82,162 @@ export const getBalances = async (): Promise<BalanceInfo[]> => {
       },
       {
         available_amount: 50000,
-        currency: "HKD",
-        pending_amount: 0,
-        total_amount: 50000
+        currency: "PHP",
+        pending_amount: 1000,
+        total_amount: 51000
       }
     ];
   }
 
   try {
-    const token = await authenticate();
+    // Get payment history to calculate balances
+    const paymentHistory = await antomPaymentService.getPaymentHistory(1, 100, 'completed');
     
-    const response = await axios.get<BalanceInfo[]>(
-      `${API_BASE_URL}/balances/current`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+    // Group by currency and calculate totals
+    const balanceMap = new Map<string, BalanceInfo>();
+    
+    paymentHistory.data.payments.forEach(payment => {
+      if (!balanceMap.has(payment.currency)) {
+        balanceMap.set(payment.currency, {
+          available_amount: 0,
+          currency: payment.currency,
+          pending_amount: 0,
+          total_amount: 0
+        });
       }
-    );
+      
+      const balance = balanceMap.get(payment.currency)!;
+      balance.available_amount += payment.amount;
+      balance.total_amount += payment.amount;
+    });
     
-    return response.data;
+    // Also check for pending payments
+    const pendingPayments = await antomPaymentService.getPaymentHistory(1, 100, 'pending');
+    pendingPayments.data.payments.forEach(payment => {
+      if (!balanceMap.has(payment.currency)) {
+        balanceMap.set(payment.currency, {
+          available_amount: 0,
+          currency: payment.currency,
+          pending_amount: payment.amount,
+          total_amount: payment.amount
+        });
+      } else {
+        const balance = balanceMap.get(payment.currency)!;
+        balance.pending_amount += payment.amount;
+        balance.total_amount += payment.amount;
+      }
+    });
+    
+    return Array.from(balanceMap.values());
   } catch (error) {
     console.error('Error getting balances:', error);
-    const axiosError = error as AxiosError<ApiErrorResponse>;
-    throw new Error(axiosError.response?.data?.message || 'Failed to get balance information');
+    throw error;
   }
 };
 
 /**
- * Create a payment intent with Airwallex
- * This will use the transfers/create endpoint to simulate payment intents
+ * Create a payment intent with Antom Payment Service
  */
-export const createPaymentIntent = async (amount: number | string, currency = 'HKD'): Promise<PaymentIntent> => {
+export const createPaymentIntent = async (amount: number | string, currency = 'PHP', paymentMethodType = 'GCASH'): Promise<PaymentIntent> => {
+  console.log(`Creating payment intent for ${amount} ${currency} using ${paymentMethodType}`);
+  
   if (USE_MOCK_MODE) {
-    console.log('[MOCK] Creating mock payment intent for', amount, currency);
+    console.log('[MOCK] Creating mock payment intent for', amount, currency, paymentMethodType);
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     const requestId = `mock_payment_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+    const orderId = `ORDER_${Date.now()}`;
     
     return {
       id: requestId,
-      client_secret: `${requestId}_secret`,
+      client_secret: orderId,
       amount: typeof amount === 'string' ? parseFloat(amount) : amount,
       currency: currency,
-      quote_id: `quote_${Date.now()}`
+      quote_id: orderId,
+      paymentUrl: `https://mock-payment-gateway.com/pay/${requestId}`,
+      redirectUrl: `${window.location.origin}/payment/success?paymentRequestId=${requestId}`
     };
   }
-
+  
   try {
-    const token = await authenticate();
+    const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
     
-    // Get a quote first (required for FX transactions)
-    const quoteResponse = await axios.post(
-      `${API_BASE_URL}/fx/quotes/create`,
-      {
-        buy_currency: currency,
-        buy_amount: typeof amount === 'string' ? parseFloat(amount) : amount,
-        sell_currency: 'USD', // Assuming business account is in USD
-        validity: 'HR_24'
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    // Create payment using Antom payment service
+    const paymentResponse = await antomPaymentService.createPayment({
+      amount: numericAmount,
+      currency: currency,
+      paymentMethodType: paymentMethodType, // Use the provided payment method
+      redirectUrl: window.location.origin + '/payment/success'
+    });
     
-    const quote = quoteResponse.data;
-    
-    // Create a unique request ID
-    const requestId = `payment_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-    
-    // Create a transfer (payment)
-    const response = await axios.post(
-      `${API_BASE_URL}/transfers/create`,
-      {
-        request_id: requestId,
-        source_currency: 'USD',
-        source_amount: quote.sell_amount,
-        target_currency: currency,
-        target_amount: amount,
-        payment_method: 'CARD',
-        metadata: {
-          payment_type: 'subscription',
-          quote_id: quote.quote_id
-        }
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    if (!paymentResponse.success) {
+      throw new Error(paymentResponse.message || 'Failed to create payment');
+    }
     
     return {
-      id: response.data.id || requestId,
-      client_secret: `${requestId}_secret`, // Simulate client secret
-      amount: typeof amount === 'string' ? parseFloat(amount) : amount,
+      id: paymentResponse.data.paymentRequestId,
+      client_secret: paymentResponse.data.orderId,
+      amount: numericAmount,
       currency: currency,
-      quote_id: quote.quote_id
+      quote_id: paymentResponse.data.orderId,
+      paymentUrl: paymentResponse.data.paymentUrl,
+      redirectUrl: paymentResponse.data.redirectUrl
     };
   } catch (error) {
     console.error('Error creating payment intent:', error);
-    const axiosError = error as AxiosError<ApiErrorResponse>;
-    throw new Error(axiosError.response?.data?.message || 'Failed to create payment');
+    throw error instanceof Error ? error : new Error('Failed to create payment intent');
   }
 };
 
 /**
  * Check transfer status by ID
  */
-export const getTransferStatus = async (transferId: string): Promise<TransferStatus> => {
+export const getTransferStatus = async (paymentRequestId: string): Promise<TransferStatus> => {
+  console.log(`Checking payment status for ${paymentRequestId}`);
+  
   if (USE_MOCK_MODE) {
-    console.log('[MOCK] Getting mock transfer status for', transferId);
+    console.log('[MOCK] Getting mock transfer status for', paymentRequestId);
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 800));
     
     return {
-      id: transferId,
-      status: 'CONFIRMED',
+      id: paymentRequestId,
+      status: 'COMPLETED',
       created_at: new Date().toISOString(),
       amount: 1000,
-      currency: 'HKD'
+      currency: 'PHP',
+      paymentRequestId: paymentRequestId
     };
   }
-
+  
   try {
-    const token = await authenticate();
+    // Get payment status from Antom payment service
+    const statusResponse = await antomPaymentService.getPaymentStatus(paymentRequestId);
     
-    const response = await axios.get<TransferStatus>(
-      `${API_BASE_URL}/transfers/${transferId}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      }
-    );
+    if (!statusResponse.success) {
+      throw new Error('Failed to get payment status');
+    }
     
-    return response.data;
+    // Map Antom status to TransferStatus
+    const statusMap: Record<string, string> = {
+      'pending': 'PENDING',
+      'completed': 'COMPLETED',
+      'failed': 'FAILED',
+      'cancelled': 'CANCELLED'
+    };
+    
+    return {
+      id: statusResponse.data.paymentRequestId,
+      status: statusMap[statusResponse.data.status] || 'UNKNOWN',
+      created_at: new Date().toISOString(),
+      amount: statusResponse.data.paymentRecord?.amount || 0,
+      currency: statusResponse.data.paymentRecord?.currency || 'PHP',
+      paymentRequestId: statusResponse.data.paymentRequestId
+    };
   } catch (error) {
-    console.error('Error checking transfer status:', error);
-    const axiosError = error as AxiosError<ApiErrorResponse>;
-    throw new Error(axiosError.response?.data?.message || 'Failed to check transfer status');
+    console.error('Error getting payment status:', error);
+    throw error instanceof Error ? error : new Error('Failed to get payment status');
   }
 };
 
@@ -462,4 +429,92 @@ export const createVirtualCard = async (amount: number | string, currency = 'HKD
     const axiosError = error as AxiosError<ApiErrorResponse>;
     throw new Error(axiosError.response?.data?.message || 'Failed to create virtual card');
   }
-}; 
+};
+
+// Function to create a subscription payment
+export const createSubscriptionPayment = async (
+  planId: string,
+  amount: number | string,
+  currency = 'PHP',
+  paymentMethodType = 'GCASH',
+  session: any
+) => {
+  console.log(`Creating subscription payment for plan ${planId}, amount ${amount} ${currency} using ${paymentMethodType}`);
+  
+  try {
+    // Prepare the payment request data
+    const paymentData = {
+      planId,
+      amount: typeof amount === 'string' ? parseFloat(amount) : amount,
+      currency,
+      paymentMethodType,
+      orderDescription: `Subscription Plan: ${planId}`,
+      redirectUrl: `${window.location.origin}/payment/success`,
+      notifyUrl: `${API_BASE_URL}/api/payment/notify`
+    };
+    
+    // Call the Antom payment service to create the payment
+    const response = await antomPaymentService.createPayment(paymentData);
+    
+    return response;
+  } catch (error) {
+    console.error('Error creating subscription payment:', error);
+    return {
+      success: false,
+      error: 'Failed to create subscription payment'
+    };
+  }
+};
+
+// Function to create an addon payment
+export const createAddonPayment = async (
+  addonId: string,
+  amount: number | string,
+  currency = 'PHP',
+  paymentMethodType = 'GCASH',
+  session: any
+) => {
+  console.log(`Creating addon payment for addon ${addonId}, amount ${amount} ${currency} using ${paymentMethodType}`);
+  
+  try {
+    // Prepare the payment request data
+    const paymentData = {
+      addonId,
+      amount: typeof amount === 'string' ? parseFloat(amount) : amount,
+      currency,
+      paymentMethodType,
+      orderDescription: `Addon Purchase: ${addonId}`,
+      redirectUrl: `${window.location.origin}/payment/success`,
+      notifyUrl: `${API_BASE_URL}/api/payment/notify`
+    };
+    
+    // Call the Antom payment service to create the payment
+    const response = await antomPaymentService.createPayment(paymentData);
+    
+    return response;
+  } catch (error) {
+    console.error('Error creating addon payment:', error);
+    return {
+      success: false,
+      error: 'Failed to create addon payment'
+    };
+  }
+};
+
+// Function to query payment status
+export const queryPaymentStatus = async (paymentRequestId: string, session: any) => {
+  console.log(`Querying payment status for ${paymentRequestId}`);
+  
+  try {
+    // Call the Antom payment service to get the payment status
+    const response = await antomPaymentService.getPaymentStatus(paymentRequestId);
+    
+    return response;
+  } catch (error) {
+    console.error('Error querying payment status:', error);
+    return {
+      success: false,
+      error: 'Failed to query payment status'
+    };
+  }
+};

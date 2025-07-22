@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   FiHelpCircle, 
@@ -20,6 +20,7 @@ import { useLanguage } from '../context/LanguageContext';
 import ChargeModal from './ChargeModal';
 import LanguageSelector from './LanguageSelector';
 import coinImage from '../assets/coin.png';
+import { supabase } from '../supabaseClient';
 
 interface NavbarProps {}
 
@@ -33,12 +34,47 @@ const Navbar: React.FC<NavbarProps> = () => {
 
   const { darkMode, toggleDarkMode } = useTheme();
   const { user, signOut } = useAuth();
-  const { userData } = useUser();
+  const { userData, refreshUserData } = useUser();
   const { isPro } = useUser();
   const { t } = useLanguage();
+  const [localCoins, setLocalCoins] = useState<number | undefined>(userData?.user_coins);
+
+  // Set up real-time subscription to user coins
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    // Initialize local coins from userData
+    setLocalCoins(userData?.user_coins);
+    
+    // Set up real-time subscription to the users table
+    const subscription = supabase
+      .channel('users-coins-channel')
+      .on('postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'users',
+          filter: `uid=eq.${user.id}`
+        }, 
+        (payload) => {
+          // Update local coins state when changes occur
+          if (payload.new && payload.new.user_coins !== undefined) {
+            setLocalCoins(payload.new.user_coins);
+            // Also refresh the full user data in context
+            refreshUserData();
+          }
+        }
+      )
+      .subscribe();
+    
+    // Clean up subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user?.id, refreshUserData]);
 
   // Debug logging
-  console.log('Navbar render:', { showChargeModal, userData: !!userData, isPro });
+  console.log('Navbar render:', { showChargeModal, userData: !!userData, isPro, localCoins });
 
   const handleLogout = async () => {
     try {
@@ -128,7 +164,7 @@ const Navbar: React.FC<NavbarProps> = () => {
             </button>
           )}
           
-          {isPro && userData && userData.user_coins && userData.user_coins < 200 && (
+          {isPro && user && (localCoins !== undefined ? localCoins < 200 : (userData?.user_coins || 0) < 200) && (
             <button
               onClick={() => {
                 console.log('Buy Coins button clicked, opening charge modal');
@@ -142,7 +178,7 @@ const Navbar: React.FC<NavbarProps> = () => {
           )}
 
           {/* User Coins - Make it clickable to open charge modal */}
-          {userData && (
+          {user && (
             <button
               onClick={() => {
                 console.log('Coin button clicked, opening charge modal');
@@ -156,7 +192,7 @@ const Navbar: React.FC<NavbarProps> = () => {
               title="Click to buy more coins"
             >
               <img src={coinImage} alt="Coin" className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
-              <span className="font-medium">{userData.user_coins || 0}</span>
+              <span className="font-medium">{localCoins !== undefined ? localCoins : (userData?.user_coins || 0)}</span>
             </button>
           )}
 
@@ -303,4 +339,4 @@ const Navbar: React.FC<NavbarProps> = () => {
   );
 };
 
-export default Navbar; 
+export default Navbar;

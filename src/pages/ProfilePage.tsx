@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -27,7 +28,14 @@ import {
   FiActivity,
   FiCheckCircle,
   FiXCircle,
-  FiAlertCircle
+  FiAlertCircle,
+  FiList,
+  FiArrowDown,
+  FiArrowUp,
+  FiCornerLeftUp,
+  FiCornerRightUp,
+  FiCreditCard,
+  FiStar
 } from 'react-icons/fi';
 import { updateUserProfile } from '../supabaseClient';
 import { toast } from 'react-hot-toast';
@@ -97,41 +105,90 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
   const { darkMode } = useContext(ThemeContext);
   
   const getTransactionIcon = (transactionName: string) => {
-    switch (transactionName.toLowerCase()) {
-      case 'audio transcription':
-        return <FiFileText className="w-5 h-5" />;
-      case 'image generation':
-        return <FiImage className="w-5 h-5" />;
-      case 'matrix bot':
-        return <FiMessageSquare className="w-5 h-5" />;
-      case 'image to text':
-        return <FiImage className="w-5 h-5" />;
-      case 'text to image':
-        return <FiImage className="w-5 h-5" />;
-      case 'video generation':
-        return <FiVideo className="w-5 h-5" />;
-      default:
-        return <FiActivity className="w-5 h-5" />;
-    }
+    // Check for transaction type patterns
+    if (!transactionName) return <FiActivity className="w-5 h-5" />;
+    
+    const name = transactionName.toLowerCase();
+    
+    // Content generation related
+    if (name.includes('content_generation')) return <FiFileText className="w-5 h-5" />;
+    
+    // Chat related
+    if (name.includes('chat') || name.includes('message')) return <FiMessageSquare className="w-5 h-5" />;
+    
+    // Image related
+    if (name.includes('image')) return <FiImage className="w-5 h-5" />;
+    
+    // Video related
+    if (name.includes('video')) return <FiVideo className="w-5 h-5" />;
+    
+    // Audio/transcription related
+    if (name.includes('audio') || name.includes('transcription')) return <FiFileText className="w-5 h-5" />;
+    
+    // Credit/debit related
+    if (name.includes('credit')) return <FiArrowDown className="w-5 h-5" />;
+    if (name.includes('debit')) return <FiArrowUp className="w-5 h-5" />;
+    
+    // Subscription related
+    if (name.includes('subscription')) return <FiClock className="w-5 h-5" />;
+    
+    // Refund related
+    if (name.includes('refund')) return <FiCornerLeftUp className="w-5 h-5" />;
+    
+    // Withdrawal related
+    if (name.includes('withdrawal')) return <FiCornerRightUp className="w-5 h-5" />;
+    
+    // Default fallback
+    return <FiCreditCard className="w-5 h-5" />;
   };
 
   const getTransactionColor = (transactionName: string) => {
-    switch (transactionName.toLowerCase()) {
-      case 'audio transcription':
-        return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600';
-      case 'image generation':
-        return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600';
-      case 'matrix bot':
-        return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-600';
-      case 'image to text':
-        return darkMode ? 'bg-orange-900/50 text-orange-300' : 'bg-orange-100 text-orange-600';
-      case 'text to image':
-        return darkMode ? 'bg-pink-900/50 text-pink-300' : 'bg-pink-100 text-pink-600';
-      case 'video generation':
-        return darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-600';
-      default:
-        return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600';
-    }
+    if (!transactionName) return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600';
+    
+    const name = transactionName.toLowerCase();
+    
+    // Content generation related
+    if (name.includes('content_generation')) 
+      return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-600';
+    
+    // Chat related
+    if (name.includes('chat') || name.includes('message')) 
+      return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600';
+    
+    // Image related
+    if (name.includes('image')) 
+      return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600';
+    
+    // Video related
+    if (name.includes('video')) 
+      return darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-600';
+    
+    // Audio/transcription related
+    if (name.includes('audio') || name.includes('transcription')) 
+      return darkMode ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-600';
+    
+    // Credit related
+    if (name.includes('credit')) 
+      return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-600';
+    
+    // Debit related
+    if (name.includes('debit')) 
+      return darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-600';
+    
+    // Subscription related
+    if (name.includes('subscription')) 
+      return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600';
+    
+    // Refund related
+    if (name.includes('refund')) 
+      return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600';
+    
+    // Withdrawal related
+    if (name.includes('withdrawal')) 
+      return darkMode ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-600';
+    
+    // Default fallback
+    return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600';
   };
 
   const getStatusIcon = (status: string) => {
@@ -176,7 +233,12 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
           </div>
           <div>
             <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              {transaction.transaction_name}
+              {transaction.transaction_name ? 
+                transaction.transaction_name.split('_').map(word => 
+                  word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ') : 
+                'Transaction'
+              }
             </h4>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               {formatDate(transaction.time)}
@@ -747,14 +809,15 @@ const ProfilePage: React.FC = () => {
                         <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                           Showing 10 of {transactions.length} transactions
                         </p>
-                        <button 
-                          onClick={() => {/* Navigate to full transactions page */}}
-                          className={`mt-2 text-sm font-medium ${
-                            darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'
+                        <Link 
+                          to="/transactions"
+                          className={`mt-2 inline-flex items-center gap-1 px-4 py-2 rounded-lg ${
+                            darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'
                           } transition-colors`}
                         >
+                          <FiList className="w-4 h-4" />
                           View all transactions
-                        </button>
+                        </Link>
                       </div>
                     )}
                   </div>

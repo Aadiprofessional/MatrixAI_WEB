@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiCheck, FiX, FiMoon, FiSun } from 'react-icons/fi';
+import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiCheck, FiX, FiMoon, FiSun, FiGithub, FiTwitter, FiLinkedin } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -108,11 +108,11 @@ const SignupPage: React.FC = () => {
     
     return (
       <div className="mt-1">
-        <div className="flex w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div className="flex w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className={`h-full ${i < strength ? strengthColor[strength - 1] : 'bg-gray-200'} ${
+              className={`h-full ${i < strength ? strengthColor[strength - 1] : 'bg-gray-200 dark:bg-gray-700'} ${
                 i === 0 ? 'rounded-l-full' : ''
               } ${i === 4 ? 'rounded-r-full' : ''}`}
               style={{ width: '20%' }}
@@ -120,7 +120,7 @@ const SignupPage: React.FC = () => {
           ))}
         </div>
         {password && (
-          <p className="text-xs mt-1 text-gray-600">
+          <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             Strength: {strengthText[strength - 1] || 'Very Weak'}
           </p>
         )}
@@ -191,393 +191,550 @@ const SignupPage: React.FC = () => {
 
       console.log('Signup successful:', data);
       
-      // Pass user data to verification screen
-      const userData = {
-        uid: data.user?.id || '',
-        name: name.trim(),
-        email: email.trim(),
-        age: age ? parseInt(age, 10) : null,
-        gender: gender,
-        preferred_language: preferredLanguage,
-        referral_code: newReferralCode,
-        referrerId: referrerId,
-        password: password // Pass password for auto-login after verification
-      };
-      
-      // Navigate to email verification page instead of login page
-      navigate('/verify-email', { 
+      // Navigate to verification page
+      navigate('/verification', { 
         state: { 
           email: email.trim(),
-          message: 'We have sent a verification link to your email. Please verify your email within 10 minutes to continue.',
-          isNewUser: true,
-          userData: userData
+          message: 'Please check your email for a verification link.'
         } 
       });
+      
     } catch (err: any) {
-      console.error('Error during signup:', err);
-      
-      // Handle specific error cases
-      if (err.message && err.message.includes('already registered')) {
-        setError('This email is already registered. Please login instead.');
-        navigate('/login');
-        return;
-      }
-      
-      setError(err.message || 'Signup failed. Please try again.');
+      console.error('Signup error:', err);
+      setError(err.message || 'An error occurred during signup');
     } finally {
       setLoading(false);
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
-
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 py-12 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
-      {/* Animated Background Gradients */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-br from-blue-500/30 via-indigo-500/20 to-purple-600/30 blur-3xl opacity-60 animate-pulse" style={{ animationDuration: '8s' }}></div>
-        <div className="absolute bottom-0 right-0 w-full h-1/3 bg-gradient-to-tr from-purple-600/30 via-pink-500/20 to-blue-500/30 blur-3xl opacity-60 animate-pulse" style={{ animationDuration: '10s' }}></div>
+    <div className={`min-h-screen flex ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-300 relative overflow-hidden`}>
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
+        <div className="absolute top-96 -right-24 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-24 left-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
       </div>
-
       {/* Theme Toggle */}
       <button 
         onClick={toggleDarkMode}
-        className={`fixed top-6 right-6 p-2 rounded-full z-50 transition-colors ${
+        className={`fixed top-6 right-6 p-3 rounded-full z-50 transition-all ${
           darkMode ? 'bg-gray-800 text-yellow-400 hover:bg-gray-700' : 'bg-white text-blue-900 hover:bg-gray-100'
-        } shadow-lg`}
+        } shadow-lg hover:scale-110`}
         aria-label="Toggle dark mode"
       >
         {darkMode ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
       </button>
+
+      {/* Left Side - Branding/Image */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700">
+          {/* Animated Gradient Overlay */}
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-pink-500/30 via-purple-500/20 to-blue-500/30 blur-3xl animate-pulse" style={{ animationDuration: '8s' }}></div>
+            <div className="absolute bottom-0 right-0 w-full h-full bg-gradient-to-tr from-blue-500/30 via-indigo-500/20 to-purple-600/30 blur-3xl animate-pulse" style={{ animationDuration: '10s' }}></div>
+          </div>
+          
+          {/* Decorative Elements */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-[10%] left-[20%] w-32 h-32 border-2 border-white/30 rounded-full"></div>
+            <div className="absolute top-[30%] right-[15%] w-24 h-24 border border-white/20 rounded-full"></div>
+            <div className="absolute bottom-[20%] left-[30%] w-40 h-40 border border-white/20 rounded-full"></div>
+            <div className="absolute top-[60%] right-[25%] w-16 h-16 border-2 border-white/30 rounded-full"></div>
+          </div>
+          
+          {/* Branding Content */}
+          <div className="relative h-full flex flex-col items-center justify-center p-12 text-white">
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="relative mb-8"
+            >
+              <div className="absolute inset-0 rounded-full bg-white/20 blur-xl opacity-70 animate-pulse" style={{ animationDuration: '8s' }}></div>
+              <div className="relative flex items-center justify-center h-28 w-28 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600 shadow-lg">
+                <span className="text-5xl font-bold text-white drop-shadow-md">AI</span>
+              </div>
+            </motion.div>
+            
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="text-5xl font-bold mb-4 text-center bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-white"
+            >
+              Join Matrix AI Today
+            </motion.h1>
+            
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="text-xl text-center text-white/80 max-w-md"
+            >
+              Create your account and unlock the full potential of AI
+            </motion.p>
+            
+            {/* Feature List */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="mt-12 space-y-5 text-white/90"
+            >
+              <div className="flex items-center transform transition-transform hover:translate-x-2">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mr-4 shadow-md">
+                  <span className="text-lg">✓</span>
+                </div>
+                <p className="text-lg">Personalized AI experience</p>
+              </div>
+              <div className="flex items-center transform transition-transform hover:translate-x-2">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mr-4 shadow-md">
+                  <span className="text-lg">✓</span>
+                </div>
+                <p className="text-lg">Save and share your conversations</p>
+              </div>
+              <div className="flex items-center transform transition-transform hover:translate-x-2">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mr-4 shadow-md">
+                  <span className="text-lg">✓</span>
+                </div>
+                <p className="text-lg">Access premium features and roles</p>
+              </div>
+            </motion.div>
+            
+            {/* Social Proof */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+              className="mt-16 pt-8 border-t border-white/20 w-full"
+            >
+              <p className="text-center text-white/70 mb-4">Join thousands of satisfied users</p>
+              <div className="flex justify-center space-x-6">
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
+                  <FiGithub className="h-5 w-5" />
+                </div>
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
+                  <FiTwitter className="h-5 w-5" />
+                </div>
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
+                  <FiLinkedin className="h-5 w-5" />
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
       
-      <div className="relative w-full max-w-xl">
+      {/* Right Side - Signup Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <motion.div 
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className={`p-8 rounded-2xl shadow-xl backdrop-blur-xl ${
-            darkMode ? 'bg-gray-800/80 text-white' : 'bg-white/90 text-gray-900'
-          } border border-opacity-20 ${
-            darkMode ? 'border-purple-500/30' : 'border-blue-500/30'
-          }`}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className={`w-full max-w-md p-10 rounded-3xl shadow-2xl backdrop-blur-sm ${
+            darkMode ? 'bg-gray-800/90 text-white' : 'bg-white/90 text-gray-900'
+          } border ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}
         >
-          <h1 className={`text-2xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 mb-2`}>
-            Create your account
-          </h1>
-          <p className={`text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-8`}>
-            Sign up to get started
-          </p>
+          <div className="lg:hidden flex justify-center mb-8">
+            <motion.div 
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="relative"
+            >
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 blur-xl opacity-70 animate-spin" style={{ animationDuration: '8s' }}></div>
+              <div className={`relative flex items-center justify-center h-24 w-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg`}>
+                <span className="text-4xl font-bold text-white drop-shadow-md">AI</span>
+              </div>
+            </motion.div>
+          </div>
+          
+          <motion.h1 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="text-3xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+          >
+            {t('auth.createAccount')}
+          </motion.h1>
+          
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className={`text-center mb-8 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}
+          >
+            {t('auth.signupSubtitle')}
+          </motion.p>
           
           {error && (
-            <div className={`p-3 rounded-lg mb-6 text-sm text-center ${
-              darkMode ? 'bg-red-900/40 text-red-200' : 'bg-red-50 text-red-700'
-            }`}>
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`p-3 rounded-lg mb-6 text-sm text-center ${
+                darkMode ? 'bg-red-900/40 text-red-200' : 'bg-red-50 text-red-700'
+              }`}
+            >
               {error}
-            </div>
+            </motion.div>
           )}
           
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-5">
-              <div>
-                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="name">
-                  Full Name
-                </label>
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiUser className={`h-5 w-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                  </div>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    autoComplete="name"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className={`w-full pl-10 pr-3 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                      darkMode 
-                        ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
-                        : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
-                    }`}
-                    placeholder="John Doe"
-                  />
+          <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto max-h-[60vh] pr-2 -mr-2">
+            {/* Full Name */}
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+            >
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="name">
+                {t('auth.fullName')}
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiUser className={`h-5 w-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                 </div>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={`w-full pl-10 pr-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
+                    darkMode 
+                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
+                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
+                  } backdrop-blur-sm`}
+                  placeholder="John Doe"
+                />
               </div>
-              
-              <div>
-                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="email">
-                  Email Address
-                </label>
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiMail className={`h-5 w-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                  </div>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={`w-full pl-10 pr-3 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                      darkMode 
-                        ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
-                        : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
-                    }`}
-                    placeholder="you@example.com"
-                  />
-                </div>
-              </div>
+            </motion.div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="age">
-                    Age
-                  </label>
-                  <input
-                    id="age"
-                    name="age"
-                    type="number"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    className={`w-full px-3 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                      darkMode 
-                        ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
-                        : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
-                    }`}
-                    placeholder="25"
-                  />
+            {/* Email */}
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="email">
+                {t('auth.email')}
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiMail className={`h-5 w-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                 </div>
-                
-                <div>
-                  <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="gender">
-                    Gender
-                  </label>
-                  <select
-                    id="gender"
-                    name="gender"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                    className={`w-full px-3 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                      darkMode 
-                        ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
-                        : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
-                    }`}
-                  >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
-                  </select>
-                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={`w-full pl-10 pr-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
+                    darkMode 
+                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
+                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
+                  } backdrop-blur-sm`}
+                  placeholder="you@example.com"
+                />
               </div>
-              
-              <div>
-                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="language">
-                  Preferred Language
+            </motion.div>
+
+            {/* Age and Gender in a row */}
+            <div className="grid grid-cols-2 gap-4">
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+              >
+                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="age">
+                  {t('auth.age')}
+                </label>
+                <input
+                  id="age"
+                  name="age"
+                  type="number"
+                  min="13"
+                  max="120"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  className={`w-full px-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
+                    darkMode 
+                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
+                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
+                  } backdrop-blur-sm`}
+                  placeholder="25"
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+              >
+                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="gender">
+                  {t('auth.gender')}
                 </label>
                 <select
-                  id="language"
-                  name="language"
-                  value={preferredLanguage}
-                  onChange={(e) => setPreferredLanguage(e.target.value)}
-                  className={`w-full px-3 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                  id="gender"
+                  name="gender"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  className={`w-full px-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
                     darkMode 
-                      ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
-                      : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
-                  }`}
+                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
+                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
+                  } backdrop-blur-sm`}
                 >
-                  <option value="English">English</option>
-                  <option value="Spanish">Spanish</option>
-                  <option value="French">French</option>
-                  <option value="German">German</option>
-                  <option value="Chinese">Chinese</option>
-                  <option value="Japanese">Japanese</option>
-                  <option value="Korean">Korean</option>
+                  <option value="Male">{t('auth.male')}</option>
+                  <option value="Female">{t('auth.female')}</option>
+                  <option value="Other">{t('auth.other')}</option>
+                  <option value="Prefer not to say">{t('auth.preferNotToSay')}</option>
                 </select>
-              </div>
-              
-              <div>
-                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="password">
-                  Password
-                </label>
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiLock className={`h-5 w-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                  </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={`w-full pl-10 pr-10 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                      darkMode 
-                        ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
-                        : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
-                    }`}
-                    placeholder="Create a password"
-                  />
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                    <button
-                      type="button"
-                      onClick={togglePasswordVisibility}
-                      className={`focus:outline-none ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-600'}`}
-                    >
-                      {showPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
-                    </button>
-                  </div>
+              </motion.div>
+            </div>
+
+            {/* Password */}
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7, duration: 0.5 }}
+            >
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="password">
+                {t('auth.password')}
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiLock className={`h-5 w-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                 </div>
-                {renderPasswordStrength()}
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={`w-full pl-10 pr-10 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
+                    darkMode 
+                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
+                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
+                  } backdrop-blur-sm`}
+                  placeholder="Create a strong password"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className={`focus:outline-none p-1 rounded-full hover:bg-gray-200/30 ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-600'}`}
+                  >
+                    {showPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
-              
-              <div>
-                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="confirmPassword">
-                  Confirm Password
-                </label>
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiLock className={`h-5 w-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                  </div>
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`w-full pl-10 pr-10 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                      darkMode 
-                        ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
-                        : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
-                    } ${
-                      confirmPassword && password !== confirmPassword
-                        ? darkMode ? 'ring-2 ring-red-500' : 'border-red-500 ring-red-500'
-                        : ''
-                    }`}
-                    placeholder="Confirm your password"
-                  />
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                    <button
-                      type="button"
-                      onClick={toggleConfirmPasswordVisibility}
-                      className={`focus:outline-none ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-600'}`}
-                    >
-                      {showConfirmPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  {confirmPassword && (
-                    <div className="absolute inset-y-0 right-12 pr-3 flex items-center">
-                      {password === confirmPassword ? (
-                        <FiCheck className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <FiX className="h-5 w-5 text-red-500" />
-                      )}
+              {renderPasswordStrength()}
+            </motion.div>
+
+            {/* Confirm Password */}
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+            >
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="confirmPassword">
+                {t('auth.confirmPassword')}
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiLock className={`h-5 w-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                </div>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={`w-full pl-10 pr-10 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
+                    darkMode 
+                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
+                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
+                  } backdrop-blur-sm`}
+                  placeholder="Confirm your password"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className={`focus:outline-none p-1 rounded-full hover:bg-gray-200/30 ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-600'}`}
+                  >
+                    {showConfirmPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
+              {confirmPassword && (
+                <div className="flex items-center mt-2">
+                  {password === confirmPassword ? (
+                    <div className="flex items-center text-green-500 bg-green-100/20 px-3 py-1 rounded-lg">
+                      <FiCheck className="h-4 w-4 mr-1" />
+                      <span className="text-xs font-medium">Passwords match</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center text-red-500 bg-red-100/20 px-3 py-1 rounded-lg">
+                      <FiX className="h-4 w-4 mr-1" />
+                      <span className="text-xs font-medium">Passwords do not match</span>
                     </div>
                   )}
                 </div>
-              </div>
+              )}
+            </motion.div>
 
-              <div>
-                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`} htmlFor="referralCode">
-                  Referral Code (Optional)
-                </label>
+            {/* Referral Code */}
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.9, duration: 0.5 }}
+            >
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="referralCode">
+                {t('auth.referralCode')} <span className="text-xs text-gray-500 ml-1 px-2 py-0.5 rounded-full bg-gray-200/30">(Optional)</span>
+              </label>
+              <div className="relative">
                 <input
                   id="referralCode"
                   name="referralCode"
                   type="text"
                   value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                  className={`w-full px-3 py-3 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                  className={`w-full px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
                     darkMode 
-                      ? 'bg-gray-700 text-white border-gray-600 focus:ring-purple-500' 
-                      : 'bg-white text-gray-900 border-gray-300 focus:ring-blue-500'
-                  }`}
-                  placeholder="Enter referral code"
+                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
+                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
+                  } backdrop-blur-sm`}
+                  placeholder="Enter referral code if you have one"
+                />
+                {referralCode && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <span className={`text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-purple-500/20 text-purple-300' : 'bg-blue-500/20 text-blue-600'}`}>
+                      {referralCode}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Terms and Conditions */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.0, duration: 0.5 }}
+              className="flex items-start mt-6"
+            >
+              <div className="flex items-center h-5">
+                <input
+                  id="terms"
+                  name="terms"
+                  type="checkbox"
+                  checked={agreeToTerms}
+                  onChange={() => setAgreeToTerms(!agreeToTerms)}
+                  className={`h-5 w-5 rounded-md focus:ring-2 cursor-pointer ${darkMode ? 'bg-gray-700 border-gray-600 text-purple-500 focus:ring-purple-500' : 'bg-white border-gray-300 text-blue-500 focus:ring-blue-500'}`}
                 />
               </div>
-              
-              <div className="mt-6">
-                <div className="flex items-start">
-                  <div className="flex items-center h-5">
-                    <input
-                      id="terms"
-                      name="terms"
-                      type="checkbox"
-                      checked={agreeToTerms}
-                      onChange={(e) => setAgreeToTerms(e.target.checked)}
-                      className={`focus:ring-3 h-4 w-4 rounded border-gray-300 ${
-                        darkMode 
-                          ? 'bg-gray-700 text-purple-500 focus:ring-purple-600' 
-                          : 'bg-white text-blue-600 focus:ring-blue-300'
-                      }`}
-                    />
-                  </div>
-                  <div className="ml-3">
-                    <label htmlFor="terms" className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      I agree to the{' '}
-                      <Link to="/terms" className={`font-medium ${darkMode ? 'text-purple-400' : 'text-blue-600'} hover:underline`}>
-                        Terms of Service
-                      </Link>{' '}
-                      and{' '}
-                      <Link to="/privacy" className={`font-medium ${darkMode ? 'text-purple-400' : 'text-blue-600'} hover:underline`}>
-                        Privacy Policy
-                      </Link>
-                    </label>
-                  </div>
-                </div>
+              <div className="ml-3 text-sm">
+                <label htmlFor="terms" className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} cursor-pointer`}>
+                  {t('auth.agreeToTerms')}{' '}
+                  <a href="/terms" className={`font-medium underline ${darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-blue-600 hover:text-blue-500'}`}>
+                    {t('auth.termsOfService')}
+                  </a>{' '}
+                  {t('auth.and')}{' '}
+                  <a href="/privacy" className={`font-medium underline ${darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-blue-600 hover:text-blue-500'}`}>
+                    {t('auth.privacyPolicy')}
+                  </a>
+                </label>
               </div>
-              
-              <div className="mt-8">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`w-full relative py-3 px-4 rounded-lg font-medium transition-all ${
-                    darkMode
-                      ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white'
-                      : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white'
-                  } shadow-lg ${
-                    loading ? 'opacity-80' : ''
-                  } group overflow-hidden`}
-                >
-                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient-x"></span>
-                  <span className="relative flex items-center justify-center">
-                    {loading ? (
-                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    ) : (
-                      'Create Account'
-                    )}
-                  </span>
-                </button>
-              </div>
-            </div>
+            </motion.div>
+
+            {/* Submit Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.1, duration: 0.5 }}
+              className="mt-8"
+            >
+              <button
+                type="submit"
+                disabled={loading || !agreeToTerms}
+                className={`w-full py-4 px-4 rounded-xl font-medium text-lg transition-all ${
+                  loading
+                    ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                    : !agreeToTerms
+                    ? 'bg-gradient-to-r from-blue-400/70 to-purple-500/70 text-white/80 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]'
+                }`}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {t('auth.creatingAccount')}
+                  </div>
+                ) : t('auth.createAccount')}
+              </button>
+              {!agreeToTerms && (
+                <p className="text-xs text-center mt-2 text-amber-500">
+                  Please agree to the Terms of Service and Privacy Policy to continue
+                </p>
+              )}
+            </motion.div>
           </form>
           
-          <p className={`mt-8 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Already have an account?{' '}
-            <Link to="/login" className={`font-medium ${
-              darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-blue-600 hover:text-blue-500'
-            }`}>
-              Sign in
-            </Link>
-          </p>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2, duration: 0.5 }}
+            className="mt-8 text-center"
+          >
+            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+              {t('auth.alreadyHaveAccount')}{' '}
+              <Link to="/login" className={`font-medium ${darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-blue-600 hover:text-blue-500'}`}>
+                {t('auth.login')}
+              </Link>
+            </p>
+          </motion.div>
+          
+          {/* Alternative Signup Methods */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.3, duration: 0.5 }}
+            className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700"
+          >
+            <p className={`text-center text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              Or sign up with
+            </p>
+            <div className="flex justify-center space-x-4">
+              <button 
+                className={`flex items-center justify-center w-14 h-14 rounded-xl ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-all hover:scale-105 shadow-sm hover:shadow`}
+                aria-label="Sign up with GitHub"
+              >
+                <FiGithub className="h-6 w-6" />
+              </button>
+              <button 
+                className={`flex items-center justify-center w-14 h-14 rounded-xl ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-all hover:scale-105 shadow-sm hover:shadow`}
+                aria-label="Sign up with Twitter"
+              >
+                <FiTwitter className="h-6 w-6" />
+              </button>
+              <button 
+                className={`flex items-center justify-center w-14 h-14 rounded-xl ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-all hover:scale-105 shadow-sm hover:shadow`}
+                aria-label="Sign up with LinkedIn"
+              >
+                <FiLinkedin className="h-6 w-6" />
+              </button>
+            </div>
+          </motion.div>
         </motion.div>
       </div>
     </div>
   );
 };
 
-export default SignupPage; 
+export default SignupPage;

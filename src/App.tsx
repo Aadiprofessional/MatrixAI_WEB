@@ -21,6 +21,7 @@ import {
   TransactionsPage,
   OrderHistoryPage,
   PaymentPage,
+  PaymentSuccessPage,
   ReferralPage,
   SpeechToTextPage,
   TranscriptionPage,
@@ -404,7 +405,17 @@ const App: React.FC = () => {
                 } 
               />
               
-              {/* Payment with Airwallex route */}
+              {/* Payment success route for Antom */}
+              <Route 
+                path="/payment/success" 
+                element={
+                  <ProtectedRoute>
+                    <PaymentSuccessPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Payment with Airwallex route (legacy) */}
               <Route 
                 path="/payment/airwallex" 
                 element={

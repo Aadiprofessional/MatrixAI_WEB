@@ -23,6 +23,7 @@ interface AudioUploadResponse {
   transcription?: string;
   message: string;
   error_message?: string;
+  audio_name?: string;
 }
 
 interface AudioStatusResponse {
@@ -85,7 +86,7 @@ const API_BASE_URL = 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.
 
 export const audioService = {
   // Upload audio URL for transcription
-  uploadAudioUrl: async (uid: string, audioUrl: string, language: string = 'en-GB', duration?: number): Promise<AudioUploadResponse> => {
+  uploadAudioUrl: async (uid: string, audioUrl: string, language: string = 'en-GB', duration?: number, audio_name?: string): Promise<AudioUploadResponse> => {
     const response = await fetch(`${API_BASE_URL}/api/audio/uploadAudioUrl`, {
       method: 'POST',
       headers: {
@@ -95,7 +96,8 @@ export const audioService = {
         uid,
         audioUrl,
         language,
-        duration
+        duration,
+        audio_name
       }),
     });
 
@@ -250,4 +252,4 @@ export const audioService = {
 
     return response.json();
   }
-}; 
+};

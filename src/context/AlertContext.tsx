@@ -1,10 +1,21 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import AnimatedAlert, { AlertOptions } from '../components/AnimatedAlert';
+import ConfirmationDialog from '../components/ConfirmationDialog';
 
 interface Alert {
   id: string;
   message: string;
   options?: AlertOptions;
+}
+
+interface Confirmation {
+  id: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmText?: string;
+  cancelText?: string;
+  type?: 'warning' | 'error' | 'info';
 }
 
 interface AlertContextType {
@@ -15,6 +26,12 @@ interface AlertContextType {
   showError: (message: string, duration?: number) => string;
   showWarning: (message: string, duration?: number) => string;
   showInfo: (message: string, duration?: number) => string;
+  showConfirmation: (message: string, onConfirm: () => void, onCancel?: () => void, options?: {
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'warning' | 'error' | 'info';
+  }) => string;
+  removeConfirmation: (id: string) => void;
 }
 
 const AlertContext = createContext<AlertContextType | undefined>(undefined);
@@ -25,6 +42,7 @@ interface AlertProviderProps {
 
 export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [confirmations, setConfirmations] = useState<Confirmation[]>([]);
 
   const showAlert = (message: string, options?: AlertOptions) => {
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
@@ -56,6 +74,37 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   const showInfo = (message: string, duration?: number) => 
     showAlert(message, { type: 'info', duration });
 
+  const showConfirmation = (message: string, onConfirm: () => void, onCancel?: () => void, options?: {
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'warning' | 'error' | 'info';
+  }) => {
+    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    const newConfirmation: Confirmation = { 
+      id, 
+      message, 
+      onConfirm: () => {
+        onConfirm();
+        removeConfirmation(id);
+      },
+      onCancel: () => {
+        if (onCancel) onCancel();
+        removeConfirmation(id);
+      },
+      confirmText: options?.confirmText,
+      cancelText: options?.cancelText,
+      type: options?.type || 'warning'
+    };
+    
+    setConfirmations(prev => [...prev, newConfirmation]);
+    
+    return id;
+  };
+
+  const removeConfirmation = (id: string) => {
+    setConfirmations(prev => prev.filter(confirmation => confirmation.id !== id));
+  };
+
   const contextValue: AlertContextType = {
     showAlert,
     removeAlert,
@@ -63,7 +112,9 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
     showSuccess,
     showError,
     showWarning,
-    showInfo
+    showInfo,
+    showConfirmation,
+    removeConfirmation
   };
 
   return (
@@ -79,6 +130,20 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
           options={alert.options}
         />
       ))}
+
+      {/* Render all confirmation dialogs */}
+      {confirmations.map((confirmation) => (
+        <ConfirmationDialog
+          key={confirmation.id}
+          isOpen={true}
+          message={confirmation.message}
+          onConfirm={confirmation.onConfirm}
+          onCancel={confirmation.onCancel}
+          confirmText={confirmation.confirmText}
+          cancelText={confirmation.cancelText}
+          type={confirmation.type}
+        />
+      ))}
     </AlertContext.Provider>
   );
 };
@@ -89,4 +154,4 @@ export const useAlert = () => {
     throw new Error('useAlert must be used within an AlertProvider');
   }
   return context;
-}; 
+};

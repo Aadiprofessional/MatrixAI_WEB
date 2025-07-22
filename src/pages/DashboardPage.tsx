@@ -21,7 +21,10 @@ import {
   FiActivity,
   FiCalendar,
   FiTarget,
-  FiArrowRight
+  FiArrowRight,
+  FiArrowDown,
+  FiArrowUp,
+  FiCornerLeftUp
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -42,7 +45,7 @@ interface DashboardStats {
 
 interface RecentActivity {
   id: string;
-  type: 'chat' | 'video' | 'content' | 'audio';
+  type: 'chat' | 'video' | 'content' | 'audio' | 'image' | 'credit' | 'debit' | 'subscription' | 'refund' | 'other';
   title: string;
   date: string;
   coins: number;
@@ -211,22 +214,49 @@ const DashboardPage: React.FC = () => {
           .reduce((sum: number, t: any) => sum + Math.abs(t.coin_amount), 0);
 
         const chatMessages = transactions
-          .filter((t: any) => t.transaction_name?.includes('chat'))
+          .filter((t: any) => t.transaction_name?.toLowerCase().includes('chat') || t.transaction_name?.toLowerCase().includes('message'))
           .length;
 
         const contentGenerated = transactions
-          .filter((t: any) => t.transaction_name?.includes('content'))
+          .filter((t: any) => {
+            const name = t.transaction_name?.toLowerCase() || '';
+            return name.includes('content generation') || name.includes('content_generation');
+          })
           .length;
+          
+        // Helper function to determine transaction type
+        const getTransactionType = (transactionName: string) => {
+          if (!transactionName) return 'other';
+          const name = transactionName.toLowerCase();
+          
+          if (name.includes('chat') || name.includes('message')) return 'chat';
+          if (name.includes('video')) return 'video';
+          if (name.includes('content generation') || name.includes('content_generation')) return 'content';
+          if (name.includes('image')) return 'image';
+          if (name.includes('audio') || name.includes('transcription')) return 'audio';
+          if (name.includes('credit')) return 'credit';
+          if (name.includes('debit')) return 'debit';
+          if (name.includes('subscription')) return 'subscription';
+          if (name.includes('refund')) return 'refund';
+          
+          return 'other';
+        };
 
+        // Get the 5 most recent transactions for the activity feed
         const activities: RecentActivity[] = transactions
+          .sort((a: any, b: any) => {
+            const timeA = a.created_at ? new Date(a.created_at).getTime() : 
+                        (a.time ? new Date(a.time).getTime() : 0);
+            const timeB = b.created_at ? new Date(b.created_at).getTime() : 
+                        (b.time ? new Date(b.time).getTime() : 0);
+            return timeB - timeA;
+          })
           .slice(0, 5)
           .map((t: any) => ({
             id: t.id?.toString() || '',
-            type: t.transaction_name?.includes('chat') ? 'chat' : 
-                  t.transaction_name?.includes('video') ? 'video' :
-                  t.transaction_name?.includes('content') ? 'content' : 'audio',
+            type: getTransactionType(t.transaction_name),
             title: t.transaction_name?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Activity',
-            date: new Date(t.time).toLocaleDateString(),
+            date: new Date(t.created_at || t.time).toLocaleDateString(),
             coins: Math.abs(t.coin_amount || 0)
           }));
 
@@ -528,7 +558,15 @@ const DashboardPage: React.FC = () => {
                 <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                   {t('dashboard.recentActivity')}
                 </h3>
-                <FiActivity className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                <div className="flex items-center gap-3">
+                  <Link to="/transactions" className={`text-sm flex items-center gap-1 ${
+                    darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
+                  } font-medium`}>
+                    View all
+                    <FiArrowRight className="w-4 h-4" />
+                  </Link>
+                  <FiActivity className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                </div>
               </div>
               
               {loadingState.transactions ? (
@@ -546,12 +584,24 @@ const DashboardPage: React.FC = () => {
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                         activity.type === 'chat' ? 'bg-blue-500' :
                         activity.type === 'video' ? 'bg-purple-500' :
-                        activity.type === 'content' ? 'bg-green-500' : 'bg-orange-500'
+                        activity.type === 'content' ? 'bg-green-500' :
+                        activity.type === 'image' ? 'bg-indigo-500' :
+                        activity.type === 'audio' ? 'bg-orange-500' :
+                        activity.type === 'credit' ? 'bg-green-500' :
+                        activity.type === 'debit' ? 'bg-red-500' :
+                        activity.type === 'subscription' ? 'bg-blue-500' :
+                        activity.type === 'refund' ? 'bg-purple-500' : 'bg-gray-500'
                       }`}>
                         {activity.type === 'chat' ? <FiMessageSquare className="w-4 h-4 text-white" /> :
                          activity.type === 'video' ? <FiVideo className="w-4 h-4 text-white" /> :
                          activity.type === 'content' ? <FiFileText className="w-4 h-4 text-white" /> :
-                         <FiMic className="w-4 h-4 text-white" />}
+                         activity.type === 'image' ? <FiImage className="w-4 h-4 text-white" /> :
+                         activity.type === 'audio' ? <FiMic className="w-4 h-4 text-white" /> :
+                         activity.type === 'credit' ? <FiArrowDown className="w-4 h-4 text-white" /> :
+                         activity.type === 'debit' ? <FiArrowUp className="w-4 h-4 text-white" /> :
+                         activity.type === 'subscription' ? <FiClock className="w-4 h-4 text-white" /> :
+                         activity.type === 'refund' ? <FiCornerLeftUp className="w-4 h-4 text-white" /> :
+                         <FiActivity className="w-4 h-4 text-white" />}
                       </div>
                       <div className="flex-1">
                         <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -634,4 +684,4 @@ const DashboardPage: React.FC = () => {
   );
 };
 
-export default DashboardPage; 
+export default DashboardPage;

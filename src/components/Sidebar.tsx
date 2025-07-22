@@ -79,6 +79,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
       // Check if the activeLink matches the path or if the path is a prefix of activeLink
       return activeLink === path || (path !== '/' && activeLink.startsWith(path));
     }
+    
+    // Special case for chat paths
+    if (path === '/chat' && location.pathname.startsWith('/chat/')) {
+      return true;
+    }
+    
     return location.pathname === path;
   };
 
@@ -460,4 +466,4 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
   );
 };
 
-export default Sidebar; 
+export default Sidebar;

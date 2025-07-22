@@ -13,7 +13,11 @@ import { Layout } from '../components';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
+import { useLanguage } from '../context/LanguageContext';
 import * as paymentService from '../services/paymentService';
+
+// Configuration
+const API_BASE_URL = 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run';
 
 // Payment method types
 interface PaymentMethod {
@@ -45,6 +49,7 @@ const PaymentPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { refreshUserData } = useUser();
+  const { t } = useLanguage();
   
   // Extract plan info from location state
   const planData = location.state || {};
@@ -62,7 +67,7 @@ const PaymentPage: React.FC = () => {
   } = planData;
   
   // Payment state
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('card');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('VISA');
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCVC, setCardCVC] = useState('');
@@ -96,398 +101,298 @@ const PaymentPage: React.FC = () => {
   // Payment intent
   const [paymentIntent, setPaymentIntent] = useState<any>(null);
   
-  // Payment methods
+  // Define payment methods
   const paymentMethods: PaymentMethod[] = [
     {
-      id: 'card',
-      name: 'Credit/Debit Card',
-      icon: <FiCreditCard className="w-6 h-6 text-blue-500" />,
-      description: 'Pay using Visa, Mastercard, or American Express'
+      id: 'VISA',
+      name: 'Visa',
+      icon: <FiCreditCard className="w-6 h-6 text-blue-600" />,
+      description: t('payment.visa_desc') || 'Pay with Visa credit or debit card'
     },
     {
-      id: 'alipay',
+      id: 'MASTERCARD',
+      name: 'Mastercard',
+      icon: <FiCreditCard className="w-6 h-6 text-red-600" />,
+      description: t('payment.mastercard_desc') || 'Pay with Mastercard credit or debit card'
+    },
+    {
+      id: 'ALIPAY_HK',
       name: 'Alipay HK',
       icon: <FiDollarSign className="w-6 h-6 text-blue-500" />,
-      description: 'Pay with your Alipay Hong Kong account'
+      description: t('payment.alipay_hk_desc') || 'Pay with Alipay Hong Kong'
     },
     {
-      id: 'wechat',
-      name: 'WeChat Pay HK',
+      id: 'ALIPAY_CN',
+      name: 'Alipay China',
       icon: <FiDollarSign className="w-6 h-6 text-blue-500" />,
-      description: 'Pay with your WeChat Pay Hong Kong'
-    },
-    {
-      id: 'fps',
-      name: 'FPS / PayMe',
-      icon: <FiDollarSign className="w-6 h-6 text-blue-500" />,
-      description: 'Pay via Faster Payment System or PayMe'
+      description: t('payment.alipay_cn_desc') || 'Pay with Alipay China'
     }
   ];
-
-  // Set dates and prices based on passed data or defaults
+  
+  // Set start and end dates based on plan
   useEffect(() => {
-    if (!finalPrice) {
-      const start = new Date();
-      setStartDate(start);
-      
-      const end = new Date(start);
-      if (plan === 'Tester') {
-        end.setDate(end.getDate() + 15); // 15 days
-      } else if (plan === 'Monthly') {
-        end.setMonth(end.getMonth() + 1); // 1 month
-      } else if (plan === 'Yearly') {
-        end.setFullYear(end.getFullYear() + 1); // 1 year
-      } else if (plan === 'Addon') {
-        // Addon expires at the end of the current month
-        end.setMonth(end.getMonth() + 1);
-        end.setDate(0); // Last day of current month
+    const now = new Date();
+    setStartDate(now);
+    
+    const newEndDate = new Date(now);
+    if (plan === 'Tester') {
+      newEndDate.setDate(now.getDate() + 7); // 7 days for tester
+    } else if (plan === 'Monthly') {
+      newEndDate.setMonth(now.getMonth() + 1); // 1 month
+    } else if (plan === 'Yearly') {
+      newEndDate.setFullYear(now.getFullYear() + 1); // 1 year
+    } else if (plan === 'Addon') {
+      // For addon, we don't change the expiry date
+      if (endDateStr) {
+        setEndDate(new Date(endDateStr));
+        return;
       }
-      setEndDate(end);
-      
-      // Clean price value
-      const cleanPrice = String(price).replace(/[^0-9.]/g, '');
-      setOriginalPrice(cleanPrice);
-      setFinalPriceState(cleanPrice);
     }
-  }, [plan, price, finalPrice]);
-
-  // Handle payment success countdown
+    
+    setEndDate(newEndDate);
+  }, [plan, endDateStr]);
+  
+  // Countdown for payment success navigation
   useEffect(() => {
-    if (paymentSuccess) {
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            // Navigate to transactions page after countdown
-            navigate('/transactions');
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      
-      return () => clearInterval(timer);
+    if (paymentSuccess && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (paymentSuccess && countdown === 0) {
+      navigate('/transactions');
     }
-  }, [paymentSuccess, navigate]);
-
-  // Effect to refresh user data when payment is successful
+  }, [paymentSuccess, countdown, navigate]);
+  
+  // Refresh user data after successful payment
   useEffect(() => {
     if (shouldRefreshUserData) {
-      console.log('Refreshing user data after successful payment');
       refreshUserData();
       setShouldRefreshUserData(false);
     }
   }, [shouldRefreshUserData, refreshUserData]);
-
+  
   // Get plan details
   const getPlanDetails = (): PlanDetails => {
-    if (passedPlanDetails) {
-      return passedPlanDetails;
+    if (passedPlanDetails) return passedPlanDetails;
+    
+    let title = plan;
+    let coins = '';
+    let duration = '';
+    
+    switch (plan) {
+      case 'Tester':
+        coins = '100';
+        duration = t('payment.7_days') || '7 days';
+        break;
+      case 'Monthly':
+        coins = '1000';
+        duration = t('payment.30_days') || '30 days';
+        break;
+      case 'Yearly':
+        coins = '15000';
+        duration = t('payment.365_days') || '365 days';
+        break;
+      case 'Addon':
+        coins = '500';
+        duration = t('payment.addon') || 'Add-on';
+        break;
+      default:
+        coins = '0';
+        duration = '';
     }
     
-    if (plan === 'Tester') {
-      return {
-        title: 'Tester Plan',
-        coins: '450 coins',
-        duration: '15 Days',
-        expiry: 'Coins will expire after 15 days',
-        price: String(price)
-      };
-    } else if (plan === 'Monthly') {
-      return {
-        title: 'Monthly Plan',
-        coins: '1380 coins',
-        duration: '1 Month',
-        expiry: 'Coins will expire after 1 month',
-        price: String(price)
-      };
-    } else if (plan === 'Yearly') {
-      return {
-        title: 'Yearly Plan',
-        coins: '1380 coins/month',
-        duration: '12 Months',
-        expiry: 'You will receive 1380 coins each month. These coins will expire at the end of each month.',
-        price: String(price)
-      };
-    } else {
-      return {
-        title: 'Addon Pack',
-        coins: '550 coins',
-        duration: 'Until end of month',
-        expiry: 'Coins will expire at end of the current month',
-        price: String(price)
-      };
-    }
+    return {
+      title,
+      coins,
+      duration,
+      expiry: endDate.toLocaleDateString(),
+      price: price.toString()
+    };
   };
-
+  
   const planDetailsData = getPlanDetails();
-
-  // Card validation functions
-  const validateCardNumber = (number: string): boolean => {
-    const cleaned = number.replace(/\D/g, '');
-    return cleaned.length >= 13 && cleaned.length <= 19;
-  };
-
-  const validateCardExpiry = (expiry: string): boolean => {
-    // Format should be MM/YY
-    if (!/^\d{2}\/\d{2}$/.test(expiry)) {
-      return false;
-    }
-    
-    const [month, year] = expiry.split('/');
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear() % 100; // Get last 2 digits of year
-    const currentMonth = currentDate.getMonth() + 1; // Months are 0-indexed
-    
-    const expiryMonth = parseInt(month, 10);
-    const expiryYear = parseInt(year, 10);
-    
-    // Check if month is valid (1-12)
-    if (expiryMonth < 1 || expiryMonth > 12) {
-      return false;
-    }
-    
-    // Check if card is not expired
-    return (expiryYear > currentYear) || 
-           (expiryYear === currentYear && expiryMonth >= currentMonth);
-  };
-
-  const validateCVC = (cvc: string): boolean => {
-    const cleaned = cvc.replace(/\D/g, '');
-    return cleaned.length >= 3 && cleaned.length <= 4;
-  };
-
-  const formatCardNumber = (text: string): string => {
-    const cleaned = text.replace(/\D/g, '');
-    const groups = [];
-    
-    for (let i = 0; i < cleaned.length; i += 4) {
-      groups.push(cleaned.substring(i, i + 4));
-    }
-    
-    return groups.join(' ').substring(0, 19);
-  };
-
-  const formatExpiry = (text: string): string => {
-    const cleaned = text.replace(/\D/g, '');
-    
-    if (cleaned.length < 3) {
-      return cleaned;
-    }
-    
-    let month = cleaned.substring(0, 2);
-    let year = cleaned.substring(2, 4);
-    
-    // Adjust month if greater than 12
-    if (parseInt(month, 10) > 12) {
-      month = '12';
-    }
-    
-    return `${month}/${year}`;
-  };
-
+  
+  // Handle card number input with formatting
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCardNumber(e.target.value);
-    setCardNumber(formatted);
+    const value = e.target.value.replace(/\D/g, '');
+    let formattedValue = '';
+    
+    for (let i = 0; i < value.length; i++) {
+      if (i > 0 && i % 4 === 0) {
+        formattedValue += ' ';
+      }
+      formattedValue += value[i];
+    }
+    
+    setCardNumber(formattedValue.slice(0, 19)); // 16 digits + 3 spaces
   };
-
+  
+  // Handle expiry date input with formatting
   const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatExpiry(e.target.value);
-    setCardExpiry(formatted);
+    const value = e.target.value.replace(/\D/g, '');
+    let formattedValue = '';
+    
+    if (value.length > 0) {
+      formattedValue = value.slice(0, 2);
+      if (value.length > 2) {
+        formattedValue += '/' + value.slice(2, 4);
+      }
+    }
+    
+    setCardExpiry(formattedValue);
   };
-
+  
+  // Handle CVC input
   const handleCVCChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const cvc = e.target.value.replace(/\D/g, '').substring(0, 4);
-    setCardCVC(cvc);
+    const value = e.target.value.replace(/\D/g, '');
+    setCardCVC(value.slice(0, 3));
   };
-
-  // Update cardValid state when card details change
+  
+  // Validate card details
   useEffect(() => {
-    const isCardNumberValid = validateCardNumber(cardNumber);
-    const isExpiryValid = validateCardExpiry(cardExpiry);
-    const isCVCValid = validateCVC(cardCVC);
+    const isCardNumberValid = cardNumber.replace(/\s/g, '').length === 16;
+    const isExpiryValid = cardExpiry.length === 5;
+    const isCVCValid = cardCVC.length === 3;
     const isNameValid = cardHolderName.trim().length > 0;
     
     setCardValid(isCardNumberValid && isExpiryValid && isCVCValid && isNameValid);
   }, [cardNumber, cardExpiry, cardCVC, cardHolderName]);
-
-  // Function to start countdown after successful payment
-  const startCountdown = () => {
-    setCountdown(5);
-    const timer = setInterval(() => {
-      setCountdown((prevCount) => {
-        if (prevCount <= 1) {
-          clearInterval(timer);
-          navigate('/dashboard');
-          return 0;
-        }
-        return prevCount - 1;
-      });
-    }, 1000);
-  };
-
-  const handlePayNow = async () => {
+  
+  // Poll payment status
+  const pollPaymentStatus = async (paymentId: string) => {
     try {
-      setIsProcessing(true);
-      setPaymentError(null);
+      const result = await paymentService.queryPaymentStatus(paymentId, null);
       
-      // Check if card is valid
-      if (!cardValid) {
-        setPaymentError('Please enter valid card details');
+      // Check if result has data property
+      if ('data' in result && result.data) {
+        if (result.data.status === 'completed') {
+          setPaymentSuccess(true);
+          setShouldRefreshUserData(true);
+          return true;
+        } else if (result.data.status === 'failed' || result.data.status === 'cancelled') {
+          setPaymentError(t('payment.failed') || 'Payment failed. Please try again.');
+          setIsProcessing(false);
+          return true;
+        }
+      } else if (!result.success) {
+        // Handle error response
+        setPaymentError(t('payment.failed') || 'Payment failed. Please try again.');
         setIsProcessing(false);
-        return;
+        return true;
       }
       
-      // Get finalized amount
-      const amount = Number(finalPriceState);
-      console.log('Processing payment for amount:', amount, 'Plan:', plan, 'User ID:', uid);
+      return false;
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+      setPaymentError(t('payment.check_error') || 'Error checking payment status. Please check your transactions page.');
+      setIsProcessing(false);
+      return true;
+    }
+  };
+  
+  // Handle payment submission
+  const handlePayNow = async () => {
+    setIsProcessing(true);
+    setPaymentError(null);
+    
+    try {
+      // For card payments, validate card details
+      if (selectedPaymentMethod === 'VISA' || selectedPaymentMethod === 'MASTERCARD') {
+        if (!cardValid) {
+          setPaymentError(t('payment.invalid_card') || 'Please enter valid card details');
+          setIsProcessing(false);
+          return;
+        }
+      }
       
       // Create payment intent
-      console.log('Creating payment intent...');
-      const intent = await paymentService.createPaymentIntent(amount);
-      setPaymentIntent(intent);
-      console.log('Payment intent created:', intent);
+      const paymentData = {
+        amount: finalPriceState,
+        currency: 'PHP',
+        paymentMethodType: selectedPaymentMethod,
+        orderDescription: isAddon ? `Addon Purchase: ${plan}` : `Subscription Plan: ${plan}`,
+        redirectUrl: `${window.location.origin}/payment/success`,
+        notifyUrl: `${API_BASE_URL}/api/payment/notify`,
+        ...(isAddon ? { addonId: plan } : { planId: plan })
+      };
       
-      // Simulate payment processing
-      console.log('Processing payment...');
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = isAddon 
+        ? await paymentService.createAddonPayment(plan, finalPriceState, 'PHP', selectedPaymentMethod, null)
+        : await paymentService.createSubscriptionPayment(plan, finalPriceState, 'PHP', selectedPaymentMethod, null);
       
-      // Check payment status
-      console.log('Checking payment status...');
-      const status = await paymentService.getTransferStatus(intent.id);
-      console.log('Payment status:', status);
-      
-      if (status.status === 'CONFIRMED') {
-        // Process subscription/purchase
-        const couponId = appliedCouponState?.coupon_id || '';
-        console.log('Confirming subscription purchase with coupon ID:', couponId || 'none');
+      if (response.success) {
+        // For redirect methods like Alipay
+        let paymentId: string | undefined;
         
-        const result = await paymentService.confirmSubscriptionPurchase(
-          uid,
-          plan,
-          amount,
-          couponId,
-          intent.id
-        );
+        if ('data' in response && response.data) {
+          if (response.data.paymentUrl || response.data.redirectUrl) {
+            window.location.href = response.data.paymentUrl || response.data.redirectUrl;
+            return;
+          }
+          
+          // For card payments, poll status
+          paymentId = response.data.paymentRequestId;
+        }
         
-        if (result.success) {
-          // Don't call refreshUserData directly, set flag to trigger the effect
-          console.log('Payment successful, will refresh user data');
-          setShouldRefreshUserData(true);
-          setPaymentSuccess(true);
-          startCountdown();
+        if (paymentId) {
+          // Poll payment status every 2 seconds
+          const pollInterval = setInterval(async () => {
+            const isDone = await pollPaymentStatus(paymentId!);
+            if (isDone) {
+              clearInterval(pollInterval);
+            }
+          }, 2000);
+          
+          // Set a timeout to stop polling after 30 seconds
+          setTimeout(() => {
+            clearInterval(pollInterval);
+            if (!paymentSuccess) {
+              setPaymentError(t('payment.timeout') || 'Payment processing is taking longer than expected. Please check your transactions page.');
+              setIsProcessing(false);
+            }
+          }, 30000);
         } else {
-          console.error('Payment failed with error:', result.message);
-          setPaymentError(result.message || 'Payment failed');
+          setPaymentError(t('payment.no_id') || 'No payment ID received. Please try again.');
+          setIsProcessing(false);
         }
       } else {
-        console.error('Payment processing failed, status:', status.status);
-        setPaymentError('Payment processing failed');
+        // Handle different error response structures
+        let errorMessage = 'Payment failed';
+        if (typeof response === 'object') {
+          if ('message' in response) {
+            errorMessage = response.message as string;
+          } else if ('error' in response) {
+            errorMessage = response.error as string;
+          }
+        }
+        throw new Error(errorMessage);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Payment error:', error);
-      setPaymentError('An error occurred during payment processing');
-    } finally {
+      setPaymentError(error.message || t('payment.error') || 'An error occurred during payment processing');
       setIsProcessing(false);
     }
   };
-
-  // Render card form
-  const renderCardForm = () => (
-    <div className={`mt-4 space-y-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-      <div>
-        <label className="block text-sm font-medium mb-1">Card Number</label>
-        <input
-          type="text"
-          value={cardNumber}
-          onChange={handleCardNumberChange}
-          placeholder="•••• •••• •••• ••••"
-          className={`w-full p-3 rounded-lg border ${
-            darkMode 
-              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-          } focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-          maxLength={19}
-        />
-      </div>
-      
-      <div className="flex space-x-4">
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-1">Expiration Date</label>
-          <input
-            type="text"
-            value={cardExpiry}
-            onChange={handleExpiryChange}
-            placeholder="MM/YY"
-            className={`w-full p-3 rounded-lg border ${
-              darkMode 
-                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-            } focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-            maxLength={5}
-          />
-        </div>
-        <div className="w-1/3">
-          <label className="block text-sm font-medium mb-1">CVC</label>
-          <input
-            type="text"
-            value={cardCVC}
-            onChange={handleCVCChange}
-            placeholder="CVC"
-            className={`w-full p-3 rounded-lg border ${
-              darkMode 
-                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-            } focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-            maxLength={4}
-          />
-        </div>
-      </div>
-      
-      <div>
-        <label className="block text-sm font-medium mb-1">Card Holder Name</label>
-        <input
-          type="text"
-          value={cardHolderName}
-          onChange={(e) => setCardHolderName(e.target.value)}
-          placeholder="Name on card"
-          className={`w-full p-3 rounded-lg border ${
-            darkMode 
-              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-          } focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-        />
-      </div>
-      
-      <div className={`flex items-center text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-        <FiLock className="w-4 h-4 mr-1" />
-        <span>Your payment information is securely processed</span>
-      </div>
-    </div>
-  );
-
-  // Success page
+  
+  // If payment is successful, show success message
   if (paymentSuccess) {
     return (
       <Layout>
-        <div className="max-w-lg mx-auto py-12 px-4">
-          <div className={`text-center p-8 rounded-2xl ${
-            darkMode ? 'bg-gray-800' : 'bg-white'
-          } shadow-lg`}>
-            <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-green-100 mb-6">
-              <FiCheck className="w-8 h-8 text-green-500" />
+        <div className="max-w-md mx-auto mt-16 p-6 rounded-xl shadow-lg bg-white dark:bg-gray-800 border dark:border-gray-700">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FiCheck className="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
             
-            <h2 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Payment Successful!
+            <h2 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              {t('payment.success_title') || 'Payment Successful!'}
             </h2>
             
             <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Your {plan} has been activated successfully. Thank you for your purchase!
+              {t('payment.success_message') || 'Your payment has been processed successfully. Thank you for your purchase!'}
             </p>
             
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Redirecting to your transactions in {countdown} seconds...
+              {t('payment.redirecting', { seconds: countdown }) || `Redirecting to your transactions in ${countdown} seconds...`}
             </p>
           </div>
         </div>
@@ -497,186 +402,219 @@ const PaymentPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto py-8 px-4">
-        <div className="flex items-center mb-8">
-          <button 
+      <div className="max-w-7xl mx-auto pt-16 pb-12"> {/* Added pt-16 for top padding */}
+        <div className="px-4 sm:px-6 lg:px-8">
+          {/* Back button */}
+          <button
             onClick={() => navigate(-1)}
-            className={`p-2 rounded-full mr-3 ${
-              darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
-            }`}
+            className={`flex items-center text-sm font-medium mb-6 ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
           >
-            <FiArrowLeft className={`w-5 h-5 ${darkMode ? 'text-white' : 'text-gray-700'}`} />
+            <FiArrowLeft className="mr-2" />
+            {t('payment.back') || 'Back'}
           </button>
-          <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Payment
+          
+          {/* Page title */}
+          <h1 className={`text-2xl font-bold mb-8 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            {t('payment.checkout') || 'Checkout'}
           </h1>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Payment Methods & Form */}
-          <div className="md:col-span-2 space-y-6">
-            <div className={`rounded-xl p-6 ${
-              darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-            } shadow-sm`}>
-              <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Payment Method
-              </h2>
-              
-              <div className="space-y-3">
-                {paymentMethods.map((method) => (
-                  <div 
-                    key={method.id}
-                    onClick={() => setSelectedPaymentMethod(method.id)}
-                    className={`p-4 border rounded-lg cursor-pointer flex items-center ${
-                      selectedPaymentMethod === method.id 
-                        ? `border-blue-500 ${darkMode ? 'bg-blue-900/20' : 'bg-blue-50'}` 
-                        : `${darkMode ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'}`
-                    }`}
-                  >
-                    <div className="mr-4">
-                      {method.icon}
-                    </div>
-                    <div>
-                      <div className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {method.name}
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Payment Methods & Form */}
+            <div className="md:col-span-2 space-y-6">
+              <div className={`rounded-xl p-6 ${
+                darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+              } shadow-sm`}>
+                <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  {t('payment.method_title') || 'Payment Method'}
+                </h2>
+                
+                <div className="space-y-3">
+                  {paymentMethods.map((method) => (
+                    <div 
+                      key={method.id}
+                      onClick={() => setSelectedPaymentMethod(method.id)}
+                      className={`p-4 border rounded-lg cursor-pointer flex items-center ${
+                        selectedPaymentMethod === method.id 
+                          ? `border-blue-500 ${darkMode ? 'bg-blue-900/20' : 'bg-blue-50'}` 
+                          : `${darkMode ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'}`
+                      }`}
+                    >
+                      <div className="mr-4">
+                        {method.icon}
                       </div>
-                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {method.description}
-                      </div>
-                    </div>
-                    {selectedPaymentMethod === method.id && (
-                      <div className="ml-auto">
-                        <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-                          <FiCheck className="w-3 h-3 text-white" />
+                      <div>
+                        <div className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {method.name}
+                        </div>
+                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {method.description}
                         </div>
                       </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-              
-              {selectedPaymentMethod === 'card' && renderCardForm()}
-            </div>
-            
-            {/* Error Message */}
-            {paymentError && (
-              <div className="bg-red-100 border border-red-200 text-red-800 rounded-lg p-4 text-sm">
-                <div className="flex">
-                  <FiInfo className="w-5 h-5 mr-2 text-red-500" />
-                  <span>{paymentError}</span>
-                </div>
-              </div>
-            )}
-            
-            {/* Payment Button */}
-            <button
-              onClick={handlePayNow}
-              disabled={isProcessing || !cardValid}
-              className={`w-full py-3.5 rounded-lg font-medium flex justify-center items-center ${
-                isProcessing || !cardValid
-                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90 transition-opacity'
-              }`}
-            >
-              {isProcessing ? (
-                <>
-                  <div className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full animate-spin mr-3"></div>
-                  Processing...
-                </>
-              ) : (
-                `Pay ${finalPriceState} HKD Now`
-              )}
-            </button>
-          </div>
-          
-          {/* Order Summary */}
-          <div className="md:col-span-1">
-            <div className={`rounded-xl p-6 ${
-              darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-            } shadow-sm sticky top-24`}>
-              <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Order Summary
-              </h2>
-              
-              <div className={`p-4 rounded-lg mb-4 ${
-                darkMode ? 'bg-gray-700' : 'bg-gray-100'
-              }`}>
-                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
-                  Plan
-                </div>
-                <div className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {planDetailsData.title}
-                </div>
-              </div>
-              
-              <div className="space-y-3 mb-4">
-                <div className="flex justify-between">
-                  <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Coins
-                  </div>
-                  <div className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {planDetailsData.coins}
-                  </div>
-                </div>
-                
-                <div className="flex justify-between">
-                  <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Duration
-                  </div>
-                  <div className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {planDetailsData.duration}
-                  </div>
-                </div>
-                
-                <div className="flex justify-between">
-                  <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Expiry
-                  </div>
-                  <div className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {endDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="border-t border-dashed pt-4 mb-2">
-                <div className="flex justify-between items-center mb-2">
-                  <div className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Original Price
-                  </div>
-                  <div className={`${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {originalPrice} HKD
-                  </div>
-                </div>
-                
-                {couponDiscount > 0 && (
-                  <div className="flex justify-between items-center mb-2">
-                    <div className={`text-green-500`}>
-                      Discount
+                      {selectedPaymentMethod === method.id && (
+                        <div className="ml-auto">
+                          <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                            <FiCheck className="w-3 h-3 text-white" />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className={`text-green-500`}>
-                      -{couponDiscount}%
+                  ))}
+                </div>
+                
+                {/* Test Card Information */}
+                {(selectedPaymentMethod === 'VISA' || selectedPaymentMethod === 'MASTERCARD') && (
+                  <div className={`mt-6 p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                    <h3 className={`text-sm font-medium mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      Test Card Information (Sandbox Mode)
+                    </h3>
+                    <div className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      <p className="mb-1">• Visa: 4242 4242 4242 4242</p>
+                      <p className="mb-1">• Mastercard: 5555 5555 5555 4444</p>
+                      <p className="mb-1">• Expiry Date: Any future date (MM/YY)</p>
+                      <p className="mb-1">• CVC: Any 3 digits</p>
+                      <p className="mb-1">• Name: Any name</p>
                     </div>
                   </div>
                 )}
                 
-                <div className="flex justify-between items-center mt-2 pt-2 border-t">
-                  <div className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Total
+                {/* Alipay Test Account Information */}
+                {(selectedPaymentMethod === 'ALIPAY_HK' || selectedPaymentMethod === 'ALIPAY_CN') && (
+                  <div className={`mt-6 p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                    <h3 className={`text-sm font-medium mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      Alipay Test Account (Sandbox Mode)
+                    </h3>
+                    <div className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      <p className="mb-1">• Test Account: alipaytest@example.com</p>
+                      <p className="mb-1">• Password: test123</p>
+                      <p className="mt-2 text-amber-500">
+                        <FiInfo className="inline-block mr-1" />
+                        You will be redirected to Alipay's payment page to complete the transaction.
+                      </p>
+                    </div>
                   </div>
-                  <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {finalPriceState} HKD
-                  </div>
-                </div>
+                )}
               </div>
               
-              {appliedCouponState && (
-                <div className={`mt-4 p-3 rounded-lg bg-green-100 border border-green-200 text-green-800 text-sm`}>
-                  <div className="flex items-center">
-                    <FiCheck className="w-4 h-4 mr-2" />
-                    <span>Coupon "{appliedCouponState.coupon_name}" applied!</span>
+              {/* Error Message */}
+              {paymentError && (
+                <div className="bg-red-100 border border-red-200 text-red-800 rounded-lg p-4 text-sm">
+                  <div className="flex">
+                    <FiInfo className="w-5 h-5 mr-2 text-red-500" />
+                    <span>{paymentError}</span>
                   </div>
                 </div>
               )}
+              
+              {/* Payment Button */}
+              <button
+                onClick={handlePayNow}
+                disabled={isProcessing}
+                className={`w-full py-3.5 rounded-lg font-medium flex justify-center items-center ${
+                  isProcessing
+                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90 transition-opacity'
+                }`}
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full animate-spin mr-3"></div>
+                    {t('payment.processing') || 'Processing...'}
+                  </>
+                ) : (
+                  `${t('payment.pay') || 'Pay'} ${finalPriceState} PHP ${t('payment.now') || 'Now'}`
+                )}
+              </button>
+            </div>
+            
+            {/* Order Summary */}
+            <div className="md:col-span-1">
+              <div className={`rounded-xl p-6 ${
+                darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+              } shadow-sm sticky top-24`}>
+                <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  {t('payment.order_summary') || 'Order Summary'}
+                </h2>
+                
+                <div className={`p-4 rounded-lg mb-4 ${
+                  darkMode ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
+                  <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
+                    {t('payment.plan') || 'Plan'}
+                  </div>
+                  <div className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {planDetailsData.title}
+                  </div>
+                </div>
+                
+                <div className="space-y-3 mb-4">
+                  <div className="flex justify-between">
+                    <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t('payment.coins') || 'Coins'}
+                    </div>
+                    <div className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {planDetailsData.coins}
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t('payment.duration') || 'Duration'}
+                    </div>
+                    <div className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {planDetailsData.duration}
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t('payment.expiry') || 'Expiry'}
+                    </div>
+                    <div className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {endDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="border-t border-dashed pt-4 mb-2">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t('payment.original_price') || 'Original Price'}
+                    </div>
+                    <div className={`${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {originalPrice} PHP
+                    </div>
+                  </div>
+                  
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between items-center mb-2">
+                      <div className={`text-green-500`}>
+                        {t('payment.discount') || 'Discount'}
+                      </div>
+                      <div className={`text-green-500`}>
+                        -{couponDiscount}%
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between items-center mt-2 pt-2 border-t">
+                    <div className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {t('payment.total') || 'Total'}
+                    </div>
+                    <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {finalPriceState} PHP
+                    </div>
+                  </div>
+                </div>
+                
+                {appliedCouponState && (
+                  <div className={`mt-4 p-3 rounded-lg bg-green-100 border border-green-200 text-green-800 text-sm`}>
+                    <div className="flex items-center">
+                      <FiCheck className="w-4 h-4 mr-2" />
+                      <span>{t('payment.coupon_applied', {coupon: appliedCouponState.coupon_name}) || `Coupon "${appliedCouponState.coupon_name}" applied!`}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -685,4 +623,4 @@ const PaymentPage: React.FC = () => {
   );
 };
 
-export default PaymentPage; 
+export default PaymentPage;

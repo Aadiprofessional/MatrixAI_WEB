@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { Layout } from '../components';
+import { userService } from '../services/userService';
 import { 
   FiShoppingBag, 
   FiCalendar, 
@@ -29,7 +29,7 @@ interface Order {
   total_price: number;
   coins_added: number;
   plan_valid_till: string;
-  coupon_id: string | null;
+  coupon_id: number | null;
   created_at: string;
   status: string;
 }
@@ -55,12 +55,10 @@ const OrderHistoryPage: React.FC = () => {
     setError(null);
     
     try {
-      const response = await axios.post('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/getUserOrder', {
-        uid: user.id
-      });
+      const response = await userService.getUserOrder(user.id);
       
-      if (response.data.success) {
-        const sortedOrders = response.data.data.sort((a: any, b: any) => 
+      if (response.success) {
+        const sortedOrders = response.data.sort((a: Order, b: Order) => 
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
         setOrders(sortedOrders);
@@ -599,4 +597,4 @@ const OrderHistoryPage: React.FC = () => {
   );
 };
 
-export default OrderHistoryPage; 
+export default OrderHistoryPage;
