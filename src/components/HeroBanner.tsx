@@ -59,12 +59,12 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
             <div style={{ height: '500px' }} className="w-full">
               <video 
                 ref={videoRef}
+                src="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
                 className="w-full h-full object-cover" 
                 loop 
                 muted 
                 playsInline
               >
-                <source src="/videos/sample-video.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
               {/* Optional dark overlay */}

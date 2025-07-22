@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiFileText, FiZap, FiCopy, FiDownload, FiShare2, FiTrash, FiRotateCw, FiEdit, FiCheck, FiX, FiSave, FiSliders, FiSend, FiPlus, FiChevronLeft, FiChevronRight, FiMail, FiTwitter, FiLinkedin, FiFacebook, FiLink } from 'react-icons/fi';
-import { ProFeatureAlert } from '../components';
+import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -132,14 +132,10 @@ const ContentWriterPage: React.FC = () => {
     }
   ];
 
-  // Check authentication on page load
+  // Check if user is Pro for premium features
   useEffect(() => {
-    if (!user) {
-      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
-      return;
-    }
-    
-    if (!isPro) {
+    // Only check for Pro status if user is logged in
+    if (user && !isPro) {
       navigate('/subscription', { state: { feature: 'Content Writer' } });
       return;
     }
@@ -413,6 +409,12 @@ Create content that is original, well-researched, and engaging for the target au
       return;
     }
     
+    // Check if user is authenticated
+    if (!user) {
+      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
+      return;
+    }
+    
     setIsGenerating(true);
     setIsStreaming(true);
     setError(null);
@@ -496,6 +498,12 @@ Create content that is original, well-researched, and engaging for the target au
   };
 
   const handleQuickQuestion = (question: QuickQuestion) => {
+    // Check if user is authenticated
+    if (!user) {
+      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
+      return;
+    }
+    
     setPrompt(question.text);
     // Auto-set content type based on question category
     switch (question.category.toLowerCase()) {
@@ -526,6 +534,12 @@ Create content that is original, well-researched, and engaging for the target au
   };
 
   const handleCopyContent = () => {
+    // Check if user is authenticated
+    if (!user) {
+      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
+      return;
+    }
+    
     navigator.clipboard.writeText(editedContent);
     toast.success('Content copied to clipboard!');
   };
@@ -533,6 +547,12 @@ Create content that is original, well-researched, and engaging for the target au
   const handleDownloadContent = async (format: 'txt' | 'pdf' | 'doc') => {
     if (!editedContent) {
       toast.error('No content to download');
+      return;
+    }
+    
+    // Check if user is authenticated
+    if (!user) {
+      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
       return;
     }
 
@@ -749,6 +769,12 @@ Create content that is original, well-researched, and engaging for the target au
       toast.error('No content to share');
       return;
     }
+    
+    // Check if user is authenticated
+    if (!user) {
+      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
+      return;
+    }
 
     const shareText = editedContent
       .replace(/\*\*(.*?)\*\*/g, '$1')
@@ -786,6 +812,12 @@ Create content that is original, well-researched, and engaging for the target au
   };
 
   const clearContent = () => {
+    // Check if user is authenticated
+    if (!user) {
+      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
+      return;
+    }
+    
     setPrompt('');
     setGeneratedContent('');
     setEditedContent('');
@@ -797,6 +829,12 @@ Create content that is original, well-researched, and engaging for the target au
   const getTotalPages = () => Math.ceil(totalItems / itemsPerPage);
   
   const handlePageChange = (page: number) => {
+    // Check if user is authenticated
+    if (!user) {
+      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
+      return;
+    }
+    
     if (page >= 1 && page <= getTotalPages()) {
       setCurrentPage(page);
     }
@@ -819,8 +857,8 @@ Create content that is original, well-researched, and engaging for the target au
     return 'Ready to generate';
   };
 
-  // Early return if not authenticated or not pro
-  if (!user || !isPro) {
+  // Only check for Pro status if user is authenticated
+  if (user && !isPro) {
     return null;
   }
 
@@ -848,13 +886,13 @@ Create content that is original, well-researched, and engaging for the target au
                 {t('contentWriter.needMoreCoins')}
               </p>
               <div className="flex space-x-3">
-                <button
+                <AuthRequiredButton
                   onClick={() => setShowInsufficientCoins(false)}
                   className="flex-1 px-4 py-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                 >
                   {t('common.cancel')}
-                </button>
-                <button
+                </AuthRequiredButton>
+                <AuthRequiredButton
                   onClick={() => {
                     setShowInsufficientCoins(false);
                     navigate('/buy');
@@ -862,7 +900,7 @@ Create content that is original, well-researched, and engaging for the target au
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   {t('contentWriter.buyCoins')}
-                </button>
+                </AuthRequiredButton>
               </div>
             </div>
           </div>
@@ -921,19 +959,21 @@ Create content that is original, well-researched, and engaging for the target au
                   </label>
                   <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
                     {quickQuestions.map((question) => (
-                      <motion.button
+                      <motion.div
                         key={question.id}
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => handleQuickQuestion(question)}
-                        disabled={isGenerating}
                         className={`p-3 text-left rounded-lg border transition-all ${
                           darkMode
                             ? 'border-gray-600 bg-gray-700/50 hover:bg-gray-700 hover:border-blue-500'
                             : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300'
                         } ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-sm'}`}
+                      >
+                        <AuthRequiredButton
+                          onClick={() => handleQuickQuestion(question)}
+                          disabled={isGenerating}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
@@ -961,7 +1001,8 @@ Create content that is original, well-researched, and engaging for the target au
                             darkMode ? 'text-gray-400' : 'text-gray-500'
                           }`} />
                         </div>
-                      </motion.button>
+                        </AuthRequiredButton>
+                      </motion.div>
                     ))}
                   </div>
                 </div>
@@ -1013,7 +1054,7 @@ Create content that is original, well-researched, and engaging for the target au
                   </select>
                 </div>
                 
-                <button
+                <AuthRequiredButton
                   onClick={handleGenerateContent}
                   disabled={!prompt.trim() || isGenerating}
                   className={`w-full py-3 px-4 rounded-lg font-medium transition-all ${
@@ -1033,7 +1074,7 @@ Create content that is original, well-researched, and engaging for the target au
                       {t('contentWriter.generateContent')}
                     </div>
                   )}
-                </button>
+                </AuthRequiredButton>
 
                 {/* Streaming indicator */}
                 {isGenerating && (
@@ -1063,67 +1104,67 @@ Create content that is original, well-researched, and engaging for the target au
                 </h3>
                 {editedContent && (
                   <div className="flex space-x-2">
-                    <button
+                    <AuthRequiredButton
                       onClick={handleCopyContent}
                       className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm"
                     >
                       <FiCopy className="w-4 h-4 mr-1" />
                       Copy
-                    </button>
+                    </AuthRequiredButton>
                     
-                    <button
+                    <AuthRequiredButton
                       onClick={() => setIsEditing(!isEditing)}
                       className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm"
                     >
                       <FiEdit className="w-4 h-4 mr-1" />
                       {isEditing ? 'View' : 'Edit'}
-                    </button>
+                    </AuthRequiredButton>
                     
                     {/* Download Dropdown */}
                     <div className="relative group">
-                      <button
+                      <AuthRequiredButton
                         disabled={isDownloading}
                         className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center text-sm disabled:opacity-50"
                       >
                         <FiDownload className="w-4 h-4 mr-1" />
                         {isDownloading ? 'Downloading...' : 'Download'}
-                      </button>
+                      </AuthRequiredButton>
                       
                       <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                        <button
+                        <AuthRequiredButton
                           onClick={() => handleDownloadContent('txt')}
                           disabled={isDownloading}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg disabled:opacity-50"
                         >
                           <FiFileText className="w-4 h-4 inline mr-2" />
                           Text (.txt)
-                        </button>
-                        <button
+                        </AuthRequiredButton>
+                        <AuthRequiredButton
                           onClick={() => handleDownloadContent('pdf')}
                           disabled={isDownloading}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                         >
                           <FiFileText className="w-4 h-4 inline mr-2" />
                           PDF (.pdf)
-                        </button>
-                        <button
+                        </AuthRequiredButton>
+                        <AuthRequiredButton
                           onClick={() => handleDownloadContent('doc')}
                           disabled={isDownloading}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg disabled:opacity-50"
                         >
                           <FiFileText className="w-4 h-4 inline mr-2" />
                           Word (.docx)
-                        </button>
+                        </AuthRequiredButton>
                       </div>
                     </div>
 
-                    <button
+                    <AuthRequiredButton
                       onClick={() => setShowShareModal(true)}
                       className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center text-sm"
                     >
                       <FiShare2 className="w-4 h-4 mr-1" />
                       Share
-                    </button>
+                    </AuthRequiredButton>
                   </div>
                 )}
               </div>
@@ -1199,20 +1240,23 @@ Create content that is original, well-researched, and engaging for the target au
                   {/* Featured Quick Questions for Empty State */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-8 w-full max-w-2xl">
                     {quickQuestions.slice(0, 4).map((question) => (
-                      <motion.button
+                      <motion.div
                         key={question.id}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => handleQuickQuestion(question)}
                         className={`p-4 text-left rounded-lg border transition-all ${
                           darkMode
                             ? 'border-gray-600 bg-gray-700/30 hover:bg-gray-700/50 hover:border-blue-500'
                             : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300'
                         } hover:shadow-sm`}
                       >
-                        <div className="flex items-center mb-2">
+                        <AuthRequiredButton
+                          onClick={() => handleQuickQuestion(question)}
+                          className="w-full h-full text-left"
+                        >
+                          <div className="flex items-center mb-2">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                             darkMode
                               ? 'bg-blue-900/30 text-blue-300'
@@ -1231,7 +1275,8 @@ Create content that is original, well-researched, and engaging for the target au
                         }`}>
                           {question.description}
                         </p>
-                      </motion.button>
+                      </AuthRequiredButton>
+                      </motion.div>
                     ))}
                   </div>
                 </motion.div>
@@ -1261,12 +1306,15 @@ Create content that is original, well-researched, and engaging for the target au
                           ? 'border-gray-600 bg-gray-700/30 hover:bg-gray-700/50 hover:border-purple-500'
                           : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-purple-300'
                       } hover:shadow-sm`}
-                      onClick={() => {
-                        setEditedContent(item.content);
-                        setGeneratedContent(item.content);
-                        toast.success('Content loaded from history');
-                      }}
                     >
+                      <AuthRequiredButton
+                        onClick={() => {
+                          setEditedContent(item.content);
+                          setGeneratedContent(item.content);
+                          toast.success('Content loaded from history');
+                        }}
+                        className="w-full h-full text-left"
+                      >
                       <h4 className={`font-medium text-sm mb-1 ${
                         darkMode ? 'text-gray-200' : 'text-gray-800'
                       }`}>
@@ -1282,13 +1330,14 @@ Create content that is original, well-researched, and engaging for the target au
                       }`}>
                         {item.content.substring(0, 100)}...
                       </p>
+                      </AuthRequiredButton>
                     </motion.div>
                   ))}
                   
                   {/* Pagination Controls */}
                   {getTotalPages() > 1 && (
                     <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <button
+                      <AuthRequiredButton
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
                         className={`p-2 rounded-md transition-colors ${
@@ -1299,8 +1348,8 @@ Create content that is original, well-researched, and engaging for the target au
                             : 'text-gray-600 hover:bg-gray-100'
                         }`}
                       >
-                        <FiChevronLeft className="w-4 h-4" />
-                      </button>
+                        <FiChevronLeft className="w-5 h-5" />
+                      </AuthRequiredButton>
                       
                       <div className="flex items-center space-x-2">
                         {Array.from({ length: getTotalPages() }, (_, i) => i + 1)
@@ -1316,7 +1365,7 @@ Create content that is original, well-researched, and engaging for the target au
                                   ...
                                 </span>
                               )}
-                              <button
+                              <AuthRequiredButton
                                 onClick={() => handlePageChange(page)}
                                 className={`w-8 h-8 rounded-md text-xs font-medium transition-colors ${
                                   page === currentPage
@@ -1327,13 +1376,13 @@ Create content that is original, well-researched, and engaging for the target au
                                 }`}
                               >
                                 {page}
-                              </button>
+                              </AuthRequiredButton>
                             </React.Fragment>
                           ))
                         }
                       </div>
                       
-                      <button
+                      <AuthRequiredButton
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === getTotalPages()}
                         className={`p-2 rounded-md transition-colors ${
@@ -1345,7 +1394,7 @@ Create content that is original, well-researched, and engaging for the target au
                         }`}
                       >
                         <FiChevronRight className="w-4 h-4" />
-                      </button>
+                      </AuthRequiredButton>
                     </div>
                   )}
                 </div>
@@ -1380,12 +1429,12 @@ Create content that is original, well-researched, and engaging for the target au
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                 Share Content
               </h3>
-              <button
+              <AuthRequiredButton
                 onClick={() => setShowShareModal(false)}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <FiX className="w-5 h-5" />
-              </button>
+              </AuthRequiredButton>
             </div>
             
             <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
@@ -1393,47 +1442,47 @@ Create content that is original, well-researched, and engaging for the target au
             </p>
             
             <div className="grid grid-cols-2 gap-3">
-              <button
+              <AuthRequiredButton
                 onClick={() => handleShareContent('twitter')}
                 className="flex items-center justify-center px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
                 <FiTwitter className="w-5 h-5 mr-2" />
                 Twitter
-              </button>
+              </AuthRequiredButton>
               
-              <button
+              <AuthRequiredButton
                 onClick={() => handleShareContent('linkedin')}
                 className="flex items-center justify-center px-4 py-3 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors"
               >
                 <FiLinkedin className="w-5 h-5 mr-2" />
                 LinkedIn
-              </button>
+              </AuthRequiredButton>
               
-              <button
+              <AuthRequiredButton
                 onClick={() => handleShareContent('facebook')}
                 className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <FiFacebook className="w-5 h-5 mr-2" />
                 Facebook
-              </button>
+              </AuthRequiredButton>
               
-              <button
+              <AuthRequiredButton
                 onClick={() => handleShareContent('email')}
                 className="flex items-center justify-center px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
               >
                 <FiMail className="w-5 h-5 mr-2" />
                 Email
-              </button>
+              </AuthRequiredButton>
             </div>
             
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button
+              <AuthRequiredButton
                 onClick={() => handleShareContent('copy')}
                 className="w-full flex items-center justify-center px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 <FiLink className="w-5 h-5 mr-2" />
                 Copy Link
-              </button>
+              </AuthRequiredButton>
             </div>
           </motion.div>
         </div>

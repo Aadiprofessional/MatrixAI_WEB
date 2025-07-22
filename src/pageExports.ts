@@ -31,6 +31,7 @@ export { default as AboutPage } from './pages/AboutPage';
 export { default as ContactPage } from './pages/ContactPage';
 export { default as CareersPage } from './pages/CareersPage';
 export { default as BlogPage } from './pages/BlogPage';
+export { default as FAQPage } from './pages/FAQPage';
 export { default as PrivacyPage } from './pages/PrivacyPage';
 export { default as TermsPage } from './pages/TermsPage';
 export { default as CookiesPage } from './pages/CookiesPage';

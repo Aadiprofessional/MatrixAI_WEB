@@ -100,7 +100,7 @@ const FeatureSection: React.FC = () => {
           />
           <FeatureCard 
             title="Unmatched Video Quality"
-            description="Forget cartoonish or blurry results. getimg.ai delivers crisp, cinematic motion from any image—photos, art, even sketches."
+            description="Forget cartoonish or blurry results. matrixai.asia delivers crisp, cinematic motion from any image—photos, art, even sketches."
             videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4"
             position="right"
             index={1}
@@ -110,7 +110,7 @@ const FeatureSection: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
           <FeatureCard 
             title="Always Up-to-Date"
-            description="No more FOMO. getimg.ai adds every breakthrough model and new feature the moment it's available."
+            description="No more FOMO. matrixai.asia adds every breakthrough model and new feature the moment it's available."
             videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4"
             position="right"
             index={2}

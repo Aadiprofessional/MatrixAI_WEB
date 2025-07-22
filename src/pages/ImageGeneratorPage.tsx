@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { FiDownload, FiShare2, FiTrash, FiChevronDown, FiImage, FiRefreshCw, FiList, FiX, FiClock, FiChevronLeft, FiChevronRight, FiUpload } from 'react-icons/fi';
-import { ProFeatureAlert } from '../components';
+import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -808,7 +808,7 @@ const ImageGeneratorPage: React.FC = () => {
                     )}
                   </div>
                 ) : (
-                  <button
+                  <AuthRequiredButton
                     onClick={triggerFileInput}
                     className={`w-full h-24 border-2 border-dashed rounded-lg flex flex-col items-center justify-center mb-3 transition-colors ${
                       darkMode 
@@ -819,7 +819,7 @@ const ImageGeneratorPage: React.FC = () => {
                     <FiUpload className="w-6 h-6 mb-2" />
                     <span className="text-sm">Click to upload an image</span>
                     <span className="text-xs mt-1 text-gray-500">JPG, PNG, GIF (max 5MB)</span>
-                  </button>
+                  </AuthRequiredButton>
                 )}
               </div>
               
@@ -872,7 +872,7 @@ const ImageGeneratorPage: React.FC = () => {
                   )}
                 </div>
                 <div className="flex mt-2 sm:mt-0">
-                  <button
+                  <AuthRequiredButton
                     onClick={() => setShowHistory(!showHistory)}
                     disabled={loading}
                     className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm rounded-lg flex items-center transition-colors w-full sm:w-auto justify-center ${
@@ -885,7 +885,7 @@ const ImageGeneratorPage: React.FC = () => {
                   >
                     <FiList className="mr-1.5 md:mr-2" />
                     <span>History</span>
-                  </button>
+                  </AuthRequiredButton>
                 </div>
               </div>
               
@@ -919,18 +919,18 @@ const ImageGeneratorPage: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <button
+                  <AuthRequiredButton
                     onClick={handleGenerateImages}
-                    disabled={!message.trim() || !uid}
+                    disabled={!message.trim()}
                     className={`w-full py-2 md:py-3 rounded-lg text-sm md:text-base font-medium flex items-center justify-center ${
-                      !message.trim() || !uid
+                      !message.trim()
                         ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                         : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90'
                     } transition`}
                   >
                     <FiImage className="mr-1.5 md:mr-2" />
                     {uploadedImage ? 'Enhance Image' : 'Generate Images'}
-                  </button>
+                  </AuthRequiredButton>
                 )}
               </div>
               

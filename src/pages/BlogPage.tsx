@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -15,23 +15,43 @@ import {
   FiShare2
 } from 'react-icons/fi';
 
+
+
+// Helper function to format dates
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
 const BlogPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [isScrolled, setIsScrolled] = useState(false);
+  
+  // Add scroll event listener to create a scrolled effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    document.title = 'Blog - matrixai.asia';
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const categories = ['All', 'AI Technology', 'Product Updates', 'Industry News', 'Tutorials', 'Company News'];
+  const categories = ['All', 'AI Technology', 'Tutorials'];
 
   const featuredPost = {
     id: 1,
-    title: 'The Future of AI: How MatrixAI is Revolutionizing Human-Computer Interaction',
-    excerpt: 'Discover how our latest AI models are pushing the boundaries of what\'s possible in natural language processing and computer vision.',
-    content: 'In this comprehensive deep dive, we explore the cutting-edge technologies that power MatrixAI and how they\'re transforming the way we interact with computers...',
-    author: 'Dr. Sarah Chen',
-    authorRole: 'CTO & Co-founder',
+    title: 'AI Room Unboxing Videos Went Viral: Here\'s How to Make Them Using Prompt (Inside!)',
+    excerpt: 'Want to go viral? Make AI-generated clips where full interiors unpack from a box exactly how to do it with our tool and prompt.',
+    content: 'In this comprehensive guide, we explore how to create viral AI room unboxing videos using MatrixAI\'s advanced generation tools...',
+    author: 'Agnieszka Ziebinska',
+    authorRole: 'Content Creator',
     authorImage: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80',
-    publishedAt: '2024-01-15',
-    readTime: '8 min read',
-    category: 'AI Technology',
+    publishedAt: '2024-06-24',
+    readTime: '6 min read',
+    category: 'Tutorials',
     image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2832&q=80',
     views: 1250,
     likes: 89,
@@ -41,14 +61,14 @@ const BlogPage: React.FC = () => {
   const blogPosts = [
     {
       id: 2,
-      title: 'Building Responsible AI: Our Commitment to Ethical Development',
-      excerpt: 'Learn about our principles and practices for developing AI systems that are safe, fair, and beneficial for everyone.',
-      author: 'Alex Johnson',
-      authorRole: 'CEO & Co-founder',
+      title: 'MiniMax Halluo 02: The 1080p AI Video Model That Gets Physics Right',
+      excerpt: 'Meet the AI video model behind the viral Cat Olympics. Native 1080p, real physics, and amazing motion—MiniMax Halluo 02 sets a new bar for AI video generation.',
+      author: 'Agnieszka Ziebinska',
+      authorRole: 'Content Creator',
       authorImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80',
-      publishedAt: '2024-01-12',
-      readTime: '6 min read',
-      category: 'Company News',
+      publishedAt: '2024-06-24',
+      readTime: '5 min read',
+      category: 'AI Technology',
       image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2672&q=80',
       views: 890,
       likes: 67,
@@ -56,14 +76,14 @@ const BlogPage: React.FC = () => {
     },
     {
       id: 3,
-      title: 'Tutorial: Getting Started with MatrixAI\'s Image Generation API',
-      excerpt: 'A step-by-step guide to integrating our powerful image generation capabilities into your applications.',
-      author: 'Marcus Torres',
-      authorRole: 'Head of Product',
+      title: 'Seedance 1.0 Lite by ByteDance: What You Need to Know',
+      excerpt: 'Meet Seedance 1.0 Lite: ByteDance\'s new AI video model that\'s fast, flexible, and budget-friendly. We dig into what makes it different.',
+      author: 'Agnieszka Ziebinska',
+      authorRole: 'Content Creator',
       authorImage: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80',
-      publishedAt: '2024-01-10',
-      readTime: '12 min read',
-      category: 'Tutorials',
+      publishedAt: '2024-06-15',
+      readTime: '4 min read',
+      category: 'AI Technology',
       image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2670&q=80',
       views: 1450,
       likes: 102,
@@ -71,14 +91,14 @@ const BlogPage: React.FC = () => {
     },
     {
       id: 4,
-      title: 'MatrixAI 2.0: Major Platform Updates and New Features',
-      excerpt: 'We\'re excited to announce the release of MatrixAI 2.0 with enhanced performance, new AI models, and improved user experience.',
-      author: 'Priya Sharma',
-      authorRole: 'Lead ML Engineer',
+      title: 'Sora vs. Kling vs. Pika: The Ultimate AI Video Model Comparison',
+      excerpt: 'We tested OpenAI\'s Sora, Kling, and Pika side by side. See which AI video generator wins for quality, speed, and creative control.',
+      author: 'Agnieszka Ziebinska',
+      authorRole: 'Content Creator',
       authorImage: 'https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80',
-      publishedAt: '2024-01-08',
-      readTime: '5 min read',
-      category: 'Product Updates',
+      publishedAt: '2024-06-10',
+      readTime: '7 min read',
+      category: 'Tutorials',
       image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2725&q=80',
       views: 2100,
       likes: 156,
@@ -86,14 +106,14 @@ const BlogPage: React.FC = () => {
     },
     {
       id: 5,
-      title: 'The Rise of Conversational AI: Industry Trends and Predictions',
-      excerpt: 'Analyzing the current state of conversational AI and what the future holds for this rapidly evolving field.',
-      author: 'Dr. Sarah Chen',
-      authorRole: 'CTO & Co-founder',
+      title: 'Runway Gen-3: The New AI Video King?',
+      excerpt: 'Runway just dropped Gen-3 Alpha with 1080p resolution and 4-second clips. We got early access—here\'s our hands-on review.',
+      author: 'Agnieszka Ziebinska',
+      authorRole: 'Content Creator',
       authorImage: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80',
-      publishedAt: '2024-01-05',
-      readTime: '10 min read',
-      category: 'Industry News',
+      publishedAt: '2024-06-05',
+      readTime: '5 min read',
+      category: 'AI Technology',
       image: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2820&q=80',
       views: 1780,
       likes: 134,
@@ -101,13 +121,13 @@ const BlogPage: React.FC = () => {
     },
     {
       id: 6,
-      title: 'How to Optimize Your AI Prompts for Better Results',
-      excerpt: 'Master the art of prompt engineering with our comprehensive guide to getting the most out of AI language models.',
-      author: 'Marcus Torres',
-      authorRole: 'Head of Product',
+      title: 'How to Make Seamless Loops in AI-Generated Videos',
+      excerpt: 'Create perfect looping videos with AI tools like Runway and Pika. Our step-by-step guide shows exactly how to craft seamless animations.',
+      author: 'Agnieszka Ziebinska',
+      authorRole: 'Content Creator',
       authorImage: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80',
-      publishedAt: '2024-01-03',
-      readTime: '7 min read',
+      publishedAt: '2024-06-01',
+      readTime: '8 min read',
       category: 'Tutorials',
       image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2670&q=80',
       views: 1320,
@@ -123,49 +143,33 @@ const BlogPage: React.FC = () => {
     return matchesCategory && matchesSearch;
   });
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+  // This is a duplicate formatDate function that needs to be removed
+  // The original formatDate function is already defined at the top of the component
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 py-20">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              MatrixAI Blog
-            </h1>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
-              Insights, updates, and stories from the world of artificial intelligence. 
-              Stay informed about the latest developments in AI technology.
-            </p>
-          </motion.div>
+    <div className="min-h-screen bg-black text-white">
+     
+      
+      {/* Blog header with logo and title */}
+      <div className="relative pt-24 pb-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2 mb-4">
+          <h1 className="text-xl font-medium tracking-tight text-white">Blog</h1>
         </div>
-      </section>
-
-      {/* Search and Filter Section */}
-      <section className="py-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      </div>
+      
+      {/* Search and filter section */}
+      <section className={`py-4 backdrop-blur-md bg-black/30 border-b border-gray-700 sticky top-0 z-20 transition-all duration-300 ${isScrolled ? 'shadow-lg' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             {/* Search Bar */}
-            <div className="relative flex-1 max-w-md">
+            <div className="relative flex-1 max-w-md w-full">
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
                 placeholder="Search articles..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-black/50 backdrop-blur-sm text-white placeholder-gray-400"
               />
             </div>
 
@@ -175,10 +179,10 @@ const BlogPage: React.FC = () => {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                     selectedCategory === category
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      ? 'bg-purple-600/80 text-white backdrop-blur-sm'
+                      : 'bg-gray-800/50 text-gray-200 hover:bg-gray-700/70 backdrop-blur-sm'
                   }`}
                 >
                   {category}
@@ -188,107 +192,291 @@ const BlogPage: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* Featured Article */}
-      <section className="py-16 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Featured Article
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400">
-              Our latest insights and updates
+      
+      {/* Featured post grid */}
+      <div className="relative py-8 overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-black z-0"></div>
+        
+        {/* Animated grid background similar to HomePage */}
+        <div className="absolute inset-0 z-0 opacity-30">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        </div>
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            className="text-center mb-12"
+          >
+            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
+              MatrixAI Blog
+            </h1>
+            <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-300 sm:mt-4">
+              Insights, updates, and deep dives into the world of AI technology
             </p>
-          </div>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Featured post card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="col-span-1 bg-gradient-to-b from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-xl overflow-hidden hover:shadow-lg hover:shadow-purple-900/10 transition-all duration-300"
+            >
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={featuredPost.image}
+                  alt={featuredPost.title}
+                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+              </div>
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="bg-purple-900/50 backdrop-blur-sm text-purple-200 border border-purple-700/50 px-2 py-1 rounded-full text-xs font-medium">
+                    {featuredPost.category}
+                  </span>
+                </div>
+                
+                <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 hover:text-purple-400 transition-colors duration-200">
+                  {featuredPost.title}
+                </h3>
+                
+                <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                  {featuredPost.excerpt}
+                </p>
+                
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={featuredPost.authorImage}
+                      alt={featuredPost.author}
+                      className="w-8 h-8 rounded-full object-cover ring-1 ring-purple-500/30"
+                    />
+                    <span className="text-sm text-gray-300">{featuredPost.author}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs text-gray-400">
+                  <span className="flex items-center gap-1">
+                    <FiCalendar className="h-3 w-3" />
+                    {formatDate(featuredPost.publishedAt)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <FiClock className="h-3 w-3" />
+                    {featuredPost.readTime}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
 
+            {/* Second post card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="col-span-1 bg-gradient-to-b from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-xl overflow-hidden hover:shadow-lg hover:shadow-purple-900/10 transition-all duration-300"
+            >
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={blogPosts[0].image}
+                  alt={blogPosts[0].title}
+                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+              </div>
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="bg-purple-900/50 backdrop-blur-sm text-purple-200 border border-purple-700/50 px-2 py-1 rounded-full text-xs font-medium">
+                    {blogPosts[0].category}
+                  </span>
+                </div>
+                
+                <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 hover:text-purple-400 transition-colors duration-200">
+                  {blogPosts[0].title}
+                </h3>
+                
+                <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                  {blogPosts[0].excerpt}
+                </p>
+                
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={blogPosts[0].authorImage}
+                      alt={blogPosts[0].author}
+                      className="w-8 h-8 rounded-full object-cover ring-1 ring-purple-500/30"
+                    />
+                    <span className="text-sm text-gray-300">{blogPosts[0].author}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs text-gray-400">
+                  <span className="flex items-center gap-1">
+                    <FiCalendar className="h-3 w-3" />
+                    {formatDate(blogPosts[0].publishedAt)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <FiClock className="h-3 w-3" />
+                    {blogPosts[0].readTime}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Third post card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="col-span-1 bg-gradient-to-b from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-xl overflow-hidden hover:shadow-lg hover:shadow-purple-900/10 transition-all duration-300"
+            >
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={blogPosts[1].image}
+                  alt={blogPosts[1].title}
+                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+              </div>
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="bg-purple-900/50 backdrop-blur-sm text-purple-200 border border-purple-700/50 px-2 py-1 rounded-full text-xs font-medium">
+                    {blogPosts[1].category}
+                  </span>
+                </div>
+                
+                <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 hover:text-purple-400 transition-colors duration-200">
+                  {blogPosts[1].title}
+                </h3>
+                
+                <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                  {blogPosts[1].excerpt}
+                </p>
+                
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={blogPosts[1].authorImage}
+                      alt={blogPosts[1].author}
+                      className="w-8 h-8 rounded-full object-cover ring-1 ring-purple-500/30"
+                    />
+                    <span className="text-sm text-gray-300">{blogPosts[1].author}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs text-gray-400">
+                  <span className="flex items-center gap-1">
+                    <FiCalendar className="h-3 w-3" />
+                    {formatDate(blogPosts[1].publishedAt)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <FiClock className="h-3 w-3" />
+                    {blogPosts[1].readTime}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {/* More blog posts section */}
+      <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {blogPosts
+            .slice(2, 5) // Display posts 3-6
+            .filter(post => selectedCategory === 'All' || post.category === selectedCategory)
+            .filter(post => 
+              post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+            .map(post => (
+              <motion.div
+                key={post.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="col-span-1 bg-gradient-to-b from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-xl overflow-hidden hover:shadow-lg hover:shadow-purple-900/10 transition-all duration-300"
+              >
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                </div>
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="bg-purple-900/50 backdrop-blur-sm text-purple-200 border border-purple-700/50 px-2 py-1 rounded-full text-xs font-medium">
+                      {post.category}
+                    </span>
+                  </div>
+                  
+                  <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 hover:text-purple-400 transition-colors duration-200">
+                    {post.title}
+                  </h3>
+                  
+                  <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                    {post.excerpt}
+                  </p>
+                  
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={post.authorImage}
+                        alt={post.author}
+                        className="w-8 h-8 rounded-full object-cover ring-1 ring-purple-500/30"
+                      />
+                      <span className="text-sm text-gray-300">{post.author}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <span className="flex items-center gap-1">
+                      <FiCalendar className="h-3 w-3" />
+                      {formatDate(post.publishedAt)}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <FiClock className="h-3 w-3" />
+                      {post.readTime}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+        </div>
+      </div>
+
+      {/* Blog Posts Grid */}
+      <section className="py-16 bg-black relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-black z-0"></div>
+        
+        {/* Animated grid background */}
+        <div className="absolute inset-0 z-0 opacity-30">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="bg-gray-50 dark:bg-gray-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
+            transition={{ duration: 0.7 }}
+            className="text-center mb-12"
           >
-            <div className="md:flex">
-              <div className="md:w-1/2">
-                <img
-                  src={featuredPost.image}
-                  alt={featuredPost.title}
-                  className="w-full h-64 md:h-full object-cover"
-                />
-              </div>
-              <div className="md:w-1/2 p-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium">
-                    {featuredPost.category}
-                  </span>
-                  <span className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-3 py-1 rounded-full text-sm font-medium">
-                    Featured
-                  </span>
-                </div>
-                
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  {featuredPost.title}
-                </h3>
-                
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  {featuredPost.excerpt}
-                </p>
-                
-                <div className="flex items-center gap-4 mb-6">
-                  <img
-                    src={featuredPost.authorImage}
-                    alt={featuredPost.author}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {featuredPost.author}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {featuredPost.authorRole}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-6">
-                  <span className="flex items-center gap-1">
-                    <FiCalendar className="h-4 w-4" />
-                    {formatDate(featuredPost.publishedAt)}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <FiClock className="h-4 w-4" />
-                    {featuredPost.readTime}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <FiEye className="h-4 w-4" />
-                    {featuredPost.views}
-                  </span>
-                </div>
-                
-                <Link
-                  to={`/blog/${featuredPost.id}`}
-                  className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Read Full Article
-                  <FiArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Blog Posts Grid */}
-      <section className="py-16 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-3xl font-bold text-white mb-4">
               Latest Articles
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400">
+            <p className="text-xl text-gray-300">
               {filteredPosts.length} {filteredPosts.length === 1 ? 'article' : 'articles'} found
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredPosts.map((post, index) => (
@@ -298,27 +486,28 @@ const BlogPage: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow"
+                className="backdrop-blur-md bg-black/30 border border-gray-700 rounded-xl overflow-hidden shadow-md hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
               >
-                <div className="relative">
+                <div className="relative overflow-hidden">
                   <img
                     src={post.image}
                     alt={post.title}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-48 object-cover transition-transform duration-700 hover:scale-105"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-60"></div>
                   <div className="absolute top-4 left-4">
-                    <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium">
+                    <span className="bg-purple-900/50 backdrop-blur-sm text-purple-200 border border-purple-700/50 px-3 py-1 rounded-full text-sm font-medium">
                       {post.category}
                     </span>
                   </div>
                 </div>
                 
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2">
+                  <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 hover:text-purple-400 transition-colors duration-200">
                     {post.title}
                   </h3>
                   
-                  <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                  <p className="text-gray-300 mb-4 line-clamp-3">
                     {post.excerpt}
                   </p>
                   
@@ -326,19 +515,19 @@ const BlogPage: React.FC = () => {
                     <img
                       src={post.authorImage}
                       alt={post.author}
-                      className="w-10 h-10 rounded-full object-cover"
+                      className="w-10 h-10 rounded-full object-cover ring-1 ring-purple-500/30"
                     />
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white text-sm">
+                      <p className="font-medium text-white text-sm">
                         {post.author}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-gray-400">
                         {post.authorRole}
                       </p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
                     <span className="flex items-center gap-1">
                       <FiCalendar className="h-4 w-4" />
                       {formatDate(post.publishedAt)}
@@ -350,7 +539,7 @@ const BlogPage: React.FC = () => {
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center gap-4 text-sm text-gray-400">
                       <span className="flex items-center gap-1">
                         <FiEye className="h-4 w-4" />
                         {post.views}
@@ -362,7 +551,7 @@ const BlogPage: React.FC = () => {
                     </div>
                     <Link
                       to={`/blog/${post.id}`}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1"
+                      className="text-purple-400 hover:text-purple-300 font-medium flex items-center gap-1 transition-colors duration-200"
                     >
                       Read More
                       <FiArrowRight className="h-4 w-4" />
@@ -374,12 +563,12 @@ const BlogPage: React.FC = () => {
           </div>
 
           {filteredPosts.length === 0 && (
-            <div className="text-center py-12">
+            <div className="text-center py-12 backdrop-blur-md bg-black/30 border border-gray-700 rounded-xl">
               <FiBookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-xl font-medium text-white mb-2">
                 No articles found
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-400">
                 Try adjusting your search or filter criteria
               </p>
             </div>
@@ -415,8 +604,9 @@ const BlogPage: React.FC = () => {
           </motion.div>
         </div>
       </section>
+
     </div>
   );
 };
 
-export default BlogPage; 
+export default BlogPage;

@@ -20,6 +20,7 @@ interface FeatureSectionProps {
   isReversed?: boolean;
   hasPlayButton?: boolean;
   hasSpeakerButton?: boolean;
+  bgStyle?: React.CSSProperties;
 }
 
 // Feature section component for model capabilities
@@ -33,7 +34,8 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
   videoSrc,
   isReversed = false,
   hasPlayButton = false,
-  hasSpeakerButton = false
+  hasSpeakerButton = false,
+  bgStyle
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -58,7 +60,7 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
   };
 
   return (
-    <section className="py-20 bg-gradient-to-b from-black to-gray-900">
+    <section className="min-h-screen flex items-center">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`flex flex-col ${isReversed ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-12`}>
           {/* Text content */}
@@ -85,7 +87,7 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
               <div className="absolute inset-[6px] bg-gradient-to-br from-white/5 to-transparent opacity-80 rounded-lg"></div>
               
               <div className="relative z-10 p-4 flex justify-center items-center">
-                <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4">
+                <div className="flex flex-col md:flex-row items-center justify-center w-full relative gap-6">
                   {/* Left side - Image */}
                   <div className="md:w-5/12 relative">
                     {imageSrc && (
@@ -93,9 +95,9 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
                     )}
                   </div>
                   
-                  {/* Middle - Arrow */}
-                  <div className="flex-shrink-0">
-                    <img src="/images/arrow-right.svg" alt="Arrow right" className="w-8 h-8 text-white" />
+                  {/* Middle - Arrow - Positioned absolutely to overlap both containers */}
+                  <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 bg-black/70 rounded-lg p-2">
+                    <img src="/images/arrow-right.svg" alt="Arrow right" className="w-8 h-8 filter invert" />
                   </div>
                   
                   {/* Right side - Video */}
@@ -167,6 +169,12 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
 const ModelsShowcaseSection: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<string>('google-veo');
   
+  // Define a common background style for all sections
+  const sectionBgStyle = {
+    background: 'linear-gradient(to bottom, #000000, #111827)',
+    backgroundAttachment: 'fixed'
+  };
+  
   const models: ModelInfo[] = [
     {
       id: 'google-veo',
@@ -236,9 +244,9 @@ const ModelsShowcaseSection: React.FC = () => {
   const currentModel = models.find(model => model.id === selectedModel);
   
   return (
-    <>
+    <div style={sectionBgStyle}>
       {/* Main Models Showcase Section */}
-      <section className="py-20 bg-gradient-to-b from-black to-gray-900">
+      <section className="min-h-screen flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
@@ -344,11 +352,12 @@ const ModelsShowcaseSection: React.FC = () => {
         subtitle="RUNWAY GEN-3 TURBO & KLING 1.6 PRO"
         modelName="RUNWAY GEN-3 TURBO & KLING 1.6 PRO"
         description="With Runway Gen-3 Turbo and Kling 1.6 Pro, you get a level of creative control that's almost unheard of in AI video. Upload your starting image, then upload your ending frame—lock in both the opening and the closing of your video. No more leaving results to chance: you decide how your story begins and ends, and our models handle the rest with seamless, cinematic transitions. If you want your vision executed with surgical precision, these are the models professionals choose."
-        imageSrc="/images/runway-feature.jpg"
+        imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
         imageAlt="Runway Gen-3 Turbo & Kling 1.6 Pro demonstration"
-        videoSrc="/videos/sample-video.mp4"
+        videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
         hasPlayButton={true}
         hasSpeakerButton={true}
+        bgStyle={sectionBgStyle}
       />
       
       <FeatureSection 
@@ -356,12 +365,13 @@ const ModelsShowcaseSection: React.FC = () => {
         subtitle="HAILUO'S STANDARD MODE"
         modelName="HAILUO'S STANDARD MODE"
         description="Hailuo's Standard mode is your go-to solution for transforming a wide variety of images into captivating short videos. Whether you upload a cherished photograph, a vibrant anime graphic, or a detailed painting, Standard Mode can handle it. This multi-purpose mode is designed to adapt to various styles and content, providing a flexible foundation for your video creations."
-        imageSrc="/images/hailuo-standard.jpg"
+        imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
         imageAlt="Hailuo's Standard Mode demonstration"
-        videoSrc="/videos/sample-video.mp4"
+        videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
         isReversed={true}
         hasPlayButton={true}
         hasSpeakerButton={true}
+        bgStyle={sectionBgStyle}
       />
       
       <FeatureSection 
@@ -369,11 +379,12 @@ const ModelsShowcaseSection: React.FC = () => {
         subtitle="HAILUO'S SUBJECT MODE"
         modelName="HAILUO'S SUBJECT MODE"
         description="Need a character to move and perform across multiple shots? Hailuo's Subject Mode is engineered for creators who want to build entire storylines around one original character, mascot, or persona. Upload a single photo, and this mode lets you generate endless videos with your subject—always on-model, always recognizable. It's the solution for brands, artists, and storytellers who want consistency and impact, every single time."
-        imageSrc="/images/hailuo-subject.jpg"
+        imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
         imageAlt="Hailuo's Subject Mode demonstration"
-        videoSrc="/videos/sample-video.mp4"
+        videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
         hasPlayButton={true}
         hasSpeakerButton={true}
+        bgStyle={sectionBgStyle}
       />
       
       <FeatureSection 
@@ -381,14 +392,15 @@ const ModelsShowcaseSection: React.FC = () => {
         subtitle="HAILUO'S LIVE MODE"
         modelName="HAILUO'S LIVE MODE"
         description="Hailuo's Live Mode is purpose-built for animating line art, sketches, and digital drawings—instantly turning static outlines into smooth, expressive motion. This mode recognizes the unique personality in every stroke, ensuring your original artwork translates into dynamic, lifelike video. It's a must-have for illustrators, concept artists, and anyone looking to make hand-drawn creations move with style and intent."
-        imageSrc="/images/hailuo-live.jpg"
+        imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
         imageAlt="Hailuo's Live Mode demonstration"
-        videoSrc="/videos/sample-video.mp4"
+        videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
         isReversed={true}
         hasPlayButton={true}
         hasSpeakerButton={true}
+        bgStyle={sectionBgStyle}
       />
-    </>
+    </div>
   );
 };
 

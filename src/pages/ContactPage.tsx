@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiMail, FiMapPin, FiPhone, FiHelpCircle, FiMessageSquare, FiUsers } from 'react-icons/fi';
 import { useLocation } from 'react-router-dom';
@@ -66,6 +66,22 @@ const ContactPage: React.FC = () => {
           : ''
   );
   const [submitted, setSubmitted] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,41 +91,45 @@ const ContactPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-black min-h-screen">
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-black z-0"></div>
+        
+        {/* Animated grid background */}
+        <div className="absolute inset-0 z-0 opacity-30">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="relative z-10 text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.7 }}
             >
-              <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+              <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
                 Get in Touch
               </h1>
-              <p className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="mt-6 text-xl text-gray-300 max-w-3xl mx-auto">
                 Have questions or need help? We're here for you. Reach out to our team and we'll get back to you shortly.
               </p>
             </motion.div>
           </div>
         </div>
-        {/* Background decoration */}
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-10">
-          <svg width="640" height="392" fill="none" viewBox="0 0 640 392">
-            <defs>
-              <pattern id="9ebea6f4-a1f5-4d96-8c4e-4c2abf658047" x="118" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <rect x="0" y="0" width="4" height="4" className="text-gray-100" fill="currentColor" />
-              </pattern>
-            </defs>
-            <rect x="118" y="0" width="404" height="392" fill="url(#9ebea6f4-a1f5-4d96-8c4e-4c2abf658047)" />
-          </svg>
-        </div>
+        
+        {/* Glowing orb decoration */}
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full filter blur-3xl opacity-30"></div>
+        <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-blue-500/20 rounded-full filter blur-3xl opacity-20"></div>
       </section>
 
       {/* Contact Options */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-12 relative">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black to-black/80 z-0"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {contactOptions.map((option) => (
               <motion.div
@@ -118,16 +138,16 @@ const ContactPage: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className={`bg-white rounded-xl shadow-soft p-8 border border-gray-100 cursor-pointer hover:shadow-md transition-shadow ${
-                  contactReason === option.name ? 'ring-2 ring-primary-500' : ''
+                className={`backdrop-blur-md bg-black/30 rounded-xl p-8 border border-gray-700 cursor-pointer hover:shadow-lg hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300 ${
+                  contactReason === option.name ? 'ring-2 ring-purple-500' : ''
                 }`}
                 onClick={() => setContactReason(option.name)}
               >
-                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${option.iconClass} bg-opacity-10`}>
+                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${option.iconClass} bg-opacity-20`}>
                   <option.icon className="h-6 w-6" />
                 </div>
-                <h3 className="mt-4 text-lg font-semibold text-gray-900">{option.name}</h3>
-                <p className="mt-2 text-sm text-gray-600">{option.description}</p>
+                <h3 className="mt-4 text-lg font-semibold text-white">{option.name}</h3>
+                <p className="mt-2 text-sm text-gray-300">{option.description}</p>
                 <div className="mt-4">
                   <input
                     type="radio"
@@ -140,13 +160,13 @@ const ContactPage: React.FC = () => {
                   <label
                     htmlFor={`option-${option.name}`}
                     className={`inline-flex items-center text-sm font-medium ${
-                      contactReason === option.name ? 'text-primary-600' : 'text-gray-500'
+                      contactReason === option.name ? 'text-purple-400' : 'text-gray-400'
                     }`}
                   >
                     <span className={`w-4 h-4 mr-2 rounded-full border ${
                       contactReason === option.name
-                        ? 'bg-primary-500 border-primary-500'
-                        : 'border-gray-300'
+                        ? 'bg-purple-500 border-purple-500'
+                        : 'border-gray-600'
                     }`}>
                       {contactReason === option.name && (
                         <span className="absolute w-2 h-2 mx-1 my-1 rounded-full bg-white" />
@@ -162,21 +182,29 @@ const ContactPage: React.FC = () => {
       </section>
 
       {/* Contact Form */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-12 relative">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black z-0"></div>
+        
+        {/* Animated grid background */}
+        <div className="absolute inset-0 z-0 opacity-20">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        </div>
+        
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="bg-white rounded-2xl shadow-soft overflow-hidden"
+            className="backdrop-blur-md bg-black/30 rounded-2xl shadow-lg border border-gray-700 overflow-hidden"
           >
             <div className="px-6 py-8 md:p-10">
               {!submitted ? (
                 <>
                   <div className="text-center mb-10">
-                    <h2 className="text-3xl font-bold text-gray-900">Send us a message</h2>
-                    <p className="mt-4 text-lg text-gray-600">
+                    <h2 className="text-3xl font-bold text-white">Send us a message</h2>
+                    <p className="mt-4 text-lg text-gray-300">
                       {contactReason
                         ? `You've selected ${contactReason}. Fill out the form below and we'll get back to you as soon as possible.`
                         : 'Please select a reason for contact above and fill out the form below.'}
@@ -186,7 +214,7 @@ const ContactPage: React.FC = () => {
                   <form className="space-y-6" onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
                       <div>
-                        <label htmlFor="first-name" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="first-name" className="block text-sm font-medium text-gray-300">
                           First name
                         </label>
                         <div className="mt-1">
@@ -196,12 +224,12 @@ const ContactPage: React.FC = () => {
                             id="first-name"
                             autoComplete="given-name"
                             required
-                            className="py-3 px-4 block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 border-gray-300 rounded-md"
+                            className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
                           />
                         </div>
                       </div>
                       <div>
-                        <label htmlFor="last-name" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="last-name" className="block text-sm font-medium text-gray-300">
                           Last name
                         </label>
                         <div className="mt-1">
@@ -211,7 +239,7 @@ const ContactPage: React.FC = () => {
                             id="last-name"
                             autoComplete="family-name"
                             required
-                            className="py-3 px-4 block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 border-gray-300 rounded-md"
+                            className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
                           />
                         </div>
                       </div>
@@ -219,7 +247,7 @@ const ContactPage: React.FC = () => {
                     
                     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
                       <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-300">
                           Email
                         </label>
                         <div className="mt-1">
@@ -229,12 +257,12 @@ const ContactPage: React.FC = () => {
                             type="email"
                             autoComplete="email"
                             required
-                            className="py-3 px-4 block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 border-gray-300 rounded-md"
+                            className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
                           />
                         </div>
                       </div>
                       <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-300">
                           Phone
                         </label>
                         <div className="mt-1">
@@ -243,14 +271,14 @@ const ContactPage: React.FC = () => {
                             name="phone"
                             id="phone"
                             autoComplete="tel"
-                            className="py-3 px-4 block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 border-gray-300 rounded-md"
+                            className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
                           />
                         </div>
                       </div>
                     </div>
                     
                     <div>
-                      <label htmlFor="company" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="company" className="block text-sm font-medium text-gray-300">
                         Company
                       </label>
                       <div className="mt-1">
@@ -259,13 +287,13 @@ const ContactPage: React.FC = () => {
                           name="company"
                           id="company"
                           autoComplete="organization"
-                          className="py-3 px-4 block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 border-gray-300 rounded-md"
+                          className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <label htmlFor="subject" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="subject" className="block text-sm font-medium text-gray-300">
                         Subject
                       </label>
                       <div className="mt-1">
@@ -274,13 +302,13 @@ const ContactPage: React.FC = () => {
                           name="subject"
                           id="subject"
                           required
-                          className="py-3 px-4 block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 border-gray-300 rounded-md"
+                          className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="message" className="block text-sm font-medium text-gray-300">
                         Message
                       </label>
                       <div className="mt-1">
@@ -289,7 +317,7 @@ const ContactPage: React.FC = () => {
                           name="message"
                           rows={6}
                           required
-                          className="py-3 px-4 block w-full shadow-sm focus:ring-primary-500 focus:border-primary-500 border-gray-300 rounded-md"
+                          className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
                           placeholder="How can we help you?"
                         />
                       </div>
@@ -301,9 +329,9 @@ const ContactPage: React.FC = () => {
                         name="agree-terms"
                         type="checkbox"
                         required
-                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-purple-600 focus:ring-purple-500 bg-black/50 border-gray-700 rounded"
                       />
-                      <label htmlFor="agree-terms" className="ml-2 block text-sm text-gray-600">
+                      <label htmlFor="agree-terms" className="ml-2 block text-sm text-gray-300">
                         I agree to the privacy policy and terms of service.
                       </label>
                     </div>
@@ -311,7 +339,7 @@ const ContactPage: React.FC = () => {
                     <div className="text-center">
                       <button
                         type="submit"
-                        className="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        className="inline-flex justify-center py-3 px-6 border border-transparent shadow-lg text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300"
                       >
                         Send Message
                       </button>
@@ -324,15 +352,15 @@ const ContactPage: React.FC = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-center py-12"
                 >
-                  <svg className="w-16 h-16 text-green-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-16 h-16 text-purple-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <h2 className="mt-6 text-3xl font-bold text-gray-900">Thank you!</h2>
-                  <p className="mt-2 text-lg text-gray-600">
+                  <h2 className="mt-6 text-3xl font-bold text-white">Thank you!</h2>
+                  <p className="mt-2 text-lg text-gray-300">
                     Your message has been sent successfully. We'll get back to you as soon as possible.
                   </p>
                   <button
-                    className="mt-8 inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    className="mt-8 inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300"
                     onClick={() => setSubmitted(false)}
                   >
                     Send another message
@@ -345,17 +373,25 @@ const ContactPage: React.FC = () => {
       </section>
 
       {/* Offices */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 relative">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black to-black/90 z-0"></div>
+        
+        {/* Animated grid background */}
+        <div className="absolute inset-0 z-0 opacity-20">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.7 }}
             >
-              <h2 className="text-3xl font-bold text-gray-900">Our Offices</h2>
-              <p className="mt-4 text-xl text-gray-600">
+              <h2 className="text-3xl font-bold text-white">Our Offices</h2>
+              <p className="mt-4 text-xl text-gray-300">
                 Visit us at one of our global offices
               </p>
             </motion.div>
@@ -369,29 +405,29 @@ const ContactPage: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white rounded-xl shadow-soft overflow-hidden"
+                className="backdrop-blur-md bg-black/30 rounded-xl shadow-lg border border-gray-700 overflow-hidden hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
               >
                 <div className="h-48 relative overflow-hidden">
                   <img
                     src={office.image}
                     alt={`${office.city} office`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-300"
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900">{office.city}, {office.country}</h3>
+                  <h3 className="text-xl font-semibold text-white">{office.city}, {office.country}</h3>
                   <div className="mt-4 space-y-3">
                     <div className="flex">
-                      <FiMapPin className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <span className="ml-3 text-gray-600">{office.address}</span>
+                      <FiMapPin className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
+                      <span className="ml-3 text-gray-300">{office.address}</span>
                     </div>
                     <div className="flex">
-                      <FiPhone className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <span className="ml-3 text-gray-600">{office.phone}</span>
+                      <FiPhone className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
+                      <span className="ml-3 text-gray-300">{office.phone}</span>
                     </div>
                     <div className="flex">
-                      <FiMail className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <a href={`mailto:${office.email}`} className="ml-3 text-primary-600 hover:text-primary-500">
+                      <FiMail className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
+                      <a href={`mailto:${office.email}`} className="ml-3 text-purple-400 hover:text-purple-300 transition-colors duration-300">
                         {office.email}
                       </a>
                     </div>
@@ -403,59 +439,9 @@ const ContactPage: React.FC = () => {
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="text-3xl font-bold text-gray-900">Frequently Asked Questions</h2>
-              <p className="mt-4 text-xl text-gray-600">
-                Can't find what you're looking for? Contact our support team.
-              </p>
-            </motion.div>
-          </div>
-          
-          <div className="space-y-6">
-            {[
-              {
-                question: 'How quickly will I receive a response?',
-                answer: 'We aim to respond to all inquiries within 24 hours during business days. For urgent support issues, premium and enterprise customers have access to expedited response times.'
-              },
-              {
-                question: 'Do you offer phone support?',
-                answer: 'Phone support is available for enterprise customers. All customers can reach us via email, chat, or by submitting this contact form.'
-              },
-              {
-                question: 'I\'m interested in a partnership. Who should I contact?',
-                answer: 'For partnership inquiries, please select "General Inquiries" and mention partnership in your message. Our business development team will get back to you.'
-              },
-              {
-                question: 'Do you have a knowledge base or help center?',
-                answer: 'Yes, we have an extensive knowledge base with tutorials, guides, and FAQs at help.aiassistant.com. It\'s a great first stop for common questions.'
-              }
-            ].map((faq, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="bg-white rounded-lg p-6 shadow-soft"
-              >
-                <h3 className="text-lg font-semibold text-gray-900">{faq.question}</h3>
-                <p className="mt-2 text-gray-600">{faq.answer}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+
     </div>
   );
 };
 
-export default ContactPage; 
+export default ContactPage;

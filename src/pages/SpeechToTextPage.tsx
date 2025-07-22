@@ -12,6 +12,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../supabaseClient';
 import { ProFeatureAlert } from '../components';
+import AuthRequiredButton from '../components/AuthRequiredButton';
 
 // Define interface for files
 interface AudioFile {
@@ -1062,13 +1063,17 @@ const SpeechToTextPage: React.FC = () => {
                     className="hidden"
                     id="file-upload"
                   />
-                  <label
-                    htmlFor="file-upload"
+                  <AuthRequiredButton
+                    onClick={() => {
+                      if (fileInputRef.current) {
+                        fileInputRef.current.click();
+                      }
+                    }}
                     className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:opacity-90 cursor-pointer shadow-md hover:shadow-lg transition-all inline-flex items-center"
                   >
                     <FiUpload className="mr-2" />
                     Browse Files
-                  </label>
+                  </AuthRequiredButton>
                 </div>
               </div>
             ) : isUploading ? (
@@ -1180,7 +1185,7 @@ const SpeechToTextPage: React.FC = () => {
                 </div>
                 
                 <div className="mt-8 flex justify-end">
-                  <button
+                  <AuthRequiredButton
                     onClick={handleUpload}
                     disabled={isUploading}
                     className={`px-8 py-3 rounded-lg font-medium shadow-md flex items-center ${
@@ -1200,7 +1205,7 @@ const SpeechToTextPage: React.FC = () => {
                         Convert to Text
                       </>
                     )}
-                  </button>
+                  </AuthRequiredButton>
                 </div>
               </motion.div>
             )}
@@ -1410,7 +1415,7 @@ const SpeechToTextPage: React.FC = () => {
               <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
                 Upload an audio file to get started with your first transcription
               </p>
-              <button
+              <AuthRequiredButton
                 onClick={() => {
                   if (fileInputRef.current) {
                     fileInputRef.current.click();
@@ -1420,7 +1425,7 @@ const SpeechToTextPage: React.FC = () => {
               >
                 <FiUpload className="mr-2" />
                 Upload Audio File
-              </button>
+              </AuthRequiredButton>
             </div>
           )}
         </motion.div>

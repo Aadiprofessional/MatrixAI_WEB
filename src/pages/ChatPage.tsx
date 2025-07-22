@@ -19,6 +19,7 @@ import { supabase } from '../supabaseClient';
 import { userService } from '../services/userService';
 import ProFeatureAlert from '../components/ProFeatureAlert';
 import ChargeModal from '../components/ChargeModal';
+import AuthRequiredButton from '../components/AuthRequiredButton';
 import { useAlert } from '../context/AlertContext';
 import './ChatPage.css';
 
@@ -99,14 +100,14 @@ const CodeBlock = ({ node, inline, className, children, language, value, ...prop
           <span className="text-xs font-medium text-gray-600 dark:text-gray-300 uppercase">
             {lang || 'code'}
           </span>
-          <button
+          <AuthRequiredButton
             onClick={() => navigator.clipboard.writeText(codeString)}
             className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             title="Copy code"
           >
             <FiCopy size={12} />
             Copy
-          </button>
+          </AuthRequiredButton>
         </div>
         
         {/* Code content - Replace SyntaxHighlighter with pre/code */}
@@ -2061,7 +2062,7 @@ const ChatPage: React.FC = () => {
         </div>
         
         {/* Delete button */}
-        <div
+        <AuthRequiredButton
           onClick={(e) => {
             e.stopPropagation();
             if (window.confirm('Are you sure you want to delete this chat?')) {
@@ -2074,7 +2075,7 @@ const ChatPage: React.FC = () => {
           title="Delete chat"
         >
           <FiX className="w-3.5 h-3.5" />
-        </div>
+        </AuthRequiredButton>
       </div>
     );
   };
@@ -2166,12 +2167,12 @@ const ChatPage: React.FC = () => {
           <div className={`w-72 ${darkMode ? 'bg-gray-800' : 'bg-white'} flex flex-col h-full`}>
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <h2 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Chat History</h2>
-              <button 
+              <AuthRequiredButton 
                 onClick={() => setShowChatHistory(false)}
                 className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 <FiX className="w-5 h-5" />
-              </button>
+              </AuthRequiredButton>
             </div>
             <div className="flex-1 overflow-y-auto p-3">
               <div className="mb-4">
@@ -2220,7 +2221,7 @@ const ChatPage: React.FC = () => {
             </AnimatePresence>
             
             {/* Mobile menu button for chat history */}
-            <button 
+            <AuthRequiredButton 
               onClick={() => setShowChatHistory(!showChatHistory)}
               className={`md:hidden fixed top-20 left-4 z-[60] p-2 rounded-lg ${
                 darkMode 
@@ -2230,7 +2231,7 @@ const ChatPage: React.FC = () => {
               aria-label="Toggle chat history"
             >
               <FiMessageSquare className="w-5 h-5" />
-            </button>
+            </AuthRequiredButton>
             
             {/* Main chat container */}
             <div className="h-full max-w-6xl mx-auto px-4 pt-4 pb-0 flex flex-col">
@@ -2240,7 +2241,7 @@ const ChatPage: React.FC = () => {
                   {/* Chat header with role selector */}
                   <div className={`px-6 py-3 flex justify-between items-center border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                     <div className="relative">
-                      <button 
+                      <AuthRequiredButton 
                         onClick={() => setShowRoleSelector(!showRoleSelector)} 
                         className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium border ${
                           darkMode ? 'text-gray-200 hover:bg-gray-700 border-gray-600' : 'text-gray-700 hover:bg-gray-50 border-gray-300'
@@ -2249,7 +2250,7 @@ const ChatPage: React.FC = () => {
                         <FiCpu className="text-blue-500 mr-2" />
                         <span>{selectedRole.name}</span>
                         <FiChevronDown className={`transition-transform ${showRoleSelector ? 'rotate-180' : ''}`} />
-                      </button>
+                      </AuthRequiredButton>
                       
                       {/* Role Selector Dropdown */}
                       {showRoleSelector && (
@@ -2285,17 +2286,17 @@ const ChatPage: React.FC = () => {
                           <span>{remainingMessages} messages left</span>
                         </div>
                       )}
-                      <button 
+                      <AuthRequiredButton 
                         onClick={handleStartNewChat}
                         className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                         title="New Chat"
                       >
                         <FiPlus className="w-5 h-5" />
-                      </button>
+                      </AuthRequiredButton>
                       
                       {/* History dropdown button */}
                       <div className="relative">
-                        <button 
+                        <AuthRequiredButton 
                           onClick={() => setShowHistoryDropdown(!showHistoryDropdown)}
                           className={`p-2 rounded-full ${
                             showHistoryDropdown
@@ -2305,7 +2306,7 @@ const ChatPage: React.FC = () => {
                           title="Chat History"
                         >
                           <FiClock className="w-5 h-5" />
-                        </button>
+                        </AuthRequiredButton>
                         
                         {/* History Dropdown */}
                         {showHistoryDropdown && (
@@ -2316,12 +2317,12 @@ const ChatPage: React.FC = () => {
                           >
                             <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                               <h3 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Recent Conversations</h3>
-                              <button 
+                              <AuthRequiredButton 
                                 onClick={() => setShowHistoryDropdown(false)}
                                 className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
                               >
                                 <FiX className="w-4 h-4" />
-                              </button>
+                              </AuthRequiredButton>
                             </div>
                             
                             <div className="max-h-96 overflow-y-auto py-2">
@@ -2359,7 +2360,7 @@ const ChatPage: React.FC = () => {
                             </div>
                             
                             <div className={`p-2 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                              <button 
+                              <AuthRequiredButton 
                                 className={`w-full text-center py-2 rounded-md text-sm font-medium ${
                                   darkMode 
                                     ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
@@ -2367,14 +2368,14 @@ const ChatPage: React.FC = () => {
                                 }`}
                               >
                                 View All History
-                              </button>
+                              </AuthRequiredButton>
                             </div>
                           </div>
                         )}
                       </div>
                       
                       {/* Auto-speak toggle */}
-                      <button 
+                      <AuthRequiredButton 
                         onClick={toggleAutoSpeak}
                         className={`p-2 rounded ${autoSpeak
                           ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-600')
@@ -2383,7 +2384,7 @@ const ChatPage: React.FC = () => {
                         title={autoSpeak ? "Auto-speak On" : "Auto-speak Off"}
                       >
                         {autoSpeak ? <FiVolume2 className="w-5 h-5" /> : <FiVolume className="w-5 h-5" />}
-                      </button>
+                      </AuthRequiredButton>
                       
                       {/* Call button */}
                     
@@ -2559,12 +2560,12 @@ const ChatPage: React.FC = () => {
                       <div className={`mb-2 p-2 rounded-lg flex items-center space-x-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                         <FiFile className={darkMode ? 'text-gray-300' : 'text-gray-600'} />
                         <span className="text-sm truncate flex-1">{selectedFile.name}</span>
-                        <button 
+                        <AuthRequiredButton 
                           onClick={() => setSelectedFile(null)}
                           className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-600 text-gray-400' : 'hover:bg-gray-200 text-gray-500'}`}
                         >
                           <FiX size={16} />
-                        </button>
+                        </AuthRequiredButton>
                       </div>
                     )}
                     <div className={`flex items-end rounded-xl ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border border-gray-300'} focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500`}>
@@ -2585,14 +2586,14 @@ const ChatPage: React.FC = () => {
                           onChange={handleFileChange}
                           accept="image/*,.pdf,.doc,.docx"
                         />
-                        <button 
+                        <AuthRequiredButton 
                           onClick={handleFileUpload}
                           className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
                           aria-label="Upload file"
                         >
                           <FiFile />
-                        </button>
-                        <button
+                        </AuthRequiredButton>
+                        <AuthRequiredButton
                           onClick={handleSendMessage}
                           disabled={!inputMessage.trim() && !selectedFile}
                           className={`p-2 rounded-full ${
@@ -2603,7 +2604,7 @@ const ChatPage: React.FC = () => {
                           aria-label="Send message"
                         >
                           <FiSend />
-                        </button>
+                        </AuthRequiredButton>
                       </div>
                     </div>
                   </div>

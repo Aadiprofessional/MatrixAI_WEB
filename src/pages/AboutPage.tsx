@@ -1,8 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiMessageCircle, FiUsers, FiGlobe, FiStar } from 'react-icons/fi';
 
 const AboutPage: React.FC = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  
+  // Add scroll event listener to create a scrolled effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
   const teamMembers = [
     {
       name: 'Alex Johnson',
@@ -54,22 +66,32 @@ const AboutPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-black text-white">
       {/* Hero section */}
-      <div className="relative bg-indigo-700 dark:bg-indigo-900">
-        <div className="absolute inset-0">
+      <div className="relative py-24 overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-black z-0"></div>
+        
+        {/* Animated grid background similar to HomePage */}
+        <div className="absolute inset-0 z-0 opacity-30">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        </div>
+        
+        {/* Background image with overlay */}
+        <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80"
             alt="Team collaboration"
             className="w-full h-full object-cover opacity-20"
           />
-          <div className="absolute inset-0 bg-indigo-700 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-b from-purple-900/40 to-black/90"></div>
         </div>
-        <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.7 }}
             className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl"
           >
             About Us
@@ -77,8 +99,8 @@ const AboutPage: React.FC = () => {
           <motion.p
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-6 text-xl text-indigo-100 max-w-3xl"
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="mt-6 text-xl text-gray-300 max-w-3xl"
           >
             We're on a mission to make AI assistants more helpful, harmless, and honest. 
             Founded in 2021, we're building the next generation of AI tools that augment human capabilities.
@@ -87,15 +109,19 @@ const AboutPage: React.FC = () => {
       </div>
 
       {/* Our story section */}
-      <div className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+      <div className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative">
+        {/* Glass card effect */}
+        <div className="absolute inset-0 backdrop-blur-md bg-black/30 rounded-xl border border-gray-700 shadow-xl shadow-purple-900/10 mx-4 sm:mx-6 lg:mx-8 z-0"></div>
+        
+        <div className="grid md:grid-cols-2 gap-12 items-center relative z-10">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Our Story</h2>
-            <div className="mt-6 space-y-6 text-lg text-gray-500 dark:text-gray-400">
+            <h2 className="text-3xl font-extrabold text-white">Our Story</h2>
+            <div className="mt-6 space-y-6 text-lg text-gray-300">
               <p>
                 Our journey began when our founders, Alex and Sarah, met at a machine learning conference in 2019. They shared a vision for AI assistants that could be genuinely helpful without being manipulative or intrusive.
               </p>
@@ -123,39 +149,42 @@ const AboutPage: React.FC = () => {
       </div>
 
       {/* Values section */}
-      <div className="bg-white dark:bg-gray-800 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-3xl font-extrabold text-gray-900 dark:text-white"
-            >
-              Our Values
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="mt-4 max-w-3xl mx-auto text-xl text-gray-500 dark:text-gray-400"
-            >
+      <div className="py-16 relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/10 to-black z-0"></div>
+        
+        {/* Animated grid background */}
+        <div className="absolute inset-0 z-0 opacity-30">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <h2 className="text-3xl font-extrabold text-white">Our Values</h2>
+            <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-300">
               The principles that guide our work and company culture
-            </motion.p>
-          </div>
-
+            </p>
+          </motion.div>
+          
           <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {values.map((value, index) => (
               <motion.div
                 key={value.title}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-                className="bg-gray-50 dark:bg-gray-700 rounded-xl p-8 text-center"
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="backdrop-blur-md bg-black/30 border border-gray-700 rounded-xl p-8 text-center hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
               >
-                <div className="flex justify-center">{value.icon}</div>
-                <h3 className="mt-6 text-lg font-medium text-gray-900 dark:text-white">{value.title}</h3>
-                <p className="mt-4 text-gray-500 dark:text-gray-400">{value.description}</p>
+                <div className="flex justify-center text-purple-400">{value.icon}</div>
+                <h3 className="mt-6 text-lg font-medium text-white">{value.title}</h3>
+                <p className="mt-4 text-gray-300">{value.description}</p>
               </motion.div>
             ))}
           </div>
@@ -163,49 +192,55 @@ const AboutPage: React.FC = () => {
       </div>
 
       {/* Team section */}
-      <div className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl font-extrabold text-gray-900 dark:text-white"
-          >
-            Meet Our Team
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-4 max-w-3xl mx-auto text-xl text-gray-500 dark:text-gray-400"
-          >
-            A diverse group of experts passionate about building better AI
-          </motion.p>
+      <div className="py-16 relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black to-purple-900/10 z-0"></div>
+        
+        {/* Animated grid background */}
+        <div className="absolute inset-0 z-0 opacity-30">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
         </div>
-
-        <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {teamMembers.map((member, index) => (
-            <motion.div
-              key={member.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-              className="bg-white dark:bg-gray-800 shadow-md rounded-xl overflow-hidden"
-            >
-              <div className="h-64 relative">
-                <img
-                  src={member.image}
-                  alt={member.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{member.name}</h3>
-                <p className="text-indigo-600 dark:text-indigo-400">{member.role}</p>
-                <p className="mt-4 text-gray-500 dark:text-gray-400">{member.bio}</p>
-              </div>
-            </motion.div>
-          ))}
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <h2 className="text-3xl font-extrabold text-white">Meet Our Team</h2>
+            <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-300">
+              A diverse group of experts passionate about building better AI
+            </p>
+          </motion.div>
+          
+          <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            {teamMembers.map((member, index) => (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="backdrop-blur-md bg-black/30 border border-gray-700 rounded-xl overflow-hidden shadow-md hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
+              >
+                <div className="h-64 relative overflow-hidden">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-60"></div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-lg font-bold text-white">{member.name}</h3>
+                  <p className="text-purple-400">{member.role}</p>
+                  <p className="mt-4 text-gray-300">{member.bio}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -291,4 +326,4 @@ const AboutPage: React.FC = () => {
   );
 };
 
-export default AboutPage; 
+export default AboutPage;

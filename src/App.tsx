@@ -37,11 +37,12 @@ import {
   PrivacyPage,
   TermsPage,
   CookiesPage,
-  StatusPage
+  StatusPage,
+  FAQPage
 } from './pageExports';
 
 // Import components
-import { Layout } from './components';
+import { Layout, PublicToolLayout, PublicResourceLayout } from './components';
 
 // Import ThemeProvider
 import { ThemeProvider } from './context/ThemeContext';
@@ -172,7 +173,7 @@ const App: React.FC = () => {
               {/* Main site route */}
               <Route 
                 path="/" 
-                element={<HomePage />} 
+                element={<PublicResourceLayout><HomePage /></PublicResourceLayout>} 
               />
               
               {/* Auth routes */}
@@ -196,11 +197,9 @@ const App: React.FC = () => {
               <Route 
                 path="/chat" 
                 element={
-                  <ProFeatureRoute>
-                    <Layout>
-                      <ChatPage />
-                    </Layout>
-                  </ProFeatureRoute>
+                  <PublicToolLayout>
+                    <ChatPage />
+                  </PublicToolLayout>
                 } 
               />
               
@@ -208,11 +207,11 @@ const App: React.FC = () => {
               <Route 
                 path="/chat/:chatId" 
                 element={
-                  <ProFeatureRoute>
+                  <ProtectedRoute>
                     <Layout>
                       <ChatPage />
                     </Layout>
-                  </ProFeatureRoute>
+                  </ProtectedRoute>
                 } 
               />
               
@@ -226,70 +225,58 @@ const App: React.FC = () => {
                 } 
               />
               
-              {/* Tool routes */}
+              {/* Tool routes - Public access with conditional layout */}
               <Route 
                 path="/tools/image-generator" 
                 element={
-                  <ProFeatureRoute>
-                    <Layout>
-                      <ImageGeneratorPage />
-                    </Layout>
-                  </ProFeatureRoute>
+                  <PublicToolLayout>
+                    <ImageGeneratorPage />
+                  </PublicToolLayout>
                 } 
               />
               
               <Route 
                 path="/tools/video-creator" 
                 element={
-                  <ProFeatureRoute>
-                    <Layout>
-                      <VideoCreatorPage />
-                    </Layout>
-                  </ProFeatureRoute>
+                  <PublicToolLayout>
+                    <VideoCreatorPage />
+                  </PublicToolLayout>
                 } 
               />
               
               <Route 
                 path="/tools/content-writer" 
                 element={
-                  <ProFeatureRoute>
-                    <Layout>
-                      <ContentWriterPage />
-                    </Layout>
-                  </ProFeatureRoute>
+                  <PublicToolLayout>
+                    <ContentWriterPage />
+                  </PublicToolLayout>
                 } 
               />
               
               <Route 
                 path="/tools/humanise-text" 
                 element={
-                  <ProFeatureRoute>
-                    <Layout>
-                      <HumaniseTextPage />
-                    </Layout>
-                  </ProFeatureRoute>
+                  <PublicToolLayout>
+                    <HumaniseTextPage />
+                  </PublicToolLayout>
                 } 
               />
               
               <Route 
                 path="/tools/detect-ai" 
                 element={
-                  <ProFeatureRoute>
-                    <Layout>
-                      <DetectAIPage />
-                    </Layout>
-                  </ProFeatureRoute>
+                  <PublicToolLayout>
+                    <DetectAIPage />
+                  </PublicToolLayout>
                 } 
               />
               
               <Route 
                 path="/tools/presentation-creator" 
                 element={
-                  <ProFeatureRoute>
-                    <Layout>
-                      <PresentationCreatorPage />
-                    </Layout>
-                  </ProFeatureRoute>
+                  <PublicToolLayout>
+                    <PresentationCreatorPage />
+                  </PublicToolLayout>
                 } 
               />
 
@@ -297,22 +284,20 @@ const App: React.FC = () => {
               <Route 
                 path="/tools/speech-to-text" 
                 element={
-                  <ProFeatureRoute>
-                    <Layout>
-                      <SpeechToTextPage />
-                    </Layout>
-                  </ProFeatureRoute>
+                  <PublicToolLayout>
+                    <SpeechToTextPage />
+                  </PublicToolLayout>
                 } 
               />
               
               <Route 
                 path="/transcription/:audioid" 
                 element={
-                  <ProFeatureRoute>
+                  <ProtectedRoute>
                     <Layout>
                       <TranscriptionPage />
                     </Layout>
-                  </ProFeatureRoute>
+                  </ProtectedRoute>
                 } 
               />
               
@@ -425,77 +410,86 @@ const App: React.FC = () => {
               <Route 
                 path="/about" 
                 element={
-                  <Layout>
+                  <PublicResourceLayout>
                     <AboutPage />
-                  </Layout>
+                  </PublicResourceLayout>
                 } 
               />
               
               <Route 
                 path="/contact" 
                 element={
-                  <Layout>
+                  <PublicResourceLayout>
                     <ContactPage />
-                  </Layout>
+                  </PublicResourceLayout>
+                } 
+              />
+              
+              <Route 
+                path="/faq" 
+                element={
+                  <PublicResourceLayout>
+                    <FAQPage />
+                  </PublicResourceLayout>
                 } 
               />
               
               <Route 
                 path="/careers" 
                 element={
-                  <Layout>
+                  <PublicResourceLayout>
                     <CareersPage />
-                  </Layout>
+                  </PublicResourceLayout>
                 } 
               />
               
               <Route 
                 path="/blog" 
                 element={
-                  <Layout>
+                  <PublicResourceLayout>
                     <BlogPage />
-                  </Layout>
+                  </PublicResourceLayout>
                 } 
               />
               
               <Route 
                 path="/privacy" 
                 element={
-                  <Layout>
+                  <PublicResourceLayout>
                     <PrivacyPage />
-                  </Layout>
+                  </PublicResourceLayout>
                 } 
               />
               
               <Route 
                 path="/terms" 
                 element={
-                  <Layout>
+                  <PublicResourceLayout>
                     <TermsPage />
-                  </Layout>
+                  </PublicResourceLayout>
                 } 
               />
               
               <Route 
                 path="/cookies" 
                 element={
-                  <Layout>
+                  <PublicResourceLayout>
                     <CookiesPage />
-                  </Layout>
+                  </PublicResourceLayout>
                 } 
               />
               
               <Route 
                 path="/status" 
                 element={
-                  <Layout>
+                  <PublicResourceLayout>
                     <StatusPage />
-                  </Layout>
+                  </PublicResourceLayout>
                 } 
               />
               
               {/* 404 route */}
-              <Route path="*" element={<NotFoundPage />} />
+              <Route path="*" element={<PublicResourceLayout><NotFoundPage /></PublicResourceLayout>} />
             </Routes>
             </Router>
             </AlertProvider>

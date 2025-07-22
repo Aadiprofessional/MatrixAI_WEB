@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FiVideo, FiUpload, FiPlay, FiPause, FiDownload, FiSliders, FiPlus, FiTrash, FiX, FiCheck, FiClock, FiList, FiVolume2, FiVolumeX, FiMaximize, FiMinimize, FiLoader, FiImage } from 'react-icons/fi';
-import { ProFeatureAlert } from '../components';
+import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -961,13 +961,13 @@ const VideoCreatorPage: React.FC = () => {
               )}
               {!uploadedImageUrl && (
                 <div className="flex space-x-3">
-                  <button
+                  <AuthRequiredButton
                     onClick={handleUploadImageClick}
                     className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90 flex items-center shadow-lg transform transition-transform hover:scale-105"
                   >
                     <FiImage className="mr-2" />
                     Upload Image
-                  </button>
+                  </AuthRequiredButton>
                   <input
                     type="file"
                     ref={imageInputRef}
@@ -1120,11 +1120,11 @@ const VideoCreatorPage: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <button
+                <AuthRequiredButton
                   onClick={handleGenerateVideo}
-                  disabled={!prompt.trim() || !user?.id || isUploadingImage}
+                  disabled={!prompt.trim() || isUploadingImage}
                   className={`w-full py-3 rounded-lg font-medium flex items-center justify-center ${
-                    !prompt.trim() || !user?.id || isUploadingImage
+                    !prompt.trim() || isUploadingImage
                       ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                       : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90'
                   } transition`}
@@ -1140,19 +1140,19 @@ const VideoCreatorPage: React.FC = () => {
                       Generate Video
                     </>
                   )}
-                </button>
+                </AuthRequiredButton>
               )}
             </div>
             
             {/* History Button */}
             <div>
-              <button
+              <AuthRequiredButton
                 onClick={() => setShowHistory(!showHistory)}
                 className="w-full py-2 px-4 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center"
               >
                 <FiList className="mr-2" />
                 {showHistory ? 'Hide History' : 'Show History'}
-              </button>
+              </AuthRequiredButton>
             </div>
             
             {/* Video History */}

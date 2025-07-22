@@ -11,7 +11,6 @@ import {
   HeroBanner,
   CallToAction,
   FAQSection,
-  FooterLinks,
   AnimatedGridBanner
 } from '../components';
 
@@ -46,89 +45,7 @@ const HomePage: React.FC = () => {
      }
   ];
 
-  // Footer categories data
-  const footerCategories = [
-    {
-      title: "Tools",
-      links: [
-        { name: "Image Generator", url: "/image-generator" },
-        { name: "Video Generator", url: "/video-generator" },
-        { name: "Upscaler", url: "/upscaler" },
-        { name: "Image Editor", url: "/image-editor" },
-        { name: "Model Trainer", url: "/model-trainer" },
-        { name: "Image Extender", url: "/image-extender" },
-        { name: "AI Resizer", url: "/ai-resizer" },
-        { name: "Background Remover", url: "/background-remover" }
-      ]
-    },
-    {
-      title: "Features",
-      links: [
-        { name: "Image to Video", url: "/image-to-video" },
-        { name: "Text to Image", url: "/text-to-image" },
-        { name: "Image to Image", url: "/image-to-image" },
-        { name: "Consistent AI Characters", url: "/consistent-characters" },
-        { name: "Custom Styles", url: "/custom-styles" },
-        { name: "Background Changer", url: "/background-changer" },
-        { name: "Inpainting", url: "/inpainting" },
-        { name: "Banners", url: "/banners" }
-      ]
-    },
-    {
-      title: "Explore",
-      links: [
-        { name: "Pixel Art", url: "/explore/pixel-art" },
-        { name: "Anime", url: "/explore/anime" },
-        { name: "Realistic AI Images", url: "/explore/realistic" },
-        { name: "AI Art", url: "/explore/ai-art" },
-        { name: "AI Characters", url: "/explore/characters" },
-        { name: "Headshots", url: "/explore/headshots" },
-        { name: "Stickers", url: "/explore/stickers" },
-        { name: "Thumbnails", url: "/explore/thumbnails" }
-      ]
-    },
-    {
-      title: "Models",
-      links: [
-        { name: "Seedream 3", url: "/models/seedream-3" },
-        { name: "FLUX1", url: "/models/flux1" },
-        { name: "Seedance", url: "/models/seedance" },
-        { name: "Google Veo 3", url: "/models/google-veo-3" },
-        { name: "MAGI-1", url: "/models/magi-1" },
-        { name: "MiniMax Hailuo 02", url: "/models/minimax-hailuo-02" }
-      ]
-    },
-    {
-      title: "Resources",
-      links: [
-        { name: "API", url: "/api" },
-        { name: "Privacy Policy", url: "/privacy" },
-        { name: "Terms of Service", url: "/terms" },
-        { name: "Restrictions", url: "/restrictions" },
-        { name: "Affiliate Program", url: "/affiliate" },
-        { name: "Suggest a feature", url: "/suggest" }
-      ]
-    },
-    {
-      title: "Help",
-      links: [
-        { name: "Pricing", url: "/pricing" },
-        { name: "Guides", url: "/guides" },
-        { name: "FAQ", url: "/faq" },
-        { name: "Support", url: "/support" },
-        { name: "System Status", url: "/status" }
-      ]
-    }
-  ];
-
-  // Social media links
-  const socialLinks = [
-    { icon: <FiInstagram className="h-6 w-6" />, url: "https://instagram.com" },
-    { icon: <FiTwitter className="h-6 w-6" />, url: "https://twitter.com" },
-    { icon: <FiYoutube className="h-6 w-6" />, url: "https://youtube.com" },
-    { icon: <FiGithub className="h-6 w-6" />, url: "https://github.com" },
-    { icon: <FiLinkedin className="h-6 w-6" />, url: "https://linkedin.com" }
-  ];
+  // Footer categories and social links data removed as they're now directly used in PublicResourceLayout
 
   return (
     <div className="min-h-screen overflow-hidden bg-black">
@@ -238,12 +155,7 @@ const HomePage: React.FC = () => {
         faqs={faqData}
       />
       
-      {/* Footer Links - Fourth image */}
-      <FooterLinks 
-        categories={footerCategories}
-        socialLinks={socialLinks}
-        companyName="matrixai.asia"
-      />
+      {/* Footer Links component removed as it's now directly used in PublicResourceLayout */}
     </div>
   );
 };

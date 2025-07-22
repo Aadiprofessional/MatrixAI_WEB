@@ -26,16 +26,16 @@ const FooterLinks: React.FC<FooterLinksProps> = ({
   return (
     <footer className="bg-black py-16 border-t border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           {categories.map((category, index) => (
             <div key={index} className="space-y-4">
-              <h3 className="text-gray-300 font-medium">{category.title}</h3>
-              <ul className="space-y-2">
+              <h3 className="text-gray-300 font-medium text-sm">{category.title}</h3>
+              <ul className="space-y-1">
                 {category.links.map((link, linkIndex) => (
                   <li key={linkIndex}>
                     <Link 
                       to={link.url} 
-                      className="text-gray-500 hover:text-gray-300 transition-colors"
+                      className="text-gray-500 hover:text-gray-300 transition-colors text-sm"
                     >
                       {link.name}
                     </Link>

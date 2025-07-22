@@ -30,7 +30,7 @@ import {
   FiTarget,
   FiGift
 } from 'react-icons/fi';
-import { ProFeatureAlert } from '../components';
+import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
@@ -1040,7 +1040,7 @@ const PresentationCreatorPage: React.FC = () => {
                   {t('useTemplateAsIs')}
                 </button>
                 
-                <button
+                <AuthRequiredButton
                   onClick={handleGeneratePresentation}
                   disabled={!prompt.trim() || isGenerating}
                   className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center ${
@@ -1063,7 +1063,7 @@ const PresentationCreatorPage: React.FC = () => {
                       {t('generateAIContent')}
                     </>
                   )}
-                </button>
+                </AuthRequiredButton>
               </div>
             </div>
           ) : (
@@ -1496,4 +1496,4 @@ const PresentationCreatorPage: React.FC = () => {
   );
 };
 
-export default PresentationCreatorPage; 
+export default PresentationCreatorPage;

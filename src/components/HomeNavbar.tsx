@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiArrowRight } from 'react-icons/fi';
+import { FiArrowRight, FiChevronDown, FiImage, FiVideo, FiMaximize, FiCrop, FiLayers, FiZoomIn, FiCode, FiFileText, FiUsers, FiHelpCircle, FiMessageSquare, FiEdit3, FiMic, FiDownload } from 'react-icons/fi';
 
 interface HomeNavbarProps {}
 
 const HomeNavbar: React.FC<HomeNavbarProps> = () => {
+  const [showToolsDropdown, setShowToolsDropdown] = useState(false);
+  const [showResourcesDropdown, setShowResourcesDropdown] = useState(false);
+  
+  const toolsRef = useRef<HTMLDivElement>(null);
+  const resourcesRef = useRef<HTMLDivElement>(null);
+  
+  // No longer need toggle functions for hover behavior
+  // Instead, we'll use CSS hover states
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-4 py-3">
       <div className="max-w-7xl mx-auto">
@@ -15,10 +23,157 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
             </div>
             
             <div className="hidden md:flex items-center space-x-6">
-              <Link to="#" className="text-gray-200 hover:text-white transition-colors duration-200">Tools</Link>
-              <Link to="#" className="text-gray-200 hover:text-white transition-colors duration-200">Resources</Link>
-              <Link to="#" className="text-gray-200 hover:text-white transition-colors duration-200">API</Link>
-              <Link to="#" className="text-gray-200 hover:text-white transition-colors duration-200">Pricing</Link>
+              {/* Tools Dropdown */}
+              <div className="relative group" ref={toolsRef}>
+                <button 
+                  className="flex items-center text-gray-200 hover:text-white transition-colors duration-200 group-hover:text-white"
+                >
+                  <span>Tools</span>
+                  <FiChevronDown className="ml-1 w-4 h-4 transition-transform duration-200 group-hover:rotate-180 group-hover:text-white" />
+                </button>
+                
+                {/* Tools Dropdown Menu - Now shows on hover with group class */}
+                <div className="absolute left-0 mt-6 w-[400px] rounded-lg shadow-lg backdrop-blur-md bg-black/90 border border-gray-700 z-50 animate-fadeIn transition-all duration-200 ease-in-out opacity-0 invisible group-hover:opacity-100 group-hover:visible">
+                  <div className="py-6 px-4">
+                    <div className="flex flex-col space-y-4">
+                      <Link to="/tools/image-generator" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
+                        <div className="bg-gray-800/50 p-3 rounded-lg mr-4 group-hover/item:bg-gray-700/50 transition-colors duration-150">
+                          <FiImage className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
+                        </div>
+                        <div className="flex-1 whitespace-nowrap">
+                          <div className="font-medium text-base">Image Generator</div>
+                          <div className="text-sm text-gray-400">Create images from text</div>
+                        </div>
+                      </Link>
+                      <Link to="/tools/video-creator" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
+                        <div className="bg-gray-800/50 p-3 rounded-lg mr-4 group-hover/item:bg-gray-700/50 transition-colors duration-150">
+                          <FiVideo className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
+                        </div>
+                        <div className="flex-1 whitespace-nowrap">
+                          <div className="font-medium text-lg">Video Generator</div>
+                          <div className="text-sm text-gray-400">Create videos from images or text</div>
+                        </div>
+                      </Link>
+                      <Link to="/chat" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
+                        <div className="bg-gray-800/50 p-3 rounded-lg mr-4 group-hover/item:bg-gray-700/50 transition-colors duration-150">
+                          <FiMessageSquare className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
+                        </div>
+                        <div className="flex-1 whitespace-nowrap">
+                          <div className="font-medium text-lg">AI Chat</div>
+                          <div className="text-sm text-gray-400">Chat with our advanced AI assistant</div>
+                        </div>
+                      </Link>
+                      <Link to="/tools/content-writer" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
+                        <div className="bg-gray-800/50 p-3 rounded-lg mr-4 group-hover/item:bg-gray-700/50 transition-colors duration-150">
+                          <FiEdit3 className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
+                        </div>
+                        <div className="flex-1 whitespace-nowrap">
+                          <div className="font-medium text-lg">Content Writer</div>
+                          <div className="text-sm text-gray-400">Generate professional content</div>
+                        </div>
+                      </Link>
+                      <Link to="/tools/speech-to-text" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
+                        <div className="bg-gray-800/50 p-3 rounded-lg mr-4 group-hover/item:bg-gray-700/50 transition-colors duration-150">
+                          <FiMic className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
+                        </div>
+                        <div className="flex-1 whitespace-nowrap">
+                          <div className="font-medium text-lg">Speech to Text</div>
+                          <div className="text-sm text-gray-400">Convert audio to text</div>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Resources Dropdown */}
+              <div className="relative group" ref={resourcesRef}>
+                <button 
+                  className="flex items-center text-gray-200 hover:text-white transition-colors duration-200 group-hover:text-white"
+                >
+                  <span>Resources</span>
+                  <FiChevronDown className="ml-1 w-4 h-4 transition-transform duration-200 group-hover:rotate-180 group-hover:text-white" />
+                </button>
+                
+                {/* Resources Dropdown Menu - Now shows on hover with group class */}
+                <div className="absolute left-0 mt-6 w-[400px] rounded-lg shadow-lg backdrop-blur-md bg-black/90 border border-gray-700 z-50 animate-fadeIn transition-all duration-200 ease-in-out opacity-0 invisible group-hover:opacity-100 group-hover:visible">
+                  <div className="py-6 px-4">
+                    <div className="flex flex-col space-y-4">
+                      <Link to="/blog" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
+                        <div className="bg-gray-800/50 p-3 rounded-lg mr-4 group-hover/item:bg-gray-700/50 transition-colors duration-150">
+                          <FiFileText className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
+                        </div>
+                        <div className="flex-1 whitespace-nowrap">
+                          <div className="font-medium text-lg">Blog</div>
+                          <div className="text-sm text-gray-400">Latest news & updates</div>
+                        </div>
+                      </Link>
+                      <Link to="/about" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
+                        <div className="bg-gray-800/50 p-3 rounded-lg mr-4 group-hover/item:bg-gray-700/50 transition-colors duration-150">
+                          <FiUsers className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
+                        </div>
+                        <div className="flex-1 whitespace-nowrap">
+                          <div className="font-medium text-lg">About Us</div>
+                          <div className="text-sm text-gray-400">Learn about our company</div>
+                        </div>
+                      </Link>
+                      <Link to="/faq" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
+                        <div className="bg-gray-800/50 p-3 rounded-lg mr-4 group-hover/item:bg-gray-700/50 transition-colors duration-150">
+                          <FiHelpCircle className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
+                        </div>
+                        <div className="flex-1 whitespace-nowrap">
+                          <div className="font-medium text-lg">FAQ</div>
+                          <div className="text-sm text-gray-400">Frequently asked questions</div>
+                        </div>
+                      </Link>
+                      <Link to="/contact" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
+                        <div className="bg-gray-800/50 p-3 rounded-lg mr-4 group-hover/item:bg-gray-700/50 transition-colors duration-150">
+                          <FiHelpCircle className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
+                        </div>
+                        <div className="flex-1 whitespace-nowrap">
+                          <div className="font-medium text-lg">Contact</div>
+                          <div className="text-sm text-gray-400">Get in touch with us</div>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Download App Dropdown */}
+              <div className="relative group">
+                <button 
+                  className="flex items-center text-gray-200 hover:text-white transition-colors duration-200 group-hover:text-white"
+                >
+                  <span>Download App</span>
+                  <FiChevronDown className="ml-1 w-4 h-4 transition-transform duration-200 group-hover:rotate-180 group-hover:text-white" />
+                </button>
+                
+                {/* Download App Dropdown Menu */}
+                <div className="absolute left-0 mt-6 w-[250px] rounded-lg shadow-lg backdrop-blur-md bg-black/90 border border-gray-700 z-50 animate-fadeIn transition-all duration-200 ease-in-out opacity-0 invisible group-hover:opacity-100 group-hover:visible">
+                  <div className="py-4 px-4">
+                    <div className="flex flex-col space-y-2">
+                      <a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer" className="flex items-center px-4 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
+                        <div className="bg-gray-800/50 p-2 rounded-lg mr-3 group-hover/item:bg-gray-700/50 transition-colors duration-150">
+                          <FiDownload className="h-5 w-5 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
+                        </div>
+                        <div className="flex-1 whitespace-nowrap">
+                          <div className="font-medium">iOS App Store</div>
+                        </div>
+                      </a>
+                      <a href="https://play.google.com" target="_blank" rel="noopener noreferrer" className="flex items-center px-4 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
+                        <div className="bg-gray-800/50 p-2 rounded-lg mr-3 group-hover/item:bg-gray-700/50 transition-colors duration-150">
+                          <FiDownload className="h-5 w-5 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
+                        </div>
+                        <div className="flex-1 whitespace-nowrap">
+                          <div className="font-medium">Google Play Store</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <Link to="/pricing" className="text-gray-200 hover:text-white transition-colors duration-200">Pricing</Link>
             </div>
             
             <div className="flex items-center space-x-4">
