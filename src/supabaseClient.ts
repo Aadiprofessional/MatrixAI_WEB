@@ -38,6 +38,70 @@ export const signIn = async (email: string, password: string) => {
   return data;
 };
 
+// Sign in with Google
+export const signInWithGoogle = async () => {
+  // Get the current URL path (login or signup)
+  const currentPath = window.location.pathname;
+  
+  // Set redirectTo to the current page instead of dashboard
+  // This way we can handle the redirect in the current page
+  const redirectUrl = window.location.hostname === 'localhost'
+    ? `http://localhost:3000${currentPath}`
+    : `https://matrixai.asia${currentPath}`;
+    
+  console.log('Setting Google OAuth redirectTo:', redirectUrl);
+  
+  const { data, error } = await supabase.auth.signInWithOAuth({ 
+    provider: 'google', 
+    options: { 
+      redirectTo: redirectUrl,
+      queryParams: {
+        // Adding a prompt parameter to ensure user selects an account each time
+        // This helps prevent redirect loops
+        prompt: 'select_account'
+      }
+    }, 
+  });
+  
+  if (error) {
+    throw error;
+  }
+  
+  return data;
+};
+
+// Sign in with Apple
+export const signInWithApple = async () => {
+  // Get the current URL path (login or signup)
+  const currentPath = window.location.pathname;
+  
+  // Set redirectTo to the current page instead of dashboard
+  // This way we can handle the redirect in the current page
+  const redirectUrl = window.location.hostname === 'localhost'
+    ? `http://localhost:3000${currentPath}`
+    : `https://matrixai.asia${currentPath}`;
+    
+  console.log('Setting Apple OAuth redirectTo:', redirectUrl);
+  
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'apple',
+    options: {
+      redirectTo: redirectUrl,
+      queryParams: {
+        // Improve Apple login by requesting name and email
+        response_mode: 'form_post',
+        scope: 'name email'
+      }
+    },
+  });
+  
+  if (error) {
+    throw error;
+  }
+  
+  return data;
+};
+
 // Sign out
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut();

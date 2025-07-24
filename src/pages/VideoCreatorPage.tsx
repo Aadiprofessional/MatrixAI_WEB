@@ -11,6 +11,21 @@ import { videoService } from '../services/videoService';
 import { uploadImageToStorage, supabase } from '../supabaseClient';
 import coinImage from '../assets/coin.png';
 
+// Add CSS for animated gradient border
+const gradientAnimationStyle = document.createElement('style');
+gradientAnimationStyle.innerHTML = `
+  @keyframes gradient-x {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 3s ease infinite;
+  }
+`;
+document.head.appendChild(gradientAnimationStyle);
+
 interface VideoHistoryItem {
   videoId: string;
   promptText: string;
@@ -1188,7 +1203,7 @@ const VideoCreatorPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 aspect-video flex flex-col items-center justify-center text-center p-6 relative overflow-hidden shadow-xl">
+            <div className="rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 backdrop-blur-sm bg-white/10 dark:bg-gray-800/20 aspect-video flex flex-col items-center justify-center text-center p-6 relative overflow-hidden shadow-xl hover:border-blue-500 dark:hover:border-blue-400 focus:border-purple-500 dark:focus:border-purple-400 transition-colors duration-300">
               {uploadedImageUrl ? (
                 <>
                   <div className="relative w-full h-full overflow-hidden rounded-lg shadow-xl">
@@ -1262,14 +1277,21 @@ const VideoCreatorPage: React.FC = () => {
             {/* Prompt Input */}
             <div>
               <div className="relative">
-                <textarea
-                  id="promptInput"
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Describe the video you want to generate..."
-                  className="w-full p-4 pr-12 border rounded-lg shadow-sm h-24 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isGenerating}
-                />
+                {/* Animated gradient border wrapper */}
+            <div className="relative p-[2px] rounded-lg overflow-hidden bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient-x">
+  {/* Inner glass container with transparent black glass effect */}
+  <div className="rounded-lg bg-black/80 backdrop-blur-md bg-clip-padding">
+    <textarea
+      id="promptInput"
+      value={prompt}
+      onChange={(e) => setPrompt(e.target.value)}
+      placeholder="Describe the video you want to generate..."
+      className="w-full p-4 pr-12 h-24 border-0 rounded-lg bg-transparent text-white placeholder:text-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      disabled={isGenerating}
+    />
+  </div>
+</div>
+
                 {/* Only show filter button when image is uploaded */}
                 {uploadedImageUrl && (
                   <div className="absolute top-2 right-2">
@@ -1290,7 +1312,7 @@ const VideoCreatorPage: React.FC = () => {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-4 p-4 border rounded-lg shadow-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                  className="mt-4 p-4 border rounded-lg shadow-sm backdrop-blur-sm bg-white/20 dark:bg-gray-800/20 border-gray-200 dark:border-gray-700"
                 >
                   <h3 className="text-md font-medium mb-3 text-gray-800 dark:text-gray-200">Video Generation Options</h3>
                   
@@ -1582,14 +1604,14 @@ const VideoCreatorPage: React.FC = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="border rounded-lg p-4 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto"
+                className="border rounded-lg p-4 backdrop-blur-sm bg-white/20 dark:bg-gray-800/20 border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto shadow-lg"
               >
                 <h3 className="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300">Video History</h3>
                 
                 {isLoadingHistory ? (
                   <div className="space-y-3">
                     {[...Array(3)].map((_, i) => (
-                      <div key={i} className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg animate-pulse">
+                      <div key={i} className="flex items-start space-x-3 p-3 backdrop-blur-sm bg-white/20 dark:bg-gray-800/20 rounded-lg animate-pulse">
                         <div className="w-16 h-12 bg-gray-300 dark:bg-gray-600 rounded"></div>
                         <div className="flex-1 space-y-2">
                           <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4"></div>
@@ -1623,7 +1645,7 @@ const VideoCreatorPage: React.FC = () => {
                 ) : (
                   <div className="space-y-3">
                     {videoHistory.map((video) => (
-                      <div key={video.videoId} className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div key={video.videoId} className="flex items-start space-x-3 p-3 backdrop-blur-sm bg-white/20 dark:bg-gray-800/20 rounded-lg hover:border hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300">
                         {/* Video Thumbnail */}
                         {video.videoUrl && (video.isReady || video.statusDisplay === 'Ready') && (
                           <div className="flex-shrink-0">

@@ -14,12 +14,26 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
-  const { signIn, error, setError, user } = useAuth();
+  const { signIn, signInWithGoogle, signInWithApple, error, setError, user } = useAuth();
   const { t } = useLanguage();
 
   // If user is already logged in, redirect to dashboard
   useEffect(() => {
+    // Check for OAuth redirect parameters in URL
+    const hasOAuthParams = window.location.hash.includes('access_token') || 
+                          window.location.search.includes('access_token');
+    
+    // If we detect OAuth parameters, we're in a redirect flow
+    if (hasOAuthParams) {
+      console.log('Detected OAuth redirect parameters, checking session...');
+      // We'll let the AuthContext handle the session setup
+      // Just show loading state until that's complete
+      setLoading(true);
+      return;
+    }
+    
     if (user) {
+      console.log('User detected, redirecting to dashboard');
       navigate('/dashboard');
     }
   }, [user, navigate]);
@@ -79,9 +93,8 @@ const LoginPage: React.FC = () => {
             transition={{ duration: 0.5 }}
             className="relative mb-8 mx-auto"
           >
-            <div className="absolute inset-0 rounded-full bg-white/10 blur-xl opacity-70 animate-pulse" style={{ animationDuration: '8s' }}></div>
-            <div className="relative flex items-center justify-center h-28 w-28 rounded-full overflow-hidden bg-gradient-to-br from-blue-400/80 to-purple-600/80 shadow-lg backdrop-blur-sm">
-              <span className="text-5xl font-bold text-white drop-shadow-md">AI</span>
+            <div className="relative flex items-center justify-center">
+              <span className="text-3xl font-bold text-white drop-shadow-md">matrixai<span className="text-red-500">.</span><span className="text-white">asia</span></span>
             </div>
           </motion.div>
           
@@ -156,9 +169,8 @@ const LoginPage: React.FC = () => {
               transition={{ duration: 0.5 }}
               className="relative"
             >
-              <div className="absolute inset-0 rounded-full bg-white/10 blur-xl opacity-70 animate-pulse" style={{ animationDuration: '8s' }}></div>
-              <div className="relative flex items-center justify-center h-24 w-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-400/80 to-purple-600/80 shadow-lg backdrop-blur-sm">
-                <span className="text-4xl font-bold text-white drop-shadow-md">AI</span>
+              <div className="relative flex items-center justify-center">
+                <span className="text-2xl font-bold text-white drop-shadow-md">matrix<span className="text-red-500">.</span>ai<span className="text-white">.asia</span></span>
               </div>
             </motion.div>
           </div>
@@ -331,8 +343,20 @@ const LoginPage: React.FC = () => {
             </p>
             <div className="flex justify-center space-x-4">
               <button 
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    await signInWithGoogle();
+                    // Note: The redirect will happen automatically, so we don't need to navigate
+                  } catch (err) {
+                    console.error('Google login error:', err);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
                 className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 text-gray-200"
                 aria-label="Login with Google"
+                disabled={loading}
               >
                 <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -340,14 +364,36 @@ const LoginPage: React.FC = () => {
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                 </svg>
+                {loading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-xl">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
               </button>
               <button 
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    await signInWithApple();
+                    // Note: The redirect will happen automatically, so we don't need to navigate
+                  } catch (err) {
+                    console.error('Apple login error:', err);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
                 className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 text-gray-200"
                 aria-label="Login with Apple"
+                disabled={loading}
               >
-                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M16.125 0c.167.14.331.31.496.47.661.66 1.157 1.456 1.49 2.39.333.934.333 1.803 0 2.607-.332.803-.828 1.456-1.49 1.96-.66.503-1.322.755-1.983.755-.332 0-.663-.084-.994-.252-.332-.167-.663-.335-.994-.503-.332-.167-.663-.251-.994-.251-.332 0-.663.084-.994.251-.332.168-.663.336-.994.503-.332.168-.663.252-.995.252-.661 0-1.322-.252-1.983-.755-.662-.504-1.158-1.157-1.49-1.96-.332-.804-.332-1.673 0-2.607.332-.934.828-1.73 1.49-2.39.661-.66 1.322-.99 1.983-.99.332 0 .663.084.994.252.332.167.663.335.994.503.332.167.663.251.994.251.332 0 .663-.084.994-.251.332-.168.663-.336.994-.503.332-.168.663-.252.995-.252.66 0 1.322.33 1.983.99zm-3.14 20.29c.662-.168 1.158-.42 1.49-.755.332-.335.662-.838.994-1.508-.662-.335-1.158-.503-1.49-.503-.332 0-.663.084-.994.252-.332.167-.663.335-.994.503-.332.167-.663.251-.994.251-.332 0-.663-.084-.994-.251-.332-.168-.663-.336-.994-.503-.332-.168-.663-.252-.995-.252-.332 0-.828.168-1.49.503.332.67.662 1.173.994 1.508.332.335.828.587 1.49.755.66.168 1.322.252 1.983.252.66 0 1.322-.084 1.983-.252zm1.983-10.062c1.322.335 2.315.838 2.977 1.508.662.67.994 1.34.994 2.01 0 .67-.332 1.34-.994 2.01-.662.67-1.655 1.173-2.977 1.508.332-.67.497-1.34.497-2.01v-3.015c0-.67-.165-1.34-.497-2.01zm-7.932 0c-.332.67-.497 1.34-.497 2.01v3.015c0 .67.165 1.34.497 2.01-1.322-.335-2.315-.838-2.977-1.508-.662-.67-.994-1.34-.994-2.01 0-.67.332-1.34.994-2.01.662-.67 1.655-1.173 2.977-1.508z" fill="currentColor"/>
+                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 814 1000" fill="currentColor">
+                  <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57-155.5-127C46.7 790.7 0 663 0 541.8c0-194.4 126.4-297.5 250.8-297.5 66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/>
                 </svg>
+                {loading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-xl">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
               </button>
             </div>
           </motion.div>

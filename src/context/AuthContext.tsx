@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, useRef } from 'react';
-import { supabase, checkUser, signIn, signUp, signOut } from '../supabaseClient';
+import { supabase, checkUser, signIn, signUp, signOut, signInWithGoogle, signInWithApple } from '../supabaseClient';
 
 // Define the shape of the auth context state
 interface AuthContextType {
@@ -8,6 +8,8 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, metadata: any) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
+  signInWithGoogle: () => Promise<any>;
+  signInWithApple: () => Promise<any>;
   signOut: () => Promise<void>;
   error: string | null;
   setError: (error: string | null) => void;
@@ -94,6 +96,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check for an existing session
     const initSession = async () => {
       try {
+        // Check if we have a hash fragment from OAuth redirect
+        const hasHashParams = window.location.hash && window.location.hash.includes('access_token');
+        const hasQueryParams = window.location.search && window.location.search.includes('access_token');
+        
+        if (hasHashParams || hasQueryParams) {
+          console.log('Detected OAuth redirect, setting session...');
+          // Let Supabase handle the hash fragment
+          const { data, error } = await supabase.auth.getSession();
+          if (error) {
+            console.error('Error getting session from hash:', error);
+          }
+        }
+        
         if (!authCheckedFromLocalStorage.current) {
           setLoading(true);
         }
@@ -192,6 +207,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Sign in with Google
+  const handleSignInWithGoogle = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      return await signInWithGoogle();
+    } catch (error: any) {
+      setError(error.message || 'Failed to sign in with Google');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Sign in with Apple
+  const handleSignInWithApple = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      return await signInWithApple();
+    } catch (error: any) {
+      setError(error.message || 'Failed to sign in with Apple');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Sign out
   const handleSignOut = async () => {
     try {
@@ -219,6 +262,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     signUp: handleSignUp,
     signIn: handleSignIn,
+    signInWithGoogle: handleSignInWithGoogle,
+    signInWithApple: handleSignInWithApple,
     signOut: handleSignOut,
     error,
     setError,
@@ -234,4 +279,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+};
