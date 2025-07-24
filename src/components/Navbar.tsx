@@ -111,7 +111,7 @@ const Navbar: React.FC<NavbarProps> = () => {
   // Render app navbar
   return (
     <nav className={`${
-      darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'
+      darkMode ? 'backdrop-blur-md bg-black/20 border-gray-700 text-white' : 'backdrop-blur-md bg-white/20 border-gray-200 text-gray-800'
     } border-b sticky top-0 z-30 w-full flex-none h-16`}>
       <div className="max-w-screen-2xl mx-auto w-full h-full flex items-center justify-between px-4">
         <div className="flex items-center flex-grow-0 flex-shrink-0">
@@ -131,8 +131,8 @@ const Navbar: React.FC<NavbarProps> = () => {
               type="text"
               className={`block max-w-[240px] w-full p-2 pl-10 text-sm rounded-lg ${
                 darkMode 
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500' 
-                  : 'bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500'
+                  ? 'bg-black/30 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500' 
+                  : 'bg-white/30 border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500'
               }`}
               placeholder="Search..."
             />
@@ -246,7 +246,7 @@ const Navbar: React.FC<NavbarProps> = () => {
             {/* User Menu Dropdown */}
             {showUserMenu && (
               <div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg ring-1 focus:outline-none z-50 ${
-                darkMode ? 'bg-gray-800 ring-gray-700' : 'bg-white ring-black ring-opacity-5'
+                darkMode ? 'backdrop-blur-md bg-black/90 border border-gray-700 ring-gray-700' : 'backdrop-blur-md bg-white/90 border border-gray-200 ring-black ring-opacity-5'
               }`}>
                 <div className={`py-3 px-4 text-sm border-b ${
                   darkMode ? 'text-gray-200 border-gray-700' : 'text-gray-900 border-gray-200'
@@ -308,7 +308,7 @@ const Navbar: React.FC<NavbarProps> = () => {
 
       {/* Mobile Search Bar - Expandable */}
       {showSearchBar && (
-        <div className="md:hidden pt-2 pb-2 px-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="md:hidden pt-2 pb-2 px-2 border-t border-gray-200 dark:border-gray-700 backdrop-blur-md bg-black/20">
           <div className="relative">
             <div className={`absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none ${
               darkMode ? 'text-gray-400' : 'text-gray-500'
@@ -319,8 +319,8 @@ const Navbar: React.FC<NavbarProps> = () => {
               type="text"
               className={`block w-full p-2 pl-10 text-sm rounded-lg ${
                 darkMode 
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500' 
-                  : 'bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500'
+                  ? 'bg-black/30 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500' 
+                  : 'bg-white/30 border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500'
               }`}
               placeholder="Search..."
               autoFocus

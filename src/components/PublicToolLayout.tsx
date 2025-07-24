@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Layout } from './';
+import HomeNavbar2 from './HomeNavbar2';
 
 interface PublicToolLayoutProps {
   children: React.ReactNode;
@@ -19,11 +20,12 @@ const PublicToolLayout: React.FC<PublicToolLayoutProps> = ({ children }) => {
     return <Layout>{children}</Layout>;
   }
   
-  // If user is not logged in, render only the children without Layout
+  // If user is not logged in, render with HomeNavbar but without Layout
   return (
     <div className="min-h-screen bg-gray-900 text-white">
+      <HomeNavbar2 />
       <main className="flex-1 flex flex-col bg-gray-900">
-        <div className="flex-1 overflow-auto pb-20 px-4 md:px-6 pt-2 md:pt-6">
+        <div className="flex-1">
           {children}
         </div>
       </main>

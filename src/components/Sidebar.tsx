@@ -177,8 +177,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
           collapsed ? 'w-16' : 'w-64'
         } ${
           darkMode 
-            ? 'bg-gray-800 border-gray-700' 
-            : 'bg-white border-gray-200'
+            ? 'backdrop-blur-md bg-black/20 border-gray-700' 
+            : 'backdrop-blur-md bg-white/20 border-gray-200'
         } border-r left-0 top-0 z-40 overflow-hidden`}
         style={{ position: 'fixed' }}
       >

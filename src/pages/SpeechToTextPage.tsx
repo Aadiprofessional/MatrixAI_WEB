@@ -973,12 +973,20 @@ const SpeechToTextPage: React.FC = () => {
   }, []);
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${
-      theme === 'dark' 
-        ? 'from-gray-900 via-gray-800 to-gray-900' 
-        : 'from-gray-50 via-blue-50 to-gray-50'
-    }`}>
-      <div className="container mx-auto max-w-7xl p-4 py-8">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Enhanced background gradient effect */}
+      <div className="absolute inset-0 bg-black z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-transparent to-purple-900/30 z-0"></div>
+      
+      {/* Subtle gradient from bottom to create a fade to black effect */}
+      <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent z-0"></div>
+      
+      {/* Subtle grid lines with animation */}
+      <div className="absolute inset-0 opacity-10 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] animate-gridMove"></div>
+      
+      <div className="flex-1 flex flex-col relative z-10">
+        <div className="flex-1 p-0">
+          <div className="max-w-7xl mx-auto">
         {showProAlert && (
           <ProFeatureAlert 
             featureName="Unlimited Transcriptions"
@@ -1547,6 +1555,10 @@ const SpeechToTextPage: React.FC = () => {
         )}
       </AnimatePresence>
     </div>
+          </div>
+        </div>
+      
+   
   );
 };
 

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FiVideo, FiUpload, FiPlay, FiPause, FiDownload, FiSliders, FiPlus, FiTrash, FiX, FiCheck, FiClock, FiList, FiVolume2, FiVolumeX, FiMaximize, FiMinimize, FiLoader, FiImage } from 'react-icons/fi';
+import { FiVideo, FiUpload, FiPlay, FiPause, FiDownload, FiSliders, FiPlus, FiTrash, FiX, FiCheck, FiClock, FiList, FiVolume2, FiVolumeX, FiMaximize, FiMinimize, FiLoader, FiImage, FiLock } from 'react-icons/fi';
 import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAlert } from '../context/AlertContext';
 import { videoService } from '../services/videoService';
-import { uploadImageToStorage } from '../supabaseClient';
+import { uploadImageToStorage, supabase } from '../supabaseClient';
+import coinImage from '../assets/coin.png';
 
 interface VideoHistoryItem {
   videoId: string;
@@ -27,12 +28,24 @@ interface VideoHistoryItem {
   submitTime?: string; // Make optional to match enhanced API
   scheduledTime?: string; // Make optional to match enhanced API
   endTime?: string; // Make optional to match enhanced API
+  template?: string; // Template name if template-based generation was used
   origPrompt?: string; // Make optional to match enhanced API
   actualPrompt?: string; // Make optional to match enhanced API
   imageUrl?: string;
   ratio?: string;
   duration?: string;
   videoStyle?: string;
+  negative_prompt?: string; // Add negative prompt field
+ // Add template field
+}
+
+interface TemplateVideo {
+  id: string;
+  name: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+  category: 'basic' | 'premium';
+  description?: string;
 }
 
 const VideoCreatorPage: React.FC = () => {
@@ -43,6 +56,7 @@ const VideoCreatorPage: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { darkMode } = useTheme();
   const [prompt, setPrompt] = useState('');
+  const [negativePrompt, setNegativePrompt] = useState('');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -56,6 +70,7 @@ const VideoCreatorPage: React.FC = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [style, setStyle] = useState('cinematic');
+  const [template, setTemplate] = useState('flying');
   const [videoProgress, setVideoProgress] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -86,20 +101,90 @@ const VideoCreatorPage: React.FC = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
   
+  // Template state
+  const [templateVideos, setTemplateVideos] = useState<TemplateVideo[]>([]);
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [showTemplateGrid, setShowTemplateGrid] = useState(false);
+  const [templateCategory, setTemplateCategory] = useState<'basic' | 'premium'>('basic');
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Style options for video
-  const styleOptions = [
-    { id: 'cinematic', name: 'Cinematic' },
-    { id: 'animation', name: 'Animation' },
-    { id: 'vintage', name: 'Vintage Film' },
-    { id: 'documentary', name: 'Documentary' },
-    { id: 'music-video', name: 'Music Video' },
-    { id: 'scifi', name: 'Sci-Fi' },
+
+  
+  // Template options for image-to-video
+  const templateOptions = [
+    { id: 'flying', name: 'Flying' },
+    { id: 'zoom', name: 'Zoom In' },
+    { id: 'pan', name: 'Panning' },
+    { id: 'rotate', name: 'Rotation' },
+    { id: 'dolly', name: 'Dolly Zoom' },
+    { id: 'none', name: 'No Motion' },
   ];
+  
+  // Fetch template videos from Supabase storage
+  const fetchTemplateVideos = useCallback(async () => {
+    setIsLoadingTemplates(true);
+    try {
+      // List all files in the user-uploads/important folder
+      const { data: files, error } = await supabase.storage
+        .from('user-uploads')
+        .list('important', {
+          limit: 100,
+          sortBy: { column: 'name', order: 'asc' }
+        });
+      
+      if (error) {
+        console.error('Error fetching template videos:', error);
+        return;
+      }
+      
+      if (!files) {
+        console.log('No template videos found');
+        return;
+      }
+      
+      // Filter video files and create template objects
+      const videoFiles = files.filter(file => 
+        file.name.toLowerCase().endsWith('.mp4') || 
+        file.name.toLowerCase().endsWith('.mov') ||
+        file.name.toLowerCase().endsWith('.webm')
+      );
+      
+      const templates: TemplateVideo[] = videoFiles.map((file, index) => {
+        const { data: { publicUrl } } = supabase.storage
+          .from('user-uploads')
+          .getPublicUrl(`important/${file.name}`);
+        
+        // Determine category based on file name or index
+        // First 12 videos are basic, next 7 are premium
+        const category: 'basic' | 'premium' = index < 12 ? 'basic' : 'premium';
+        
+        // Extract template name from filename (remove extension and format)
+        const templateName = file.name
+          .replace(/\.(mp4|mov|webm)$/i, '')
+          .replace(/[-_]/g, ' ')
+          .replace(/\b\w/g, l => l.toUpperCase());
+        
+        return {
+          id: file.name.replace(/\.(mp4|mov|webm)$/i, ''),
+          name: templateName,
+          videoUrl: publicUrl,
+          category,
+          description: `${templateName} template animation`
+        };
+      });
+      
+      setTemplateVideos(templates);
+    } catch (error) {
+      console.error('Error fetching template videos:', error);
+    } finally {
+      setIsLoadingTemplates(false);
+    }
+  }, []);
   
   // Resolution options
   const resolutionOptions = [
@@ -125,20 +210,32 @@ const VideoCreatorPage: React.FC = () => {
           return 'Unknown';
         }
         
-        // Calculate time difference
+        // Get current time in client's system
         const now = new Date();
+        
+        // Calculate time difference in milliseconds
+        // This uses the client's system time but maintains the same relative difference
         const diffMs = now.getTime() - date.getTime();
         const diffMins = Math.floor(diffMs / (1000 * 60));
         const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
         const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
         
+        // For recently created videos, show more precise time
         if (diffMins < 1) return 'Just now';
         if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
         if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
         if (diffDays < 30) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
         
-        // Fall back to standard date format
-        return date.toLocaleDateString();
+        // Fall back to date format using China timezone (UTC+8)
+        return date.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+          timeZone: 'Asia/Shanghai' // Explicitly use China timezone
+        }) + ' (China time)';
       } catch (e) {
         console.warn('Error parsing date:', dateStr, e);
         return 'Unknown';
@@ -192,7 +289,8 @@ const VideoCreatorPage: React.FC = () => {
       imageUrl: apiVideo.imageUrl || apiVideo.image_url,
       ratio: apiVideo.ratio,
       duration: apiVideo.duration,
-      videoStyle: apiVideo.videoStyle || apiVideo.video_style
+      videoStyle: apiVideo.videoStyle || apiVideo.video_style,
+      template: apiVideo.template || apiVideo.templateName || ''
     };
   }, []);
   
@@ -231,98 +329,81 @@ const VideoCreatorPage: React.FC = () => {
       fetchVideoHistory();
     }
   }, [showHistory, user?.id, fetchVideoHistory]);
+  
+  // Fetch template videos when component mounts
+  useEffect(() => {
+    fetchTemplateVideos();
+  }, [fetchTemplateVideos]);
 
-  // Cleanup polling on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-      }
+      // Any cleanup needed
     };
   }, []);
 
-  const startPolling = (videoId: string) => {
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
+  // Initialize negative prompt with default value
+  useEffect(() => {
+    // Set default negative prompt to "no blur" if it's empty
+    if (!negativePrompt || negativePrompt.trim() === "") {
+      setNegativePrompt("no blur");
     }
-
-    pollingIntervalRef.current = setInterval(async () => {
-      try {
-        if (!user?.id) return;
-        
-        const response = await videoService.getVideoStatus(user.id, videoId);
-        console.log('Video status response:', response);
-        
-        // Update task status - server returns taskStatus, not status
-        // Handle both direct taskStatus and nested details.task_status
-        const currentTaskStatus = response.taskStatus || 
-                                 (response.details && response.details.task_status) || 
-                                 response.status || '';
-        setTaskStatus(currentTaskStatus);
-        
-        // Update progress bar while processing
-        if (currentTaskStatus === 'PENDING' || currentTaskStatus === 'RUNNING') {
-          setProcessingProgress(prev => {
-            const newProgress = prev + Math.random() * 2; // Slower increment during polling
-            return newProgress > 95 ? 95 : newProgress;
-          });
-        }
-        
-        // Check if video is completed - server returns 'SUCCEEDED' status and videoUrl
-        if ((currentTaskStatus === 'SUCCEEDED' || currentTaskStatus === 'COMPLETED') && response.videoUrl) {
-          // Video is ready
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-          }
-          setVideoUrl(response.videoUrl);
-          setProcessingProgress(100);
-          
-          // Add prompt to recent prompts if not already there
-          if (!presetPrompts.includes(prompt)) {
-            setPresetPrompts(prev => [prompt, ...prev.slice(0, 3)]);
-          }
-          
-          // Decrease free generations left if user is not pro
-          if (!isPro) {
-            setFreeGenerationsLeft(prev => prev - 1);
-          }
-          
-          setTimeout(() => {
-            setIsGenerating(false);
-          }, 500);
-        } else if (currentTaskStatus === 'FAILED') {
-          // Video generation failed
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-          }
-          setIsGenerating(false);
-          setError(response.message || 'Video generation failed. Please try again.');
-        }
-        // Continue polling if status is still PENDING or RUNNING
-      } catch (error: any) {
-        console.error('Error checking video status:', error);
-        if (pollingIntervalRef.current) {
-          clearInterval(pollingIntervalRef.current);
-        }
-        setIsGenerating(false);
-        setError('Failed to check video status. Please try again.');
-      }
-    }, 1000); // Poll every 1 second as requested
-
-    // Clear interval after 5 minutes to prevent infinite polling
-    setTimeout(() => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        if (isGenerating) {
-          setIsGenerating(false);
-          setError('Video generation is taking longer than expected. Please try again later.');
-        }
-      }
-    }, 300000); // 5 minutes timeout
+  }, [negativePrompt]);
+  
+  // Handle template selection
+  const handleTemplateSelect = (templateName: string) => {
+    setSelectedTemplate(templateName);
+    
+    // Find the template by name and set the template ID
+    const templateObj = templateVideos.find(t => t.name === templateName);
+    if (templateObj) {
+      setTemplate(templateObj.id);
+    }
+    
+    setShowTemplateGrid(false);
+    // Clear prompt when using template-based generation
+    setPrompt('');
+    // Set default negative prompt
+    setNegativePrompt('no blur');
+  };
+  
+  // Filter templates by category
+  const getFilteredTemplates = () => {
+    return templateVideos.filter(template => template.category === templateCategory);
+  };
+  
+  // Check if user can access premium templates
+  const canAccessPremium = () => {
+    return isPro; // Only pro users can access premium templates
   };
 
   const handleGenerateVideo = async () => {
-    if (!prompt.trim() || !user?.id) return;
+    if (!user?.id) return;
+    
+    // For image upload, we need to check if we have a valid option selected
+    if (uploadedImageUrl) {
+      // For template-based generation, we need a template
+      if (template) {
+        if (template.trim() === '') {
+          setError('Please select a template for template-based generation');
+          return;
+        }
+        // Template-based generation doesn't need a prompt
+      } else {
+        // For Text-to-Video with Negative Prompt option
+        // Negative prompt is now optional
+        if (!prompt || prompt.trim() === '') {
+          setError('Please enter a prompt when using text-to-video option');
+          return;
+        }
+      }
+    } else {
+      // For regular text-to-video (no image), we need a prompt
+      if (!prompt.trim()) {
+        setError('Please enter a prompt to generate a video');
+        return;
+      }
+    }
     
     // If user is not pro and has used all free generations, show pro alert
     if (!isPro && freeGenerationsLeft <= 0) {
@@ -356,67 +437,163 @@ const VideoCreatorPage: React.FC = () => {
       // Check if we have an uploaded image
       if (uploadedImageUrl) {
         try {
-          // Use the image-to-video API
-          // Log the image URL being sent to the API
-          console.log('Sending image URL to API:', uploadedImageUrl);
+          // Ensure the image URL is properly formatted - remove spaces, quotes, and backticks
+          console.log('Original image URL before cleaning:', uploadedImageUrl);
           
-          // Ensure the image URL doesn't have extra spaces
-          const cleanImageUrl = uploadedImageUrl.trim();
+          // Apply thorough cleaning to remove all backticks and quotes
+          let cleanImageUrl = uploadedImageUrl;
+          // First trim any whitespace
+          cleanImageUrl = cleanImageUrl.trim();
+          // Then remove all quotes and backticks
+          cleanImageUrl = cleanImageUrl.replace(/["'`]/g, '');
+          // Double-check for any remaining backticks (sometimes regex can miss them)
+          while (cleanImageUrl.includes('`')) {
+            cleanImageUrl = cleanImageUrl.replace('`', '');
+          }
           
-          // Use the videoService method instead of direct fetch
-          response = await videoService.createVideoWithUrl(user.id, prompt, cleanImageUrl);
+          console.log('Cleaned image URL for API:', cleanImageUrl);
+          
+          // Final verification - ensure URL is completely clean
+          if (cleanImageUrl.includes('`')) {
+            console.error('WARNING: Image URL still contains backticks after cleaning');
+            cleanImageUrl = cleanImageUrl.split('`').join('');
+            console.log('Final cleaned image URL:', cleanImageUrl);
+          }
+          
+          // Check if the image is accessible before sending to API
+          console.log('Checking image accessibility...');
+          const isAccessible = await checkImageAccessibility(cleanImageUrl);
+          if (!isAccessible) {
+            throw new Error('Image download timeout: The image is not accessible. Please try uploading a different image or check that your image URL is valid.');
+          }
+          console.log('Image accessibility check passed');
+          
+          // Determine which API call to make based on the selected option
+          if (template) {
+            // Option 1: Template-based Generation - No prompt needed but include negative prompt
+            // Ensure negative prompt is never empty for template-based generation too
+            const finalNegativePrompt = negativePrompt && negativePrompt.trim() !== "" ? negativePrompt : "no blur";
+            console.log('Using template-based generation with template:', template, 'and negative prompt:', finalNegativePrompt);
+            response = await videoService.createVideoWithUrl(
+              user.id, 
+              "", // Empty prompt for template-based generation
+              cleanImageUrl, 
+              finalNegativePrompt, // Always pass a non-empty negative prompt
+              template
+            );
+          } else {
+            // Option 2: Text-to-Video with Negative Prompt
+            // Ensure negative prompt is never empty
+            const finalNegativePrompt = negativePrompt && negativePrompt.trim() !== "" ? negativePrompt : "no blur";
+            console.log('Using text-to-video with negative prompt:', finalNegativePrompt);
+            response = await videoService.createVideoWithUrl(
+              user.id, 
+              prompt, 
+              cleanImageUrl, 
+              finalNegativePrompt, // Always pass a non-empty negative prompt
+              undefined // No template
+            );
+          }
+          
           console.log('Create video with image response:', response);
           
           // Check for error in response
           if (response.error) {
             setError(`Video generation failed: ${response.message || 'The server could not process your image. Please try a different image or prompt.'}`);
             setIsGenerating(false);
-            return;
-          }
-          
-          // If the API returns success immediately
-          if (response.videoUrl && response.taskStatus === 'SUCCEEDED') {
-            setVideoUrl(response.videoUrl);
-            setProcessingProgress(100);
-            setIsGenerating(false);
             clearInterval(progressInterval);
             return;
           }
+          
+          // If the API returns success with video URL
+          if (response.videoUrl) {
+            setVideoUrl(response.videoUrl);
+            setTaskStatus('SUCCEEDED');
+            setProcessingProgress(100);
+            setIsGenerating(false);
+            clearInterval(progressInterval);
+            
+            // Refresh video history
+            fetchVideoHistory();
+            return;
+          }
         } catch (apiError: any) {
-          console.error('API error:', apiError);
+          console.error('API error in handleGenerateVideo:', apiError);
+          
+          // Log more details about the error
+          console.error('Error type:', typeof apiError);
+          console.error('Error message:', apiError.message);
+          console.error('Error stack:', apiError.stack);
           
           // Handle different error status codes
-          if (apiError.message.includes('500')) {
-            setError('Server error: The video generation service is currently experiencing issues. This may be due to high demand or server maintenance. Please try again later.');
+          if (apiError.message && apiError.message.includes('Image download timeout')) {
+            setError('Image download issue: The server could not download your image. Please try again with a smaller image file or a different image.');
+            console.error('Image download timeout detected');
+          } else if (apiError.message && apiError.message.includes('500')) {
+            setError('Server error (500): The video generation service is currently experiencing issues. This may be due to high demand or server maintenance. Please try again later.');
+            console.error('500 error detected in message');
+          } else if (apiError.message && apiError.message.includes('Failed to create video from image')) {
+            setError(`Video creation failed: ${apiError.message}. Please check that your image URL is valid and accessible.`);
+            console.error('Video creation failure detected');
+          } else if (apiError.message && apiError.message.includes('DashScope API error')) {
+            setError('AI service error: The video generation AI service encountered an issue processing your image. Please try a different image or prompt.');
+            console.error('DashScope API error detected');
           } else {
             setError(apiError.message || 'Failed to connect to video generation service. Please check your internet connection and try again.');
+            console.error('Other error type detected');
           }
           
+          // Set API error for debugging
+          setApiError(apiError.message || 'Unknown API error');
+          
           setIsGenerating(false);
+          clearInterval(progressInterval);
           return;
         }
       } else {
         // Use the standard text-to-video API
         response = await videoService.createVideo(user.id, prompt, size);
         console.log('Create video response:', response);
+        
+        // If the API returns success with video URL
+        if (response.videoUrl) {
+          setVideoUrl(response.videoUrl);
+          setTaskStatus('SUCCEEDED');
+          setProcessingProgress(100);
+          setIsGenerating(false);
+          clearInterval(progressInterval);
+          
+          // Refresh video history
+          fetchVideoHistory();
+          return;
+        }
       }
       
       if (response.videoId) {
         setCurrentVideoId(response.videoId);
-        // Server returns taskStatus in the response
-        setTaskStatus(response.taskStatus || response.status || 'PENDING');
+        setTaskStatus(response.taskStatus || response.status || 'SUCCEEDED');
         
-        // Start polling for video status
-        startPolling(response.videoId);
+        // If we're not a pro user, decrement the free generations
+        if (!isPro) {
+          setFreeGenerationsLeft(prev => Math.max(0, prev - 1));
+        }
         
-        // Clear the progress interval since we're now polling
         clearInterval(progressInterval);
+        setIsGenerating(false);
       } else {
         throw new Error(response.message || 'Failed to initiate video generation');
       }
     } catch (error: any) {
       console.error('Error generating video:', error);
       let errorMessage = error.message;
+      
+      // Don't show error if it contains "Video generated and saved successfully"
+      if (errorMessage.includes('Video generated and saved successfully')) {
+        // This is actually a success case, not an error
+        setIsGenerating(false);
+        clearInterval(progressInterval);
+        return;
+      }
       
       // Make error messages more user-friendly
       if (errorMessage.includes('API error')) {
@@ -576,6 +753,59 @@ const VideoCreatorPage: React.FC = () => {
     }
   };
   
+  /**
+   * Checks if an image URL is accessible by attempting to load it
+   * @param imageUrl The URL of the image to check
+   * @returns Promise that resolves to true if accessible, false otherwise
+   */
+  const checkImageAccessibility = (imageUrl: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const timeout = setTimeout(() => {
+        console.log('Image accessibility check timed out');
+        resolve(false);
+      }, 5000); // 5 second timeout
+      
+      img.onload = () => {
+        clearTimeout(timeout);
+        console.log('Image is accessible');
+        resolve(true);
+      };
+      
+      img.onerror = () => {
+        clearTimeout(timeout);
+        console.log('Image is not accessible');
+        resolve(false);
+      };
+      
+      // Ensure the URL doesn't have any quotes or backticks, but preserve spaces
+      try {
+        // Clean quotes and backticks, but keep spaces
+        let cleanedUrl = imageUrl.replace(/["'`]/g, '');
+        
+        // Double-check for any remaining backticks (sometimes regex can miss them)
+        while (cleanedUrl.includes('`')) {
+          cleanedUrl = cleanedUrl.replace('`', '');
+        }
+        
+        console.log('Using cleaned URL for accessibility check:', cleanedUrl);
+        
+        // Try to encode the URL properly
+        try {
+          // For URLs that might contain spaces and special characters
+          const encodedUrl = encodeURI(cleanedUrl);
+          img.src = encodedUrl;
+        } catch (error) {
+          console.error('Error setting image URL:', error);
+          resolve(false);
+        }
+      } catch (error) {
+        console.error('Error setting image URL:', error);
+        resolve(false);
+      }
+    });
+  };
+  
   const handleUploadImageClick = () => {
     imageInputRef.current?.click();
   };
@@ -591,14 +821,38 @@ const VideoCreatorPage: React.FC = () => {
         
         console.log('Selected image file:', file.name, file.type, file.size);
         
-        // Validate file size and type
-        if (file.size > 10 * 1024 * 1024) { // 10MB limit
-          throw new Error('Image size exceeds 10MB limit. Please choose a smaller image.');
+        // Validate file size and type with stricter limits
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit (reduced from 10MB)
+          throw new Error('Image size exceeds 5MB limit. Please choose a smaller image to prevent timeout issues during processing.');
         }
         
         if (!file.type.startsWith('image/')) {
           throw new Error('Invalid file type. Please upload an image file.');
         }
+        
+        // Check image dimensions to prevent timeout issues
+        const checkImageDimensions = () => {
+          return new Promise<void>((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+              // Check if image is too large in dimensions
+              if (img.width > 4000 || img.height > 4000) {
+                reject(new Error('Image dimensions are too large. Please use an image smaller than 4000x4000 pixels to prevent timeout issues.'));
+              } else if (img.width < 256 || img.height < 256) {
+                reject(new Error('Image dimensions are too small. Please use an image at least 256x256 pixels for best results.'));
+              } else {
+                resolve();
+              }
+            };
+            img.onerror = () => {
+              reject(new Error('Failed to load image for validation. Please try another image.'));
+            };
+            img.src = URL.createObjectURL(file);
+          });
+        };
+        
+        // Check image dimensions before proceeding
+        await checkImageDimensions();
         
         // Check if the file is HEIC format
         const isHeic = file.type === 'image/heic' || 
@@ -617,8 +871,8 @@ const VideoCreatorPage: React.FC = () => {
         const result = await uploadImageToStorage(file, user.id);
         console.log('Image upload successful, public URL:', result.publicUrl);
         
-        // Ensure the URL is properly formatted and trimmed
-        const cleanUrl = result.publicUrl.trim();
+        // Ensure the URL is properly formatted and trimmed - remove any quotes or backticks
+        const cleanUrl = result.publicUrl.trim().replace(/["'`]/g, '');
         setUploadedImageUrl(cleanUrl);
         
         // Reset video upload when image is uploaded
@@ -721,9 +975,6 @@ const VideoCreatorPage: React.FC = () => {
     setIsGenerating(false);
     setProcessingProgress(0);
     setError(null);
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-    }
   };
 
   const getStatusText = () => {
@@ -759,7 +1010,20 @@ const VideoCreatorPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl p-4 py-8">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Enhanced background gradient effect */}
+      <div className="absolute inset-0 bg-black z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-transparent to-purple-900/30 z-0"></div>
+      
+      {/* Subtle gradient from bottom to create a fade to black effect */}
+      <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent z-0"></div>
+      
+      {/* Subtle grid lines with animation */}
+      <div className="absolute inset-0 opacity-10 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] animate-gridMove"></div>
+      
+      <div className="flex-1 flex flex-col relative z-10">
+        <div className="flex-1 p-0">
+          <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
       {showProAlert && (
         <ProFeatureAlert 
           featureName="Advanced Video Creation"
@@ -767,7 +1031,7 @@ const VideoCreatorPage: React.FC = () => {
         />
       )}
       
-      <div className="mb-8">
+      <div className="mt-6 mb-8">
         <motion.h1 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -999,72 +1263,225 @@ const VideoCreatorPage: React.FC = () => {
             <div>
               <div className="relative">
                 <textarea
+                  id="promptInput"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Describe the video you want to generate..."
                   className="w-full p-4 pr-12 border rounded-lg shadow-sm h-24 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   disabled={isGenerating}
                 />
-                <div className="absolute top-2 right-2">
-                  <button 
-                    onClick={() => setShowAdvanced(!showAdvanced)}
-                    className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                    disabled={isGenerating}
-                  >
-                    <FiSliders />
-                  </button>
-                </div>
+                {/* Only show filter button when image is uploaded */}
+                {uploadedImageUrl && (
+                  <div className="absolute top-2 right-2">
+                    <button 
+                      onClick={() => setShowAdvanced(!showAdvanced)}
+                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                      disabled={isGenerating}
+                    >
+                      <FiSliders />
+                    </button>
+                  </div>
+                )}
               </div>
               
-              {/* Advanced Settings */}
-              {showAdvanced && (
+              {/* Video Generation Options - Only shown when image is uploaded */}
+              {uploadedImageUrl && (
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   className="mt-4 p-4 border rounded-lg shadow-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Style</label>
-                      <select 
-                        value={style}
-                        onChange={(e) => setStyle(e.target.value)}
-                        className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                        disabled={isGenerating}
-                      >
-                        {styleOptions.map(styleOption => (
-                          <option key={styleOption.id} value={styleOption.id}>{styleOption.name}</option>
-                        ))}
-                      </select>
+                  <h3 className="text-md font-medium mb-3 text-gray-800 dark:text-gray-200">Video Generation Options</h3>
+                  
+                  <div className="space-y-4">
+                    {/* Option 1: Text-to-Video with Negative Prompt */}
+                    <div className="p-3 border rounded-md border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 cursor-pointer transition-all"
+                         onClick={() => {
+                           setTemplate("");
+                           // Always set negative prompt to "no blur" to ensure it's treated as user input
+                           // This forces it to be included in the API request
+                           setNegativePrompt("no blur");
+                           setShowAdvanced(true);
+                           // Enable prompt input
+                           document.getElementById('promptInput')?.removeAttribute('disabled');
+                         }}
+                    >
+                      <div className="flex items-center">
+                        <div className="h-4 w-4 rounded-full border border-gray-400 dark:border-gray-500 flex items-center justify-center mr-2">
+                          {!template && <div className="h-2 w-2 rounded-full bg-blue-500"></div>}
+                        </div>
+                        <h4 className="font-medium text-gray-800 dark:text-gray-200">Text-to-Video with Negative Prompt</h4>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-6">
+                        Generate video with your prompt and control over what to exclude
+                      </p>
+                      
+                      {/* Negative prompt input - Always shown for this option */}
+                      {!template && (
+                        <div className="mt-2 ml-6">
+                          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Negative Prompt</label>
+                          <textarea
+                            value={negativePrompt || "no blur"}
+                            onChange={(e) => {
+                              // Ensure we never set an empty value
+                              const value = e.target.value.trim() === "" ? "no blur" : e.target.value;
+                              setNegativePrompt(value);
+                            }}
+                            placeholder="Describe what you don't want to see in the video..."
+                            className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 h-20"
+                            disabled={isGenerating}
+                            onFocus={() => {
+                              // If the negative prompt is empty or just the default, select it all for easy replacement
+                              if (!negativePrompt || negativePrompt === "no blur") {
+                                const textarea = document.activeElement as HTMLTextAreaElement;
+                                if (textarea) {
+                                  textarea.select();
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Resolution</label>
-                      <select 
-                        value={resolution}
-                        onChange={(e) => setResolution(e.target.value)}
-                        className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                        disabled={isGenerating}
-                      >
-                        {resolutionOptions.map(option => (
-                          <option key={option.id} value={option.id}>{option.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Duration (seconds)</label>
-                      <input 
-                        type="number" 
-                        min="3" 
-                        max={isPro ? "60" : "15"}
-                        value={duration}
-                        onChange={(e) => setDuration(Number(e.target.value))}
-                        className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
-                      />
-                      {!isPro && (
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          {t('video.upgradeText') || 'Upgrade to Pro'} for videos up to 60 seconds
-                        </p>
+                    
+                    {/* Option 2: Template-based Generation */}
+                    <div className="p-3 border rounded-md border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 cursor-pointer transition-all"
+                         onClick={() => {
+                           // Set template to first option if not already set
+                           if (!template) {
+                             const firstTemplate = templateOptions.length > 0 ? templateOptions[0].id : "";
+                             setTemplate(firstTemplate);
+                           }
+                           // Set default negative prompt to "no blur" for template-based generation too
+                           if (!negativePrompt || negativePrompt.trim() === "") {
+                             setNegativePrompt("no blur");
+                           }
+                           setShowAdvanced(true); // Show advanced options to display negative prompt
+                           // Clear prompt when template is selected
+                           setPrompt("");
+                           // Disable prompt input when template is selected
+                           document.getElementById('promptInput')?.setAttribute('disabled', 'disabled');
+                         }}
+                    >
+                      <div className="flex items-center">
+                        <div className="h-4 w-4 rounded-full border border-gray-400 dark:border-gray-500 flex items-center justify-center mr-2">
+                          {template && <div className="h-2 w-2 rounded-full bg-blue-500"></div>}
+                        </div>
+                        <h4 className="font-medium text-gray-800 dark:text-gray-200">Template-based Generation</h4>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-6">
+                        Apply a motion template to your image (no prompt needed)
+                      </p>
+                      
+                      {/* Template selection - Always shown for this option */}
+                      {template && (
+                        <div className="mt-2 ml-6 space-y-4">
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Motion Template</label>
+                              <button
+                                onClick={() => setShowTemplateGrid(true)}
+                                className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 flex items-center"
+                                disabled={isGenerating}
+                              >
+                                <FiVideo className="mr-1" size={14} />
+                                Browse Templates
+                              </button>
+                            </div>
+                            {selectedTemplate ? (
+                              <div className="p-3 border rounded-md bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                    {templateVideos.find(t => t.name === selectedTemplate)?.name || selectedTemplate}
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedTemplate(null);
+                                      setTemplate('');
+                                    }}
+                                    className="text-red-500 hover:text-red-600 dark:text-red-400"
+                                    disabled={isGenerating}
+                                  >
+                                    <FiX size={16} />
+                                  </button>
+                                </div>
+                                {/* Show selected template video */}
+                                {templateVideos.find(t => t.name === selectedTemplate)?.videoUrl && (
+                                  <div className="aspect-video bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
+                                    <video 
+                                      src={templateVideos.find(t => t.name === selectedTemplate)?.videoUrl}
+                                      className="w-full h-full object-cover"
+                                      autoPlay
+                                      loop
+                                      muted
+                                      playsInline
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="space-y-4">
+                                <select 
+                                  value={template}
+                                  onChange={(e) => {
+                                    setTemplate(e.target.value);
+                                    // Find the template in templateVideos and set selectedTemplate
+                                    const selectedTemplateObj = templateVideos.find(t => t.id === e.target.value);
+                                    if (selectedTemplateObj) {
+                                      setSelectedTemplate(selectedTemplateObj.name);
+                                    }
+                                  }}
+                                  className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
+                                  disabled={isGenerating}
+                                >
+                                  <option value="">Select a template...</option>
+                                  <optgroup label="Basic Templates">
+                                    {templateVideos
+                                      .filter(t => t.category === 'basic')
+                                      .map(template => (
+                                        <option key={template.id} value={template.id}>
+                                          {template.name}
+                                        </option>
+                                      ))}
+                                  </optgroup>
+                                  <optgroup label="Premium Templates 🔒">
+                                    {templateVideos
+                                      .filter(t => t.category === 'premium')
+                                      .map(template => (
+                                        <option key={template.id} value={template.id} disabled={!canAccessPremium()}>
+                                          {template.name} {!canAccessPremium() ? '🔒' : ''}
+                                        </option>
+                                      ))}
+                                  </optgroup>
+                                </select>
+                                
+                                {/* Show preview of currently selected template in dropdown */}
+                                {template && templateVideos.find(t => t.id === template)?.videoUrl && (
+                                  <div className="aspect-video bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden mt-2">
+                                    <video 
+                                      src={templateVideos.find(t => t.id === template)?.videoUrl}
+                                      className="w-full h-full object-cover"
+                                      autoPlay
+                                      loop
+                                      muted
+                                      playsInline
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Set default negative prompt as hidden input */}
+                          {template && (
+                            <input 
+                              type="hidden" 
+                              value="no blur"
+                              onChange={() => setNegativePrompt("no blur")}
+                            />
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1122,9 +1539,9 @@ const VideoCreatorPage: React.FC = () => {
               ) : (
                 <AuthRequiredButton
                   onClick={handleGenerateVideo}
-                  disabled={!prompt.trim() || isUploadingImage}
+                  disabled={((!prompt.trim() && !template) || isUploadingImage)}
                   className={`w-full py-3 rounded-lg font-medium flex items-center justify-center ${
-                    !prompt.trim() || isUploadingImage
+                    ((!prompt.trim() && !template) || isUploadingImage)
                       ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                       : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90'
                   } transition`}
@@ -1138,6 +1555,10 @@ const VideoCreatorPage: React.FC = () => {
                     <>
                       <FiVideo className="mr-2" />
                       Generate Video
+                      <div className="ml-2 flex items-center bg-black/20 px-2 py-0.5 rounded-full">
+                        <span className="text-sm font-bold mr-1">-25</span>
+                        <img src={coinImage} alt="Coins" className="h-4 w-4" />
+                      </div>
                     </>
                   )}
                 </AuthRequiredButton>
@@ -1188,7 +1609,7 @@ const VideoCreatorPage: React.FC = () => {
                     <p className="text-red-500 dark:text-red-400 text-xs">{historyError}</p>
                     <button
                       onClick={fetchVideoHistory}
-                      className="mt-4 px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-sm"
+                      className="mt-4 px-4 py-2 rounded-lg bg-blue-500 text-white hover-bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-sm"
                     >
                       Retry
                     </button>
@@ -1217,7 +1638,7 @@ const VideoCreatorPage: React.FC = () => {
                         
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                            {video.promptText}
+                            {video.promptText || video.template}
                           </p>
                           <div className="flex items-center space-x-4 mt-1">
                             <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -1374,6 +1795,195 @@ const VideoCreatorPage: React.FC = () => {
           </div>
         </div>
       </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Template Grid Modal */}
+      {showTemplateGrid && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Choose a Template</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Select from our collection of video templates
+                </p>
+              </div>
+              <button
+                onClick={() => setShowTemplateGrid(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <FiX size={24} />
+              </button>
+            </div>
+            
+            {/* Category Tabs */}
+            <div className="flex border-b border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setTemplateCategory('basic')}
+                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  templateCategory === 'basic'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                }`}
+              >
+                Basic Templates (12)
+              </button>
+              <button
+                onClick={() => setTemplateCategory('premium')}
+                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  templateCategory === 'premium'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                }`}
+              >
+                Premium Templates (7) {!canAccessPremium() && '🔒'}
+              </button>
+            </div>
+            
+            {/* Template Grid */}
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              {isLoadingTemplates ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                  <span className="ml-3 text-gray-600 dark:text-gray-400">Loading templates...</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {getFilteredTemplates().map((template) => (
+                    <div
+                      key={template.id}
+                      className={`relative group cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                        selectedTemplate === template.name
+                          ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      } ${
+                        templateCategory === 'premium' && !canAccessPremium()
+                          ? 'opacity-60'
+                          : ''
+                      }`}
+                      onClick={() => {
+                        if (templateCategory === 'premium' && !canAccessPremium()) {
+                          alert('Premium templates require a subscription. Please upgrade your plan.');
+                          return;
+                        }
+                        handleTemplateSelect(template.name);
+                        setShowTemplateGrid(false);
+                      }}
+                    >
+                      {/* Video Preview */}
+                      <div className="aspect-video bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
+                        <video
+                          src={template.videoUrl}
+                          className="w-full h-full object-cover"
+                          muted
+                          loop
+                          preload="metadata"
+                          onMouseEnter={(e) => {
+                            if (templateCategory === 'basic' || canAccessPremium()) {
+                              e.currentTarget.play();
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.pause();
+                            e.currentTarget.currentTime = 0;
+                          }}
+                        />
+                        
+                        {/* Premium Lock Overlay */}
+                        {templateCategory === 'premium' && !canAccessPremium() && (
+                          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                            <div className="text-white text-center">
+                              <FiLock className="w-6 h-6 mx-auto mb-2" />
+                              <span className="text-xs font-medium">Premium</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Selected Indicator */}
+                        {selectedTemplate === template.name && (
+                          <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1">
+                            <FiCheck size={16} />
+                          </div>
+                        )}
+                        
+                        {/* Play Button Overlay */}
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <FiPlay className="w-8 h-8 text-white" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Template Info */}
+                      <div className="p-3">
+                        <h3 className="font-medium text-sm text-gray-900 dark:text-white truncate">
+                          {template.name}
+                        </h3>
+                        {template.description && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                            {template.description}
+                          </p>
+                        )}
+                        <div className="flex items-center justify-between mt-2">
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            template.category === 'basic'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                              : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                          }`}>
+                            {template.category === 'basic' ? 'Basic' : 'Premium'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Empty State */}
+              {!isLoadingTemplates && getFilteredTemplates().length === 0 && (
+                <div className="text-center py-12">
+                  <FiVideo className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-600" />
+                  <p className="text-gray-500 dark:text-gray-400">No templates available</p>
+                  <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                    Templates will appear here once they're uploaded
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            {/* Footer */}
+            <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {selectedTemplate ? (
+                    <span>Selected: <strong>{selectedTemplate}</strong></span>
+                  ) : (
+                    <span>Select a template to continue</span>
+                  )}
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => setShowTemplateGrid(false)}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  {selectedTemplate && (
+                    <button
+                      onClick={() => setShowTemplateGrid(false)}
+                      className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-lg"
+                    >
+                      Use Template
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

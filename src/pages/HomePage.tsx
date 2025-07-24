@@ -20,29 +20,29 @@ const HomePage: React.FC = () => {
   // FAQ data
   const faqData = [
     {
+      question: "What features does MatrixAI offer?",
+      answer: "MatrixAI offers a comprehensive suite of AI tools including image-to-video generation, image generation, speech-to-text transcription, content writing, and a fast AI chat assistant. Our platform integrates the latest AI models to provide you with cutting-edge capabilities for all your creative and productivity needs."
+    },
+    {
       question: "How does the AI Image to Video feature work?",
       answer: "Our AI analyzes your image and generates a video by predicting motion, adding realistic movement, and maintaining the original style and content. Simply upload your image, add optional prompts for guidance, and our AI will create a high-quality video in seconds."
     },
     {
-      question: "Which images can be converted from image to video with AI?",
-      answer: "Almost any type of image can be converted, including photographs, digital art, illustrations, paintings, and sketches. The AI works best with clear, high-resolution images that have distinct subjects and backgrounds."
+      question: "How accurate is the Speech to Text feature?",
+      answer: "Our Speech to Text feature achieves industry-leading accuracy rates of over 95% for clear audio in supported languages. The system can handle various accents, background noise, and even multiple speakers with our premium tier, making it perfect for transcribing meetings, interviews, and lectures."
     },
     {
-      question: "How do I get the best results from my Image to Video prompts?",
-      answer: "For best results, use clear, descriptive prompts that specify the type of motion you want (e.g., 'gentle camera zoom,' 'character walking,' 'leaves blowing in wind'). Include details about mood, speed, and focus areas to guide the AI more effectively."
+      question: "What makes MatrixAI's content generation different?",
+      answer: "Our content generation tools use advanced language models trained on diverse writing styles and formats. You can generate blog posts, marketing copy, creative stories, and more with customizable tone, style, and length. The system also provides SEO optimization suggestions and can adapt to your brand voice."
     },
     {
-      question: "What is the best AI image to video generator?",
-      answer: "While there are several options available, our platform integrates all the leading models including Google Veo, Runway Gen-3, Kling, MAGI, and more - giving you access to the best tools without having to choose just one or subscribe to multiple services."
+      question: "How fast is the AI chat feature?",
+      answer: "Our AI chat feature delivers responses in near real-time, typically within 1-2 seconds, making it one of the fastest AI assistants available. It can handle complex queries, remember context throughout conversations, and provide helpful information on virtually any topic."
     },
     {
-      question: "How fast can I turn an image into a video with AI?",
-      answer: "Most videos are generated within 30-60 seconds, depending on the complexity of the image and the selected model. Premium users enjoy faster processing times and priority in the queue."
-    },
-    {
-       question: "Can I use matrixai.asia's Image to Video feature for commercial projects?",
-       answer: "Yes, all videos generated on our platform can be used for commercial purposes under our standard license. Enterprise users receive additional rights and dedicated support for large-scale commercial applications."
-     }
+      question: "Can I use MatrixAI's features for commercial projects?",
+      answer: "Yes, all content generated on our platform can be used for commercial purposes under our standard license. Enterprise users receive additional rights and dedicated support for large-scale commercial applications across all our features."
+    }
   ];
 
   // Footer categories and social links data removed as they're now directly used in PublicResourceLayout
@@ -78,12 +78,12 @@ const HomePage: React.FC = () => {
             className="max-w-3xl mx-auto"
           >
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-6">
-              The Ultimate Image<br />to Video Generator
+              Your Complete AI<br />Creative Suite
             </h1>
             <p className="text-xl md:text-2xl text-gray-200 mb-10 max-w-2xl mx-auto">
-              Trusted by creators. Powered by top AI models. No editing skills, no
-              learning curve, no compromises. Transform photos, art, or graphics
-              into cinematic videos—faster than anywhere else.
+              Trusted by creators. Powered by top AI models. Generate stunning videos from images,
+              create beautiful artwork, transcribe speech to text, write compelling content,
+              and chat with our lightning-fast AI assistant—all in one platform.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
               <motion.div 
@@ -93,7 +93,7 @@ const HomePage: React.FC = () => {
                 className="w-full sm:w-auto"
               >
                 <Link to="/signup" className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-lg font-medium text-lg shadow-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-300">
-                  Generate my first video <FiArrowRight className="ml-2" />
+                  Start creating with AI <FiArrowRight className="ml-2" />
                 </Link>
               </motion.div>
             </div>
@@ -137,15 +137,15 @@ const HomePage: React.FC = () => {
 
       
       <HeroBanner 
-        title="High-impact Image to Video clips made simple"
-         description="Skip the frustration of complicated tools and clunky software. With matrixai.asia, you'll go from image to stunning video in moments—just upload, describe what you want, and click generate. No training, no fiddling, no roadblocks. Our advanced AI takes care of the hard work, delivering ultra-smooth motion and cinematic quality, every single time. Want a specific style or effect? Just say it in your prompt."
+        title="Powerful AI tools for every creative need"
+         description="Skip the frustration of complicated tools and clunky software. With MatrixAI, you'll create stunning videos from images, generate beautiful artwork, transcribe speech to text with high accuracy, write compelling content, and get instant answers from our AI chat—all in one platform. No training, no fiddling, no roadblocks. Our advanced AI takes care of the hard work, delivering professional-quality results every time. Just describe what you want, and watch the magic happen."
         backgroundImage="/images/runway-feature.jpg"
       />
 
            <AnimatedGridBanner 
         title="Don't settle for outdated and slow tools."
-        description="With matrixai.asia, you get the fastest, most advanced Image to Video platform. Trusted by professionals, available to everyone. Don't miss out—get the newest AI models and features before anyone else."
-        buttonText="Create my first video"
+        description="With MatrixAI, you get the fastest, most advanced AI creative platform. From image-to-video generation to image creation, speech transcription, content writing, and AI chat—all powered by cutting-edge models. Trusted by professionals, available to everyone. Don't miss out—get the newest AI models and features before anyone else."
+        buttonText="Start creating with AI"
         buttonLink="/signup"
       />
       

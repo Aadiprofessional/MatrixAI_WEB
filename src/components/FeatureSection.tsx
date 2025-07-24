@@ -88,19 +88,19 @@ const FeatureSection: React.FC = () => {
   return (
     <section className="py-20 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-4xl font-bold text-white mb-10 text-left">Why creators are switching to matrixai.asia</h2>
-        <p className="text-xl text-gray-300 mb-10 text-left max-w-3xl">Tired of slow tools and generic results? See how we solve the problems nobody else can.</p>
+        <h2 className="text-4xl font-bold text-white mb-10 text-left">Why creators are switching to MatrixAI</h2>
+        <p className="text-xl text-gray-300 mb-10 text-left max-w-3xl">Tired of slow tools and generic results? See how our all-in-one AI platform solves the problems nobody else can.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FeatureCard 
-            title="Fastest Workflow"
-            description="No hours-long tutorials, no tinkering, no wasted time. Upload, describe your vision, and get your video in minutes—done."
+            title="Image to Video Magic"
+            description="Transform any image into stunning, cinematic videos with natural motion. Just upload, describe your vision, and get professional results in minutes."
             videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4"
             position="left"
             index={0}
           />
           <FeatureCard 
-            title="Unmatched Video Quality"
-            description="Forget cartoonish or blurry results. matrixai.asia delivers crisp, cinematic motion from any image—photos, art, even sketches."
+            title="AI Image Generation"
+            description="Create beautiful, unique images from text descriptions. Perfect for marketing materials, social media, illustrations, and creative projects."
             videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4"
             position="right"
             index={1}
@@ -109,15 +109,15 @@ const FeatureSection: React.FC = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
           <FeatureCard 
-            title="Always Up-to-Date"
-            description="No more FOMO. matrixai.asia adds every breakthrough model and new feature the moment it's available."
+            title="Speech to Text & Content Writing"
+            description="Transcribe audio with 95%+ accuracy and generate compelling content for blogs, marketing, and more—all powered by advanced AI models."
             videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4"
             position="right"
             index={2}
           />
           <FeatureCard 
-            title="Surprisingly Affordable"
-            description="Access advanced video creation for a fraction of the cost of traditional video production software."
+            title="Lightning-Fast AI Chat"
+            description="Get instant answers, creative ideas, and problem-solving assistance from our responsive AI assistant that remembers your conversation context."
             videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4"
             position="left"
             index={3}

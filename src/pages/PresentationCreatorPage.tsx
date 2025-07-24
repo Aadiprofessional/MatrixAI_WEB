@@ -884,7 +884,12 @@ const PresentationCreatorPage: React.FC = () => {
   const selectedSlide = selectedSlideId ? slides.find(slide => slide.id === selectedSlideId) : null;
 
   return (
-    <div className="container mx-auto max-w-6xl p-4 py-8">
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 opacity-80"></div>
+      <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.05]"></div>
+      <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-blue-400/20 via-indigo-400/20 to-purple-400/20 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 blur-3xl rounded-full transform translate-x-1/3 -translate-y-1/4"></div>
+      <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-blue-400/20 via-indigo-400/20 to-purple-400/20 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 blur-3xl rounded-full transform -translate-x-1/3 translate-y-1/4"></div>
+      <div className="container mx-auto max-w-6xl flex-1 p-0 relative z-10">
       {showProAlert && (
         <ProFeatureAlert 
           featureName="Professional Presentation Creator"
@@ -1492,6 +1497,7 @@ const PresentationCreatorPage: React.FC = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };

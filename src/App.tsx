@@ -54,6 +54,7 @@ import { UserProvider, useUser } from './context/UserContext';
 import { LanguageProvider } from './context/LanguageContext';
 // Import AlertProvider
 import { AlertProvider } from './context/AlertContext';
+import PricingPage from './pages/PricingPage';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -249,6 +250,14 @@ const App: React.FC = () => {
                 element={
                   <PublicToolLayout>
                     <ContentWriterPage />
+                  </PublicToolLayout>
+                } 
+              />
+               <Route 
+                path="/pricing" 
+                element={
+                  <PublicToolLayout>
+                    <PricingPage />
                   </PublicToolLayout>
                 } 
               />

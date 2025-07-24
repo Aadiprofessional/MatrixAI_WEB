@@ -224,6 +224,7 @@ export const zhCN = {
   'auth.verifyEmail': '请验证您的邮箱地址',
   'auth.resendVerification': '重新发送验证',
   'auth.name': '姓名',
+  'auth.fullName': '全名',
   'auth.age': '年龄',
   'auth.gender': '性别',
   'auth.male': '男',
@@ -234,6 +235,11 @@ export const zhCN = {
   'auth.createAccount': '创建账户',
   'auth.creatingAccount': '正在创建账户...',
   'auth.noAccount': '没有账户？',
+  'auth.orContinueWith': '或继续使用',
+  'auth.agreeToTerms': '我同意',
+  'auth.termsOfService': '服务条款',
+  'auth.and': '和',
+  'auth.privacyPolicy': '隐私政策',
   
   // Profile
   'profile.title': '个人资料',

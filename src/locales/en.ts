@@ -224,6 +224,8 @@ export const en = {
   'auth.verifyEmail': 'Please verify your email address',
   'auth.resendVerification': 'Resend Verification',
   'auth.name': 'Name',
+  'auth.signUp': 'Signup',
+  'auth.fullName': 'Full Name',
   'auth.age': 'Age',
   'auth.gender': 'Gender',
   'auth.male': 'Male',
@@ -234,6 +236,11 @@ export const en = {
   'auth.createAccount': 'Create Account',
   'auth.creatingAccount': 'Creating Account...',
   'auth.noAccount': 'Don\'t have an account?',
+  'auth.orContinueWith': 'Or continue with',
+  'auth.agreeToTerms': 'I agree to the',
+  'auth.termsOfService': 'Terms of Service',
+  'auth.and': 'and',
+  'auth.privacyPolicy': 'Privacy Policy',
   
   // Profile
   'profile.title': 'Profile',

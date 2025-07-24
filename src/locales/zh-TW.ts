@@ -224,6 +224,7 @@ export const zhTW = {
   'auth.verifyEmail': '請驗證您的電子郵件地址',
   'auth.resendVerification': '重新發送驗證',
   'auth.name': '姓名',
+  'auth.fullName': '全名',
   'auth.age': '年齡',
   'auth.gender': '性別',
   'auth.male': '男',
@@ -234,6 +235,11 @@ export const zhTW = {
   'auth.createAccount': '創建帳戶',
   'auth.creatingAccount': '正在創建帳戶...',
   'auth.noAccount': '沒有帳戶？',
+  'auth.orContinueWith': '或繼續使用',
+  'auth.agreeToTerms': '我同意',
+  'auth.termsOfService': '服務條款',
+  'auth.and': '和',
+  'auth.privacyPolicy': '隱私政策',
   
   // Profile
   'profile.title': '個人資料',

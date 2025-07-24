@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FiFileText, FiZap, FiCopy, FiDownload, FiShare2, FiTrash, FiRotateCw, FiEdit, FiCheck, FiX, FiSave, FiSliders, FiSend, FiPlus, FiChevronLeft, FiChevronRight, FiMail, FiTwitter, FiLinkedin, FiFacebook, FiLink } from 'react-icons/fi';
+import { FiFileText, FiZap, FiCopy, FiDownload, FiShare2, FiTrash, FiRotateCw, FiEdit, FiCheck, FiX, FiSave, FiSliders, FiSend, FiPlus, FiChevronLeft, FiChevronRight, FiMail, FiTwitter, FiLinkedin, FiFacebook, FiLink, FiLoader } from 'react-icons/fi';
 import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -8,6 +8,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { userService } from '../services/userService';
+import { contentService } from '../services/contentService';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -25,9 +26,17 @@ import './ContentWriterPage.css';
 
 interface ContentItem {
   id: string;
+  uid?: string;
+  prompt?: string;
   title: string;
   content: string;
-  createdAt: string;
+  tags?: string[];
+  content_type?: string;
+  tone?: string;
+  language?: string;
+  created_at?: string;
+  updated_at?: string;
+  createdAt: string; // For backward compatibility
 }
 
 interface QuickQuestion {
@@ -74,11 +83,120 @@ const ContentWriterPage: React.FC = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const itemsPerPage = 5; // Fixed value, no need for state
   const [totalItems, setTotalItems] = useState(0);
 
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const contentDisplayRef = useRef<HTMLDivElement>(null);
+  
+  // Fetch content history when component mounts
+  // Function to fetch content history from the API
+  const fetchContentHistory = useCallback(async () => {
+    // Use test user ID if no user is logged in (for testing purposes)
+    const userId = user?.id || "0a147ebe-af99-481b-bcaf-ae70c9aeb8d8";
+    
+    try {
+      setIsLoadingHistory(true);
+      console.log('Fetching content history for user:', userId);
+      const response = await contentService.getUserContent(userId, {
+        page: currentPage,
+        limit: itemsPerPage
+      });
+      console.log('Content history response:', response);
+      
+      console.log('Raw response structure:', JSON.stringify(response, null, 2));
+      // The API response has content but might not have a success flag
+      if (response && response.content && Array.isArray(response.content)) {
+        // Map API response to ContentItem format
+        const formattedContent = response.content.map(item => ({
+          ...item,
+          createdAt: item.created_at || new Date().toISOString()
+        }));
+        
+        console.log('Setting content history:', formattedContent);
+        if (formattedContent && formattedContent.length > 0) {
+          setContentHistory(formattedContent);
+          // Use totalItems from response if available, otherwise fallback to total or length
+          setTotalItems(response.totalItems || response.total || formattedContent.length);
+          console.log('Content history items:', formattedContent.length);
+          console.log('Total items:', response.totalItems || response.total || formattedContent.length);
+        } else {
+          console.warn('Formatted content is empty');
+          setContentHistory([]);
+          setTotalItems(0);
+        }
+      } else if (response && Array.isArray(response.content)) {
+        // Handle the case where the API returns content but might not have a success flag set to true
+        const formattedContent = response.content.map(item => ({
+          ...item,
+          createdAt: item.created_at || new Date().toISOString()
+        }));
+        
+        console.log('Setting content history from alternative response format:', formattedContent);
+        if (formattedContent && formattedContent.length > 0) {
+          setContentHistory(formattedContent);
+          // Use totalItems from response if available, otherwise fallback to total or length
+          setTotalItems(response.totalItems || response.total || formattedContent.length);
+          console.log('Content history items:', formattedContent.length);
+          console.log('Total items:', response.totalItems || response.total || formattedContent.length);
+        } else {
+          console.warn('Formatted content is empty');
+          setContentHistory([]);
+          setTotalItems(0);
+        }
+      } else {
+        console.warn('No content array in response');
+        setContentHistory([]);
+        setTotalItems(0);
+      }
+    } catch (error) {
+      console.error('Error fetching content history:', error);
+      toast.error('Failed to load content history');
+      setContentHistory([]);
+    } finally {
+      console.log('Setting isLoadingHistory to false');
+      setIsLoadingHistory(false);
+    }
+  }, [user?.id, currentPage, itemsPerPage]);
+  
+  useEffect(() => {
+    // Always fetch content history, even if no user is logged in
+    // This will use the test user ID if no user is logged in
+    fetchContentHistory();
+  }, [currentPage, fetchContentHistory]);
+  
+  // Check for shared content in URL
+  useEffect(() => {
+    const checkForSharedContent = async () => {
+      // Extract share ID from URL if present
+      const urlParams = new URLSearchParams(window.location.search);
+      const shareId = urlParams.get('share');
+      
+      if (shareId) {
+        try {
+          // Fetch the shared content
+          const response = await contentService.getSharedContent(shareId);
+          
+          if (response.success && response.content) {
+            // Set the content in the editor
+            setEditedContent(response.content.content);
+            setGeneratedContent(response.content.content);
+            toast.success('Shared content loaded successfully');
+            
+            // Clear the share ID from URL to prevent reloading on refresh
+            window.history.replaceState({}, document.title, window.location.pathname);
+          } else {
+            toast.error('Failed to load shared content');
+          }
+        } catch (error) {
+          console.error('Error loading shared content:', error);
+          toast.error('An error occurred while loading shared content');
+        }
+      }
+    };
+    
+    checkForSharedContent();
+  }, []);
 
   // Quick questions for content creation
   const quickQuestions: QuickQuestion[] = [
@@ -468,21 +586,66 @@ Create content that is original, well-researched, and engaging for the target au
       setEditedContent(fullResponse);
       setStreamingContent(fullResponse);
       
-      // Add to content history
-      const newContentItem: ContentItem = {
-        id: Date.now().toString(),
-        title: prompt.length > 50 ? `${prompt.substring(0, 50)}...` : prompt,
-        content: fullResponse,
-        createdAt: new Date().toISOString()
-      };
+      // Generate a title from the prompt
+      const generatedTitle = prompt.length > 50 ? `${prompt.substring(0, 50)}...` : prompt;
       
-      setContentHistory(prev => {
-        const updated = [newContentItem, ...prev];
-        setTotalItems(updated.length);
-        return updated;
-      });
-      
-      toast.success('Content generated successfully!');
+      try {
+        // Use test user ID if no user is logged in (for testing purposes)
+        const userId = uid || "0a147ebe-af99-481b-bcaf-ae70c9aeb8d8";
+        
+        console.log('Saving content for user:', userId);
+        // Save content to the database
+        const saveResponse = await contentService.saveContent(
+          userId,
+          prompt,
+          fullResponse,
+          generatedTitle,
+          [], // tags
+          contentType, // content_type
+          tone, // tone
+          'en' // language
+        );
+        
+        if (saveResponse.success) {
+          // Refresh content history
+          fetchContentHistory();
+          toast.success('Content generated and saved successfully!');
+        } else {
+          console.error('Failed to save content:', saveResponse);
+          toast.error('Content generated but failed to save');
+          
+          // Add to local content history as fallback
+          const newContentItem: ContentItem = {
+            id: Date.now().toString(),
+            title: generatedTitle,
+            content: fullResponse,
+            createdAt: new Date().toISOString()
+          };
+          
+          setContentHistory(prev => {
+            const updated = [newContentItem, ...prev];
+            setTotalItems(updated.length);
+            return updated;
+          });
+        }
+      } catch (error) {
+        console.error('Error saving content:', error);
+        toast.error('Content generated but failed to save');
+        
+        // Add to local content history as fallback
+        const newContentItem: ContentItem = {
+          id: Date.now().toString(),
+          title: generatedTitle,
+          content: fullResponse,
+          createdAt: new Date().toISOString()
+        };
+        
+        setContentHistory(prev => {
+          const updated = [newContentItem, ...prev];
+          setTotalItems(updated.length);
+          return updated;
+        });
+      }
       
     } catch (error) {
       console.error('Error generating content:', error);
@@ -534,12 +697,6 @@ Create content that is original, well-researched, and engaging for the target au
   };
 
   const handleCopyContent = () => {
-    // Check if user is authenticated
-    if (!user) {
-      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
-      return;
-    }
-    
     navigator.clipboard.writeText(editedContent);
     toast.success('Content copied to clipboard!');
   };
@@ -550,10 +707,29 @@ Create content that is original, well-researched, and engaging for the target au
       return;
     }
     
-    // Check if user is authenticated
-    if (!user) {
-      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
-      return;
+    // Use test user ID if no user is logged in (for testing purposes)
+    const userId = user?.id || "0a147ebe-af99-481b-bcaf-ae70c9aeb8d8";
+    
+    // Check if we have a current content ID (from history)
+    const currentContentId = contentHistory.length > 0 ? contentHistory[0].id : null;
+    
+    // If we have a content ID, try to use the API
+    if (currentContentId) {
+      try {
+        console.log('Downloading content with ID:', currentContentId, 'for user:', userId);
+        const response = await contentService.downloadContent(userId, currentContentId, format);
+        
+        if (response.success) {
+          // Create a blob from the content
+          const blob = new Blob([response.content], { type: 'text/plain' });
+          saveAs(blob, response.filename);
+          toast.success(`Content downloaded as ${format.toUpperCase()}`);
+          return;
+        }
+      } catch (error) {
+        console.error('Error downloading content from API:', error);
+        // Fall back to client-side download
+      }
     }
 
     setIsDownloading(true);
@@ -764,16 +940,41 @@ Create content that is original, well-researched, and engaging for the target au
       .replace(/`(.*?)`/g, '`$1`');
   };
 
-  const handleShareContent = (platform: string) => {
+  const handleShareContent = async (platform: string) => {
     if (!editedContent) {
       toast.error('No content to share');
       return;
     }
     
-    // Check if user is authenticated
-    if (!user) {
-      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
-      return;
+    // Use test user ID if no user is logged in (for testing purposes)
+    const userId = user?.id || "0a147ebe-af99-481b-bcaf-ae70c9aeb8d8";
+
+    // Check if we have a current content ID (from history)
+    const currentContentId = contentHistory.length > 0 ? contentHistory[0].id : null;
+    let shareUrl = window.location.href;
+    
+    // If we have a content ID, try to use the API to get a share link
+    if (currentContentId) {
+      try {
+        console.log('Sharing content with ID:', currentContentId, 'for user:', userId);
+        const response = await contentService.shareContent(userId, currentContentId);
+        
+        if (response.success && response.shareUrl) {
+          shareUrl = response.shareUrl;
+          toast.success('Content shared successfully!');
+          
+          // If platform is 'copy', just copy the share URL and return
+          if (platform === 'copy') {
+            navigator.clipboard.writeText(shareUrl);
+            toast.success('Share link copied to clipboard!');
+            setShowShareModal(false);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error sharing content via API:', error);
+        // Fall back to client-side sharing
+      }
     }
 
     const shareText = editedContent
@@ -783,7 +984,6 @@ Create content that is original, well-researched, and engaging for the target au
       .replace(/#{1,6}\s/g, '')
       .substring(0, 500) + (editedContent.length > 500 ? '...' : '');
 
-    const shareUrl = window.location.href;
     const encodedText = encodeURIComponent(shareText);
     const encodedUrl = encodeURIComponent(shareUrl);
 
@@ -825,29 +1025,71 @@ Create content that is original, well-researched, and engaging for the target au
     setError(null);
   };
 
+  // Handle content deletion
+  const handleDeleteContent = async (contentId: string) => {
+    // Use test user ID if no user is logged in (for testing purposes)
+    const userId = user?.id || "0a147ebe-af99-481b-bcaf-ae70c9aeb8d8";
+    
+    try {
+      // Show confirmation dialog
+      if (!window.confirm('Are you sure you want to delete this content?')) {
+        return;
+      }
+      
+      console.log('Deleting content with ID:', contentId, 'for user:', userId);
+      // Call the API to delete the content
+      const response = await contentService.deleteContent(userId, contentId);
+      
+      if (response.success) {
+        // Remove the content from the local state
+        const updatedHistory = contentHistory.filter(item => item.id !== contentId);
+        setContentHistory(updatedHistory);
+        setTotalItems(totalItems - 1);
+        
+        // Adjust current page if needed
+        if (updatedHistory.length === 0 && currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        }
+        
+        toast.success('Content deleted successfully');
+      } else {
+        toast.error('Failed to delete content');
+      }
+    } catch (error) {
+      console.error('Error deleting content:', error);
+      toast.error('An error occurred while deleting content');
+    }
+  };
+
   // Pagination helper functions
   const getTotalPages = () => Math.ceil(totalItems / itemsPerPage);
   
   const handlePageChange = (page: number) => {
-    // Check if user is authenticated
-    if (!user) {
-      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
-      return;
-    }
-    
+    // Allow page changes regardless of authentication status
     if (page >= 1 && page <= getTotalPages()) {
       setCurrentPage(page);
+      // Scroll to the top of the content history section
+      const contentHistorySection = document.querySelector('.bg-white.dark\\:bg-gray-800.rounded-lg');
+      if (contentHistorySection) {
+        contentHistorySection.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
   const getPaginatedItems = (items: any[]) => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return items.slice(startIndex, endIndex);
-  };
-
-  const formatTime = (date: string) => {
-    return new Date(date).toLocaleDateString();
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      console.warn('getPaginatedItems received invalid items:', items);
+      return [];
+    }
+    try {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      console.log('Paginating items:', { startIndex, endIndex, itemsLength: items.length });
+      return items.slice(startIndex, endIndex);
+    } catch (error) {
+      console.error('Error in getPaginatedItems:', error);
+      return [];
+    }
   };
 
   const getStatusText = () => {
@@ -863,7 +1105,21 @@ Create content that is original, well-researched, and engaging for the target au
   }
 
   return (
-    <div className="container mx-auto max-w-6xl p-4 py-8">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Enhanced background gradient effect */}
+      <div className="absolute inset-0 bg-black z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-transparent to-purple-900/30 z-0"></div>
+      
+      {/* Subtle gradient from bottom to create a fade to black effect */}
+      <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent z-0"></div>
+      
+      {/* Subtle grid lines with animation */}
+      <div className="absolute inset-0 opacity-10 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] animate-gridMove"></div>
+      
+      <div className="flex-1 flex flex-col relative z-10">
+          
+      <div className="flex-1 p-0">
+      <div className="max-w-6xl mx-auto">
       {/* Modals */}
       {showProAlert && (
         <ProFeatureAlert 
@@ -1290,54 +1546,79 @@ Create content that is original, well-researched, and engaging for the target au
                 <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
                   <FiFileText className="w-5 h-5" />
                 </span>
-                Recent Content
+                Recent Content {contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 && `(${contentHistory.length})`}
               </h2>
               
-              {contentHistory.length > 0 ? (
+              {isLoadingHistory ? (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
+                    <FiLoader className="w-6 h-6 text-blue-500 dark:text-blue-400 animate-spin" />
+                  </div>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    Loading content history...
+                  </p>
+                </div>
+              ) : contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 ? (
                 <div className="space-y-3">
-                  {getPaginatedItems(contentHistory).map((item, index) => (
+                  {getPaginatedItems(contentHistory).map((item, index) => item && item.id ? (
                     <motion.div
                       key={item.id}
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                      className={`p-3 rounded-lg border transition-all ${
                         darkMode
                           ? 'border-gray-600 bg-gray-700/30 hover:bg-gray-700/50 hover:border-purple-500'
                           : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-purple-300'
                       } hover:shadow-sm`}
                     >
-                      <AuthRequiredButton
-                        onClick={() => {
-                          setEditedContent(item.content);
-                          setGeneratedContent(item.content);
-                          toast.success('Content loaded from history');
-                        }}
-                        className="w-full h-full text-left"
-                      >
-                      <h4 className={`font-medium text-sm mb-1 ${
-                        darkMode ? 'text-gray-200' : 'text-gray-800'
-                      }`}>
-                        {item.title}
-                      </h4>
-                      <p className={`text-xs ${
-                        darkMode ? 'text-gray-400' : 'text-gray-500'
-                      }`}>
-                        {new Date(item.createdAt).toLocaleDateString()}
-                      </p>
-                      <p className={`text-xs mt-1 line-clamp-2 ${
-                        darkMode ? 'text-gray-400' : 'text-gray-600'
-                      }`}>
-                        {item.content.substring(0, 100)}...
-                      </p>
-                      </AuthRequiredButton>
+                      <div className="flex justify-between">
+                        <button
+                          onClick={() => {
+                            setEditedContent(item.content);
+                            setGeneratedContent(item.content);
+                            toast.success('Content loaded from history');
+                          }}
+                          className="flex-1 text-left"
+                        >
+                          <h4 className={`font-medium text-sm mb-1 ${
+                            darkMode ? 'text-gray-200' : 'text-gray-800'
+                          }`}>
+                            {item.title || 'Untitled Content'}
+                          </h4>
+                          <p className={`text-xs ${
+                            darkMode ? 'text-gray-400' : 'text-gray-500'
+                          }`}>
+                            {new Date(item.createdAt).toLocaleDateString()}
+                          </p>
+                          <p className={`text-xs mt-1 line-clamp-2 ${
+                            darkMode ? 'text-gray-400' : 'text-gray-600'
+                          }`}>
+                            {item.content.substring(0, 100)}...
+                          </p>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteContent(item.id);
+                          }}
+                          className={`p-2 rounded-md transition-colors self-start ml-2 ${
+                            darkMode
+                              ? 'text-gray-400 hover:text-red-400 hover:bg-gray-700'
+                              : 'text-gray-500 hover:text-red-500 hover:bg-gray-100'
+                          }`}
+                          title="Delete content"
+                        >
+                          <FiTrash className="w-4 h-4" />
+                        </button>
+                      </div>
                     </motion.div>
-                  ))}
+                  ) : null)}
                   
                   {/* Pagination Controls */}
                   {getTotalPages() > 1 && (
                     <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <AuthRequiredButton
+                      <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
                         className={`p-2 rounded-md transition-colors ${
@@ -1349,7 +1630,7 @@ Create content that is original, well-researched, and engaging for the target au
                         }`}
                       >
                         <FiChevronLeft className="w-5 h-5" />
-                      </AuthRequiredButton>
+                      </button>
                       
                       <div className="flex items-center space-x-2">
                         {Array.from({ length: getTotalPages() }, (_, i) => i + 1)
@@ -1365,7 +1646,7 @@ Create content that is original, well-researched, and engaging for the target au
                                   ...
                                 </span>
                               )}
-                              <AuthRequiredButton
+                              <button
                                 onClick={() => handlePageChange(page)}
                                 className={`w-8 h-8 rounded-md text-xs font-medium transition-colors ${
                                   page === currentPage
@@ -1376,13 +1657,13 @@ Create content that is original, well-researched, and engaging for the target au
                                 }`}
                               >
                                 {page}
-                              </AuthRequiredButton>
+                              </button>
                             </React.Fragment>
                           ))
                         }
                       </div>
                       
-                      <AuthRequiredButton
+                      <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === getTotalPages()}
                         className={`p-2 rounded-md transition-colors ${
@@ -1394,7 +1675,7 @@ Create content that is original, well-researched, and engaging for the target au
                         }`}
                       >
                         <FiChevronRight className="w-4 h-4" />
-                      </AuthRequiredButton>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -1487,6 +1768,9 @@ Create content that is original, well-researched, and engaging for the target au
           </motion.div>
         </div>
       )}
+    </div>
+      </div>
+    </div>
     </div>
   );
 };

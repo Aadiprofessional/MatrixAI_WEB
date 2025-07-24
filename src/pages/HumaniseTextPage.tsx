@@ -178,7 +178,12 @@ const HumaniseTextPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl p-4 py-8">
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-teal-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 opacity-80"></div>
+      <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.05]"></div>
+      <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-green-400/20 via-teal-400/20 to-blue-400/20 dark:from-green-900/20 dark:via-teal-900/20 dark:to-blue-900/20 blur-3xl rounded-full transform translate-x-1/3 -translate-y-1/4"></div>
+      <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-green-400/20 via-teal-400/20 to-blue-400/20 dark:from-green-900/20 dark:via-teal-900/20 dark:to-blue-900/20 blur-3xl rounded-full transform -translate-x-1/3 translate-y-1/4"></div>
+      <div className="container mx-auto max-w-6xl flex-1 p-0 relative z-10">
       {showProAlert && (
         <ProFeatureAlert 
           featureName={t('humanizeText.title')}
@@ -458,7 +463,8 @@ const HumaniseTextPage: React.FC = () => {
         </div>
       )}
     </div>
+    </div>
   );
 };
 
-export default HumaniseTextPage; 
+export default HumaniseTextPage;

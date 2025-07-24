@@ -36,3 +36,4 @@ export { default as PrivacyPage } from './pages/PrivacyPage';
 export { default as TermsPage } from './pages/TermsPage';
 export { default as CookiesPage } from './pages/CookiesPage';
 export { default as StatusPage } from './pages/StatusPage';
+export { default as PricingPage } from './pages/PricingPage';

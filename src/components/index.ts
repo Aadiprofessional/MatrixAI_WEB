@@ -1,6 +1,7 @@
 // Export all components
 export { default as Navbar } from './Navbar';
 export { default as HomeNavbar } from './HomeNavbar';
+export { default as HomeNavbar2 } from './HomeNavbar2';
 export { default as Sidebar } from './Sidebar';
 export { default as Layout } from './Layout';
 export { default as PublicToolLayout } from './PublicToolLayout';

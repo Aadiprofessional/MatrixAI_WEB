@@ -177,65 +177,68 @@ const ModelsShowcaseSection: React.FC = () => {
   
   const models: ModelInfo[] = [
     {
-      id: 'google-veo',
-      name: 'Google Veo',
-      description: 'The benchmark for cinematic realism.',
-      detailedDescription: 'Google Veo 2\nUltra-high quality, lifelike video from any image. Trusted by professionals for its detail and natural motion.',
+      id: 'video-generation',
+      name: 'Video Generation',
+      description: 'Transform static images into dynamic videos.',
+      detailedDescription: 'Our video generation models turn any image into high-quality, lifelike video with natural motion and cinematic quality. Perfect for marketing, social media, and creative projects.',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <circle cx="12" cy="12" r="10" strokeWidth="2" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l-3 3m0 0l-3-3m3 3V8" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l-3 3m0 0l-3-3m3 3V8M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V16" />
         </svg>
       )
     },
     {
-      id: 'kling',
-      name: 'Kling',
-      description: 'Specialized in character animation and movement.',
+      id: 'image-generation',
+      name: 'Image Generation',
+      description: 'Create stunning AI-generated images from text prompts.',
+      detailedDescription: 'Generate high-quality, customized images from simple text descriptions. Perfect for creating unique visuals for marketing, design projects, or creative inspiration.',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       )
     },
     {
-      id: 'magi',
-      name: 'MAGI',
-      description: 'Exceptional for stylized and artistic animations.',
+      id: 'speech-to-text',
+      name: 'Speech to Text',
+      description: 'Convert spoken words into accurate text transcriptions.',
+      detailedDescription: 'Our advanced speech recognition technology converts audio recordings into precise text transcriptions with high accuracy. Perfect for meetings, interviews, content creation, and accessibility.',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
         </svg>
       )
     },
     {
-      id: 'runway',
-      name: 'Runway',
-      description: 'Perfect for scene transitions and camera movements.',
+      id: 'content-generation',
+      name: 'Content Generation',
+      description: 'Create engaging written content for any purpose.',
+      detailedDescription: 'Generate high-quality written content for blogs, social media, marketing materials, and more. Our AI understands context and can match your brand voice for consistent, engaging content.',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
         </svg>
       )
     },
     {
-      id: 'minimax',
-      name: 'MiniMax',
-      description: 'Optimized for quick renders and prototyping.',
+      id: 'ai-chat',
+      name: 'AI Chat',
+      description: 'Engage with our lightning-fast AI assistant.',
+      detailedDescription: 'Our advanced AI chat system provides instant responses to queries, creative assistance, and problem-solving support. Experience minimal latency and high-quality interactions for productivity and creative work.',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
         </svg>
       )
     },
     {
-      id: 'bytedance',
-      name: 'ByteDance Seedance',
-      description: 'Specialized in dynamic and trending visual styles.',
+      id: 'creative-suite',
+      name: 'Creative Suite',
+      description: 'All creative AI tools in one integrated platform.',
+      detailedDescription: 'Access our complete suite of AI creative tools in one seamless platform. Combine video generation, image creation, speech-to-text, content writing, and AI chat for comprehensive creative projects with consistent quality.',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
         </svg>
       )
     },
@@ -255,7 +258,7 @@ const ModelsShowcaseSection: React.FC = () => {
             viewport={{ once: true }}
             className="text-4xl font-bold text-white text-center mb-4"
           >
-            All the leading AI Image to Video models on one platform
+            All the leading AI models and features on one platform
           </motion.h2>
           
           <motion.p
@@ -265,7 +268,7 @@ const ModelsShowcaseSection: React.FC = () => {
             viewport={{ once: true }}
             className="text-xl text-gray-300 text-center mb-16 max-w-3xl mx-auto"
           >
-            With matrixai.asia, you always have the right tool—never just one option. Instantly access every industry-leading model, all in one place.
+            With matrixai.asia, you always have the right tool—never just one option. Instantly access video generation, image creation, speech-to-text, content writing, and AI chat, all in one place.
           </motion.p>
           
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -346,14 +349,14 @@ const ModelsShowcaseSection: React.FC = () => {
         </div>
       </section>
       
-      {/* Feature Sections for different model capabilities */}
+      {/* Feature Sections for different AI capabilities */}
       <FeatureSection 
-        title="Choose the start and end frames"
-        subtitle="RUNWAY GEN-3 TURBO & KLING 1.6 PRO"
-        modelName="RUNWAY GEN-3 TURBO & KLING 1.6 PRO"
-        description="With Runway Gen-3 Turbo and Kling 1.6 Pro, you get a level of creative control that's almost unheard of in AI video. Upload your starting image, then upload your ending frame—lock in both the opening and the closing of your video. No more leaving results to chance: you decide how your story begins and ends, and our models handle the rest with seamless, cinematic transitions. If you want your vision executed with surgical precision, these are the models professionals choose."
+        title="Transform Images into Dynamic Videos"
+        subtitle="VIDEO GENERATION"
+        modelName="VIDEO GENERATION"
+        description="Turn any static image into high-quality, lifelike video with our advanced AI video generation. Upload your starting image, add optional parameters, and watch as our models create seamless, cinematic transitions with natural motion. Perfect for marketing, social media content, product demos, and creative projects."
         imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
-        imageAlt="Runway Gen-3 Turbo & Kling 1.6 Pro demonstration"
+        imageAlt="Video Generation demonstration"
         videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
         hasPlayButton={true}
         hasSpeakerButton={true}
@@ -361,12 +364,12 @@ const ModelsShowcaseSection: React.FC = () => {
       />
       
       <FeatureSection 
-        title="Enjoy unlimited creativity"
-        subtitle="HAILUO'S STANDARD MODE"
-        modelName="HAILUO'S STANDARD MODE"
-        description="Hailuo's Standard mode is your go-to solution for transforming a wide variety of images into captivating short videos. Whether you upload a cherished photograph, a vibrant anime graphic, or a detailed painting, Standard Mode can handle it. This multi-purpose mode is designed to adapt to various styles and content, providing a flexible foundation for your video creations."
+        title="Create Stunning AI-Generated Images"
+        subtitle="IMAGE GENERATION"
+        modelName="IMAGE GENERATION"
+        description="Generate high-quality, customized images from simple text descriptions. Our AI image generation models understand complex prompts and produce detailed, creative visuals that match your specifications. Perfect for creating unique visuals for marketing, design projects, or creative inspiration."
         imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
-        imageAlt="Hailuo's Standard Mode demonstration"
+        imageAlt="Image Generation demonstration"
         videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
         isReversed={true}
         hasPlayButton={true}
@@ -375,12 +378,12 @@ const ModelsShowcaseSection: React.FC = () => {
       />
       
       <FeatureSection 
-        title="Animate any character consistently"
-        subtitle="HAILUO'S SUBJECT MODE"
-        modelName="HAILUO'S SUBJECT MODE"
-        description="Need a character to move and perform across multiple shots? Hailuo's Subject Mode is engineered for creators who want to build entire storylines around one original character, mascot, or persona. Upload a single photo, and this mode lets you generate endless videos with your subject—always on-model, always recognizable. It's the solution for brands, artists, and storytellers who want consistency and impact, every single time."
+        title="Convert Speech to Accurate Text"
+        subtitle="SPEECH TO TEXT & CONTENT WRITING"
+        modelName="SPEECH TO TEXT & CONTENT WRITING"
+        description="Our advanced speech recognition technology converts audio recordings into precise text transcriptions with high accuracy. Perfect for meetings, interviews, content creation, and accessibility. Combine with our content generation to transform your spoken ideas into polished written content instantly."
         imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
-        imageAlt="Hailuo's Subject Mode demonstration"
+        imageAlt="Speech to Text demonstration"
         videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
         hasPlayButton={true}
         hasSpeakerButton={true}
@@ -388,12 +391,12 @@ const ModelsShowcaseSection: React.FC = () => {
       />
       
       <FeatureSection 
-        title="Animate your drawings and sketches"
-        subtitle="HAILUO'S LIVE MODE"
-        modelName="HAILUO'S LIVE MODE"
-        description="Hailuo's Live Mode is purpose-built for animating line art, sketches, and digital drawings—instantly turning static outlines into smooth, expressive motion. This mode recognizes the unique personality in every stroke, ensuring your original artwork translates into dynamic, lifelike video. It's a must-have for illustrators, concept artists, and anyone looking to make hand-drawn creations move with style and intent."
+        title="Experience Lightning-Fast AI Chat"
+        subtitle="AI CHAT ASSISTANT"
+        modelName="AI CHAT ASSISTANT"
+        description="Our advanced AI chat system provides instant responses to queries, creative assistance, and problem-solving support. Experience minimal latency and high-quality interactions for productivity and creative work. Get immediate answers, brainstorm ideas, draft content, and more with our responsive AI assistant."
         imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
-        imageAlt="Hailuo's Live Mode demonstration"
+        imageAlt="AI Chat demonstration"
         videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
         isReversed={true}
         hasPlayButton={true}

@@ -24,22 +24,22 @@ const UseCasesSection: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const useCases = [
-    { id: 'ads', label: 'Ads' },
-    { id: 'animation', label: 'Animation' },
-    { id: 'film-production', label: 'Film Production' },
-    { id: 'product-demos', label: 'Product Demos' },
-    { id: 'social-media', label: 'Social Media' },
-    { id: 'branding', label: 'Branding' },
+    { id: 'video-creation', label: 'Video Creation' },
+    { id: 'image-generation', label: 'Image Generation' },
+    { id: 'speech-to-text', label: 'Speech to Text' },
+    { id: 'content-writing', label: 'Content Writing' },
+    { id: 'ai-chat', label: 'AI Chat' },
+    { id: 'creative-projects', label: 'Creative Projects' },
   ];
   
   // Video/image content for each tab
   const tabContent: Record<string, string> = {
-    'ads': 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4',
-    'animation': 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4',
-    'film-production': 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4',
-    'product-demos': 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4',
-    'social-media': 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4',
-    'branding': 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4',
+    'video-creation': 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4',
+    'image-generation': 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4',
+    'speech-to-text': 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4',
+    'content-writing': 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4',
+    'ai-chat': 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4',
+    'creative-projects': 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4',
   };
   
   // Auto-switch tabs when video ends
@@ -111,8 +111,8 @@ const UseCasesSection: React.FC = () => {
               className="text-4xl md:text-5xl font-bold text-white mb-6"
             >
               Made for every creator.<br />
-              See how pros use Image<br />
-              to Video.
+              See how pros use our<br />
+              AI tools.
             </motion.h2>
             
             <div className="flex flex-col space-y-4">

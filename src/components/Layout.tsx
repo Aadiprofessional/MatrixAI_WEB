@@ -94,7 +94,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Navbar />
         
         <main className={`flex-1 flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-          <div className="flex-1 overflow-auto pb-20 px-4 md:px-6 pt-2 md:pt-6">
+          <div className="flex-1">
             {children}
           </div>
         </main>

@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiCheck, FiX, FiMoon, FiSun, FiGithub, FiTwitter, FiLinkedin } from 'react-icons/fi';
+import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiCheck, FiX, FiMoon, FiSun } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -208,161 +208,109 @@ const SignupPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen flex ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-300 relative overflow-hidden`}>
-      {/* Advanced AI Animated Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Single Color Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-purple-800/30 to-purple-900/30 animate-fadeIn"></div>
-        
-        {/* Enhanced Glowing Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-500/20 blur-2xl animate-float animate-pulse" style={{ animationDelay: '0s' }}></div>
-        <div className="absolute top-3/4 right-1/4 w-80 h-80 rounded-full bg-purple-600/20 blur-2xl animate-float animate-pulse" style={{ animationDelay: '-2s' }}></div>
-        <div className="absolute top-2/4 left-3/4 w-72 h-72 rounded-full bg-purple-700/20 blur-2xl animate-float animate-pulse" style={{ animationDelay: '-4s' }}></div>
-        <div className="absolute bottom-1/4 right-1/3 w-56 h-56 rounded-full bg-purple-400/20 blur-2xl animate-float animate-pulse" style={{ animationDelay: '-3s' }}></div>
-        <div className="absolute top-1/3 right-1/4 w-48 h-48 rounded-full bg-purple-300/20 blur-2xl animate-float animate-pulse" style={{ animationDelay: '-1s' }}></div>
-        
-        {/* Digital Particles */}
-        <div className="absolute inset-0 opacity-20">
-          {/* Enhanced Grid Pattern */}
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDUwIEwgNTAgNTAgTSA1MCAwIEwgNTAgNTAgTSAwIDAgTCA1MCAwIE0gMCAwIEwgMCA1MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIiAvPjwvc3ZnPg==')] animate-gridMove opacity-40"></div>
-          
-          {/* Enhanced Animated Dots */}
-          <div className="absolute top-1/3 left-1/5 w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
-          <div className="absolute top-2/3 left-3/5 w-3 h-3 bg-purple-500 rounded-full animate-pulse" style={{ animationDelay: '-1s' }}></div>
-          <div className="absolute top-1/5 left-4/5 w-3 h-3 bg-purple-600 rounded-full animate-pulse" style={{ animationDelay: '-2s' }}></div>
-          <div className="absolute top-4/5 left-1/5 w-3 h-3 bg-purple-300 rounded-full animate-pulse" style={{ animationDelay: '-3s' }}></div>
-          <div className="absolute top-2/5 left-2/5 w-3 h-3 bg-purple-700 rounded-full animate-pulse" style={{ animationDelay: '-0.5s' }}></div>
-          <div className="absolute top-3/5 left-4/5 w-3 h-3 bg-purple-800 rounded-full animate-pulse" style={{ animationDelay: '-2.5s' }}></div>
-        </div>
-        
-        {/* Enhanced Light Beams */}
-        <div className="absolute top-0 left-1/4 w-1 h-full bg-gradient-to-b from-transparent via-purple-400/40 to-transparent animate-verticalBeam"></div>
-        <div className="absolute top-0 left-2/3 w-1 h-full bg-gradient-to-b from-transparent via-purple-500/40 to-transparent animate-verticalBeam" style={{ animationDelay: '-2s' }}></div>
-        <div className="absolute top-0 left-1/2 w-1 h-full bg-gradient-to-b from-transparent via-purple-600/40 to-transparent animate-verticalBeam" style={{ animationDelay: '-3s' }}></div>
-        <div className="absolute top-1/3 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-400/40 to-transparent animate-beam"></div>
-        <div className="absolute top-2/3 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/40 to-transparent animate-beam" style={{ animationDelay: '-1.5s' }}></div>
-        <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-600/40 to-transparent animate-beam" style={{ animationDelay: '-2.5s' }}></div>
+    <div className="min-h-screen flex relative overflow-hidden">
+      {/* Video Background */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden z-0">
+        <video 
+          className="absolute min-w-full min-h-full object-cover" 
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+        >
+          <source src="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads//signup.mp4" type="video/mp4" />
+        </video>
+        {/* Black Overlay */}
+        <div className="absolute inset-0 bg-black/60 z-10"></div>
       </div>
       {/* Theme Toggle */}
       <button 
         onClick={toggleDarkMode}
-        className={`fixed top-6 right-6 p-3 rounded-full z-50 transition-all ${
-          darkMode ? 'bg-gray-800 text-yellow-400 hover:bg-gray-700' : 'bg-white text-blue-900 hover:bg-gray-100'
-        } shadow-lg hover:scale-110`}
+        className="fixed top-6 right-6 p-3 rounded-full z-50 transition-all bg-white/10 text-white hover:bg-white/20 backdrop-blur-md border border-white/20 shadow-lg hover:scale-110"
         aria-label="Toggle dark mode"
       >
         {darkMode ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
       </button>
 
-      {/* Left Side - Branding/Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700">
-          {/* Animated Gradient Overlay */}
-          <div className="absolute inset-0 opacity-30">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-pink-500/30 via-purple-500/20 to-blue-500/30 blur-3xl animate-pulse" style={{ animationDuration: '8s' }}></div>
-            <div className="absolute bottom-0 right-0 w-full h-full bg-gradient-to-tr from-blue-500/30 via-indigo-500/20 to-purple-600/30 blur-3xl animate-pulse" style={{ animationDuration: '10s' }}></div>
-          </div>
+      {/* Left Side - Website Info */}
+      <div className="hidden lg:flex lg:w-1/2 relative z-20">
+        <div className="w-full h-full flex flex-col items-center justify-center p-12 backdrop-blur-sm bg-black/30 border-r border-white/10">
+          {/* Central Logo */}
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="relative mb-8"
+          >
+            <div className="absolute inset-0 rounded-full bg-white/10 blur-xl opacity-70 animate-pulse" style={{ animationDuration: '8s' }}></div>
+            <div className="relative flex items-center justify-center h-28 w-28 rounded-full overflow-hidden bg-gradient-to-br from-blue-400/80 to-purple-600/80 shadow-lg backdrop-blur-sm">
+              <span className="text-5xl font-bold text-white drop-shadow-md">AI</span>
+            </div>
+          </motion.div>
           
-          {/* Decorative Elements */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-[10%] left-[20%] w-32 h-32 border-2 border-white/30 rounded-full"></div>
-            <div className="absolute top-[30%] right-[15%] w-24 h-24 border border-white/20 rounded-full"></div>
-            <div className="absolute bottom-[20%] left-[30%] w-40 h-40 border border-white/20 rounded-full"></div>
-            <div className="absolute top-[60%] right-[25%] w-16 h-16 border-2 border-white/30 rounded-full"></div>
-          </div>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="text-5xl font-bold mb-4 text-center text-white"
+          >
+            Matrix AI Assistant
+          </motion.h1>
           
-          {/* Branding Content */}
-          <div className="relative h-full flex flex-col items-center justify-center p-12 text-white">
-            <motion.div 
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="relative mb-8"
-            >
-              <div className="absolute inset-0 rounded-full bg-white/20 blur-xl opacity-70 animate-pulse" style={{ animationDuration: '8s' }}></div>
-              <div className="relative flex items-center justify-center h-28 w-28 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600 shadow-lg">
-                <span className="text-5xl font-bold text-white drop-shadow-md">AI</span>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="text-xl text-center text-gray-200 max-w-md"
+          >
+            Your intelligent companion for productivity and creativity
+          </motion.p>
+          
+          {/* Feature List */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="mt-12 space-y-5 text-white w-full max-w-md"
+          >
+            <div className="flex items-center p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 transform transition-all hover:bg-white/10 hover:scale-105">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/80 to-purple-600/80 flex items-center justify-center mr-4 shadow-md backdrop-blur-sm">
+                <span className="text-lg">✓</span>
               </div>
-            </motion.div>
-            
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="text-5xl font-bold mb-4 text-center bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-white"
-            >
-              Join Matrix AI Today
-            </motion.h1>
-            
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-xl text-center text-white/80 max-w-md"
-            >
-              Create your account and unlock the full potential of AI
-            </motion.p>
-            
-            {/* Feature List */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="mt-12 space-y-5 text-white/90"
-            >
-              <div className="flex items-center transform transition-transform hover:translate-x-2">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mr-4 shadow-md">
-                  <span className="text-lg">✓</span>
-                </div>
-                <p className="text-lg">Personalized AI experience</p>
+              <p className="text-lg">Advanced AI-powered conversations</p>
+            </div>
+            <div className="flex items-center p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 transform transition-all hover:bg-white/10 hover:scale-105">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/80 to-purple-600/80 flex items-center justify-center mr-4 shadow-md backdrop-blur-sm">
+                <span className="text-lg">✓</span>
               </div>
-              <div className="flex items-center transform transition-transform hover:translate-x-2">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mr-4 shadow-md">
-                  <span className="text-lg">✓</span>
-                </div>
-                <p className="text-lg">Save and share your conversations</p>
+              <p className="text-lg">Professional content generation</p>
+            </div>
+            <div className="flex items-center p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 transform transition-all hover:bg-white/10 hover:scale-105">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/80 to-purple-600/80 flex items-center justify-center mr-4 shadow-md backdrop-blur-sm">
+                <span className="text-lg">✓</span>
               </div>
-              <div className="flex items-center transform transition-transform hover:translate-x-2">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mr-4 shadow-md">
-                  <span className="text-lg">✓</span>
-                </div>
-                <p className="text-lg">Access premium features and roles</p>
-              </div>
-            </motion.div>
-            
-            {/* Social Proof */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.5 }}
-              className="mt-16 pt-8 border-t border-white/20 w-full"
-            >
-              <p className="text-center text-white/70 mb-4">Join thousands of satisfied users</p>
-              <div className="flex justify-center space-x-6">
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
-                  <FiGithub className="h-5 w-5" />
-                </div>
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
-                  <FiTwitter className="h-5 w-5" />
-                </div>
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
-                  <FiLinkedin className="h-5 w-5" />
-                </div>
-              </div>
-            </motion.div>
-          </div>
+              <p className="text-lg">Seamless file and image sharing</p>
+            </div>
+          </motion.div>
+          
+          {/* Removed Social Proof section as requested */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0 }}
+            transition={{ delay: 0.8, duration: 0 }}
+            className="hidden"
+          >
+          </motion.div>
         </div>
       </div>
       
       {/* Right Side - Signup Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative z-20">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className={`w-full max-w-md p-10 rounded-3xl shadow-2xl backdrop-blur-sm ${
-            darkMode ? 'bg-gray-800/90 text-white' : 'bg-white/90 text-gray-900'
-          } border ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}
+          className="w-full max-w-md p-8 rounded-2xl shadow-2xl backdrop-blur-md bg-gray-900/70 text-white border border-white/10"
         >
           <div className="lg:hidden flex justify-center mb-8">
             <motion.div 
@@ -371,8 +319,8 @@ const SignupPage: React.FC = () => {
               transition={{ duration: 0.5 }}
               className="relative"
             >
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 blur-xl opacity-70 animate-spin" style={{ animationDuration: '8s' }}></div>
-              <div className={`relative flex items-center justify-center h-24 w-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg`}>
+              <div className="absolute inset-0 rounded-full bg-white/10 blur-xl opacity-70 animate-pulse" style={{ animationDuration: '8s' }}></div>
+              <div className="relative flex items-center justify-center h-24 w-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-400/80 to-purple-600/80 shadow-lg backdrop-blur-sm">
                 <span className="text-4xl font-bold text-white drop-shadow-md">AI</span>
               </div>
             </motion.div>
@@ -382,7 +330,7 @@ const SignupPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-3xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+            className="text-3xl font-bold text-center mb-2 text-white"
           >
             {t('auth.createAccount')}
           </motion.h1>
@@ -391,7 +339,7 @@ const SignupPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            className={`text-center mb-8 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}
+            className="text-center mb-8 text-gray-200"
           >
             {t('auth.signupSubtitle')}
           </motion.p>
@@ -400,9 +348,7 @@ const SignupPage: React.FC = () => {
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-3 rounded-lg mb-6 text-sm text-center ${
-                darkMode ? 'bg-red-900/40 text-red-200' : 'bg-red-50 text-red-700'
-              }`}
+              className="p-3 rounded-lg mb-6 text-sm text-center bg-red-900/40 text-red-200 backdrop-blur-sm border border-red-500/30"
             >
               {error}
             </motion.div>
@@ -415,12 +361,12 @@ const SignupPage: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
             >
-              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="name">
+              <label className="block text-sm font-medium mb-1 text-gray-200" htmlFor="name">
                 {t('auth.fullName')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiUser className={`h-5 w-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                  <FiUser className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="name"
@@ -428,11 +374,7 @@ const SignupPage: React.FC = () => {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className={`w-full pl-10 pr-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                    darkMode 
-                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
-                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
-                  } backdrop-blur-sm`}
+                  className="w-full pl-10 pr-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
                   placeholder="John Doe"
                 />
               </div>
@@ -444,12 +386,12 @@ const SignupPage: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5, duration: 0.5 }}
             >
-              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="email">
+              <label className="block text-sm font-medium mb-1 text-gray-200" htmlFor="email">
                 {t('auth.email')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiMail className={`h-5 w-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                  <FiMail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="email"
@@ -458,11 +400,7 @@ const SignupPage: React.FC = () => {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full pl-10 pr-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                    darkMode 
-                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
-                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
-                  } backdrop-blur-sm`}
+                  className="w-full pl-10 pr-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
                   placeholder="you@example.com"
                 />
               </div>
@@ -475,7 +413,7 @@ const SignupPage: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
               >
-                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="age">
+                <label className="block text-sm font-medium mb-1 text-gray-200" htmlFor="age">
                   {t('auth.age')}
                 </label>
                 <input
@@ -486,11 +424,7 @@ const SignupPage: React.FC = () => {
                   max="120"
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
-                  className={`w-full px-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                    darkMode 
-                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
-                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
-                  } backdrop-blur-sm`}
+                  className="w-full px-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
                   placeholder="25"
                 />
               </motion.div>
@@ -500,7 +434,7 @@ const SignupPage: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
               >
-                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="gender">
+                <label className="block text-sm font-medium mb-1 text-gray-200" htmlFor="gender">
                   {t('auth.gender')}
                 </label>
                 <select
@@ -508,11 +442,7 @@ const SignupPage: React.FC = () => {
                   name="gender"
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
-                  className={`w-full px-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                    darkMode 
-                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
-                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
-                  } backdrop-blur-sm`}
+                  className="w-full px-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
                 >
                   <option value="Male">{t('auth.male')}</option>
                   <option value="Female">{t('auth.female')}</option>
@@ -528,12 +458,12 @@ const SignupPage: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.7, duration: 0.5 }}
             >
-              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="password">
+              <label className="block text-sm font-medium mb-1 text-gray-200" htmlFor="password">
                 {t('auth.password')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiLock className={`h-5 w-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                  <FiLock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="password"
@@ -541,18 +471,14 @@ const SignupPage: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`w-full pl-10 pr-10 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                    darkMode 
-                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
-                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
-                  } backdrop-blur-sm`}
+                  className="w-full pl-10 pr-10 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
                   placeholder="Create a strong password"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className={`focus:outline-none p-1 rounded-full hover:bg-gray-200/30 ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-600'}`}
+                    className="focus:outline-none p-1 rounded-full hover:bg-white/20 text-gray-400 hover:text-gray-200"
                   >
                     {showPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
                   </button>
@@ -567,12 +493,12 @@ const SignupPage: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.8, duration: 0.5 }}
             >
-              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="confirmPassword">
+              <label className="block text-sm font-medium mb-1 text-gray-200" htmlFor="confirmPassword">
                 {t('auth.confirmPassword')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiLock className={`h-5 w-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                  <FiLock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="confirmPassword"
@@ -580,18 +506,14 @@ const SignupPage: React.FC = () => {
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={`w-full pl-10 pr-10 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                    darkMode 
-                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
-                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
-                  } backdrop-blur-sm`}
+                  className="w-full pl-10 pr-10 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
                   placeholder="Confirm your password"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className={`focus:outline-none p-1 rounded-full hover:bg-gray-200/30 ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-600'}`}
+                    className="focus:outline-none p-1 rounded-full hover:bg-white/20 text-gray-400 hover:text-gray-200"
                   >
                     {showConfirmPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
                   </button>
@@ -600,12 +522,12 @@ const SignupPage: React.FC = () => {
               {confirmPassword && (
                 <div className="flex items-center mt-2">
                   {password === confirmPassword ? (
-                    <div className="flex items-center text-green-500 bg-green-100/20 px-3 py-1 rounded-lg">
+                    <div className="flex items-center text-green-400 bg-green-900/30 px-3 py-1 rounded-lg border border-green-500/30 backdrop-blur-sm">
                       <FiCheck className="h-4 w-4 mr-1" />
                       <span className="text-xs font-medium">Passwords match</span>
                     </div>
                   ) : (
-                    <div className="flex items-center text-red-500 bg-red-100/20 px-3 py-1 rounded-lg">
+                    <div className="flex items-center text-red-300 bg-red-900/30 px-3 py-1 rounded-lg border border-red-500/30 backdrop-blur-sm">
                       <FiX className="h-4 w-4 mr-1" />
                       <span className="text-xs font-medium">Passwords do not match</span>
                     </div>
@@ -620,8 +542,8 @@ const SignupPage: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.9, duration: 0.5 }}
             >
-              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="referralCode">
-                {t('auth.referralCode')} <span className="text-xs text-gray-500 ml-1 px-2 py-0.5 rounded-full bg-gray-200/30">(Optional)</span>
+              <label className="block text-sm font-medium mb-1 text-gray-200" htmlFor="referralCode">
+                {t('auth.referralCode')} <span className="text-xs text-gray-400 ml-1 px-2 py-0.5 rounded-full bg-white/10">(Optional)</span>
               </label>
               <div className="relative">
                 <input
@@ -630,16 +552,12 @@ const SignupPage: React.FC = () => {
                   type="text"
                   value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                  className={`w-full px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                    darkMode 
-                      ? 'bg-gray-700/70 text-white border border-gray-600 focus:ring-purple-500 focus:border-purple-500' 
-                      : 'bg-white/70 text-gray-900 border border-gray-200 focus:ring-blue-500 focus:border-blue-500'
-                  } backdrop-blur-sm`}
+                  className="w-full px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
                   placeholder="Enter referral code if you have one"
                 />
                 {referralCode && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <span className={`text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-purple-500/20 text-purple-300' : 'bg-blue-500/20 text-blue-600'}`}>
+                    <span className="text-xs px-2 py-1 rounded-full bg-purple-500/30 text-purple-200 border border-purple-500/30 backdrop-blur-sm">
                       {referralCode}
                     </span>
                   </div>
@@ -661,17 +579,17 @@ const SignupPage: React.FC = () => {
                   type="checkbox"
                   checked={agreeToTerms}
                   onChange={() => setAgreeToTerms(!agreeToTerms)}
-                  className={`h-5 w-5 rounded-md focus:ring-2 cursor-pointer ${darkMode ? 'bg-gray-700 border-gray-600 text-purple-500 focus:ring-purple-500' : 'bg-white border-gray-300 text-blue-500 focus:ring-blue-500'}`}
+                  className="h-5 w-5 rounded-md focus:ring-2 cursor-pointer bg-white/10 border-white/30 text-purple-500 focus:ring-purple-500"
                 />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="terms" className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} cursor-pointer`}>
+                <label htmlFor="terms" className="text-gray-200 cursor-pointer">
                   {t('auth.agreeToTerms')}{' '}
-                  <a href="/terms" className={`font-medium underline ${darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-blue-600 hover:text-blue-500'}`}>
+                  <a href="/terms" className="font-medium underline text-purple-300 hover:text-purple-200">
                     {t('auth.termsOfService')}
                   </a>{' '}
                   {t('auth.and')}{' '}
-                  <a href="/privacy" className={`font-medium underline ${darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-blue-600 hover:text-blue-500'}`}>
+                  <a href="/privacy" className="font-medium underline text-purple-300 hover:text-purple-200">
                     {t('auth.privacyPolicy')}
                   </a>
                 </label>
@@ -688,13 +606,11 @@ const SignupPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading || !agreeToTerms}
-                className={`w-full py-4 px-4 rounded-xl font-medium text-lg transition-all ${
-                  loading
-                    ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
-                    : !agreeToTerms
-                    ? 'bg-gradient-to-r from-blue-400/70 to-purple-500/70 text-white/80 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]'
-                }`}
+                className={`w-full flex justify-center py-3.5 px-4 border border-white/20 rounded-xl shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  loading || !agreeToTerms
+                    ? 'bg-gradient-to-r from-purple-600/50 to-indigo-600/50 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-purple-600/90 to-indigo-600/90 hover:from-purple-700/90 hover:to-indigo-700/90 focus:ring-purple-500'
+                } backdrop-blur-md`}
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
@@ -707,8 +623,8 @@ const SignupPage: React.FC = () => {
                 ) : t('auth.createAccount')}
               </button>
               {!agreeToTerms && (
-                <p className="text-xs text-center mt-2 text-amber-500">
-                  Please agree to the Terms of Service and Privacy Policy to continue
+                <p className="text-xs text-center mt-2 text-amber-300 bg-amber-900/30 py-1.5 px-3 rounded-lg border border-amber-500/30 backdrop-blur-sm">
+                  {t('auth.agreeToTerms')} {t('auth.termsOfService')} {t('auth.and')} {t('auth.privacyPolicy')}
                 </p>
               )}
             </motion.div>
@@ -720,9 +636,9 @@ const SignupPage: React.FC = () => {
             transition={{ delay: 1.2, duration: 0.5 }}
             className="mt-8 text-center"
           >
-            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+            <p className="text-gray-300">
               {t('auth.alreadyHaveAccount')}{' '}
-              <Link to="/login" className={`font-medium ${darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-blue-600 hover:text-blue-500'}`}>
+              <Link to="/login" className="font-medium text-purple-300 hover:text-purple-200">
                 {t('auth.login')}
               </Link>
             </p>
@@ -733,29 +649,30 @@ const SignupPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.3, duration: 0.5 }}
-            className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700"
+            className="mt-8 pt-6 border-t border-white/20"
           >
-            <p className={`text-center text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Or sign up with
+            <p className="text-center text-sm mb-4 text-gray-300">
+              {t('auth.orContinueWith')}
             </p>
             <div className="flex justify-center space-x-4">
               <button 
-                className={`flex items-center justify-center w-14 h-14 rounded-xl ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-all hover:scale-105 shadow-sm hover:shadow`}
-                aria-label="Sign up with GitHub"
+                className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 text-gray-200"
+                aria-label="Sign up with Google"
               >
-                <FiGithub className="h-6 w-6" />
+                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
               </button>
               <button 
-                className={`flex items-center justify-center w-14 h-14 rounded-xl ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-all hover:scale-105 shadow-sm hover:shadow`}
-                aria-label="Sign up with Twitter"
+                className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 hover:bg-white/20 transition-colors border border-white/20 text-gray-200"
+                aria-label="Sign up with Apple"
               >
-                <FiTwitter className="h-6 w-6" />
-              </button>
-              <button 
-                className={`flex items-center justify-center w-14 h-14 rounded-xl ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-all hover:scale-105 shadow-sm hover:shadow`}
-                aria-label="Sign up with LinkedIn"
-              >
-                <FiLinkedin className="h-6 w-6" />
+                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16.125 0c.167.14.331.31.496.47.661.66 1.157 1.456 1.49 2.39.333.934.333 1.803 0 2.607-.332.803-.828 1.456-1.49 1.96-.66.503-1.322.755-1.983.755-.332 0-.663-.084-.994-.252-.332-.167-.663-.335-.994-.503-.332-.167-.663-.251-.994-.251-.332 0-.663.084-.994.251-.332.168-.663.336-.994.503-.332.168-.663.252-.995.252-.661 0-1.322-.252-1.983-.755-.662-.504-1.158-1.157-1.49-1.96-.332-.804-.332-1.673 0-2.607.332-.934.828-1.73 1.49-2.39.661-.66 1.322-.99 1.983-.99.332 0 .663.084.994.252.332.167.663.335.994.503.332.167.663.251.994.251.332 0 .663-.084.994-.251.332-.168.663-.336.994-.503.332-.168.663-.252.995-.252.66 0 1.322.33 1.983.99zm-3.14 20.29c.662-.168 1.158-.42 1.49-.755.332-.335.662-.838.994-1.508-.662-.335-1.158-.503-1.49-.503-.332 0-.663.084-.994.252-.332.167-.663.335-.994.503-.332.167-.663.251-.994.251-.332 0-.663-.084-.994-.251-.332-.168-.663-.336-.994-.503-.332-.168-.663-.252-.995-.252-.332 0-.828.168-1.49.503.332.67.662 1.173.994 1.508.332.335.828.587 1.49.755.66.168 1.322.252 1.983.252.66 0 1.322-.084 1.983-.252zm1.983-10.062c1.322.335 2.315.838 2.977 1.508.662.67.994 1.34.994 2.01 0 .67-.332 1.34-.994 2.01-.662.67-1.655 1.173-2.977 1.508.332-.67.497-1.34.497-2.01v-3.015c0-.67-.165-1.34-.497-2.01zm-7.932 0c-.332.67-.497 1.34-.497 2.01v3.015c0 .67.165 1.34.497 2.01-1.322-.335-2.315-.838-2.977-1.508-.662-.67-.994-1.34-.994-2.01 0-.67.332-1.34.994-2.01.662-.67 1.655-1.173 2.977-1.508z" fill="currentColor"/>
+                </svg>
               </button>
             </div>
           </motion.div>
