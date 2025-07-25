@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import imageCompression from 'browser-image-compression';
 import { FiVideo, FiUpload, FiPlay, FiPause, FiDownload, FiSliders, FiPlus, FiTrash, FiX, FiCheck, FiClock, FiList, FiVolume2, FiVolumeX, FiMaximize, FiMinimize, FiLoader, FiImage, FiLock } from 'react-icons/fi';
 import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
@@ -8,6 +9,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAlert } from '../context/AlertContext';
 import { videoService } from '../services/videoService';
+import { userService } from '../services/userService';
 import { uploadImageToStorage, supabase } from '../supabaseClient';
 import coinImage from '../assets/coin.png';
 
@@ -22,6 +24,7 @@ gradientAnimationStyle.innerHTML = `
   .animate-gradient-x {
     background-size: 200% 200%;
     animation: gradient-x 3s ease infinite;
+    background-image: linear-gradient(to right, #ec4899, #eab308, #a855f7);
   }
 `;
 document.head.appendChild(gradientAnimationStyle);
@@ -115,6 +118,7 @@ const VideoCreatorPage: React.FC = () => {
   const [videoHistory, setVideoHistory] = useState<VideoHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [generateButtonClicked, setGenerateButtonClicked] = useState(false);
   
   // Template state
   const [templateVideos, setTemplateVideos] = useState<TemplateVideo[]>([]);
@@ -175,8 +179,10 @@ const VideoCreatorPage: React.FC = () => {
           .getPublicUrl(`important/${file.name}`);
         
         // Determine category based on file name or index
-        // First 12 videos are basic, next 7 are premium
-        const category: 'basic' | 'premium' = index < 12 ? 'basic' : 'premium';
+        // Check if the template name matches any of the premium templates
+        const premiumTemplates = ['dance1', 'dance2', 'dance3', 'mermaid', 'graduation', 'dragon', 'money'];
+        const templateId = file.name.replace(/\.(mp4|mov|webm)$/i, '');
+        const category: 'basic' | 'premium' = premiumTemplates.includes(templateId) ? 'premium' : 'basic';
         
         // Extract template name from filename (remove extension and format)
         const templateName = file.name
@@ -395,12 +401,16 @@ const VideoCreatorPage: React.FC = () => {
   const handleGenerateVideo = async () => {
     if (!user?.id) return;
     
+    // Disable the button to prevent multiple clicks
+    setGenerateButtonClicked(true);
+    
     // For image upload, we need to check if we have a valid option selected
     if (uploadedImageUrl) {
       // For template-based generation, we need a template
       if (template) {
         if (template.trim() === '') {
           setError('Please select a template for template-based generation');
+          setGenerateButtonClicked(false);
           return;
         }
         // Template-based generation doesn't need a prompt
@@ -409,6 +419,7 @@ const VideoCreatorPage: React.FC = () => {
         // Negative prompt is now optional
         if (!prompt || prompt.trim() === '') {
           setError('Please enter a prompt when using text-to-video option');
+          setGenerateButtonClicked(false);
           return;
         }
       }
@@ -416,13 +427,31 @@ const VideoCreatorPage: React.FC = () => {
       // For regular text-to-video (no image), we need a prompt
       if (!prompt.trim()) {
         setError('Please enter a prompt to generate a video');
+        setGenerateButtonClicked(false);
         return;
       }
     }
     
+    // Determine if this is a premium template generation
+    const isPremiumTemplate = selectedTemplate && templateVideos.find(t => t.name === selectedTemplate)?.category === 'premium';
+    
     // If user is not pro and has used all free generations, show pro alert
     if (!isPro && freeGenerationsLeft <= 0) {
       setShowProAlert(true);
+      setGenerateButtonClicked(false);
+      return;
+    }
+    
+    // Deduct coins - 70 for premium templates, 25 for regular
+    const coinCost = isPremiumTemplate ? 70 : 25;
+    try {
+      await userService.subtractCoins(user.id, coinCost, 'video_generation');
+      console.log(`Coins deducted successfully: ${coinCost}`);
+    } catch (error) {
+      console.error('Error deducting coins:', error);
+      setError('Failed to deduct coins. Please try again.');
+      setIsGenerating(false);
+      setGenerateButtonClicked(false);
       return;
     }
     
@@ -516,6 +545,7 @@ const VideoCreatorPage: React.FC = () => {
           if (response.error) {
             setError(`Video generation failed: ${response.message || 'The server could not process your image. Please try a different image or prompt.'}`);
             setIsGenerating(false);
+            setGenerateButtonClicked(false);
             clearInterval(progressInterval);
             return;
           }
@@ -526,6 +556,7 @@ const VideoCreatorPage: React.FC = () => {
             setTaskStatus('SUCCEEDED');
             setProcessingProgress(100);
             setIsGenerating(false);
+            setGenerateButtonClicked(false);
             clearInterval(progressInterval);
             
             // Refresh video history
@@ -562,6 +593,7 @@ const VideoCreatorPage: React.FC = () => {
           setApiError(apiError.message || 'Unknown API error');
           
           setIsGenerating(false);
+          setGenerateButtonClicked(false);
           clearInterval(progressInterval);
           return;
         }
@@ -576,6 +608,7 @@ const VideoCreatorPage: React.FC = () => {
           setTaskStatus('SUCCEEDED');
           setProcessingProgress(100);
           setIsGenerating(false);
+          setGenerateButtonClicked(false);
           clearInterval(progressInterval);
           
           // Refresh video history
@@ -595,6 +628,7 @@ const VideoCreatorPage: React.FC = () => {
         
         clearInterval(progressInterval);
         setIsGenerating(false);
+        setGenerateButtonClicked(false);
       } else {
         throw new Error(response.message || 'Failed to initiate video generation');
       }
@@ -606,6 +640,7 @@ const VideoCreatorPage: React.FC = () => {
       if (errorMessage.includes('Video generated and saved successfully')) {
         // This is actually a success case, not an error
         setIsGenerating(false);
+        setGenerateButtonClicked(false);
         clearInterval(progressInterval);
         return;
       }
@@ -621,6 +656,7 @@ const VideoCreatorPage: React.FC = () => {
       
       setError(errorMessage);
       setIsGenerating(false);
+      setGenerateButtonClicked(false);
       clearInterval(progressInterval);
     }
   };
@@ -822,6 +858,13 @@ const VideoCreatorPage: React.FC = () => {
   };
   
   const handleUploadImageClick = () => {
+    // Clear the current image if one exists
+    if (uploadedImageUrl) {
+      setUploadedImage(null);
+      setUploadedImageUrl(null);
+      setGenerateButtonClicked(false);
+    }
+    // Trigger file input click
     imageInputRef.current?.click();
   };
   
@@ -836,13 +879,20 @@ const VideoCreatorPage: React.FC = () => {
         
         console.log('Selected image file:', file.name, file.type, file.size);
         
-        // Validate file size and type with stricter limits
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit (reduced from 10MB)
-          throw new Error('Image size exceeds 5MB limit. Please choose a smaller image to prevent timeout issues during processing.');
-        }
-        
         if (!file.type.startsWith('image/')) {
           throw new Error('Invalid file type. Please upload an image file.');
+        }
+        
+        // Check if the file is HEIC format
+        const isHeic = file.type === 'image/heic' || 
+                      file.name.toLowerCase().endsWith('.heic') || 
+                      file.name.toLowerCase().endsWith('.heif');
+        
+        if (isHeic) {
+          setError('HEIC image format is not supported by the video generation API. Please convert your image to JPG or PNG format before uploading.');
+          setUploadedImage(null);
+          setIsUploadingImage(false);
+          return;
         }
         
         // Check image dimensions to prevent timeout issues
@@ -869,21 +919,41 @@ const VideoCreatorPage: React.FC = () => {
         // Check image dimensions before proceeding
         await checkImageDimensions();
         
-        // Check if the file is HEIC format
-        const isHeic = file.type === 'image/heic' || 
-                      file.name.toLowerCase().endsWith('.heic') || 
-                      file.name.toLowerCase().endsWith('.heif');
+        let fileToUpload = file;
         
-        if (isHeic) {
-          setError('HEIC image format is not supported by the video generation API. Please convert your image to JPG or PNG format before uploading.');
-          setUploadedImage(null);
-          setIsUploadingImage(false);
-          return;
+        // Compress image if it's larger than 5MB
+        if (file.size > 5 * 1024 * 1024) {
+          console.log('Image size exceeds 5MB, compressing image...');
+          
+          try {
+            // Configure compression options
+            const options = {
+              maxSizeMB: 5,
+              maxWidthOrHeight: 4000,
+              useWebWorker: true,
+              fileType: file.type
+            };
+            
+            // Compress the image
+            const compressedFile = await imageCompression(file, options);
+            console.log('Original file size:', file.size / 1024 / 1024, 'MB');
+            console.log('Compressed file size:', compressedFile.size / 1024 / 1024, 'MB');
+            
+            fileToUpload = compressedFile;
+          } catch (compressionError) {
+            console.error('Error compressing image:', compressionError);
+            // If compression fails, check if original file is under 10MB
+            if (file.size > 10 * 1024 * 1024) {
+              throw new Error('Image size exceeds 10MB limit and compression failed. Please choose a smaller image.');
+            }
+            // Otherwise continue with original file
+            console.log('Continuing with original file as compression failed but file is under 10MB');
+          }
         }
         
         // Upload image to Supabase storage
         console.log('Uploading image to Supabase storage...');
-        const result = await uploadImageToStorage(file, user.id);
+        const result = await uploadImageToStorage(fileToUpload, user.id);
         console.log('Image upload successful, public URL:', result.publicUrl);
         
         // Ensure the URL is properly formatted and trimmed - remove any quotes or backticks
@@ -988,6 +1058,7 @@ const VideoCreatorPage: React.FC = () => {
 
   const cancelGeneration = () => {
     setIsGenerating(false);
+    setGenerateButtonClicked(false);
     setProcessingProgress(0);
     setError(null);
   };
@@ -1050,7 +1121,7 @@ const VideoCreatorPage: React.FC = () => {
         <motion.h1 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+          className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 animate-gradient-x"
         >
           {t('video.title')}
         </motion.h1>
@@ -1101,6 +1172,26 @@ const VideoCreatorPage: React.FC = () => {
                 onError={handleVideoError}
                 onEnded={() => setIsPlaying(false)}
                 onClick={handlePlayPause}
+              />
+              
+              {/* Reupload Button with AI styling */}
+              <div className="absolute top-4 right-4 z-50">
+                <div className="relative p-[1px] rounded-lg overflow-hidden bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient-x">
+                  <button
+                    onClick={handleUploadImageClick}
+                    className="px-3 py-1.5 rounded-lg bg-black/80 backdrop-blur-md text-white hover:bg-black/60 flex items-center shadow-lg transition-all duration-300"
+                  >
+                    <FiUpload className="mr-1.5" size={14} />
+                    Reupload
+                  </button>
+                </div>
+              </div>
+              <input
+                type="file"
+                ref={imageInputRef}
+                onChange={handleImageFileChange}
+                accept="image/*"
+                className="hidden"
               />
               
               {/* Buffering Indicator */}
@@ -1239,38 +1330,142 @@ const VideoCreatorPage: React.FC = () => {
                 </>
               )}
               {!uploadedImageUrl && (
-                <div className="flex space-x-3">
-                  <AuthRequiredButton
-                    onClick={handleUploadImageClick}
-                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90 flex items-center shadow-lg transform transition-transform hover:scale-105"
-                  >
-                    <FiImage className="mr-2" />
-                    Upload Image
-                  </AuthRequiredButton>
-                  <input
-                    type="file"
-                    ref={imageInputRef}
-                    onChange={handleImageFileChange}
-                    accept="image/*"
-                    className="hidden"
-                  />
+                <div className="flex flex-col items-center">
+                  <div className="flex space-x-3">
+                    <AuthRequiredButton
+                      onClick={handleUploadImageClick}
+                      className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90 flex items-center shadow-lg transform transition-transform hover:scale-105"
+                      title="Images larger than 5MB will be automatically compressed"
+                    >
+                      <FiImage className="mr-2" />
+                      Upload Image
+                    </AuthRequiredButton>
+                    <input
+                      type="file"
+                      ref={imageInputRef}
+                      onChange={handleImageFileChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                  </div>
+                  <div className="text-xs text-gray-400 mt-2">
+                    Images larger than 5MB will be automatically compressed
+                  </div>
                 </div>
               )}
               {uploadedImageUrl && !isGenerating && (
-                <button
-                  onClick={() => {
-                    setUploadedImage(null);
-                    setUploadedImageUrl(null);
-                  }}
-                  className="mt-4 px-4 py-2 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 flex items-center"
-                >
-                  <FiTrash className="mr-2" />
-                  Remove Image
-                </button>
+                <div className="flex flex-col items-center">
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => {
+                        setUploadedImage(null);
+                        setUploadedImageUrl(null);
+                        setGenerateButtonClicked(false);
+                      }}
+                      className="mt-4 px-4 py-2 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 flex items-center"
+                    >
+                      <FiTrash className="mr-2" />
+                      Remove Image
+                    </button>
+                    <AuthRequiredButton
+                      onClick={handleUploadImageClick}
+                      className="mt-4 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90 flex items-center shadow-lg transform transition-transform hover:scale-105"
+                    >
+                      <FiUpload className="mr-2" />
+                      Reupload Image
+                    </AuthRequiredButton>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-2">
+                    Images larger than 5MB are automatically compressed
+                  </div>
+                </div>
               )}
             </div>
           )}
-        </div>
+
+          {/* Template Video Grid */}
+            <div className="mt-8">
+              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">Available Templates</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {templateVideos.slice(0, 8).map((template) => (
+                  <div
+                    key={template.id}
+                    className={`relative group cursor-pointer rounded-lg overflow-hidden border transition-all duration-200 ${
+                      selectedTemplate === template.name
+                        ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    } ${template.category === 'premium' && !canAccessPremium() ? 'opacity-60' : ''}`}
+                    onClick={() => {
+                      if (template.category === 'premium' && !canAccessPremium()) {
+                        setShowProAlert(true);
+                        return;
+                      }
+                      handleTemplateSelect(template.name);
+                    }}
+                  >
+                    {/* Video Preview */}
+                    <div className="aspect-video bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
+                      <video
+                        src={template.videoUrl}
+                        className="w-full h-full object-cover"
+                        muted
+                        loop
+                        preload="metadata"
+                        onMouseEnter={(e) => {
+                          if (template.category === 'basic' || canAccessPremium()) {
+                            e.currentTarget.play();
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.pause();
+                          e.currentTarget.currentTime = 0;
+                        }}
+                      />
+                      
+                      {/* Premium Lock Overlay */}
+                      {template.category === 'premium' && !canAccessPremium() && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                          <div className="text-white text-center">
+                            <FiLock className="w-6 h-6 mx-auto mb-2" />
+                            <span className="text-xs font-medium">Premium</span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Selected Indicator */}
+                      {selectedTemplate === template.name && (
+                        <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1">
+                          <FiCheck size={16} />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Template Info */}
+                    <div className="p-2">
+                      <h3 className="font-medium text-xs text-gray-900 dark:text-white truncate">
+                        {template.name}
+                      </h3>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${template.category === 'basic' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'}`}>
+                          {template.category === 'basic' ? '25 coins' : '70 coins'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={() => setShowTemplateGrid(true)}
+                  className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 flex items-center"
+                >
+                  <FiVideo className="mr-1" size={14} />
+                  View All Templates
+                </button>
+              </div>
+            </div>
+          </div>
         
         <div className="lg:col-span-2">
           <div className="space-y-6">
@@ -1467,12 +1662,12 @@ const VideoCreatorPage: React.FC = () => {
                                         </option>
                                       ))}
                                   </optgroup>
-                                  <optgroup label="Premium Templates 🔒">
+                                  <optgroup label="Premium Templates 🔒 (70 coins)">
                                     {templateVideos
                                       .filter(t => t.category === 'premium')
                                       .map(template => (
                                         <option key={template.id} value={template.id} disabled={!canAccessPremium()}>
-                                          {template.name} {!canAccessPremium() ? '🔒' : ''}
+                                          {template.name} {!canAccessPremium() ? '🔒' : '(70 coins)'}
                                         </option>
                                       ))}
                                   </optgroup>
@@ -1542,7 +1737,7 @@ const VideoCreatorPage: React.FC = () => {
                 <div className="space-y-3">
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-4">
                     <div 
-                      className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-2.5 rounded-full transition-all duration-500"
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 animate-gradient-x h-2.5 rounded-full transition-all duration-500"
                       style={{ width: `${processingProgress}%` }}
                     ></div>
                   </div>
@@ -1561,11 +1756,11 @@ const VideoCreatorPage: React.FC = () => {
               ) : (
                 <AuthRequiredButton
                   onClick={handleGenerateVideo}
-                  disabled={((!prompt.trim() && !template) || isUploadingImage)}
+                  disabled={((!prompt.trim() && !template) || isUploadingImage || generateButtonClicked || isGenerating)}
                   className={`w-full py-3 rounded-lg font-medium flex items-center justify-center ${
-                    ((!prompt.trim() && !template) || isUploadingImage)
+                    ((!prompt.trim() && !template) || isUploadingImage || generateButtonClicked || isGenerating)
                       ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-                      : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:opacity-90'
+                      : 'bg-gradient-to-r from-purple-500 to-pink-500 animate-gradient-x text-white hover:opacity-90'
                   } transition`}
                 >
                   {isUploadingImage ? (
@@ -1578,7 +1773,9 @@ const VideoCreatorPage: React.FC = () => {
                       <FiVideo className="mr-2" />
                       Generate Video
                       <div className="ml-2 flex items-center bg-black/20 px-2 py-0.5 rounded-full">
-                        <span className="text-sm font-bold mr-1">-25</span>
+                        <span className="text-sm font-bold mr-1">
+                          {templateVideos.find(t => t.name === selectedTemplate)?.category === 'premium' ? '-70' : '-25'}
+                        </span>
                         <img src={coinImage} alt="Coins" className="h-4 w-4" />
                       </div>
                     </>

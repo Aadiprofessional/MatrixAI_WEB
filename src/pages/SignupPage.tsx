@@ -6,6 +6,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase, signInWithApple } from '../supabaseClient';
+import matrix from '../assets/matrix.png';
 
 // Default language constant
 const DEFAULT_LANGUAGE = 'English';
@@ -325,7 +326,7 @@ const SignupPage: React.FC = () => {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="w-full max-w-md p-10 rounded-3xl shadow-2xl backdrop-blur-md bg-black/30 text-white border border-white/10"
         >
-          <div className="lg:hidden flex justify-center mb-8">
+          <div className="lg:hidden flex justify-center mb-8 z-10">
             <motion.div 
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
@@ -333,7 +334,9 @@ const SignupPage: React.FC = () => {
               className="relative"
             >
               <div className="relative flex items-center justify-center">
-                <span className="text-2xl font-bold text-white drop-shadow-md">matrix<span className="text-red-500">.</span>ai<span className="text-white">.asia</span></span>
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-white mb-2">
+                  <img src="/logo192.png" alt="MatrixAI Logo" className="h-10 w-10" />  
+                </div>
               </div>
             </motion.div>
           </div>

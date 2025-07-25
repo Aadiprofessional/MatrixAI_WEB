@@ -24,6 +24,22 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
 import './ContentWriterPage.css';
 
+// Add gradient animation style
+const gradientAnimationStyle = document.createElement('style');
+gradientAnimationStyle.textContent = `
+  @keyframes gradient-x {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 3s ease infinite;
+    background-image: linear-gradient(to right, #ec4899, #eab308, #a855f7);
+  }
+`;
+document.head.appendChild(gradientAnimationStyle);
+
 interface ContentItem {
   id: string;
   uid?: string;
@@ -93,7 +109,7 @@ const ContentWriterPage: React.FC = () => {
   // Function to fetch content history from the API
   const fetchContentHistory = useCallback(async () => {
     // Use test user ID if no user is logged in (for testing purposes)
-    const userId = user?.id || "0a147ebe-af99-481b-bcaf-ae70c9aeb8d8";
+    const userId = user?.id;
     
     try {
       setIsLoadingHistory(true);
@@ -591,7 +607,7 @@ Create content that is original, well-researched, and engaging for the target au
       
       try {
         // Use test user ID if no user is logged in (for testing purposes)
-        const userId = uid || "0a147ebe-af99-481b-bcaf-ae70c9aeb8d8";
+        const userId = uid;
         
         console.log('Saving content for user:', userId);
         // Save content to the database
@@ -708,7 +724,7 @@ Create content that is original, well-researched, and engaging for the target au
     }
     
     // Use test user ID if no user is logged in (for testing purposes)
-    const userId = user?.id || "0a147ebe-af99-481b-bcaf-ae70c9aeb8d8";
+    const userId = user?.id;
     
     // Check if we have a current content ID (from history)
     const currentContentId = contentHistory.length > 0 ? contentHistory[0].id : null;
@@ -947,7 +963,7 @@ Create content that is original, well-researched, and engaging for the target au
     }
     
     // Use test user ID if no user is logged in (for testing purposes)
-    const userId = user?.id || "0a147ebe-af99-481b-bcaf-ae70c9aeb8d8";
+    const userId = user?.id ;
 
     // Check if we have a current content ID (from history)
     const currentContentId = contentHistory.length > 0 ? contentHistory[0].id : null;
@@ -1028,7 +1044,7 @@ Create content that is original, well-researched, and engaging for the target au
   // Handle content deletion
   const handleDeleteContent = async (contentId: string) => {
     // Use test user ID if no user is logged in (for testing purposes)
-    const userId = user?.id || "0a147ebe-af99-481b-bcaf-ae70c9aeb8d8";
+    const userId = user?.id;
     
     try {
       // Show confirmation dialog
@@ -1164,11 +1180,11 @@ Create content that is original, well-researched, and engaging for the target au
       )}
 
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 mt-5 ml-8">
         <motion.h1 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+          className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 animate-gradient-x"
         >
           {t('contentWriter.title')}
         </motion.h1>
@@ -1182,12 +1198,12 @@ Create content that is original, well-researched, and engaging for the target au
         </motion.p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 px-4 py-4">
         {/* Left Panel - Controls */}
         <div className="lg:col-span-2 order-2 lg:order-1">
           <div className="sticky top-6 space-y-6">
             {/* Content Generation Form */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+            <div className="glass-effect rounded-lg shadow-sm p-6 m-2 hover:shadow-md transition-shadow">
               <h2 className="text-xl font-medium mb-4 flex items-center">
                 <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1.5 rounded-md mr-2">
                   <FiEdit className="w-5 h-5" />
@@ -1213,7 +1229,7 @@ Create content that is original, well-researched, and engaging for the target au
                     <FiZap className="w-4 h-4 mr-1" />
                     Quick Content Ideas
                   </label>
-                  <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                  <div className="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto pr-1">
                     {quickQuestions.map((question) => (
                       <motion.div
                         key={question.id}
@@ -1221,42 +1237,34 @@ Create content that is original, well-researched, and engaging for the target au
                         animate={{ opacity: 1, y: 0 }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className={`p-3 text-left rounded-lg border transition-all ${
-                          darkMode
-                            ? 'border-gray-600 bg-gray-700/50 hover:bg-gray-700 hover:border-blue-500'
-                            : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300'
-                        } ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-sm'}`}
+                        className={`relative overflow-hidden rounded-lg transition-all shadow-sm ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'}`}
                       >
                         <AuthRequiredButton
                           onClick={() => handleQuickQuestion(question)}
                           disabled={isGenerating}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center mb-1">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium mr-2 ${
-                                darkMode
-                                  ? 'bg-blue-900/30 text-blue-300'
-                                  : 'bg-blue-100 text-blue-600'
-                              }`}>
-                                {question.category}
-                              </span>
+                          className="w-full h-full"
+                        >
+                          <div className={`absolute inset-0 opacity-10 ${darkMode ? 'bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500' : 'bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400'}`}></div>
+                          <div className={`relative p-3.5 text-left ${darkMode ? 'bg-gray-800/80' : 'bg-white/90'} h-full`}>
+                            <div className="flex items-start">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center mb-1.5">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mr-2 ${darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600'}`}>
+                                    {question.category}
+                                  </span>
+                                </div>
+                                <p className={`text-sm font-medium line-clamp-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                  {question.text}
+                                </p>
+                                <p className={`text-xs mt-1.5 line-clamp-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  {question.description}
+                                </p>
+                              </div>
+                              <div className={`ml-3 flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                <FiPlus className={`w-4 h-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                              </div>
                             </div>
-                            <p className={`text-sm font-medium truncate ${
-                              darkMode ? 'text-gray-200' : 'text-gray-800'
-                            }`}>
-                              {question.text}
-                            </p>
-                            <p className={`text-xs mt-1 ${
-                              darkMode ? 'text-gray-400' : 'text-gray-500'
-                            }`}>
-                              {question.description}
-                            </p>
                           </div>
-                          <FiPlus className={`w-4 h-4 ml-2 flex-shrink-0 ${
-                            darkMode ? 'text-gray-400' : 'text-gray-500'
-                          }`} />
-                        </div>
                         </AuthRequiredButton>
                       </motion.div>
                     ))}
@@ -1341,6 +1349,21 @@ Create content that is original, well-researched, and engaging for the target au
                     />
                   </div>
                 )}
+
+                {/* View History Button */}
+                <AuthRequiredButton
+                  onClick={() => setShowHistory(!showHistory)}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all mt-4 ${
+                    darkMode
+                      ? 'bg-purple-900/30 text-purple-400 hover:bg-purple-900/50'
+                      : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-center">
+                    <FiFileText className="w-4 h-4 mr-2" />
+                    {showHistory ? 'Hide History' : 'View History'}
+                  </div>
+                </AuthRequiredButton>
               </div>
             </div>
           </div>
@@ -1348,7 +1371,7 @@ Create content that is original, well-researched, and engaging for the target au
 
         {/* Right Panel - Content Display */}
         <div className="lg:col-span-3 order-1 lg:order-2">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="glass-effect rounded-lg shadow-sm overflow-hidden m-2">
             {/* Header */}
             <div className="border-b border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center justify-between">
@@ -1426,7 +1449,7 @@ Create content that is original, well-researched, and engaging for the target au
               </div>
             </div>
             
-            <div className="p-6" ref={contentDisplayRef}>
+            <div className="p-6 m-2" ref={contentDisplayRef}>
               {editedContent || isStreaming ? (
                 <div className="w-full h-[600px] overflow-y-auto" data-content-container="true">
                   {isStreaming ? (
@@ -1540,14 +1563,15 @@ Create content that is original, well-researched, and engaging for the target au
               </div>
             </div>
 
-            {/* Content History Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
-              <h2 className="text-xl font-medium mb-4 flex items-center">
-                <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
-                  <FiFileText className="w-5 h-5" />
-                </span>
-                Recent Content {contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 && `(${contentHistory.length})`}
-              </h2>
+            {/* Content History Section - Conditionally rendered */}
+             {showHistory && (
+               <div className="glass-effect rounded-lg shadow-sm p-6 m-2 hover:shadow-md transition-shadow mt-6">
+                 <h2 className="text-xl font-medium mb-4 flex items-center">
+                  <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
+                    <FiFileText className="w-5 h-5" />
+                  </span>
+                  Content History {contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 && `(${contentHistory.length})`}
+                </h2>
               
               {isLoadingHistory ? (
                 <div className="text-center py-8">
@@ -1695,6 +1719,7 @@ Create content that is original, well-researched, and engaging for the target au
                 </div>
               )}
             </div>
+              )}
           </div>
         </div>
 

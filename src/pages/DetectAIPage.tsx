@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   FiEdit, 
@@ -15,7 +15,9 @@ import {
   FiFileText,
   FiSliders,
   FiRotateCw,
-  FiX
+  FiX,
+  FiClock,
+  FiMessageCircle
 } from 'react-icons/fi';
 import { ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
@@ -29,16 +31,51 @@ const DetectAIPage: React.FC = () => {
   const { userData, isPro } = useUser();
   const { t } = useLanguage();
   const { darkMode } = useTheme();
+  
+  // Add gradient animation style to document head
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes gradient-x {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+      .animate-gradient-x {
+        background-size: 200% 200%;
+        animation: gradient-x 15s ease infinite;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
   const [text, setText] = useState('');
   const [detectionResult, setDetectionResult] = useState<{
     isAIGenerated: boolean;
     score: number;
     analysis: string;
     summary: string;
+    id?: string;
+    fake_percentage?: number;
+    ai_words?: number;
+    text_words?: number;
+    sentences?: string[];
+    tags?: string[];
+    language?: string;
+    createdAt?: string;
+    other_feedback?: string | null;
   } | null>(null);
   const [sensitivity, setSensitivity] = useState('balanced');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [savedContents, setSavedContents] = useState<{id: string, title: string, content: string, result: any}[]>([]);
+  const [savedContents, setSavedContents] = useState<{id: string, title: string, text: string, is_human: boolean, fake_percentage: number, ai_words: number, text_words: number, sentences: string[], tags: string[], language: string, createdAt: string, other_feedback: string | null}[]>([]);
   const [editingTitle, setEditingTitle] = useState('');
   const [showTitleEdit, setShowTitleEdit] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -50,6 +87,59 @@ const DetectAIPage: React.FC = () => {
     'Check if this essay is AI-generated',
     'Detect AI in this product review'
   ]);
+  
+  // Fetch user's detection history
+  const fetchUserDetections = async () => {
+    if (!userData?.uid) return;
+    
+    try {
+      const response = await axios.get(
+        'http://localhost:3002/api/detection/getUserDetections',
+        {
+          params: {
+            uid: userData.uid,
+            page: 1,
+            itemsPerPage: 10
+          }
+        }
+      );
+      
+      if (response.data && response.data.detections) {
+        setSavedContents(response.data.detections);
+      }
+    } catch (error) {
+      console.error('Error fetching detection history:', error);
+    }
+  };
+  
+  // Delete a detection from history
+  const deleteDetection = async (detectionId: string) => {
+    if (!userData?.uid) return;
+    
+    try {
+      await axios.delete(
+        'http://localhost:3002/api/detection/deleteDetection',
+        {
+          data: {
+            uid: userData.uid,
+            detectionId
+          }
+        }
+      );
+      
+      // Remove from local state
+      setSavedContents(prev => prev.filter(item => item.id !== detectionId));
+    } catch (error) {
+      console.error('Error deleting detection:', error);
+    }
+  };
+
+  // Load history when component mounts
+  useEffect(() => {
+    if (userData?.uid) {
+      fetchUserDetections();
+    }
+  }, [userData?.uid]);
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
@@ -74,18 +164,18 @@ const DetectAIPage: React.FC = () => {
     
     try {
       // Create request payload with all settings
-      const userMessageContent = {
-        prompt: text,
-        action: 'detect-ai',
-        sensitivity: sensitivity
+      const requestPayload = {
+        uid: userData?.uid || '0a147ebe-af99-481b-bcaf-ae70c9aeb8d8', // Use default UID if not available
+        text: text,
+        title: `Detection: ${text.substring(0, 30)}${text.length > 30 ? '...' : ''}`,
+        tags: ['web-app'],
+        language: 'en'
       };
       
-      // Make API request to Supabase Function
+      // Make API request to the new detection API
       const response = await axios.post(
-        'https://ddtgdhehxhgarkonvpfq.supabase.co/functions/v1/createContent',
-        {
-          prompt: userMessageContent
-        },
+        'http://localhost:3002/api/detection/createDetection',
+        requestPayload,
         {
           headers: {
             'Content-Type': 'application/json'
@@ -94,13 +184,27 @@ const DetectAIPage: React.FC = () => {
       );
       
       // Set the detection result from API response
-      const result = response.data.output;
-      setDetectionResult({
-        isAIGenerated: result.isAIGenerated || false,
-        score: result.score || 0.5,
-        analysis: result.analysis || "No detailed analysis available.",
-        summary: result.summary || "Analysis complete."
-      });
+      if (response.data && response.data.detection) {
+        const detection = response.data.detection;
+        setDetectionResult({
+          id: detection.id,
+          isAIGenerated: !detection.is_human,
+          score: detection.fake_percentage / 100, // Convert percentage to decimal
+          analysis: `## AI Detection Results\n\n**Text Analysis:**\n\nThis text contains ${detection.ai_words} AI-generated words out of ${detection.text_words} total words (${detection.fake_percentage}% AI probability).\n\n**Sentence Breakdown:**\n\n${detection.sentences.map((sentence: string, index: number) => `${index + 1}. ${sentence}`).join('\n\n')}`,
+          summary: detection.is_human ? "This text appears to be human-written." : "This text appears to be AI-generated.",
+          fake_percentage: detection.fake_percentage,
+          ai_words: detection.ai_words,
+          text_words: detection.text_words,
+          sentences: detection.sentences,
+          tags: detection.tags,
+          language: detection.language,
+          createdAt: detection.createdAt,
+          other_feedback: detection.other_feedback
+        });
+        
+        // Refresh history to include the new item
+        fetchUserDetections();
+      }
       
       // Add to history if not already there
       if (!history.includes(text.substring(0, 50))) {
@@ -178,28 +282,35 @@ ${text}
   const handleSaveContent = () => {
     if (!detectionResult) return;
     
-    const title = editingTitle || getContentTitle();
-    
-    setSavedContents(prev => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        title,
-        content: text,
-        result: detectionResult
-      }
-    ]);
-    
+    // No need to manually save as the API already saves the detection
+    // Just close the title edit dialog
     setShowTitleEdit(false);
     setEditingTitle('');
   };
 
   const handleDeleteSaved = (id: string) => {
-    setSavedContents(prev => prev.filter(item => item.id !== id));
+    deleteDetection(id);
   };
 
-  const handleLoadSaved = (content: string) => {
-    setText(content);
+  const handleLoadSaved = (savedItem: any) => {
+    setText(savedItem.text);
+    
+    // Also set the detection result
+    setDetectionResult({
+      id: savedItem.id,
+      isAIGenerated: !savedItem.is_human,
+      score: savedItem.fake_percentage / 100, // Convert percentage to decimal
+      analysis: `## AI Detection Results\n\n**Text Analysis:**\n\nThis text contains ${savedItem.ai_words} AI-generated words out of ${savedItem.text_words} total words (${savedItem.fake_percentage}% AI probability).\n\n**Sentence Breakdown:**\n\n${savedItem.sentences.map((sentence: string, index: number) => `${index + 1}. ${sentence}`).join('\n\n')}`,
+      summary: savedItem.is_human ? "This text appears to be human-written." : "This text appears to be AI-generated.",
+      fake_percentage: savedItem.fake_percentage,
+       ai_words: savedItem.ai_words,
+       text_words: savedItem.text_words,
+       sentences: savedItem.sentences,
+       tags: savedItem.tags,
+       language: savedItem.language,
+       createdAt: savedItem.createdAt,
+       other_feedback: savedItem.other_feedback
+    });
   };
 
   const renderDetectionResult = () => {
@@ -345,6 +456,22 @@ ${text}
               {detectionResult.analysis}
             </ReactMarkdown>
           </div>
+          
+          {detectionResult.other_feedback && (
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <h4 className="text-lg font-medium mb-3 flex items-center">
+                <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1 rounded-md mr-2">
+                  <FiMessageCircle className="w-4 h-4" />
+                </span>
+                Additional Feedback
+              </h4>
+              <div className="prose prose-sm max-w-none dark:prose-invert">
+                <ReactMarkdown>
+                  {detectionResult.other_feedback}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -356,7 +483,7 @@ ${text}
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.05]"></div>
       <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-purple-400/20 via-indigo-400/20 to-blue-400/20 dark:from-purple-900/20 dark:via-indigo-900/20 dark:to-blue-900/20 blur-3xl rounded-full transform translate-x-1/3 -translate-y-1/4"></div>
       <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-purple-400/20 via-indigo-400/20 to-blue-400/20 dark:from-purple-900/20 dark:via-indigo-900/20 dark:to-blue-900/20 blur-3xl rounded-full transform -translate-x-1/3 translate-y-1/4"></div>
-      <div className="container mx-auto max-w-6xl flex-1 p-0 relative z-10">
+      <div className="container mx-auto max-w-6xl flex-1 p-4 md:p-6 relative z-10">
       {showProAlert && (
         <ProFeatureAlert 
           featureName={t('detectAI.title')}
@@ -368,7 +495,7 @@ ${text}
         <motion.h1 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500"
+          className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 animate-gradient-x"
         >
           {t('detectAI.title')}
         </motion.h1>
@@ -376,7 +503,7 @@ ${text}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-gray-500 dark:text-gray-400"
+          className="text-gray-500 dark:text-gray-400 max-w-2xl"
         >
           {t('detectAI.subtitle')}
         </motion.p>
@@ -409,7 +536,7 @@ ${text}
         <div className="lg:col-span-2 order-2 lg:order-1">
           <div className="sticky top-6 space-y-6">
             {/* Text Input */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+            <div className="glass-effect bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
               <h2 className="text-xl font-medium mb-4 flex items-center">
                 <span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 p-1.5 rounded-md mr-2">
                   <FiShield className="w-5 h-5" />
@@ -488,10 +615,13 @@ ${text}
                   <div className="mt-4">
                     <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('humanizeText.recent')}</h3>
                     <div className="flex flex-wrap gap-2">
+                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mr-1">
+                        <FiClock className="mr-1" /> History:
+                      </div>
                       {history.map((item, index) => (
                         <button
                           key={index}
-                          className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-800 dark:text-gray-200"
+                          className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-all hover:scale-105 text-gray-800 dark:text-gray-200"
                           onClick={() => setText(item)}
                           disabled={isProcessing}
                         >
@@ -511,7 +641,7 @@ ${text}
                 className={`px-4 py-4 min-w-24 rounded-lg font-medium shadow-sm transition-all flex items-center justify-center ${
                   isProcessing || !text.trim()
                     ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-                    : 'bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 text-white hover:shadow-md'
+                    : 'bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 text-white hover:shadow-md animate-gradient-x hover:scale-105'
                 }`}
               >
                 {isProcessing ? (
@@ -535,7 +665,7 @@ ${text}
         
         {/* Output */}
         <div className="lg:col-span-3 order-1 lg:order-2">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
+          <div className="glass-effect bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
             {/* Content Header */}
             <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-b border-indigo-100 dark:border-indigo-800/50 p-4 flex justify-between items-center">
               <div className="flex items-center">
@@ -550,21 +680,21 @@ ${text}
                   <>
                     <button
                       onClick={handleCopyContent}
-                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
+                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-all hover:scale-105"
                       title="Copy to clipboard"
                     >
                       <FiCopy />
                     </button>
                     <button
                       onClick={handleDownloadContent}
-                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
+                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-all hover:scale-105"
                       title="Download as Markdown"
                     >
                       <FiDownload />
                     </button>
                     <button
                       onClick={() => setShowTitleEdit(!showTitleEdit)}
-                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
+                      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-all hover:scale-105"
                       title="Save content"
                     >
                       <FiSave />
@@ -611,10 +741,10 @@ ${text}
                   animate={{ opacity: 1 }}
                   className="flex flex-col items-center justify-center text-center py-16"
                 >
-                  <div className="h-20 w-20 rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 bg-opacity-10 flex items-center justify-center mb-4">
-                    <FiShield className="h-10 w-10 text-indigo-500 dark:text-indigo-400" />
+                  <div className="h-24 w-24 rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 bg-opacity-10 flex items-center justify-center mb-4 animate-gradient-x">
+                    <FiShield className="h-12 w-12 text-indigo-500 dark:text-indigo-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t('detectAI.empty')}</h3>
+                  <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-3">{t('detectAI.empty')}</h3>
                   <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
                     {t('detectAI.emptyDesc')}
                   </p>
@@ -675,12 +805,12 @@ ${text}
         </div>
       </div>
 
-      {/* Saved Content */}
+      {/* Detection History */}
       {savedContents.length > 0 && (
         <div className="mt-10">
           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
-            <FiSave className="mr-2" />
-            Saved Analyses
+            <FiSave className="mr-2 text-indigo-500 dark:text-indigo-400" />
+            Detection History
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -690,13 +820,13 @@ ${text}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow"
+                className="glass-effect p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-medium text-gray-800 dark:text-gray-200">{saved.title}</h3>
                   <div className="flex space-x-1">
                     <button
-                      onClick={() => handleLoadSaved(saved.content)}
+                      onClick={() => handleLoadSaved(saved)}
                       className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                       title="Load"
                     >
@@ -712,25 +842,28 @@ ${text}
                   </div>
                 </div>
                 <div className="flex items-center mt-1 mb-2">
-                  {saved.result.score >= 0.8 ? (
+                  {saved.fake_percentage >= 80 ? (
                     <div className="py-1 px-2 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium flex items-center">
                       <FiAlertTriangle className="mr-1" /> 
-                      <span>{Math.round(saved.result.score * 100)}% AI</span>
+                      <span>{saved.fake_percentage}% AI</span>
                     </div>
-                  ) : saved.result.score >= 0.5 ? (
+                  ) : saved.fake_percentage >= 50 ? (
                     <div className="py-1 px-2 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 text-xs font-medium flex items-center">
                       <FiAlertTriangle className="mr-1" />
-                      <span>{Math.round(saved.result.score * 100)}% AI</span>
+                      <span>{saved.fake_percentage}% AI</span>
                     </div>
                   ) : (
                     <div className="py-1 px-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-medium flex items-center">
                       <FiCheckCircle className="mr-1" />
-                      <span>{Math.round(saved.result.score * 100)}% AI</span>
+                      <span>{saved.fake_percentage}% AI</span>
                     </div>
                   )}
                 </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  {new Date(saved.createdAt).toLocaleDateString()}
+                </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
-                  {saved.result.summary}
+                  {saved.text}
                 </p>
               </motion.div>
             ))}

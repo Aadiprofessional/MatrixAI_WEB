@@ -8,6 +8,23 @@ import { useTheme } from '../context/ThemeContext';
 import { useAlert } from '../context/AlertContext';
 import { imageService } from '../services/imageService';
 import { uploadImageToStorage } from '../supabaseClient';
+import './ImageGeneratorPage.css';
+
+// Add gradient animation style
+const gradientAnimationStyle = document.createElement('style');
+gradientAnimationStyle.textContent = `
+  @keyframes gradient-x {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 3s ease infinite;
+    background-image: linear-gradient(to right, #ec4899, #eab308, #a855f7);
+  }
+`;
+document.head.appendChild(gradientAnimationStyle);
 
 // Define image interface
 interface ImageData {
@@ -712,20 +729,24 @@ const ImageGeneratorPage: React.FC = () => {
   }, [generationStatus, uid]);
 
   return (
-    <div className="min-h-screen relative overflow-hidden">{/* Enhanced background gradient effect */}
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Black background with fixed height */}
+      
+      {/* Gradient overlay with the same fixed height */}
       <div className="absolute inset-0 bg-black z-0"></div>
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-transparent to-purple-900/30 z-0"></div>
       
-      {/* Subtle gradient from bottom to create a fade to black effect */}
-      <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent z-0"></div>
       
-      {/* Subtle grid lines with animation */}
-      <div className="absolute inset-0 opacity-10 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] animate-gridMove"></div>
+      {/* Subtle gradient from bottom to create a fade to black effect */}
+      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent z-0"></div>
+      
+      {/* Subtle grid lines with animation - same fixed height */}
+      <div className="absolute inset-x-0 top-0 h-[600px] opacity-10 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] animate-gridMove"></div>
       
       <div className="flex-1 flex flex-col relative z-10">
           
           <div className="flex-1 p-0">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-7xl mx-auto pt-8 md:pt-10">
             {showProAlert && (
               <ProFeatureAlert 
                 featureName="Unlimited Image Generation"
@@ -733,11 +754,11 @@ const ImageGeneratorPage: React.FC = () => {
               />
             )}
             
-            <div className="mb-6 md:mb-8 text-center">
+            <div className="mb-6 md:mb-8 px-4 md:px-6 text-left ml-3 mt-[-10px]">
               <motion.h1 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white"
+                className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 animate-gradient-x"
               >
                 AI Image Generator
               </motion.h1>
@@ -745,16 +766,18 @@ const ImageGeneratorPage: React.FC = () => {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto"
+                className="text-gray-500 dark:text-gray-400"
               >
                 Create stunning AI-generated images from text descriptions
               </motion.p>
             </div>
             
-            {/* Prompt input */}
-            <div className="mb-4 md:mb-6 p-4 md:p-6 rounded-lg shadow-lg backdrop-blur-md bg-gray-900/40 border border-gray-800/50">
-              {/* Image Upload Area */}
-              <div className="mb-4">
+            {/* Main content with two-column layout */}
+            <div className="flex flex-col lg:flex-row gap-6 px-4 md:px-6 pb-6 md:pb-8">
+              {/* Left Column - Controls */}
+              <div className="lg:w-2/5 p-4 md:p-6 rounded-lg shadow-lg glass-effect ml-3 mt-[-2px]">
+                {/* Image Upload Area */}
+                <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <label className="block text-sm font-medium text-gray-200">
                     Upload an image to enhance (optional)
@@ -841,7 +864,7 @@ const ImageGeneratorPage: React.FC = () => {
                 />
               </div>
               
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4">
+              <div className="mb-4">
                 <div className="flex items-center">
                   <label className="text-xs md:text-sm font-medium mr-2 text-gray-200">
                     Number of images:
@@ -867,21 +890,8 @@ const ImageGeneratorPage: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <div className="flex mt-2 sm:mt-0">
-                  <AuthRequiredButton
-                    onClick={() => setShowHistory(!showHistory)}
-                    disabled={loading}
-                    className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm rounded-lg flex items-center transition-colors w-full sm:w-auto justify-center ${
-                      loading
-                        ? 'bg-gray-700/50 text-gray-400 cursor-not-allowed'
-                        : 'bg-gray-800/70 text-white hover:bg-gray-700/90 backdrop-blur-sm border border-gray-700/50'
-                    }`}
-                  >
-                    <FiList className="mr-1.5 md:mr-2" />
-                    <span>History</span>
-                  </AuthRequiredButton>
-                </div>
               </div>
+             
               
               {/* Error Display */}
               {error && (
@@ -941,21 +951,66 @@ const ImageGeneratorPage: React.FC = () => {
                   )}
                 </div>
               )}
+              
+              {/* History Toggle Button */}
+              <div className="mt-4">
+                <AuthRequiredButton
+                  onClick={() => setShowHistory(!showHistory)}
+                  disabled={loading}
+                  className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm rounded-lg flex items-center transition-colors w-full justify-center ${
+                    loading
+                      ? 'bg-gray-700/50 text-gray-400 cursor-not-allowed'
+                      : showHistory
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20'
+                        : 'bg-gray-800/70 text-white hover:bg-gray-700/90 backdrop-blur-sm border border-gray-700/50'
+                  }`}
+                >
+                  <FiList className="mr-1.5 md:mr-2" />
+                  <span>{showHistory ? 'Back to Generator' : 'View History'}</span>
+                </AuthRequiredButton>
+              </div>
+              
+              {/* Quick Prompts */}
+              {!showHistory && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium mb-2 text-gray-200">
+                    Quick Prompts
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      "A futuristic city with flying cars",
+                      "Photorealistic mountain landscape",
+                      "Anime style portrait of a warrior",
+                      "Abstract digital art with vibrant colors"
+                    ].map((prompt, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setMessage(prompt)}
+                        className="px-3 py-2 text-xs rounded-lg bg-gray-800/70 text-white hover:bg-gray-700/90 backdrop-blur-sm border border-gray-700/50 transition-colors text-left truncate"
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             
-            {/* Main content area */}
-            {showHistory ? (
+            {/* Right Column - Image Display */}
+            <div className="lg:w-3/5 flex justify-center">
+              {/* Add animated border effect */}
+              <div className="relative rounded-lg overflow-hidden w-full max-w-2xl h-[600px]">
+                {/* Colorful border using gradient background without purple */}
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500 to-pink-500 animate-gradient-x p-[6px]"></div>
+                
+                {/* Main content area */}
+                <div className="relative glass-effect rounded-lg overflow-hidden h-full">
+                {showHistory ? (
               // History View
-              <div className="p-4 md:p-6 rounded-lg shadow-lg bg-gray-900/40 backdrop-blur-md border border-gray-800/50">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 md:mb-6 gap-3 sm:gap-0">
-                  <h2 className="text-lg md:text-xl font-bold text-white">Recent Images</h2>
-                  <button
-                    onClick={() => setShowHistory(false)}
-                    className="w-full sm:w-auto px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm rounded-lg transition-colors bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20"
-                  >
-                    Back to Generator
-                  </button>
-                </div>
+                <div className="p-4 md:p-6 h-[600px] overflow-y-auto">
+                <div className="mb-4 md:mb-6">
+                    <h2 className="text-lg md:text-xl font-bold text-white">Recent Images</h2>
+                  </div>
                 
                 {isLoading && imageHistory.length === 0 ? (
                   <div className="space-y-4">
@@ -1113,7 +1168,7 @@ const ImageGeneratorPage: React.FC = () => {
               </div>
             ) : (
               // Generator View
-              <div className="p-6 rounded-lg shadow-lg bg-gray-900/40 backdrop-blur-md border border-gray-800/50">
+              <div className="p-6 rounded-lg shadow-lg bg-black backdrop-blur-md h-[600px] overflow-hidden">
                 {showSkeleton ? (
                   uploadedImage && uploadedImageUrl ? (
                     // Custom skeleton for image enhancement
@@ -1149,9 +1204,9 @@ const ImageGeneratorPage: React.FC = () => {
                     </div>
                   ) : (
                     // Regular skeleton for image generation
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                    <div className={`grid ${imageCount === 1 ? 'grid-cols-1' : imageCount === 2 ? 'grid-cols-2' : imageCount === 3 ? 'grid-cols-3' : 'grid-cols-2'} gap-3 md:gap-4 p-4 md:p-6 h-full`}>
                       {[...Array(imageCount)].map((_, i) => (
-                        <div key={i} className="relative rounded-lg overflow-hidden bg-gray-800/70" style={{ aspectRatio: '16/9' }}>
+                        <div key={i} className="relative rounded-lg overflow-hidden bg-gray-800/70 aspect-square">
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse transform -skew-x-12 opacity-30"></div>
                           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 animate-gradient-x"></div>
                         </div>
@@ -1159,20 +1214,18 @@ const ImageGeneratorPage: React.FC = () => {
                     </div>
                   )
                 ) : images.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                  <div className={`grid ${images.length === 1 ? 'grid-cols-1' : images.length === 2 ? 'grid-cols-2' : images.length === 3 ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-2'} gap-3 md:gap-4 p-4 md:p-6 h-full`}>
                     {images.map((imageUrl, index) => (
                       <motion.div 
                         key={index} 
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="relative group overflow-hidden rounded-lg shadow-md bg-gray-800/70 border border-gray-700/30"
-                        style={{ aspectRatio: '16/9' }}
+                        className="relative group overflow-hidden rounded-lg shadow-md bg-gray-800/70 border border-gray-700/30 aspect-square"
                       >
                         <img 
                           src={imageUrl} 
                           alt={`Generated image ${index + 1}`} 
-                          className="w-full h-full object-contain"
-                          style={{ aspectRatio: '16/9' }}
+                          className="w-full h-full object-cover"
                         />
                         <div className={`absolute inset-0 flex flex-col justify-end p-2 md:p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/80 via-black/40 to-transparent`}>
                           <div className="flex space-x-1 md:space-x-2">
@@ -1194,16 +1247,21 @@ const ImageGeneratorPage: React.FC = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 md:py-16 text-gray-400">
-                    <FiImage className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 opacity-30" />
-                    <p className="text-base md:text-lg">Enter a prompt and generate your first image</p>
+                  <div className="text-center text-gray-400 h-[600px] flex flex-col items-center justify-center p-4 md:p-6 bg-gray-900/30 backdrop-blur-md overflow-hidden border border-gray-700/30">
+                    <FiImage className="w-16 h-16 md:w-20 md:h-40 mx-auto mb-4 md:mb-5 opacity-30" />
+                    <p className="text-base md:text-lg max-w-xs">Enter a prompt and generate your first image</p>
                   </div>
                 )}
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>
+      
+       </div>
+        </div>
+         </div>
     </div>
   );
 };

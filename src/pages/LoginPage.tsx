@@ -170,7 +170,9 @@ const LoginPage: React.FC = () => {
               className="relative"
             >
               <div className="relative flex items-center justify-center">
-                <span className="text-2xl font-bold text-white drop-shadow-md">matrix<span className="text-red-500">.</span>ai<span className="text-white">.asia</span></span>
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-white mb-2">
+                  <img src="/logo192.png" alt="MatrixAI Logo" className="h-10 w-10" />
+                </div>
               </div>
             </motion.div>
           </div>

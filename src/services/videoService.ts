@@ -127,13 +127,13 @@ export const videoService = {
   },
   
   // Create video with image URL
-  createVideoWithUrl: async (uid: string, promptText: string, image_url: string, negative_prompt?: string, template?: string): Promise<VideoCreationResponse> => {
+  createVideoWithUrl: async (uid: string, promptText: string, imageUrl: string, negative_prompt?: string, template?: string): Promise<VideoCreationResponse> => {
     // Log the original image URL for debugging
-    console.log('Original image_url:', image_url);
+    console.log('Original imageUrl:', imageUrl);
     
     // Clean and validate the image URL - remove quotes, backticks, and extra spaces
     // Apply thorough cleaning in multiple steps
-    let cleanedImageUrl = image_url;
+    let cleanedImageUrl = imageUrl;
     // First trim any whitespace
     cleanedImageUrl = cleanedImageUrl.trim();
     // Then remove all quotes and backticks - ensure we're removing ALL backticks
@@ -143,7 +143,7 @@ export const videoService = {
       cleanedImageUrl = cleanedImageUrl.replace('`', '');
     }
     
-    console.log('Cleaned image_url:', cleanedImageUrl);
+    console.log('Cleaned imageUrl:', cleanedImageUrl);
     
     // Validate the image URL
     const validation = videoService.validateImageUrl(cleanedImageUrl);
@@ -165,7 +165,7 @@ export const videoService = {
     // Create request body with required fields based on the selected option
     const requestBody: any = {
       uid,
-      image_url: cleanedImageUrl
+      imageUrl: cleanedImageUrl
     };
     
     // Handle the two specific API call options
@@ -174,27 +174,32 @@ export const videoService = {
       requestBody.template = template.trim();
       // For template-based generation, include empty promptText to satisfy API requirement
     
-      // Send image_url, template, empty promptText, negative_prompt, and uid
+      // Send imageUrl, template, empty promptText, negative_prompt, and uid
     } else {
       // Option 2: Text-to-Video with Negative Prompt
       requestBody.promptText = promptText.trim();
       // Always include negative_prompt for Text-to-Video with Negative Prompt option
    
-      // Send image_url, prompt, negative_prompt, and uid
+      // Send imageUrl, prompt, negative_prompt, and uid
     }
     
     console.log('createVideoWithUrl request body:', requestBody);
     
     // Final verification of the image URL before sending to API
-    if (requestBody.image_url.includes('`')) {
+    if (requestBody.imageUrl && requestBody.imageUrl.includes('`')) {
       console.error('WARNING: Image URL still contains backticks after cleaning');
       // Force remove any remaining backticks
-      requestBody.image_url = requestBody.image_url.split('`').join('');
-      console.log('Final cleaned image_url:', requestBody.image_url);
+      requestBody.imageUrl = requestBody.imageUrl.split('`').join('');
+      console.log('Final cleaned imageUrl:', requestBody.imageUrl);
     }
     
     try {
       // Add Accept header to match curl command
+      // Make sure negative_prompt is included if provided
+      if (negative_prompt) {
+        requestBody.negative_prompt = negative_prompt.trim();
+      }
+      
       // Convert to JSON string and verify no backticks remain
       let requestBodyString = JSON.stringify(requestBody);
       
@@ -205,6 +210,9 @@ export const videoService = {
         requestBodyString = requestBodyString.replace(/`/g, '');
         console.log('Final cleaned request body string:', requestBodyString);
       }
+      
+      // Log the final request body for debugging
+      console.log('Final request body being sent to API:', JSON.parse(requestBodyString));
       
       const response = await fetch(`${API_BASE_URL}/api/video/createVideowithurl`, {
         method: 'POST',

@@ -20,13 +20,16 @@ import {
   FiX,
   FiCheck,
   FiShoppingBag,
-  FiShield
+  FiShield,
+  FiEdit
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
+
+import matrix from '../assets/matrix.png';
 
 interface SidebarProps {
   onToggle?: (collapsed: boolean) => void;
@@ -163,6 +166,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
     { path: '/tools/image-generator', label: t('nav.imageGenerator'), icon: <FiImage className="w-5 h-5" />, pro: true },
     { path: '/tools/video-creator', label: t('nav.video'), icon: <FiVideo className="w-5 h-5" />, pro: true },
     { path: '/tools/content-writer', label: t('nav.content'), icon: <FiFileText className="w-5 h-5" />, pro: true },
+    { path: '/tools/humanise-text', label: t('nav.humaniseText') || 'Humanize Text', icon: <FiEdit className="w-5 h-5" />, pro: true },
+    { path: '/tools/detect-ai', label: t('nav.detectAI') || 'Detect AI', icon: <FiShield className="w-5 h-5" />, pro: true },
     { path: '/tools/speech-to-text', label: t('nav.speechToText'), icon: <FiMic className="w-5 h-5" />, pro: true },
     { path: '/profile', label: t('nav.profile'), icon: <FiUser className="w-5 h-5" /> },
     { path: '/settings', label: t('nav.settings'), icon: <FiSettings className="w-5 h-5" /> },
@@ -186,21 +191,21 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
           {/* Logo and Toggle Section */}
           <div className="flex-shrink-0 px-3 py-4">
             <div className="flex items-center justify-between mb-8 px-2">
-              {!collapsed && (
-                <Link to="/dashboard" className="flex items-center">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                    MA
-                  </div>
+              <Link to="/dashboard" className="flex items-center">
+                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-white">
+                  <img src={matrix} alt="MatrixAI Logo" className="h-9 w-15" />
+                </div>
+                {!collapsed ? (
                   <div className="flex items-center">
-                    <span className="ml-2 text-lg font-bold">MatrixAI</span>
+                    <span className="ml-2 text-lg font-bold">matrixai</span>
                     {isPro && (
                       <span className="ml-1 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5">
                         PRO
                       </span>
                     )}
                   </div>
-                </Link>
-              )}
+                ) : null}
+              </Link>
               <button 
                 onClick={toggleSidebar}
                 className={`p-2 rounded-lg ${
