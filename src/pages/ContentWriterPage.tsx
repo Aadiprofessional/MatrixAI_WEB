@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FiFileText, FiZap, FiCopy, FiDownload, FiShare2, FiTrash, FiRotateCw, FiEdit, FiCheck, FiX, FiSave, FiSliders, FiSend, FiPlus, FiChevronLeft, FiChevronRight, FiMail, FiTwitter, FiLinkedin, FiFacebook, FiLink, FiLoader } from 'react-icons/fi';
+import { FiFileText, FiZap, FiCopy, FiDownload, FiShare2, FiTrash, FiRotateCw, FiEdit, FiCheck, FiX, FiSave, FiSliders, FiSend, FiPlus, FiChevronLeft, FiChevronRight, FiMail, FiTwitter, FiLinkedin, FiFacebook, FiLink, FiLoader, FiShield, FiUser } from 'react-icons/fi';
 import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -23,6 +23,10 @@ import html2canvas from 'html2canvas';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
 import './ContentWriterPage.css';
+
+// Import the other page components
+import HumaniseTextPage from './HumaniseTextPage';
+import DetectAIPage from './DetectAIPage';
 
 // Add gradient animation style
 const gradientAnimationStyle = document.createElement('style');
@@ -69,6 +73,54 @@ const ContentWriterPage: React.FC = () => {
   const { darkMode } = useTheme();
   const navigate = useNavigate();
   const uid = user?.id;
+
+  // Tab navigation state
+  const [activeTab, setActiveTab] = useState('content-writer');
+  
+  // Dynamic title and subtitle
+  const [pageTitle, setPageTitle] = useState('AI Content Writer');
+  const [pageSubtitle, setPageSubtitle] = useState('Generate professional content for applications, essays, letters, and more');
+
+  // Update page title and subtitle when tab changes
+  useEffect(() => {
+    if (activeTab === 'content-writer') {
+      setPageTitle('AI Content Writer');
+      setPageSubtitle('Generate professional content for applications, essays, letters, and more');
+    } else if (activeTab === 'humanizer') {
+      setPageTitle('Humanizer');
+      setPageSubtitle('Make AI-generated text sound more human and undetectable');
+    } else if (activeTab === 'ai-detector') {
+      setPageTitle('AI Detector');
+      setPageSubtitle('Check if text was written by AI or a human');
+    }
+  }, [activeTab]);
+  
+  // Listen for custom event to switch to Content Writer tab and use transferred text
+  useEffect(() => {
+    const handleSwitchToContentWriter = () => {
+      // Switch to Content Writer tab
+      setActiveTab('content-writer');
+      
+      // Get transferred text from localStorage
+      const transferredText = localStorage.getItem('transferToContentWriter');
+      if (transferredText) {
+        // Set the transferred text as prompt
+        setPrompt(transferredText);
+        // Clear localStorage
+        localStorage.removeItem('transferToContentWriter');
+        // Show toast notification
+        toast.success('Text transferred to Content Writer');
+      }
+    };
+    
+    // Add event listener
+    window.addEventListener('switchToContentWriter', handleSwitchToContentWriter);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('switchToContentWriter', handleSwitchToContentWriter);
+    };
+  }, []);
 
   // Content generation state
   const [prompt, setPrompt] = useState('');
@@ -1180,13 +1232,13 @@ Create content that is original, well-researched, and engaging for the target au
       )}
 
       {/* Header */}
-      <div className="mb-8 mt-5 ml-8">
+      <div className="mb-4 mt-5 ml-8">
         <motion.h1 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 animate-gradient-x"
         >
-          {t('contentWriter.title')}
+          {pageTitle}
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0, y: -10 }}
@@ -1194,10 +1246,51 @@ Create content that is original, well-researched, and engaging for the target au
           transition={{ delay: 0.1 }}
           className="text-gray-500 dark:text-gray-400"
         >
-          {t('contentWriter.subtitle')}
+          {pageSubtitle}
         </motion.p>
       </div>
+      
+      {/* Tab Navigation */}
+      <div className="mx-8 mb-6">
+        <div className="flex space-x-2 border-b border-gray-200 dark:border-gray-700">
+          <button
+            onClick={() => setActiveTab('content-writer')}
+            className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors ${activeTab === 'content-writer' 
+              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-b-2 border-blue-500' 
+              : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400'}`}
+          >
+            <div className="flex items-center">
+              <FiFileText className="mr-2" />
+              Content Writer
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('humanizer')}
+            className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors ${activeTab === 'humanizer' 
+              ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 border-b-2 border-green-500' 
+              : 'text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400'}`}
+          >
+            <div className="flex items-center">
+              <FiUser className="mr-2" />
+              Humanizer
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('ai-detector')}
+            className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors ${activeTab === 'ai-detector' 
+              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-b-2 border-purple-500' 
+              : 'text-gray-600 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-400'}`}
+          >
+            <div className="flex items-center">
+              <FiShield className="mr-2" />
+              AI Detector
+            </div>
+          </button>
+        </div>
+      </div>
 
+      {/* Content based on active tab */}
+      {activeTab === 'content-writer' && (
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 px-4 py-4">
         {/* Left Panel - Controls */}
         <div className="lg:col-span-2 order-2 lg:order-1">
@@ -1361,7 +1454,7 @@ Create content that is original, well-researched, and engaging for the target au
                 >
                   <div className="flex items-center justify-center">
                     <FiFileText className="w-4 h-4 mr-2" />
-                    {showHistory ? 'Hide History' : 'View History'}
+                    {showHistory ? t('common.hideHistory') || 'Hide History' : t('contentWriter.history')}
                   </div>
                 </AuthRequiredButton>
               </div>
@@ -1563,15 +1656,27 @@ Create content that is original, well-researched, and engaging for the target au
               </div>
             </div>
 
-            {/* Content History Section - Conditionally rendered */}
-             {showHistory && (
-               <div className="glass-effect rounded-lg shadow-sm p-6 m-2 hover:shadow-md transition-shadow mt-6">
-                 <h2 className="text-xl font-medium mb-4 flex items-center">
-                  <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
-                    <FiFileText className="w-5 h-5" />
-                  </span>
-                  Content History {contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 && `(${contentHistory.length})`}
-                </h2>
+            {/* History Button */}
+            <div className="mt-8">
+              <button
+                onClick={() => setShowHistory(!showHistory)}
+                className="flex items-center px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors mb-4"
+              >
+                <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
+                  <FiFileText className="w-5 h-5" />
+                </span>
+                {showHistory ? t('common.hideHistory') : t('contentWriter.history')}
+              </button>
+              
+              {/* Content History Section - Conditionally rendered */}
+              {showHistory && (
+                <div>
+                  <h2 className="text-xl font-medium mb-4 flex items-center">
+                    <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
+                      <FiFileText className="w-5 h-5" />
+                    </span>
+                    {t('contentWriter.history')} {contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 && `(${contentHistory.length})`}
+                  </h2>
               
               {isLoadingHistory ? (
                 <div className="text-center py-8">
@@ -1583,59 +1688,39 @@ Create content that is original, well-researched, and engaging for the target au
                   </p>
                 </div>
               ) : contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 ? (
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {getPaginatedItems(contentHistory).map((item, index) => item && item.id ? (
                     <motion.div
                       key={item.id}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className={`p-3 rounded-lg border transition-all ${
-                        darkMode
-                          ? 'border-gray-600 bg-gray-700/30 hover:bg-gray-700/50 hover:border-purple-500'
-                          : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-purple-300'
-                      } hover:shadow-sm`}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow cursor-pointer glass-effect"
+                      onClick={() => {
+                        setEditedContent(item.content);
+                        setGeneratedContent(item.content);
+                        toast.success('Content loaded from history');
+                      }}
                     >
-                      <div className="flex justify-between">
-                        <button
-                          onClick={() => {
-                            setEditedContent(item.content);
-                            setGeneratedContent(item.content);
-                            toast.success('Content loaded from history');
-                          }}
-                          className="flex-1 text-left"
-                        >
-                          <h4 className={`font-medium text-sm mb-1 ${
-                            darkMode ? 'text-gray-200' : 'text-gray-800'
-                          }`}>
-                            {item.title || 'Untitled Content'}
-                          </h4>
-                          <p className={`text-xs ${
-                            darkMode ? 'text-gray-400' : 'text-gray-500'
-                          }`}>
-                            {new Date(item.createdAt).toLocaleDateString()}
-                          </p>
-                          <p className={`text-xs mt-1 line-clamp-2 ${
-                            darkMode ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                            {item.content.substring(0, 100)}...
-                          </p>
-                        </button>
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+                          {item.title || 'Untitled'}
+                        </h4>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteContent(item.id);
                           }}
-                          className={`p-2 rounded-md transition-colors self-start ml-2 ${
-                            darkMode
-                              ? 'text-gray-400 hover:text-red-400 hover:bg-gray-700'
-                              : 'text-gray-500 hover:text-red-500 hover:bg-gray-100'
-                          }`}
-                          title="Delete content"
+                          className="text-gray-400 hover:text-red-500 transition-colors"
                         >
                           <FiTrash className="w-4 h-4" />
                         </button>
                       </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
+                        {item.content}
+                      </p>
                     </motion.div>
                   ) : null)}
                   
@@ -1704,24 +1789,30 @@ Create content that is original, well-researched, and engaging for the target au
                   )}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${
-                    darkMode ? 'bg-gray-700' : 'bg-gray-100'
-                  }`}>
-                    <FiFileText className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                  </div>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    No content history yet
-                  </p>
-                  <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                    Generated content will appear here
-                  </p>
+                <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <p className="text-gray-500 dark:text-gray-400">{t('contentWriter.noHistory')}</p>
+                </div>
+              )}
                 </div>
               )}
             </div>
-              )}
           </div>
         </div>
+      )}
+
+      {/* Humanizer Tab */}
+      {activeTab === 'humanizer' && (
+        <div className="px-4 py-4">
+          <HumaniseTextPage />
+        </div>
+      )}
+
+      {/* AI Detector Tab */}
+      {activeTab === 'ai-detector' && (
+        <div className="px-4 py-4">
+          <DetectAIPage />
+        </div>
+      )}
 
       {/* Share Modal */}
       {showShareModal && (

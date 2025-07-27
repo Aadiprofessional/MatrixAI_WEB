@@ -49,6 +49,14 @@ const SignupPage: React.FC = () => {
       console.log('User detected in signup, redirecting to dashboard');
       navigate('/dashboard');
     }
+
+    // Check for referral code in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      console.log('Referral code detected in URL:', refCode);
+      setReferralCode(refCode);
+    }
   }, [user, navigate]);
 
   // Function to generate a random 6-digit alphanumeric code

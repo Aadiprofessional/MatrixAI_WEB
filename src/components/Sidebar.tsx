@@ -166,8 +166,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
     { path: '/tools/image-generator', label: t('nav.imageGenerator'), icon: <FiImage className="w-5 h-5" />, pro: true },
     { path: '/tools/video-creator', label: t('nav.video'), icon: <FiVideo className="w-5 h-5" />, pro: true },
     { path: '/tools/content-writer', label: t('nav.content'), icon: <FiFileText className="w-5 h-5" />, pro: true },
-    { path: '/tools/humanise-text', label: t('nav.humaniseText') || 'Humanize Text', icon: <FiEdit className="w-5 h-5" />, pro: true },
-    { path: '/tools/detect-ai', label: t('nav.detectAI') || 'Detect AI', icon: <FiShield className="w-5 h-5" />, pro: true },
     { path: '/tools/speech-to-text', label: t('nav.speechToText'), icon: <FiMic className="w-5 h-5" />, pro: true },
     { path: '/profile', label: t('nav.profile'), icon: <FiUser className="w-5 h-5" /> },
     { path: '/settings', label: t('nav.settings'), icon: <FiSettings className="w-5 h-5" /> },

@@ -25,6 +25,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
+import toast from 'react-hot-toast';
 import './ContentWriterPage.css';
 
 const DetectAIPage: React.FC = () => {
@@ -81,6 +82,7 @@ const DetectAIPage: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showProAlert, setShowProAlert] = useState(false);
   const [freeDetectionsLeft, setFreeDetectionsLeft] = useState(1);
+  const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<string[]>([
     'Analyze this content for AI generation',
     'Is this text written by AI or human?',
@@ -202,6 +204,69 @@ const DetectAIPage: React.FC = () => {
           other_feedback: detection.other_feedback
         });
         
+        // Show appropriate toast notification based on AI probability
+        if (detection.fake_percentage > 80) {
+          toast.error(
+            <div>
+              <div>High AI probability detected!</div>
+              <button 
+                onClick={() => {
+                  // Store the text in localStorage
+                  localStorage.setItem('transferToContentWriter', text);
+                  // Navigate to Content Writer tab in parent component
+                  window.dispatchEvent(new CustomEvent('switchToContentWriter'));
+                }}
+                className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
+              >
+                <FiFileText className="mr-1" /> Use in Content Writer
+              </button>
+            </div>
+          );
+        } else if (detection.fake_percentage > 40) {
+          toast(
+            <div>
+              <div>Medium AI probability detected.</div>
+              <button 
+                onClick={() => {
+                  // Store the text in localStorage
+                  localStorage.setItem('transferToContentWriter', text);
+                  // Navigate to Content Writer tab in parent component
+                  window.dispatchEvent(new CustomEvent('switchToContentWriter'));
+                }}
+                className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
+              >
+                <FiFileText className="mr-1" /> Use in Content Writer
+              </button>
+            </div>,
+            {
+              icon: <FiAlertTriangle className="text-yellow-500" />,
+              style: {
+                backgroundColor: '#FFFBEB',
+                color: '#92400E'
+              }
+            }
+          );
+        } else {
+          toast.success(
+            <div>
+              <div>Low AI probability detected.</div>
+              <button 
+                onClick={() => {
+                  // Store the text in localStorage
+                  localStorage.setItem('transferToContentWriter', text);
+                  // Navigate to Content Writer tab in parent component
+                  window.dispatchEvent(new CustomEvent('switchToContentWriter'));
+                }}
+                className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
+              >
+                <FiFileText className="mr-1" /> Use in Content Writer
+              </button>
+            </div>
+          );
+        }
+        
+        // Toast notifications are now handled with the custom buttons above
+        
         // Refresh history to include the new item
         fetchUserDetections();
       }
@@ -250,7 +315,23 @@ ${detectionResult.summary}
 ${detectionResult.analysis}`;
     
     navigator.clipboard.writeText(resultText);
-    // Could add a toast notification here
+    
+    toast.success(
+      <div>
+        <div>{t('common.copied') || 'Content copied to clipboard'}</div>
+        <button 
+          onClick={() => {
+            // Store the text in localStorage
+            localStorage.setItem('transferToContentWriter', text);
+            // Navigate to Content Writer tab in parent component
+            window.dispatchEvent(new CustomEvent('switchToContentWriter'));
+          }}
+          className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
+        >
+          <FiFileText className="mr-1" /> Use in Content Writer
+        </button>
+      </div>
+    );
   };
 
   const handleDownloadContent = () => {
@@ -330,7 +411,7 @@ ${text}
         </div>
       );
       scoreClass = "text-red-500";
-      scoreColor = "#ef4444";
+        scoreColor = "#ef4444";
     } else if (score >= 50) {
       statusComponent = (
         <div className="flex items-center text-yellow-500">
@@ -339,7 +420,7 @@ ${text}
         </div>
       );
       scoreClass = "text-yellow-500";
-      scoreColor = "#eab308";
+        scoreColor = "#eab308";
     } else {
       statusComponent = (
         <div className="flex items-center text-green-500">
@@ -348,7 +429,7 @@ ${text}
         </div>
       );
       scoreClass = "text-green-500";
-      scoreColor = "#22c55e";
+        scoreColor = "#22c55e";
     }
     
     return (
@@ -479,10 +560,7 @@ ${text}
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 opacity-80"></div>
-      <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.05]"></div>
-      <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-purple-400/20 via-indigo-400/20 to-blue-400/20 dark:from-purple-900/20 dark:via-indigo-900/20 dark:to-blue-900/20 blur-3xl rounded-full transform translate-x-1/3 -translate-y-1/4"></div>
-      <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-purple-400/20 via-indigo-400/20 to-blue-400/20 dark:from-purple-900/20 dark:via-indigo-900/20 dark:to-blue-900/20 blur-3xl rounded-full transform -translate-x-1/3 translate-y-1/4"></div>
+     
       <div className="container mx-auto max-w-6xl flex-1 p-4 md:p-6 relative z-10">
       {showProAlert && (
         <ProFeatureAlert 
@@ -491,45 +569,7 @@ ${text}
         />
       )}
       
-      <div className="mb-8">
-        <motion.h1 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 animate-gradient-x"
-        >
-          {t('detectAI.title')}
-        </motion.h1>
-        <motion.p 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-gray-500 dark:text-gray-400 max-w-2xl"
-        >
-          {t('detectAI.subtitle')}
-        </motion.p>
-        
-        {/* Feature badges */}
-        <div className="flex flex-wrap gap-2 mt-2">
-          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 text-white">{t('detectAI.badges.accuracy')}</span>
-          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-400 to-blue-400 text-white">{t('detectAI.badges.sensitivity')}</span>
-          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 text-white">{t('detectAI.badges.analysis')}</span>
-        </div>
-        
-        {!isPro && (
-          <div className="mt-4 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
-            <FiFileText className="mr-1.5" />
-            <span>{freeDetectionsLeft} {freeDetectionsLeft === 1 ? t('detectAI.freeLeft') : t('detectAI.freeLeftPlural')} left</span>
-            {freeDetectionsLeft === 0 && (
-              <button 
-                onClick={() => setShowProAlert(true)}
-                className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
-              >
-                {t('detectAI.upgradeText') || 'Upgrade to Pro'}
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+   
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Text Input Form */}
@@ -806,15 +846,20 @@ ${text}
       </div>
 
       {/* Detection History */}
-      {savedContents.length > 0 && (
-        <div className="mt-10">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200 flex items-center">
-            <FiSave className="mr-2 text-indigo-500 dark:text-indigo-400" />
-            Detection History
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {savedContents.map((saved) => (
+      <div className="mt-10">
+        <button
+          onClick={() => setShowHistory(!showHistory)}
+          className="flex items-center px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-800/40 transition-colors mb-4"
+        >
+          <FiSave className="mr-2 text-indigo-500 dark:text-indigo-400" />
+          {showHistory ? t('common.hideHistory') || 'Hide History' : t('detectAI.history')}
+        </button>
+        
+        {showHistory && (
+          <div>
+            {savedContents.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {savedContents.map((saved) => (
               <motion.div 
                 key={saved.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -867,9 +912,15 @@ ${text}
                 </p>
               </motion.div>
             ))}
+              </div>
+            ) : (
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
+                <p className="text-gray-500 dark:text-gray-400">{t('detectAI.noHistory')}</p>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
     </div>
   );

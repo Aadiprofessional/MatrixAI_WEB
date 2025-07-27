@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiMessageCircle, FiUsers, FiGlobe, FiStar } from 'react-icons/fi';
+import '../styles/CommonStyles.css';
 
 const AboutPage: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -66,12 +67,13 @@ const AboutPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen page-background dark text-white">
+      {/* Background gradient effects */}
+      <div className="gradient-blob-1"></div>
+      <div className="gradient-blob-2"></div>
+      
       {/* Hero section */}
       <div className="relative py-24 overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-black z-0"></div>
-        
         {/* Animated grid background similar to HomePage */}
         <div className="absolute inset-0 z-0 opacity-30">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
@@ -92,7 +94,7 @@ const AboutPage: React.FC = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
-            className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl"
+            className="page-title text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl"
           >
             About Us
           </motion.h1>
@@ -111,7 +113,7 @@ const AboutPage: React.FC = () => {
       {/* Our story section */}
       <div className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative">
         {/* Glass card effect */}
-        <div className="absolute inset-0 backdrop-blur-md bg-black/30 rounded-xl border border-gray-700 shadow-xl shadow-purple-900/10 mx-4 sm:mx-6 lg:mx-8 z-0"></div>
+        <div className="glass-effect mx-4 sm:mx-6 lg:mx-8 z-0"></div>
         
         <div className="grid md:grid-cols-2 gap-12 items-center relative z-10">
           <motion.div
@@ -150,9 +152,6 @@ const AboutPage: React.FC = () => {
 
       {/* Values section */}
       <div className="py-16 relative overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/10 to-black z-0"></div>
-        
         {/* Animated grid background */}
         <div className="absolute inset-0 z-0 opacity-30">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
@@ -166,7 +165,7 @@ const AboutPage: React.FC = () => {
             viewport={{ once: true }}
             className="text-center"
           >
-            <h2 className="text-3xl font-extrabold text-white">Our Values</h2>
+            <h2 className="section-title text-3xl font-extrabold">Our Values</h2>
             <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-300">
               The principles that guide our work and company culture
             </p>
@@ -180,7 +179,7 @@ const AboutPage: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="backdrop-blur-md bg-black/30 border border-gray-700 rounded-xl p-8 text-center hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
+                className="glass-effect p-8 text-center hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
               >
                 <div className="flex justify-center text-purple-400">{value.icon}</div>
                 <h3 className="mt-6 text-lg font-medium text-white">{value.title}</h3>
@@ -193,8 +192,6 @@ const AboutPage: React.FC = () => {
 
       {/* Team section */}
       <div className="py-16 relative overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black to-purple-900/10 z-0"></div>
         
         {/* Animated grid background */}
         <div className="absolute inset-0 z-0 opacity-30">
@@ -209,7 +206,7 @@ const AboutPage: React.FC = () => {
             viewport={{ once: true }}
             className="text-center"
           >
-            <h2 className="text-3xl font-extrabold text-white">Meet Our Team</h2>
+            <h2 className="section-title text-3xl font-extrabold">Meet Our Team</h2>
             <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-300">
               A diverse group of experts passionate about building better AI
             </p>
@@ -223,7 +220,7 @@ const AboutPage: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="backdrop-blur-md bg-black/30 border border-gray-700 rounded-xl overflow-hidden shadow-md hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
+                className="glass-effect overflow-hidden shadow-md hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
               >
                 <div className="h-64 relative overflow-hidden">
                   <img
@@ -245,7 +242,7 @@ const AboutPage: React.FC = () => {
       </div>
 
       {/* Stats section */}
-      <div className="bg-indigo-700 dark:bg-indigo-900 py-16">
+      <div className="glass-effect-light py-16 my-8 mx-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <motion.div
@@ -296,8 +293,8 @@ const AboutPage: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="text-center"
         >
-          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Backed By</h2>
-          <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-500 dark:text-gray-400">
+          <h2 className="section-title text-3xl font-extrabold">Backed By</h2>
+          <p className="mt-4 max-w-3xl mx-auto text-xl text-secondary">
             Partnering with leading technology investors to build the future of AI
           </p>
         </motion.div>
@@ -309,16 +306,16 @@ const AboutPage: React.FC = () => {
           className="mt-16 grid grid-cols-2 gap-8 md:grid-cols-4"
         >
           <div className="flex justify-center items-center h-16 px-4 opacity-70 grayscale transition-all hover:opacity-100 hover:grayscale-0">
-            <div className="text-xl font-bold text-gray-500 dark:text-gray-400">Sequoia Capital</div>
+            <div className="text-xl font-bold text-secondary">Sequoia Capital</div>
           </div>
           <div className="flex justify-center items-center h-16 px-4 opacity-70 grayscale transition-all hover:opacity-100 hover:grayscale-0">
-            <div className="text-xl font-bold text-gray-500 dark:text-gray-400">Andreessen Horowitz</div>
+            <div className="text-xl font-bold text-secondary">Andreessen Horowitz</div>
           </div>
           <div className="flex justify-center items-center h-16 px-4 opacity-70 grayscale transition-all hover:opacity-100 hover:grayscale-0">
-            <div className="text-xl font-bold text-gray-500 dark:text-gray-400">Google Ventures</div>
+            <div className="text-xl font-bold text-secondary">Google Ventures</div>
           </div>
           <div className="flex justify-center items-center h-16 px-4 opacity-70 grayscale transition-all hover:opacity-100 hover:grayscale-0">
-            <div className="text-xl font-bold text-gray-500 dark:text-gray-400">Y Combinator</div>
+            <div className="text-xl font-bold text-secondary">Y Combinator</div>
           </div>
         </motion.div>
       </div>

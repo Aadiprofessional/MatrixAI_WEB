@@ -115,6 +115,8 @@ export const en = {
   'contentWriter.proFeature': 'Pro Feature',
   'contentWriter.upgradeRequired': 'This feature requires a Pro subscription.',
   'contentWriter.upgradeNow': 'Upgrade Now',
+  'contentWriter.history': 'Content History',
+  'contentWriter.noHistory': 'No content history yet.',
   
   // Chat
   'chat.title': 'AI Chat Assistant',
@@ -396,6 +398,7 @@ export const en = {
   'common.proFeatureLocked': 'Pro Feature Locked',
   'common.upgradeToAccess': 'Upgrade to access',
   'common.unlockCreativePotential': 'and unlock your full creative potential',
+  'common.hideHistory': 'Hide History',
   'common.unlimitedAIImageGeneration': 'Unlimited AI image generation',
   'common.advancedVideoCreationTools': 'Advanced video creation tools',
   'common.professionalContentWritingAssistant': 'Professional content writing assistant',
@@ -444,6 +447,8 @@ export const en = {
   'humanizeText.upgradeText': 'Upgrade to Pro',
   'humanizeText.humanizeAction': 'Humanise Text',
   'humanizeText.recent': 'Recent Inputs:',
+  'humanizeText.history': 'Humanization History',
+  'humanizeText.noHistory': 'No humanization history found.',
   
   // Detect AI
   'detectAI.title': 'AI Content Detector',
@@ -463,6 +468,8 @@ export const en = {
   'detectAI.score': 'AI Probability Score',
   'detectAI.human': 'Human Written',
   'detectAI.ai': 'AI Generated',
+  'detectAI.history': 'Detection History',
+  'detectAI.noHistory': 'No detection history found.',
   
   // Presentation Creator
   'presentation.title': 'AI Presentation Creator',

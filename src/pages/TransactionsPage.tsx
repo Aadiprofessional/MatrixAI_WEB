@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { Layout } from '../components';
@@ -91,7 +90,6 @@ const mockTransactions: Transaction[] = [
 ];
 
 const TransactionsPage: React.FC = () => {
-  const { darkMode } = useContext(ThemeContext);
   const { user } = useAuth();
   const { userData } = useUser();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -190,30 +188,30 @@ const TransactionsPage: React.FC = () => {
     const amount = transaction.coin_amount;
     
     if (amount > 0) {
-      return <FiArrowDown className="h-4 w-4" />; // Credit
+      return <FiArrowDown className="h-5 w-5" />; // Credit
     } else if (amount < 0) {
       if (name.includes('subscription')) {
-        return <FiClock className="h-4 w-4" />;
+        return <FiClock className="h-5 w-5" />;
       } else if (name.includes('chat') || name.includes('message')) {
-        return <FiMessageSquare className="h-4 w-4" />;
+        return <FiMessageSquare className="h-5 w-5" />;
       } else if (name.includes('video')) {
-        return <FiVideo className="h-4 w-4" />;
+        return <FiVideo className="h-5 w-5" />;
       } else if (name.includes('content generation') || name.includes('content_generation')) {
-        return <FiFileText className="h-4 w-4" />;
+        return <FiFileText className="h-5 w-5" />;
       } else if (name.includes('image')) {
-        return <FiImage className="h-4 w-4" />;
+        return <FiImage className="h-5 w-5" />;
       } else if (name.includes('audio') || name.includes('transcription')) {
-        return <FiMic className="h-4 w-4" />;
+        return <FiMic className="h-5 w-5" />;
       } else {
-        return <FiArrowUp className="h-4 w-4" />; // Generic debit
+        return <FiArrowUp className="h-5 w-5" />; // Generic debit
       }
     } else if (name.includes('refund')) {
-      return <FiCornerLeftUp className="h-4 w-4" />;
+      return <FiCornerLeftUp className="h-5 w-5" />;
     } else if (name.includes('withdrawal')) {
-      return <FiCornerRightUp className="h-4 w-4" />;
+      return <FiCornerRightUp className="h-5 w-5" />;
     }
     
-    return <FiCreditCard className="h-4 w-4" />; // Default
+    return <FiCreditCard className="h-5 w-5" />; // Default
   };
 
   // Get transaction color based on transaction name and amount
@@ -222,30 +220,30 @@ const TransactionsPage: React.FC = () => {
     const amount = transaction.coin_amount;
     
     if (amount > 0) {
-      return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-600'; // Credit
+      return 'bg-green-900/50 text-green-300'; // Credit
     } else if (amount < 0) {
       if (name.includes('subscription')) {
-        return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600';
+        return 'bg-blue-900/50 text-blue-300';
       } else if (name.includes('chat') || name.includes('message')) {
-        return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600';
+        return 'bg-blue-900/50 text-blue-300';
       } else if (name.includes('video')) {
-        return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600';
+        return 'bg-purple-900/50 text-purple-300';
       } else if (name.includes('content generation') || name.includes('content_generation')) {
-        return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-600';
+        return 'bg-green-900/50 text-green-300';
       } else if (name.includes('image')) {
-        return darkMode ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-600';
+        return 'bg-indigo-900/50 text-indigo-300';
       } else if (name.includes('audio') || name.includes('transcription')) {
-        return darkMode ? 'bg-orange-900/50 text-orange-300' : 'bg-orange-100 text-orange-600';
+        return 'bg-orange-900/50 text-orange-300';
       } else {
-        return darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-600'; // Generic debit
+        return 'bg-red-900/50 text-red-300'; // Generic debit
       }
     } else if (name.includes('refund')) {
-      return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600';
+      return 'bg-purple-900/50 text-purple-300';
     } else if (name.includes('withdrawal')) {
-      return darkMode ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-600';
+      return 'bg-amber-900/50 text-amber-300';
     }
     
-    return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'; // Default
+    return 'bg-gray-800 text-gray-300'; // Default
   };
 
   // Get status icon and color
@@ -254,31 +252,31 @@ const TransactionsPage: React.FC = () => {
       case 'completed':
       case 'success':
         return {
-          icon: <FiCheckCircle className="h-4 w-4" />,
-          color: darkMode ? 'text-green-400' : 'text-green-600'
+          icon: <FiCheckCircle className="h-5 w-5" />,
+          color: 'text-green-400'
         };
       case 'pending':
         return {
-          icon: <FiClock className="h-4 w-4" />,
-          color: darkMode ? 'text-amber-400' : 'text-amber-600'
+          icon: <FiClock className="h-5 w-5" />,
+          color: 'text-amber-400'
         };
       case 'failed':
       case 'error':
         return {
-          icon: <FiXCircle className="h-4 w-4" />,
-          color: darkMode ? 'text-red-400' : 'text-red-600'
+          icon: <FiXCircle className="h-5 w-5" />,
+          color: 'text-red-400'
         };
       default:
         return {
-          icon: <FiCreditCard className="h-4 w-4" />,
-          color: darkMode ? 'text-gray-400' : 'text-gray-600'
+          icon: <FiCreditCard className="h-5 w-5" />,
+          color: 'text-gray-400'
         };
     }
   };
 
   return (
     <Layout>
-      <div className={`py-8 px-4 lg:px-8 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="py-8 px-4 lg:px-8 page-background dark">
         {/* Background gradient effects */}
         <div className="fixed inset-0 -z-10 overflow-hidden">
           <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-purple-500/10 blur-3xl opacity-70"></div>
@@ -294,10 +292,10 @@ const TransactionsPage: React.FC = () => {
             className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center"
           >
             <div>
-              <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h1 className="text-3xl font-bold text-primary">
                 Transactions
               </h1>
-              <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
+              <p className="text-tertiary mt-1">
                 View your coin transactions history
               </p>
             </div>
@@ -306,22 +304,14 @@ const TransactionsPage: React.FC = () => {
               <button 
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className={`flex items-center px-3 py-2 rounded-lg text-sm ${
-                  darkMode 
-                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-200' 
-                    : 'bg-white hover:bg-gray-100 text-gray-700'
-                } transition-colors border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
+                className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 transition-colors border border-gray-700"
               >
                 <FiRefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
               </button>
               
               <button 
-                className={`flex items-center px-3 py-2 rounded-lg text-sm ${
-                  darkMode 
-                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-200' 
-                    : 'bg-white hover:bg-gray-100 text-gray-700'
-                } transition-colors border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
+                className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 transition-colors border border-gray-700"
               >
                 <FiDownload className="h-4 w-4 mr-2" />
                 <span>Export</span>
@@ -334,9 +324,7 @@ const TransactionsPage: React.FC = () => {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`mb-6 p-4 rounded-lg ${
-                darkMode ? 'bg-red-900/20 border border-red-800/30 text-red-300' : 'bg-red-50 border border-red-100 text-red-600'
-              }`}
+              className="mb-6 p-4 rounded-lg bg-red-900/20 border border-red-800/30 text-red-300"
             >
               {error}
             </motion.div>
@@ -347,22 +335,16 @@ const TransactionsPage: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className={`rounded-xl ${
-              darkMode 
-                ? 'bg-gray-800/50 border border-gray-700/50' 
-                : 'bg-white border border-gray-100'
-            } p-6 mb-8`}
+            className="rounded-xl glass-effect border border-gray-700/50 p-6 mb-8"
           >
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div className="flex items-center mb-4 md:mb-0">
-                <div className={`p-3 rounded-lg ${
-                  darkMode ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-100 text-amber-600'
-                } mr-4`}>
+                <div className="p-3 rounded-lg bg-amber-900/30 text-amber-300 mr-4">
                   <FiCreditCard className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Current Balance</div>
-                  <div className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className="text-sm font-medium text-tertiary">Current Balance</div>
+                  <div className="text-2xl font-bold text-primary">
                     {userData?.user_coins || 0} Coins
                   </div>
                 </div>
@@ -370,8 +352,8 @@ const TransactionsPage: React.FC = () => {
               
               <div className="flex flex-wrap gap-4">
                 <div className="flex flex-col">
-                  <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Next Expiry</div>
-                  <div className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className="text-sm font-medium text-tertiary">Next Expiry</div>
+                  <div className="text-sm font-bold text-primary">
                     {userData?.coins_expiry 
                       ? new Date(userData.coins_expiry).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})
                       : 'N/A'}
@@ -379,8 +361,8 @@ const TransactionsPage: React.FC = () => {
                 </div>
                 
                 <div className="flex flex-col">
-                  <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Last Update</div>
-                  <div className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className="text-sm font-medium text-tertiary">Last Update</div>
+                  <div className="text-sm font-bold text-primary">
                     {userData?.last_coin_addition 
                       ? new Date(userData.last_coin_addition).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})
                       : 'N/A'}
@@ -388,8 +370,8 @@ const TransactionsPage: React.FC = () => {
                 </div>
                 
                 <div className="flex flex-col">
-                  <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Subscription Plan</div>
-                  <div className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className="text-sm font-medium text-tertiary">Subscription Plan</div>
+                  <div className="text-sm font-bold text-primary">
                     {userData?.user_plan || 'Free'}
                   </div>
                 </div>
@@ -397,73 +379,42 @@ const TransactionsPage: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Filter Controls */}
-          <div className="flex flex-wrap items-center gap-2 mb-6">
-            <div className={`text-sm font-medium mr-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <FiFilter className="inline-block mr-1" /> Filter:
-            </div>
-            {['all', 'credit', 'debit', 'subscription', 'refund'].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-                  filter === f
-                    ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
-                    : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
-                }`}
-              >
-                {f.charAt(0).toUpperCase() + f.slice(1)}
-              </button>
-            ))}
-          </div>
+          {/* Filter Controls Removed */}
+          <div className="mb-6"></div>
 
           {/* Transactions Table */}
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className={`rounded-xl overflow-hidden ${
-              darkMode 
-                ? 'bg-gray-800/50 border border-gray-700/50' 
-                : 'bg-white border border-gray-100'
-            }`}
+            className="rounded-xl overflow-hidden glass-effect border border-gray-700/50"
           >
             {loading ? (
               <div className="p-8 flex justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
               </div>
             ) : filteredTransactions.length === 0 ? (
-              <div className={`p-8 text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              <div className="p-8 text-center text-tertiary">
                 No transactions found
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className={darkMode ? 'bg-gray-700/50' : 'bg-gray-50'}>
+                  <thead className="bg-gray-700/50">
                     <tr>
-                      <th className={`px-6 py-3 text-left text-xs font-medium ${
-                        darkMode ? 'text-gray-300' : 'text-gray-700'
-                      } uppercase tracking-wider`}>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Type
                       </th>
-                      <th className={`px-6 py-3 text-left text-xs font-medium ${
-                        darkMode ? 'text-gray-300' : 'text-gray-700'
-                      } uppercase tracking-wider`}>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Description
                       </th>
-                      <th className={`px-6 py-3 text-left text-xs font-medium ${
-                        darkMode ? 'text-gray-300' : 'text-gray-700'
-                      } uppercase tracking-wider`}>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Amount
                       </th>
-                      <th className={`px-6 py-3 text-left text-xs font-medium ${
-                        darkMode ? 'text-gray-300' : 'text-gray-700'
-                      } uppercase tracking-wider`}>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Date
                       </th>
-                      <th className={`px-6 py-3 text-left text-xs font-medium ${
-                        darkMode ? 'text-gray-300' : 'text-gray-700'
-                      } uppercase tracking-wider`}>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Status
                       </th>
                     </tr>
@@ -478,14 +429,14 @@ const TransactionsPage: React.FC = () => {
                       return (
                         <tr 
                           key={transaction.id || index}
-                          className={darkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}
+                          className="hover:bg-gray-700/50"
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div className={`p-2 rounded-lg mr-3 ${getTransactionColor(transaction)}`}>
                                 {getTransactionIcon(transaction)}
                               </div>
-                              <div className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                              <div className="text-sm font-medium text-primary">
                                 {transaction.transaction_name ? 
                                   transaction.transaction_name.split('_').map(word => 
                                     word.charAt(0).toUpperCase() + word.slice(1)
@@ -495,31 +446,27 @@ const TransactionsPage: React.FC = () => {
                               </div>
                             </div>
                           </td>
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                            darkMode ? 'text-gray-300' : 'text-gray-600'
-                          }`}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
                             {transaction.description || transaction.transaction_name || 'Transaction'}
                           </td>
                           <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
                             transaction.coin_amount > 0
-                              ? (darkMode ? 'text-green-400' : 'text-green-600')
-                              : (darkMode ? 'text-red-400' : 'text-red-600')
+                              ? 'text-green-400'
+                              : 'text-red-400'
                           }`}>
                             {transaction.coin_amount > 0
                               ? `+${transaction.coin_amount}`
                               : transaction.coin_amount
                             } Coins
                           </td>
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                            darkMode ? 'text-gray-300' : 'text-gray-600'
-                          }`}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
                             {formatDate(transaction.created_at || transaction.time)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <div className={`flex items-center ${statusInfo.color}`}>
+                            <span className={`px-2 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-gray-800 ${statusInfo.color}`}>
                               {statusInfo.icon}
                               <span className="ml-1.5">{status}</span>
-                            </div>
+                            </span>
                           </td>
                         </tr>
                       );

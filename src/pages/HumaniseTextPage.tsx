@@ -22,23 +22,11 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
+import toast from 'react-hot-toast';
 import './ContentWriterPage.css';
+import '../styles/CommonStyles.css';
 
-// Add gradient animation style
-const gradientAnimationStyle = document.createElement('style');
-gradientAnimationStyle.textContent = `
-  @keyframes gradient-x {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  .animate-gradient-x {
-    background-size: 200% 200%;
-    animation: gradient-x 3s ease infinite;
-    background-image: linear-gradient(to right, #10b981, #3b82f6, #8b5cf6);
-  }
-`;
-document.head.appendChild(gradientAnimationStyle);
+// Gradient animation style is now in CommonStyles.css
 
 const HumaniseTextPage: React.FC = () => {
   const { userData, isPro } = useUser();
@@ -56,6 +44,7 @@ const HumaniseTextPage: React.FC = () => {
   const [showProAlert, setShowProAlert] = useState(false);
   const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(1);
   const [showComparison, setShowComparison] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<{id: string, title: string, original_text: string, humanized_text: string, createdAt: string}[]>([]);
   const [aiDetector, setAiDetector] = useState('ZeroGPT.com');
 
@@ -172,6 +161,24 @@ const HumaniseTextPage: React.FC = () => {
         
         // Refresh history to include the new item
         fetchUserHumanizations();
+        
+        // Show success toast notification with button to transfer to Content Writer
+        toast.success(
+          <div>
+            <div>Text successfully humanized!</div>
+            <button 
+              onClick={() => {
+                // Store the humanized text in localStorage
+                localStorage.setItem('transferToContentWriter', response.data.humanization.humanized_text);
+                // Navigate to Content Writer tab in parent component
+                window.dispatchEvent(new CustomEvent('switchToContentWriter'));
+              }}
+              className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
+            >
+              <FiFileText className="mr-1" /> Use in Content Writer
+            </button>
+          </div>
+        );
       }
       
       // Decrease free generations left if user is not pro
@@ -181,6 +188,7 @@ const HumaniseTextPage: React.FC = () => {
     } catch (error) {
       console.error('Error humanising text:', error);
       setHumanisedText('Error humanising text. Please try again later.');
+      toast.error('Failed to humanize text. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -200,7 +208,22 @@ const HumaniseTextPage: React.FC = () => {
 
   const handleCopyContent = () => {
     navigator.clipboard.writeText(humanisedText);
-    // Could add a toast notification here
+    toast.success(
+      <div>
+        <div>Humanized text copied to clipboard!</div>
+        <button 
+          onClick={() => {
+            // Store the humanized text in localStorage
+            localStorage.setItem('transferToContentWriter', humanisedText);
+            // Navigate to Content Writer tab in parent component
+            window.dispatchEvent(new CustomEvent('switchToContentWriter'));
+          }}
+          className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
+        >
+          <FiFileText className="mr-1" /> Use in Content Writer
+        </button>
+      </div>
+    );
   };
 
   const handleDownloadContent = () => {
@@ -242,12 +265,11 @@ const HumaniseTextPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Background gradients and patterns */}
-      <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-teal-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 opacity-80"></div>
-      <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.05]"></div>
-      <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-green-400/20 via-teal-400/20 to-blue-400/20 dark:from-green-900/20 dark:via-teal-900/20 dark:to-blue-900/20 blur-3xl rounded-full transform translate-x-1/3 -translate-y-1/4"></div>
-      <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-green-400/20 via-teal-400/20 to-blue-400/20 dark:from-green-900/20 dark:via-teal-900/20 dark:to-blue-900/20 blur-3xl rounded-full transform -translate-x-1/3 translate-y-1/4"></div>
+    <div className="min-h-screen relative overflow-hidden page-background">
+      {/* Background gradient effects */}
+      <div className="gradient-blob-1"></div>
+      <div className="gradient-blob-2"></div>
+    
       <div className="container mx-auto max-w-6xl flex-1 p-4 md:p-6 relative z-10">
       {showProAlert && (
         <ProFeatureAlert 
@@ -256,52 +278,14 @@ const HumaniseTextPage: React.FC = () => {
         />
       )}
       
-      <div className="mb-8">
-        <motion.h1 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 animate-gradient-x"
-        >
-          {t('humanizeText.title')}
-        </motion.h1>
-        <motion.p 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-gray-500 dark:text-gray-400 max-w-2xl"
-        >
-          {t('humanizeText.subtitle')}
-        </motion.p>
-        
-        {/* Added cool feature badges */}
-        <div className="flex flex-wrap gap-2 mt-2">
-          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gradient-to-r from-green-400 to-teal-400 text-white">{t('humanizeText.badges.protection')}</span>
-          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gradient-to-r from-teal-400 to-blue-400 text-white">{t('humanizeText.badges.toneMatching')}</span>
-          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-400 to-indigo-400 text-white">{t('humanizeText.badges.phrasing')}</span>
-        </div>
-        
-        {!isPro && (
-          <div className="mt-4 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
-            <FiFileText className="mr-1.5" />
-            <span>{freeGenerationsLeft} {freeGenerationsLeft === 1 ? t('humanizeText.freeLeft') : t('humanizeText.freeLeftPlural')} left</span>
-            {freeGenerationsLeft === 0 && (
-              <button 
-                onClick={() => setShowProAlert(true)}
-                className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
-              >
-                {t('humanizeText.upgradeText')}
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+    
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Text Input Form */}
         <div className="lg:col-span-2 order-2 lg:order-1">
           <div className="sticky top-6 space-y-6">
             {/* Text Input */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow glass-effect">
+            <div className="rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow glass-effect">
               <h2 className="text-xl font-medium mb-4 flex items-center">
                 <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-1.5 rounded-md mr-2">
                   <FiFileText className="w-5 h-5" />
@@ -565,17 +549,23 @@ const HumaniseTextPage: React.FC = () => {
         </div>
       )}
       
-      {/* History from API */}
-      {history.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-            <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1.5 rounded-md mr-2">
-              <FiMessageSquare className="w-5 h-5" />
-            </span>
-            {t('humanizeText.history') || 'Humanization History'}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {history.map((item) => (
+      {/* History Button and History from API */}
+      <div className="mt-8">
+        <button
+          onClick={() => setShowHistory(!showHistory)}
+          className="flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors mb-4"
+        >
+          <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1.5 rounded-md mr-2">
+            <FiMessageSquare className="w-5 h-5" />
+          </span>
+          {showHistory ? t('common.hideHistory') || 'Hide History' : t('humanizeText.history')}
+        </button>
+        
+        {showHistory && (
+          <div>
+            {history.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {history.map((item) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -608,9 +598,23 @@ const HumaniseTextPage: React.FC = () => {
                 </p>
               </motion.div>
             ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <p className="text-gray-500 dark:text-gray-400">{t('humanizeText.noHistory')}</p>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
+        
+        {showHistory && history.length === 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
+            <p className="text-gray-500 dark:text-gray-400">
+              {t('humanizeText.noHistory') || 'No humanization history found.'}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
     </div>
   );

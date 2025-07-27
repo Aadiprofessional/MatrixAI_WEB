@@ -5,6 +5,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { Layout } from '../components';
+import '../styles/CommonStyles.css';
 import { userService } from '../services/userService';
 import { 
   FiEdit2, 
@@ -86,14 +87,14 @@ const ActivityItem: React.FC<{ item: { type: string, text: string, time: string 
   };
 
   return (
-    <div className={`p-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'} border-b last:border-b-0`}>
+    <div className="p-4 border-b border-gray-700 last:border-b-0">
       <div className="flex items-start">
         <div className={`p-2 rounded-lg mr-3 ${getColor(item.type)}`}>
           {getIcon(item.type)}
         </div>
         <div>
-          <p className={darkMode ? 'text-white' : 'text-gray-800'}>{item.text}</p>
-          <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{item.time}</p>
+          <p className="text-primary">{item.text}</p>
+          <p className="text-xs text-tertiary mt-1">{item.time}</p>
         </div>
       </div>
     </div>
@@ -143,52 +144,52 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
   };
 
   const getTransactionColor = (transactionName: string) => {
-    if (!transactionName) return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600';
+    if (!transactionName) return 'bg-gray-800 text-gray-300';
     
     const name = transactionName.toLowerCase();
     
     // Content generation related
     if (name.includes('content_generation')) 
-      return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-600';
+      return 'bg-green-900/50 text-green-300';
     
     // Chat related
     if (name.includes('chat') || name.includes('message')) 
-      return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600';
+      return 'bg-blue-900/50 text-blue-300';
     
     // Image related
     if (name.includes('image')) 
-      return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600';
+      return 'bg-purple-900/50 text-purple-300';
     
     // Video related
     if (name.includes('video')) 
-      return darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-600';
+      return 'bg-red-900/50 text-red-300';
     
     // Audio/transcription related
     if (name.includes('audio') || name.includes('transcription')) 
-      return darkMode ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-600';
+      return 'bg-indigo-900/50 text-indigo-300';
     
     // Credit related
     if (name.includes('credit')) 
-      return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-600';
+      return 'bg-green-900/50 text-green-300';
     
     // Debit related
     if (name.includes('debit')) 
-      return darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-600';
+      return 'bg-red-900/50 text-red-300';
     
     // Subscription related
     if (name.includes('subscription')) 
-      return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600';
+      return 'bg-blue-900/50 text-blue-300';
     
     // Refund related
     if (name.includes('refund')) 
-      return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600';
+      return 'bg-purple-900/50 text-purple-300';
     
     // Withdrawal related
     if (name.includes('withdrawal')) 
-      return darkMode ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-600';
+      return 'bg-amber-900/50 text-amber-300';
     
     // Default fallback
-    return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600';
+    return 'bg-gray-800 text-gray-300';
   };
 
   const getStatusIcon = (status: string) => {
@@ -224,7 +225,7 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`p-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'} border-b last:border-b-0 hover:${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'} transition-colors`}
+      className="p-4 border-b last:border-b-0 hover:bg-opacity-70 transition-colors"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
@@ -232,7 +233,7 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
             {getTransactionIcon(transaction.transaction_name)}
           </div>
           <div>
-            <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className="font-medium text-primary">
               {transaction.transaction_name ? 
                 transaction.transaction_name.split('_').map(word => 
                   word.charAt(0).toUpperCase() + word.slice(1)
@@ -240,7 +241,7 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
                 'Transaction'
               }
             </h4>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            <p className="text-sm text-tertiary">
               {formatDate(transaction.time)}
             </p>
             {/* transaction.description is removed as per new Transaction interface */}
@@ -248,12 +249,12 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
         </div>
         <div className="flex items-center space-x-3">
           <div className="text-right">
-            <div className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} flex items-center`}>
+            <div className="font-semibold text-primary flex items-center">
               {safeAmount.toFixed(0)} Coins
             </div>
             <div className="flex items-center space-x-1">
               {getStatusIcon(transaction.status)}
-              <span className={`text-xs capitalize ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              <span className="text-xs capitalize text-tertiary">
                 {transaction.status}
               </span>
             </div>
@@ -385,9 +386,9 @@ const ProfilePage: React.FC = () => {
   if (loading) {
     return (
       <Layout>
-        <div className={`py-8 px-4 lg:px-8 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} min-h-screen`}>
+        <div className="page-background dark py-8 px-4 lg:px-8 min-h-screen">
           <div className="max-w-7xl mx-auto flex items-center justify-center">
-            <p className={`text-xl ${darkMode ? 'text-white' : 'text-gray-900'}`}>Loading profile...</p>
+            <p className="text-xl text-primary">Loading profile...</p>
           </div>
         </div>
       </Layout>
@@ -396,12 +397,10 @@ const ProfilePage: React.FC = () => {
 
   return (
     <Layout>
-      <div className={`py-8 px-4 lg:px-8 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className={`page-background py-8 px-4 lg:px-8 ${darkMode ? 'dark' : ''}`}>
         {/* Background gradient effects */}
-        <div className="fixed inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-purple-500/10 blur-3xl opacity-70"></div>
-          <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-purple-500/10 via-pink-500/5 to-blue-500/10 blur-3xl opacity-70"></div>
-        </div>
+        <div className="gradient-blob-1"></div>
+        <div className="gradient-blob-2"></div>
 
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
@@ -411,10 +410,10 @@ const ProfilePage: React.FC = () => {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h1 className="page-title">
               Your Profile
             </h1>
-            <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
+            <p className="text-tertiary mt-1">
               Manage your account settings and preferences
             </p>
           </motion.div>
@@ -425,11 +424,7 @@ const ProfilePage: React.FC = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className={`rounded-xl ${
-                darkMode 
-                  ? 'bg-gray-800/50 border border-gray-700/50' 
-                  : 'bg-white border border-gray-100'
-              } p-6 lg:col-span-1`}
+              className="rounded-xl glass-effect p-6 lg:col-span-1"
             >
               <div className="flex flex-col items-center text-center">
                 <div className="w-24 h-24 relative">
@@ -440,43 +435,31 @@ const ProfilePage: React.FC = () => {
                       className="rounded-full object-cover w-full h-full"
                     />
                   ) : (
-                    <div className={`w-full h-full rounded-full flex items-center justify-center text-2xl font-bold ${
-                      darkMode 
-                        ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white' 
-                        : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white'
-                    }`}>
+                    <div className="w-full h-full rounded-full flex items-center justify-center text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white">
                       {userData?.name?.charAt(0) || 'U'}
                     </div>
                   )}
                   <button 
-                    className={`absolute bottom-0 right-0 p-2 rounded-full ${
-                      darkMode ? 'bg-gray-700 text-blue-400' : 'bg-white text-blue-600'
-                    } border ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}
+                    className="absolute bottom-0 right-0 p-2 rounded-full bg-gray-700 text-blue-400 border border-gray-600"
                   >
                     <FiEdit2 size={14} />
                   </button>
                 </div>
 
-                <h2 className={`text-xl font-bold mt-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <h2 className="text-xl font-bold mt-4 text-primary">
                   {userData?.name}
                 </h2>
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                <p className="text-sm text-tertiary">
                   {userData?.email}
                 </p>
                 
-                <div className={`mt-2 px-3 py-1 rounded-full text-xs font-medium ${
-                  darkMode 
-                    ? 'bg-blue-900/30 text-blue-300' 
-                    : 'bg-blue-100 text-blue-600'
-                }`}>
+                <div className="mt-2 px-3 py-1 rounded-full text-xs font-medium badge-primary">
                   {userData?.user_plan || 'Free'} Plan
                 </div>
                 
                 <div className="w-full mt-6 pt-6 border-t border-dashed border-opacity-50 border-gray-500">
                   <div className="flex items-center justify-center">
-                    <div className={`px-3 py-2 rounded-lg flex items-center ${
-                      darkMode ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-100 text-amber-600'
-                    }`}>
+                    <div className="px-3 py-2 rounded-lg flex items-center badge-secondary">
                       <FiCode className="w-4 h-4 mr-2" />
                       <span>Referral Code: {userData?.referral_code}</span>
                     </div>
@@ -486,28 +469,22 @@ const ProfilePage: React.FC = () => {
 
               {/* User Stats */}
               <div className="mt-6">
-                <h3 className={`text-md font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                <h3 className="text-md font-semibold mb-3 text-primary">
                   Your Credits
                 </h3>
-                <div className={`p-4 rounded-lg ${
-                  darkMode ? 'bg-gray-700' : 'bg-gray-50'
-                } flex items-center justify-between`}>
+                <div className="p-4 rounded-lg glass-effect-light flex items-center justify-between">
                   <div className="flex items-center">
-                    <div className={`p-2 rounded-lg ${
-                      darkMode ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-100 text-amber-600'
-                    }`}>
+                    <div className="p-2 rounded-lg badge-secondary">
                       <FiClock className="w-5 h-5" />
                     </div>
                     <div className="ml-3">
-                      <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Available Coins</p>
-                      <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <p className="text-sm text-secondary">Available Coins</p>
+                      <p className="text-lg font-bold text-primary">
                         {userData?.user_coins || 0}
                       </p>
                     </div>
                   </div>
-                  <div className={`px-2 py-1 rounded text-xs ${
-                    darkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-700'
-                  }`}>
+                  <div className="px-2 py-1 rounded text-xs badge-neutral">
                     Expires: {userData?.coins_expiry ? new Date(userData.coins_expiry).toLocaleDateString() : 'N/A'}
                   </div>
                 </div>
@@ -519,24 +496,16 @@ const ProfilePage: React.FC = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className={`rounded-xl ${
-                darkMode 
-                  ? 'bg-gray-800/50 border border-gray-700/50' 
-                  : 'bg-white border border-gray-100'
-              } p-6 lg:col-span-2`}
+              className="rounded-xl glass-effect p-6 lg:col-span-2"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <h2 className="text-xl font-bold text-primary">
                   Account Settings
                 </h2>
                 <button
                   onClick={() => isEditing ? handleSubmit : setIsEditing(true)}
                   disabled={isSubmitting}
-                  className={`px-4 py-2 rounded-lg flex items-center ${
-                    isEditing 
-                      ? (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600')
-                      : (darkMode ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600' : 'text-white bg-gradient-to-r from-blue-500 to-purple-500')
-                  } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className={`px-4 py-2 rounded-lg flex items-center ${isEditing ? 'btn-secondary' : 'btn-primary'} ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                   {isEditing ? (
                     <>
@@ -557,12 +526,12 @@ const ProfilePage: React.FC = () => {
                   <div>
                     <label 
                       htmlFor="name" 
-                      className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                      className="block text-sm font-medium mb-1 text-secondary"
                     >
                       Full Name
                     </label>
                     <div className="flex items-center">
-                      <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
+                      <span className="p-2 input-icon-wrapper rounded-l-lg">
                         <FiUser className="w-5 h-5" />
                       </span>
                       <input
@@ -572,13 +541,7 @@ const ProfilePage: React.FC = () => {
                         disabled={!isEditing}
                         value={formData.name}
                         onChange={handleChange}
-                        className={`flex-1 p-2 ${
-                          darkMode 
-                            ? 'bg-gray-700 text-white border-gray-600' 
-                            : 'bg-white text-gray-900 border-gray-300'
-                        } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          !isEditing ? (darkMode ? 'opacity-70' : 'bg-gray-50') : ''
-                        }`}
+                        className={`flex-1 p-2 input-field rounded-r-lg ${!isEditing ? 'input-disabled' : ''}`}
                       />
                     </div>
                   </div>
@@ -586,12 +549,12 @@ const ProfilePage: React.FC = () => {
                   <div>
                     <label 
                       htmlFor="email" 
-                      className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                      className="block text-sm font-medium mb-1 text-secondary"
                     >
                       Email Address
                     </label>
                     <div className="flex items-center">
-                      <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
+                      <span className="p-2 input-icon-wrapper rounded-l-lg">
                         <FiMail className="w-5 h-5" />
                       </span>
                       <input
@@ -600,11 +563,7 @@ const ProfilePage: React.FC = () => {
                         name="email"
                         disabled={true} // Email can't be changed here
                         value={formData.email}
-                        className={`flex-1 p-2 ${
-                          darkMode 
-                            ? 'bg-gray-700 text-white border-gray-600' 
-                            : 'bg-white text-gray-900 border-gray-300'
-                        } border rounded-r-lg opacity-70`}
+                        className="flex-1 p-2 input-field rounded-r-lg input-disabled"
                       />
                     </div>
                   </div>
@@ -613,12 +572,12 @@ const ProfilePage: React.FC = () => {
                     <div>
                       <label 
                         htmlFor="gender" 
-                        className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                        className="block text-sm font-medium mb-1 text-secondary"
                       >
                         Gender
                       </label>
                       <div className="flex items-center">
-                        <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
+                        <span className="p-2 input-icon-wrapper rounded-l-lg">
                           <FiUser className="w-5 h-5" />
                         </span>
                         <input
@@ -628,13 +587,7 @@ const ProfilePage: React.FC = () => {
                           disabled={!isEditing}
                           value={formData.gender}
                           onChange={handleChange}
-                          className={`flex-1 p-2 ${
-                            darkMode 
-                              ? 'bg-gray-700 text-white border-gray-600' 
-                              : 'bg-white text-gray-900 border-gray-300'
-                          } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                            !isEditing ? (darkMode ? 'opacity-70' : 'bg-gray-50') : ''
-                          }`}
+                          className={`flex-1 p-2 input-field rounded-r-lg ${!isEditing ? 'input-disabled' : ''}`}
                         />
                       </div>
                     </div>
@@ -642,12 +595,12 @@ const ProfilePage: React.FC = () => {
                     <div>
                       <label 
                         htmlFor="age" 
-                        className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                        className="block text-sm font-medium mb-1 text-secondary"
                       >
                         Age
                       </label>
                       <div className="flex items-center">
-                        <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
+                        <span className="p-2 input-icon-wrapper rounded-l-lg">
                           <FiCalendar className="w-5 h-5" />
                         </span>
                         <input
@@ -657,13 +610,7 @@ const ProfilePage: React.FC = () => {
                           disabled={!isEditing}
                           value={formData.age}
                           onChange={handleChange}
-                          className={`flex-1 p-2 ${
-                            darkMode 
-                              ? 'bg-gray-700 text-white border-gray-600' 
-                              : 'bg-white text-gray-900 border-gray-300'
-                          } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                            !isEditing ? (darkMode ? 'opacity-70' : 'bg-gray-50') : ''
-                          }`}
+                          className={`flex-1 p-2 input-field rounded-r-lg ${!isEditing ? 'input-disabled' : ''}`}
                         />
                       </div>
                     </div>
@@ -673,12 +620,12 @@ const ProfilePage: React.FC = () => {
                     <div>
                       <label 
                         htmlFor="preferred_language" 
-                        className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                        className="block text-sm font-medium mb-1 text-secondary"
                       >
                         Preferred Language
                       </label>
                       <div className="flex items-center">
-                        <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
+                        <span className="p-2 input-icon-wrapper rounded-l-lg">
                           <FiGlobe className="w-5 h-5" />
                         </span>
                         <input
@@ -688,13 +635,7 @@ const ProfilePage: React.FC = () => {
                           disabled={!isEditing}
                           value={formData.preferred_language}
                           onChange={handleChange}
-                          className={`flex-1 p-2 ${
-                            darkMode 
-                              ? 'bg-gray-700 text-white border-gray-600' 
-                              : 'bg-white text-gray-900 border-gray-300'
-                          } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                            !isEditing ? (darkMode ? 'opacity-70' : 'bg-gray-50') : ''
-                          }`}
+                          className={`flex-1 p-2 input-field rounded-r-lg ${!isEditing ? 'input-disabled' : ''}`}
                         />
                       </div>
                     </div>
@@ -702,12 +643,12 @@ const ProfilePage: React.FC = () => {
                     <div>
                       <label 
                         htmlFor="phone" 
-                        className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                        className="block text-sm font-medium mb-1 text-secondary"
                       >
                         Phone (Optional)
                       </label>
                       <div className="flex items-center">
-                        <span className={`p-2 ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'} rounded-l-lg`}>
+                        <span className="p-2 input-icon-wrapper rounded-l-lg">
                           <FiPhone className="w-5 h-5" />
                         </span>
                         <input
@@ -717,13 +658,7 @@ const ProfilePage: React.FC = () => {
                           disabled={!isEditing}
                           value={formData.phone}
                           onChange={handleChange}
-                          className={`flex-1 p-2 ${
-                            darkMode 
-                              ? 'bg-gray-700 text-white border-gray-600' 
-                              : 'bg-white text-gray-900 border-gray-300'
-                          } border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                            !isEditing ? (darkMode ? 'opacity-70' : 'bg-gray-50') : ''
-                          }`}
+                          className={`flex-1 p-2 input-field rounded-r-lg ${!isEditing ? 'input-disabled' : ''}`}
                         />
                       </div>
                     </div>
@@ -734,20 +669,14 @@ const ProfilePage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setIsEditing(false)}
-                        className={`px-4 py-2 rounded-lg mr-3 ${
-                          darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
-                        }`}
+                        className="px-4 py-2 rounded-lg mr-3 btn-secondary"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className={`px-4 py-2 rounded-lg ${
-                          darkMode 
-                            ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600' 
-                            : 'text-white bg-gradient-to-r from-blue-500 to-purple-500'
-                        } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`px-4 py-2 rounded-lg btn-primary ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                       >
                         {isSubmitting ? 'Saving...' : 'Save Changes'}
                       </button>
@@ -762,27 +691,19 @@ const ProfilePage: React.FC = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.2 }}
-              className={`rounded-xl ${
-                darkMode 
-                  ? 'bg-gray-800/50 border border-gray-700/50' 
-                  : 'bg-white border border-gray-100'
-              } lg:col-span-3`}
+              className="rounded-xl glass-effect lg:col-span-3"
             >
               <div className="px-6 py-4 border-b border-gray-700 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <FiActivity className={`w-5 h-5 ${darkMode ? 'text-white' : 'text-gray-900'}`} />
-                  <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <FiActivity className="w-5 h-5" />
+                  <h2 className="text-xl font-bold section-title">
                     Recent Transactions
                   </h2>
                 </div>
                 <button
                   onClick={handleRefreshTransactions}
                   disabled={refreshing}
-                  className={`p-2 rounded-lg transition-colors ${
-                    darkMode 
-                      ? 'hover:bg-gray-700 text-gray-300' 
-                      : 'hover:bg-gray-100 text-gray-600'
-                  } ${refreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`p-2 rounded-lg transition-colors btn-icon ${refreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
                   title="Refresh transactions"
                 >
                   <FiRefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -793,8 +714,8 @@ const ProfilePage: React.FC = () => {
                 {transactionsLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="flex flex-col items-center space-y-3">
-                      <FiLoader className={`w-8 h-8 animate-spin ${darkMode ? 'text-blue-400' : 'text-blue-500'}`} />
-                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      <FiLoader className="w-8 h-8 animate-spin text-primary" />
+                      <p className="text-sm text-secondary">
                         Loading transactions...
                       </p>
                     </div>
@@ -806,14 +727,12 @@ const ProfilePage: React.FC = () => {
                     ))}
                     {transactions.length > 10 && (
                       <div className="p-4 text-center border-t border-gray-200 dark:border-gray-700">
-                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <p className="text-sm text-secondary">
                           Showing 10 of {transactions.length} transactions
                         </p>
                         <Link 
                           to="/transactions"
-                          className={`mt-2 inline-flex items-center gap-1 px-4 py-2 rounded-lg ${
-                            darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'
-                          } transition-colors`}
+                          className="mt-2 inline-flex items-center gap-1 px-4 py-2 rounded-lg btn-primary transition-colors"
                         >
                           <FiList className="w-4 h-4" />
                           View all transactions
@@ -823,15 +742,13 @@ const ProfilePage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className={`p-4 rounded-full ${
-                      darkMode ? 'bg-gray-700/50' : 'bg-gray-100'
-                    } mb-4`}>
-                      <FiDollarSign className={`w-8 h-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                    <div className="p-4 rounded-full bg-gray-700/50 mb-4">
+                      <FiDollarSign className="w-8 h-8 text-gray-400" />
                     </div>
-                    <h3 className={`text-lg font-medium ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>
+                    <h3 className="text-lg font-medium text-primary mb-2">
                       No transactions yet
                     </h3>
-                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} text-center max-w-sm`}>
+                    <p className="text-sm text-tertiary text-center max-w-sm">
                       Your transaction history will appear here once you start using our services.
                     </p>
                   </div>

@@ -123,26 +123,26 @@ const NotificationToast = ({ message, type, onClose }: {
   const getBgColor = () => {
     switch(type) {
       case 'success':
-        return darkMode ? 'bg-green-900/70' : 'bg-green-100';
+        return 'bg-green-900/70';
       case 'error':
-        return darkMode ? 'bg-red-900/70' : 'bg-red-100';
+        return 'bg-red-900/70';
       case 'warning':
-        return darkMode ? 'bg-yellow-900/70' : 'bg-yellow-100';
+        return 'bg-yellow-900/70';
       default:
-        return darkMode ? 'bg-gray-800' : 'bg-gray-100';
+        return 'bg-gray-800';
     }
   };
   
   const getTextColor = () => {
     switch(type) {
       case 'success':
-        return darkMode ? 'text-green-300' : 'text-green-700';
+        return 'text-green-300';
       case 'error':
-        return darkMode ? 'text-red-300' : 'text-red-700';
+        return 'text-red-300';
       case 'warning':
-        return darkMode ? 'text-yellow-300' : 'text-yellow-700';
+        return 'text-yellow-300';
       default:
-        return darkMode ? 'text-gray-300' : 'text-gray-700';
+        return 'text-gray-300';
     }
   };
   
@@ -304,12 +304,10 @@ const SettingsPage: React.FC = () => {
         />
       )}
       
-      <div className={`py-8 px-4 lg:px-8 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="page-background dark py-8 px-4 lg:px-8">
         {/* Background gradient effects */}
-        <div className="fixed inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-purple-500/10 blur-3xl opacity-70"></div>
-          <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-purple-500/10 via-pink-500/5 to-blue-500/10 blur-3xl opacity-70"></div>
-        </div>
+        <div className="gradient-blob-1"></div>
+        <div className="gradient-blob-2"></div>
 
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
@@ -319,10 +317,10 @@ const SettingsPage: React.FC = () => {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h1 className="page-title">
               Settings
             </h1>
-            <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
+            <p className="text-tertiary mt-1">
               Customize your experience with MatrixAI
             </p>
           </motion.div>
@@ -335,11 +333,7 @@ const SettingsPage: React.FC = () => {
               transition={{ duration: 0.4 }}
               className="lg:col-span-1"
             >
-              <div className={`rounded-xl ${
-                darkMode 
-                  ? 'bg-gray-800/50 border border-gray-700/50' 
-                  : 'bg-white border border-gray-100'
-              } p-4 sticky top-24`}>
+              <div className="rounded-xl glass-effect p-4 sticky top-24">
                 <nav className="space-y-1">
                   {tabOptions.map((tab) => (
                     <button
@@ -361,18 +355,14 @@ const SettingsPage: React.FC = () => {
                   ))}
                 </nav>
 
-                <div className={`mt-6 pt-6 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <div className="mt-6 pt-6 border-t border-gray-700">
                   <button
                     onClick={handleSaveChanges}
                     disabled={!hasChanges}
                     className={`w-full py-2.5 rounded-lg ${
                       hasChanges 
-                        ? (darkMode
-                            ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white'
-                            : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white')
-                        : (darkMode
-                            ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed')
+                        ? 'btn-primary'
+                        : 'bg-gray-700 text-gray-400 cursor-not-allowed'
                     } flex items-center justify-center transition-all`}
                   >
                     <FiSave className="mr-2" />
@@ -387,16 +377,12 @@ const SettingsPage: React.FC = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className={`rounded-xl ${
-                darkMode 
-                  ? 'bg-gray-800/50 border border-gray-700/50' 
-                  : 'bg-white border border-gray-100'
-              } p-6 lg:col-span-3`}
+              className="rounded-xl glass-effect p-6 lg:col-span-3"
             >
               {/* Appearance Settings */}
               {activeTab === 'appearance' && (
                 <div>
-                  <h2 className={`text-xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <h2 className="text-xl font-bold mb-6 text-primary">
                     Appearance Settings
                   </h2>
 
@@ -443,11 +429,11 @@ const SettingsPage: React.FC = () => {
               {/* Notification Settings */}
               {activeTab === 'notifications' && (
                 <div>
-                  <h2 className={`text-xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <h2 className="text-xl font-bold mb-6 text-primary">
                     Notification Settings
                   </h2>
 
-                  <div className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
+                  <div className="divide-y divide-gray-700">
                     <ToggleSwitch
                       label="Email Notifications"
                       description="Receive important updates via email"
@@ -489,11 +475,11 @@ const SettingsPage: React.FC = () => {
               {/* Privacy Settings */}
               {activeTab === 'privacy' && (
                 <div>
-                  <h2 className={`text-xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <h2 className="text-xl font-bold mb-6 text-primary">
                     Privacy & Security
                   </h2>
 
-                  <div className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
+                  <div className="divide-y divide-gray-700">
                     <ToggleSwitch
                       label="Two-Factor Authentication"
                       description="Add an extra layer of security to your account"
@@ -534,7 +520,7 @@ const SettingsPage: React.FC = () => {
                         <FiLock className="mr-2" />
                         Reset Password
                       </button>
-                      <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <p className="mt-2 text-sm text-tertiary">
                         Change your account password for security
                       </p>
                     </div>
@@ -542,15 +528,11 @@ const SettingsPage: React.FC = () => {
                     <div className="py-4">
                       <button 
                         onClick={handleDataExport}
-                        className={`px-4 py-2 rounded-lg ${
-                          darkMode 
-                            ? 'bg-gray-700 text-blue-400 hover:bg-gray-600' 
-                            : 'bg-gray-100 text-blue-600 hover:bg-gray-200'
-                        } transition-colors`}
+                        className="px-4 py-2 rounded-lg bg-gray-700 text-blue-400 hover:bg-gray-600 transition-colors"
                       >
                         Request Data Export
                       </button>
-                      <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <p className="mt-2 text-sm text-tertiary">
                         Download all your data in a portable format
                       </p>
                     </div>
@@ -561,11 +543,11 @@ const SettingsPage: React.FC = () => {
               {/* Account Settings */}
               {activeTab === 'account' && (
                 <div>
-                  <h2 className={`text-xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <h2 className="text-xl font-bold mb-6 text-primary">
                     Account Settings
                   </h2>
 
-                  <div className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
+                  <div className="divide-y divide-gray-700">
                     <SelectOption
                       label="Language"
                       options={[
@@ -602,14 +584,10 @@ const SettingsPage: React.FC = () => {
                     />
 
                     <div className="py-4">
-                      <h3 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>
+                      <h3 className="font-medium text-primary mb-2">
                         Subscription Plan
                       </h3>
-                      <div className={`p-4 rounded-lg ${
-                        darkMode 
-                          ? 'bg-gray-700 border border-gray-600' 
-                          : 'bg-gray-50 border border-gray-200'
-                      }`}>
+                      <div className="p-4 rounded-lg glass-effect-light">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -627,11 +605,7 @@ const SettingsPage: React.FC = () => {
                                 type: 'success'
                               });
                             }}
-                            className={`px-4 py-2 rounded-lg ${
-                              darkMode 
-                                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                : 'bg-blue-600 hover:bg-blue-700 text-white'
-                            }`}
+                            className="px-4 py-2 rounded-lg btn-primary"
                           >
                             Manage
                           </button>
@@ -642,15 +616,11 @@ const SettingsPage: React.FC = () => {
                     <div className="py-4">
                       <button 
                         onClick={handleDeleteAccount}
-                        className={`px-4 py-2 rounded-lg ${
-                          darkMode 
-                            ? 'bg-gray-700 text-red-400 hover:bg-gray-600' 
-                            : 'bg-gray-100 text-red-600 hover:bg-gray-200'
-                        } transition-colors`}
+                        className="px-4 py-2 rounded-lg bg-gray-700 text-red-400 hover:bg-gray-600 transition-colors"
                       >
                         Delete Account
                       </button>
-                      <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <p className="mt-2 text-sm text-tertiary">
                         Permanently delete your account and all your data
                       </p>
                     </div>
@@ -665,4 +635,4 @@ const SettingsPage: React.FC = () => {
   );
 };
 
-export default SettingsPage; 
+export default SettingsPage;

@@ -1,0 +1,104 @@
+/* Common background and glass effect styles for pages */
+
+/* Background gradient animation */
+@keyframes gradient-x {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 3s ease infinite;
+  background-image: linear-gradient(to right, #10b981, #3b82f6, #8b5cf6);
+}
+
+/* Page background with gradient effects */
+.page-background {
+  position: relative;
+}
+
+.page-background::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+}
+
+.page-background::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+}
+
+/* Light mode background */
+.page-background::before {
+  background: #f9fafb;
+}
+
+.page-background .gradient-blob-1 {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 33.333%;
+  height: 33.333%;
+  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.1));
+  border-radius: 100%;
+  filter: blur(3rem);
+  opacity: 0.7;
+  z-index: -5;
+}
+
+.page-background .gradient-blob-2 {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 33.333%;
+  height: 33.333%;
+  background: linear-gradient(to top right, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.05), rgba(59, 130, 246, 0.1));
+  border-radius: 100%;
+  filter: blur(3rem);
+  opacity: 0.7;
+  z-index: -5;
+}
+
+/* Dark mode background */
+.dark .page-background::before {
+  background: #111827;
+}
+
+/* Glass effect for components */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37) !important;
+}
+
+.dark .glass-effect {
+  background: rgba(17, 25, 40, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.125) !important;
+}
+
+/* Title styling */
+.page-title {
+  font-weight: bold;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  background-image: linear-gradient(to right, #10b981, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+
+.dark .page-title {
+  background-image: linear-gradient(to right, #10b981, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

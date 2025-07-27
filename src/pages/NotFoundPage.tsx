@@ -1,10 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import '../styles/CommonStyles.css';
 
 const NotFoundPage: React.FC = () => {
   return (
-    <div className="min-h-[calc(100vh-16rem)] flex items-center justify-center px-4 py-12 bg-gradient-to-b from-white to-primary-50">
+    <div className="min-h-[calc(100vh-16rem)] flex items-center justify-center px-4 py-12 page-background dark">
+      {/* Background gradient effects */}
+      <div className="gradient-blob-1"></div>
+      <div className="gradient-blob-2"></div>
       <div className="relative">
         {/* Background decorative elements */}
         <div className="absolute inset-0 overflow-hidden -z-10">
@@ -13,13 +17,13 @@ const NotFoundPage: React.FC = () => {
           <div className="absolute -top-10 right-20 w-20 h-20 bg-secondary-100 rounded-full opacity-60 blur-xl"></div>
         </div>
         
-        <div className="max-w-lg text-center">
+        <div className="max-w-lg text-center glass-effect p-8 rounded-xl">
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-9xl font-bold text-primary-500 mb-6 opacity-80 font-display">
+            <h1 className="text-9xl font-bold page-title mb-6 opacity-80 font-display">
               404
             </h1>
           </motion.div>
@@ -29,11 +33,11 @@ const NotFoundPage: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-6">
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-primary mb-6 section-title">
               Page Not Found
             </h2>
             
-            <p className="text-lg text-gray-600 mb-8">
+            <p className="text-lg text-secondary mb-8">
               Oops! It looks like the AI couldn't find the page you're looking for. 
               The neural pathways may have led to a dead end.
             </p>
@@ -47,7 +51,7 @@ const NotFoundPage: React.FC = () => {
               </Link>
               
               <div className="pt-4">
-                <span className="text-gray-500">
+                <span className="text-tertiary">
                   Need help? <Link to="/contact" className="text-primary-600 hover:text-primary-700 underline">Contact Us</Link>
                 </span>
               </div>
@@ -101,4 +105,4 @@ const NotFoundPage: React.FC = () => {
   );
 };
 
-export default NotFoundPage; 
+export default NotFoundPage;

@@ -4,6 +4,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { Layout } from '../components';
+import '../styles/CommonStyles.css';
 import { 
   FiUsers, 
   FiUserPlus, 
@@ -103,12 +104,10 @@ const ReferralPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className={`py-8 px-4 lg:px-8 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className={`page-background py-8 px-4 lg:px-8 ${darkMode ? 'dark' : ''}`}>
         {/* Background gradient effects */}
-        <div className="fixed inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-purple-500/10 blur-3xl opacity-70"></div>
-          <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-purple-500/10 via-pink-500/5 to-blue-500/10 blur-3xl opacity-70"></div>
-        </div>
+        <div className="gradient-blob-1"></div>
+        <div className="gradient-blob-2"></div>
 
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
@@ -118,7 +117,7 @@ const ReferralPage: React.FC = () => {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h1 className="page-title">
               Refer Friends & Earn Rewards
             </h1>
             <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
@@ -132,11 +131,7 @@ const ReferralPage: React.FC = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className={`rounded-xl ${
-                darkMode 
-                  ? 'bg-gray-800/50 border border-gray-700/50' 
-                  : 'bg-white border border-gray-100'
-              } p-6 lg:col-span-1`}
+              className="rounded-xl glass-effect p-6 lg:col-span-1"
             >
               <div className="flex items-center mb-6">
                 <div className={`p-3 rounded-lg ${
@@ -219,11 +214,7 @@ const ReferralPage: React.FC = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className={`rounded-xl ${
-                darkMode 
-                  ? 'bg-gray-800/50 border border-gray-700/50' 
-                  : 'bg-white border border-gray-100'
-              } p-6 lg:col-span-2`}
+              className="rounded-xl glass-effect p-6 lg:col-span-2"
             >
               <div className="flex items-center mb-6">
                 <div className={`p-3 rounded-lg ${
@@ -360,11 +351,7 @@ const ReferralPage: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className={`rounded-xl ${
-              darkMode 
-                ? 'bg-gray-800/50 border border-gray-700/50' 
-                : 'bg-white border border-gray-100'
-            } p-6`}
+            className="rounded-xl glass-effect p-6"
           >
             <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               Invitation History
@@ -431,4 +418,4 @@ const ReferralPage: React.FC = () => {
   );
 };
 
-export default ReferralPage; 
+export default ReferralPage;

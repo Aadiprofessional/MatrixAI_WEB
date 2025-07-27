@@ -54,7 +54,7 @@ interface VideoHistoryItem {
   duration?: string;
   videoStyle?: string;
   negative_prompt?: string; // Add negative prompt field
- // Add template field
+  error_message?: string; // Error message from API if video generation failed
 }
 
 interface TemplateVideo {
@@ -118,6 +118,11 @@ const VideoCreatorPage: React.FC = () => {
   const [videoHistory, setVideoHistory] = useState<VideoHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [historyPage, setHistoryPage] = useState<number>(1);
+  const [hasMoreHistory, setHasMoreHistory] = useState<boolean>(true);
+  const [isLoadingMoreHistory, setIsLoadingMoreHistory] = useState<boolean>(false);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const historyItemsPerPage = 20; // Number of items to load per page
   const [generateButtonClicked, setGenerateButtonClicked] = useState(false);
   
   // Template state
@@ -293,8 +298,8 @@ const VideoCreatorPage: React.FC = () => {
       promptText: apiVideo.promptText || apiVideo.prompt_text,
       size: apiVideo.size || '1280*720',
       taskId: apiVideo.taskId || apiVideo.task_id || '',
-      taskStatus: apiVideo.taskStatus || apiVideo.task_status || apiVideo.status || 'unknown',
-      statusDisplay: getStatusDisplay(apiVideo.taskStatus || apiVideo.task_status || apiVideo.status || 'unknown'),
+      taskStatus: apiVideo.taskStatus || apiVideo.task_status || 'unknown',
+      statusDisplay: getStatusDisplay(apiVideo.status === 'completed' ? 'SUCCEEDED' : (apiVideo.taskStatus || apiVideo.task_status || 'unknown')),
       isReady: (apiVideo.taskStatus || apiVideo.task_status) === 'SUCCEEDED' || apiVideo.status === 'completed',
       hasVideo: !!(apiVideo.videoUrl || apiVideo.video_url),
       videoUrl: apiVideo.videoUrl || apiVideo.video_url || '',
@@ -311,19 +316,24 @@ const VideoCreatorPage: React.FC = () => {
       ratio: apiVideo.ratio,
       duration: apiVideo.duration,
       videoStyle: apiVideo.videoStyle || apiVideo.video_style,
-      template: apiVideo.template || apiVideo.templateName || ''
+      template: apiVideo.template || apiVideo.templateName || '',
+      error_message: apiVideo.error_message || apiVideo.errorMessage || ''
     };
   }, []);
   
-  const fetchVideoHistory = useCallback(async () => {
+  const fetchVideoHistory = useCallback(async (page = 1, append = false) => {
     if (!user?.id) return;
     
-    setIsLoadingHistory(true);
+    if (page === 1) {
+      setIsLoadingHistory(true);
+    } else {
+      setIsLoadingMoreHistory(true);
+    }
     setHistoryError(null);
     
     try {
-      // Use the POST method API endpoint
-      const response = await videoService.getAllVideos(user.id);
+      // Use the POST method API endpoint with pagination parameters
+      const response = await videoService.getAllVideos(user.id, page, historyItemsPerPage);
       
       // Check if response has videos array
       if (!response.videos || !Array.isArray(response.videos)) {
@@ -332,24 +342,62 @@ const VideoCreatorPage: React.FC = () => {
       
       // Transform the video data to match our interface
       const transformedVideos = response.videos.map(transformVideoData);
-      setVideoHistory(transformedVideos);
+      
+      // Use pagination info from the API response
+      console.log('Debug pagination from API:', { 
+        page, 
+        currentPage: response.currentPage,
+        totalItems: response.totalItems,
+        totalPages: response.totalPages,
+        itemsPerPage: response.itemsPerPage,
+        hasNextPage: response.pagination?.hasNextPage,
+        hasPreviousPage: response.pagination?.hasPreviousPage
+      });
+      
+      // Set pagination states based on API response
+      setHasMoreHistory(!!response.pagination?.hasNextPage);
+      setTotalPages(response.totalPages || 1);
+      
+      // Update state based on whether we're appending or replacing
+      if (append) {
+        setVideoHistory(prevHistory => [...prevHistory, ...transformedVideos]);
+      } else {
+        setVideoHistory(transformedVideos);
+      }
     } catch (err: any) {
       console.error('Error fetching video history:', err);
       setHistoryError(err.message || 'Failed to fetch video history');
-      setVideoHistory([]);
+      if (!append) {
+        setVideoHistory([]);
+      }
     } finally {
-      setIsLoadingHistory(false);
+      if (page === 1) {
+        setIsLoadingHistory(false);
+      } else {
+        setIsLoadingMoreHistory(false);
+      }
     }
-  }, [user?.id, transformVideoData]);
+  }, [user?.id, transformVideoData, historyItemsPerPage]);
 
   // Fetch video history when component mounts or when history is toggled
   useEffect(() => {
     if (showHistory && user?.id) {
+      // Reset pagination when showing history
+      setHistoryPage(1);
+      // Don't set hasMoreHistory here, let fetchVideoHistory determine it
       // Fetch video history for the current user
-      // This will now use the enhanced API endpoint
-      fetchVideoHistory();
+      fetchVideoHistory(1, false);
     }
   }, [showHistory, user?.id, fetchVideoHistory]);
+  
+  // Function to load more history items
+  const loadMoreHistory = useCallback(() => {
+    if (isLoadingMoreHistory || !hasMoreHistory) return;
+    
+    const nextPage = historyPage + 1;
+    setHistoryPage(nextPage);
+    fetchVideoHistory(nextPage, false); // Changed from true to false to replace instead of append
+  }, [historyPage, isLoadingMoreHistory, hasMoreHistory, fetchVideoHistory]);
   
   // Fetch template videos when component mounts
   useEffect(() => {
@@ -463,13 +511,35 @@ const VideoCreatorPage: React.FC = () => {
     setCurrentVideoId(null);
     setTaskStatus('');
     
-    // Start progress animation
+    // Show alert about 2-minute wait time
+    showInfo('Video generation will take approximately 2 minutes. Please be patient.', 10000);
+    
+    // Start progress animation - calibrated to reach ~95% in exactly 2 minutes
+    const startTime = Date.now();
+    const totalDuration = 120000; // 2 minutes in milliseconds
+    
     const progressInterval = setInterval(() => {
-      setProcessingProgress(prev => {
-        const newProgress = prev + Math.random() * 5;
-        return newProgress > 95 ? 95 : newProgress;
-      });
-    }, 1000);
+      const elapsedTime = Date.now() - startTime;
+      const calculatedProgress = Math.min(95, (elapsedTime / totalDuration) * 95);
+      
+      setProcessingProgress(calculatedProgress);
+      
+      // If we've reached the end of our expected duration, slow down updates
+      if (elapsedTime >= totalDuration) {
+        clearInterval(progressInterval);
+        // Switch to a slower interval for the remaining 5%
+        const finalInterval = setInterval(() => {
+          setProcessingProgress(prev => {
+            const newProgress = prev + 0.1;
+            if (newProgress >= 95) {
+              clearInterval(finalInterval);
+              return 95;
+            }
+            return newProgress;
+          });
+        }, 3000);
+      }
+    }, 1000); // Update every second for smoother progress
     
     try {
       // Get resolution dimensions
@@ -481,62 +551,40 @@ const VideoCreatorPage: React.FC = () => {
       // Check if we have an uploaded image
       if (uploadedImageUrl) {
         try {
-          // Ensure the image URL is properly formatted - remove spaces, quotes, and backticks
-          console.log('Original image URL before cleaning:', uploadedImageUrl);
-          
-          // Apply thorough cleaning to remove all backticks and quotes
-          let cleanImageUrl = uploadedImageUrl;
-          // First trim any whitespace
-          cleanImageUrl = cleanImageUrl.trim();
-          // Then remove all quotes and backticks
-          cleanImageUrl = cleanImageUrl.replace(/["'`]/g, '');
-          // Double-check for any remaining backticks (sometimes regex can miss them)
-          while (cleanImageUrl.includes('`')) {
-            cleanImageUrl = cleanImageUrl.replace('`', '');
-          }
-          
-          console.log('Cleaned image URL for API:', cleanImageUrl);
-          
-          // Final verification - ensure URL is completely clean
-          if (cleanImageUrl.includes('`')) {
-            console.error('WARNING: Image URL still contains backticks after cleaning');
-            cleanImageUrl = cleanImageUrl.split('`').join('');
-            console.log('Final cleaned image URL:', cleanImageUrl);
-          }
-          
-          // Check if the image is accessible before sending to API
-          console.log('Checking image accessibility...');
-          const isAccessible = await checkImageAccessibility(cleanImageUrl);
-          if (!isAccessible) {
-            throw new Error('Image download timeout: The image is not accessible. Please try uploading a different image or check that your image URL is valid.');
-          }
-          console.log('Image accessibility check passed');
-          
-          // Determine which API call to make based on the selected option
-          if (template) {
-            // Option 1: Template-based Generation - No prompt needed but include negative prompt
-            // Ensure negative prompt is never empty for template-based generation too
-            const finalNegativePrompt = negativePrompt && negativePrompt.trim() !== "" ? negativePrompt : "no blur";
-            console.log('Using template-based generation with template:', template, 'and negative prompt:', finalNegativePrompt);
-            response = await videoService.createVideoWithUrl(
-              user.id, 
-              "", // Empty prompt for template-based generation
-              cleanImageUrl, 
-              finalNegativePrompt, // Always pass a non-empty negative prompt
-              template
-            );
+          // Check if we're using a local file (from handleImageFileChange) or a URL
+          if (uploadedImageUrl === 'local-file' && uploadedImage) {
+            console.log('Using local image file for direct API upload');
+            
+            // Determine which API call to make based on the selected option
+            if (template) {
+              // Option 1: Template-based Generation with direct file upload
+              console.log('Using template-based generation with template:', template);
+              response = await videoService.createVideoWithImage(
+                user.id,
+                uploadedImage,
+                template,
+                "", // Empty prompt for template-based generation
+                size
+              );
+            } else {
+              // Option 2: Text-to-Video with direct file upload
+              console.log('Using text-to-video with prompt:', prompt);
+              response = await videoService.createVideoWithImage(
+                user.id,
+                uploadedImage,
+                undefined, // No template
+                prompt,
+                size
+              );
+            }
           } else {
-            // Option 2: Text-to-Video with Negative Prompt
-            // Ensure negative prompt is never empty
-            const finalNegativePrompt = negativePrompt && negativePrompt.trim() !== "" ? negativePrompt : "no blur";
-            console.log('Using text-to-video with negative prompt:', finalNegativePrompt);
-            response = await videoService.createVideoWithUrl(
-              user.id, 
-              prompt, 
-              cleanImageUrl, 
-              finalNegativePrompt, // Always pass a non-empty negative prompt
-              undefined // No template
-            );
+            // We have a URL (from previous implementation) - this is a fallback
+            console.error('Using URL-based image upload is deprecated, please use direct file upload');
+            setError('Image upload method not supported. Please try uploading the image again.');
+            setIsGenerating(false);
+            setGenerateButtonClicked(false);
+            clearInterval(progressInterval);
+            return;
           }
           
           console.log('Create video with image response:', response);
@@ -573,13 +621,13 @@ const VideoCreatorPage: React.FC = () => {
           
           // Handle different error status codes
           if (apiError.message && apiError.message.includes('Image download timeout')) {
-            setError('Image download issue: The server could not download your image. Please try again with a smaller image file or a different image.');
+            setError('Image download issue: The server could not process your image. Please try again with a smaller image file or a different image.');
             console.error('Image download timeout detected');
           } else if (apiError.message && apiError.message.includes('500')) {
             setError('Server error (500): The video generation service is currently experiencing issues. This may be due to high demand or server maintenance. Please try again later.');
             console.error('500 error detected in message');
           } else if (apiError.message && apiError.message.includes('Failed to create video from image')) {
-            setError(`Video creation failed: ${apiError.message}. Please check that your image URL is valid and accessible.`);
+            setError(`Video creation failed: ${apiError.message}. Please check that your image is valid and accessible.`);
             console.error('Video creation failure detected');
           } else if (apiError.message && apiError.message.includes('DashScope API error')) {
             setError('AI service error: The video generation AI service encountered an issue processing your image. Please try a different image or prompt.');
@@ -619,7 +667,7 @@ const VideoCreatorPage: React.FC = () => {
       
       if (response.videoId) {
         setCurrentVideoId(response.videoId);
-        setTaskStatus(response.taskStatus || response.status || 'SUCCEEDED');
+        setTaskStatus( response.status || 'SUCCEEDED');
         
         // If we're not a pro user, decrement the free generations
         if (!isPro) {
@@ -661,22 +709,35 @@ const VideoCreatorPage: React.FC = () => {
     }
   };
 
-  const { showConfirmation, showError } = useAlert();
+  const { showConfirmation, showError, showInfo, showSuccess } = useAlert();
 
   const handleRemoveVideo = async (videoId: string) => {
     if (!user?.id) return;
     
     showConfirmation(
-      'Are you sure you want to remove this video?',
+      'Are you sure you want to remove this video? This action cannot be undone.',
       async () => {
         try {
+          // Show alert before removing
+          showInfo('Removing video...', 2000);
+          
           await videoService.removeVideo(user.id!, videoId);
+          
           // Remove the video from the local state
           setVideoHistory(prev => prev.filter(video => video.videoId !== videoId));
+          
+          // Show success message
+          showSuccess('Video removed successfully');
         } catch (error: any) {
           console.error('Error removing video:', error);
           showError('Failed to remove the video. Please try again.');
         }
+      },
+      undefined,
+      {
+        confirmText: 'Yes, Remove',
+        cancelText: 'Cancel',
+        type: 'warning'
       }
     );
   };
@@ -889,76 +950,112 @@ const VideoCreatorPage: React.FC = () => {
                       file.name.toLowerCase().endsWith('.heif');
         
         if (isHeic) {
-          setError('HEIC image format is not supported by the video generation API. Please convert your image to JPG or PNG format before uploading.');
-          setUploadedImage(null);
-          setIsUploadingImage(false);
-          return;
-        }
-        
-        // Check image dimensions to prevent timeout issues
-        const checkImageDimensions = () => {
-          return new Promise<void>((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => {
-              // Check if image is too large in dimensions
-              if (img.width > 4000 || img.height > 4000) {
-                reject(new Error('Image dimensions are too large. Please use an image smaller than 4000x4000 pixels to prevent timeout issues.'));
-              } else if (img.width < 256 || img.height < 256) {
-                reject(new Error('Image dimensions are too small. Please use an image at least 256x256 pixels for best results.'));
-              } else {
-                resolve();
-              }
-            };
-            img.onerror = () => {
-              reject(new Error('Failed to load image for validation. Please try another image.'));
-            };
-            img.src = URL.createObjectURL(file);
-          });
-        };
-        
-        // Check image dimensions before proceeding
-        await checkImageDimensions();
-        
-        let fileToUpload = file;
-        
-        // Compress image if it's larger than 5MB
-        if (file.size > 5 * 1024 * 1024) {
-          console.log('Image size exceeds 5MB, compressing image...');
+          // Convert HEIC to JPEG immediately
+          console.log('HEIC format detected, converting to JPEG now...');
+          setError('Converting HEIC image to JPG... Please wait.');
           
           try {
-            // Configure compression options
-            const options = {
-              maxSizeMB: 5,
-              maxWidthOrHeight: 4000,
-              useWebWorker: true,
-              fileType: file.type
+            // Import videoService for HEIC conversion
+            const { videoService } = await import('../services/videoService');
+            
+            // Convert the HEIC file to JPEG
+            const convertedFile = await videoService.convertHeicToJpeg(file);
+            
+            // Update the file reference with the converted JPEG
+            setUploadedImage(convertedFile);
+            console.log('HEIC conversion complete:', convertedFile.name, convertedFile.type, convertedFile.size);
+            
+            // Now check dimensions of the converted image with a timeout
+            const checkImageDimensions = () => {
+              return new Promise<void>((resolve, reject) => {
+                const img = new Image();
+                
+                // Set a timeout to handle cases where the image might take too long to load
+                const timeoutId = setTimeout(() => {
+                  console.log('Image dimension check timed out, proceeding anyway');
+                  resolve(); // Resolve anyway to prevent blocking the user
+                }, 5000); // 5 second timeout
+                
+                img.onload = () => {
+                  clearTimeout(timeoutId);
+                  // Check if image is too large in dimensions
+                  if (img.width > 4000 || img.height > 4000) {
+                    reject(new Error('Image dimensions are too large. Please use an image smaller than 4000x4000 pixels to prevent timeout issues.'));
+                  } else if (img.width < 256 || img.height < 256) {
+                    reject(new Error('Image dimensions are too small. Please use an image at least 256x256 pixels for best results.'));
+                  } else {
+                    resolve();
+                  }
+                };
+                
+                img.onerror = () => {
+                  clearTimeout(timeoutId);
+                  console.warn('Image failed to load for validation, but proceeding with conversion');
+                  resolve(); // Allow the conversion to proceed even if validation fails
+                };
+                
+                img.src = URL.createObjectURL(convertedFile);
+              });
             };
             
-            // Compress the image
-            const compressedFile = await imageCompression(file, options);
-            console.log('Original file size:', file.size / 1024 / 1024, 'MB');
-            console.log('Compressed file size:', compressedFile.size / 1024 / 1024, 'MB');
-            
-            fileToUpload = compressedFile;
-          } catch (compressionError) {
-            console.error('Error compressing image:', compressionError);
-            // If compression fails, check if original file is under 10MB
-            if (file.size > 10 * 1024 * 1024) {
-              throw new Error('Image size exceeds 10MB limit and compression failed. Please choose a smaller image.');
+            try {
+              // Try to check dimensions but don't block if it fails
+              await checkImageDimensions();
+            } catch (dimensionError) {
+              console.warn('Dimension check error:', dimensionError);
+              // Continue anyway since we have a valid converted file
             }
-            // Otherwise continue with original file
-            console.log('Continuing with original file as compression failed but file is under 10MB');
+            
+            // Clear the error message since conversion was successful
+            setError(null);
+          } catch (conversionError: any) {
+            console.error('Error converting HEIC image:', conversionError);
+            throw new Error('Failed to convert HEIC image. Please try another image format.');
+          }
+        } else {
+          // For non-HEIC images, check dimensions with timeout
+          const checkImageDimensions = () => {
+            return new Promise<void>((resolve, reject) => {
+              const img = new Image();
+              
+              // Set a timeout to handle cases where the image might take too long to load
+              const timeoutId = setTimeout(() => {
+                console.log('Image dimension check timed out, proceeding anyway');
+                resolve(); // Resolve anyway to prevent blocking the user
+              }, 5000); // 5 second timeout
+              
+              img.onload = () => {
+                clearTimeout(timeoutId);
+                // Check if image is too large in dimensions
+                if (img.width > 4000 || img.height > 4000) {
+                  reject(new Error('Image dimensions are too large. Please use an image smaller than 4000x4000 pixels to prevent timeout issues.'));
+                } else if (img.width < 256 || img.height < 256) {
+                  reject(new Error('Image dimensions are too small. Please use an image at least 256x256 pixels for best results.'));
+                } else {
+                  resolve();
+                }
+              };
+              
+              img.onerror = () => {
+                clearTimeout(timeoutId);
+                reject(new Error('Failed to load image for validation. Please try another image.'));
+              };
+              
+              img.src = URL.createObjectURL(file);
+            });
+          };
+          
+          try {
+            // Check image dimensions before proceeding
+            await checkImageDimensions();
+          } catch (dimensionError) {
+            throw dimensionError; // For non-HEIC images, we still want to enforce dimension requirements
           }
         }
         
-        // Upload image to Supabase storage
-        console.log('Uploading image to Supabase storage...');
-        const result = await uploadImageToStorage(fileToUpload, user.id);
-        console.log('Image upload successful, public URL:', result.publicUrl);
-        
-        // Ensure the URL is properly formatted and trimmed - remove any quotes or backticks
-        const cleanUrl = result.publicUrl.trim().replace(/["'`]/g, '');
-        setUploadedImageUrl(cleanUrl);
+        // Store the file directly without uploading to storage
+        // The file will be sent directly to the API in handleGenerateVideo
+        setUploadedImageUrl('local-file'); // Use a marker to indicate we have a local file
         
         // Reset video upload when image is uploaded
         setUploadedVideo(null);
@@ -966,8 +1063,8 @@ const VideoCreatorPage: React.FC = () => {
         
         setIsUploadingImage(false);
       } catch (error: any) {
-        console.error('Error uploading image:', error);
-        setError(error.message || 'Failed to upload image. Please try again.');
+        console.error('Error processing image:', error);
+        setError(error.message || 'Failed to process image. Please try again.');
         setUploadedImage(null);
         setIsUploadingImage(false);
       }
@@ -1064,12 +1161,34 @@ const VideoCreatorPage: React.FC = () => {
   };
 
   const getStatusText = () => {
+    // Fixed time status of 40 seconds for text-to-video
+    const getRemainingTimeText = () => {
+      // If progress is over 95%, just say "almost done"
+      if (processingProgress >= 95) {
+        return "(almost done)";
+      }
+      
+      // Fixed time of 40 seconds for text-to-video
+      const totalTimeSeconds = 40;
+      const remainingProgress = 100 - processingProgress;
+      const remainingTimeSeconds = Math.ceil((remainingProgress / 100) * totalTimeSeconds);
+      
+      // Format the remaining time
+      if (remainingTimeSeconds > 60) {
+        const minutes = Math.floor(remainingTimeSeconds / 60);
+        const seconds = remainingTimeSeconds % 60;
+        return `(about ${minutes}m ${seconds}s remaining)`;
+      } else {
+        return `(about ${remainingTimeSeconds}s remaining)`;
+      }
+    };
+    
     // Special case for image upload
     if (uploadedImageUrl && isGenerating) {
       if (taskStatus === 'PENDING' || taskStatus === 'pending') {
-        return 'Preparing your image for animation...';
+        return `Preparing your image for animation... ${getRemainingTimeText()}`;
       } else if (taskStatus === 'RUNNING' || taskStatus === 'PROCESSING' || taskStatus === 'processing') {
-        return 'Animating your image...';
+        return `Animating your image... ${getRemainingTimeText()}`;
       } else if (taskStatus === 'FAILED' || taskStatus === 'failed') {
         return 'Animation failed. Please try a different image or prompt.';
       }
@@ -1080,18 +1199,18 @@ const VideoCreatorPage: React.FC = () => {
     
     switch (normalizedStatus) {
       case 'pending':
-        return 'Initializing video generation...';
+        return `Initializing video generation... ${getRemainingTimeText()}`;
       case 'running':
       case 'processing':
       case 'generating':
-        return 'Generating video...';
+        return `Generating video... ${getRemainingTimeText()}`;
       case 'succeeded':
       case 'completed':
         return 'Video generated successfully!';
       case 'failed':
         return 'Video generation failed';
       default:
-        return 'Generating video...';
+        return `Generating video... ${getRemainingTimeText()}`;
     }
   };
 
@@ -1298,20 +1417,49 @@ const VideoCreatorPage: React.FC = () => {
               {uploadedImageUrl ? (
                 <>
                   <div className="relative w-full h-full overflow-hidden rounded-lg shadow-xl">
-                    <img 
-                      src={uploadedImageUrl} 
-                      alt="Uploaded" 
-                      className="max-h-full max-w-full object-contain z-10 mx-auto" 
-                      onError={(e) => {
-                        console.error('Image failed to load:', uploadedImageUrl);
-                        e.currentTarget.onerror = null; // Prevent infinite error loop
-                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNMTAwIDcwQzExNy42NyA3MCAxMzIgODQuMzMgMTMyIDEwMkMxMzIgMTE5LjY3IDExNy42NyAxMzQgMTAwIDEzNEM4Mi4zMyAxMzQgNjggMTE5LjY3IDY4IDEwMkM2OCA4NC4zMyA4Mi4zMyA3MCAxMDAgNzBaIiBmaWxsPSIjOTRBM0IzIi8+PHBhdGggZD0iTTYwIDEzNkM2MCAxMjIuNzQ1IDcwLjc0NSAxMTIgODQgMTEySDExNkMxMjkuMjU1IDExMiAxNDAgMTIyLjc0NSAxNDAgMTM2VjE0MEg2MFYxMzZaIiBmaWxsPSIjOTRBM0IzIi8+PC9zdmc+'; // Fallback image
-                      }}
-                    />
+                    {uploadedImageUrl === 'local-file' && uploadedImage ? (
+                      // Display the image (HEIC images are already converted at this point)
+                      (
+                        // For non-HEIC images, show the actual image
+                        <img 
+                          src={URL.createObjectURL(uploadedImage)} 
+                          alt="Uploaded" 
+                          className="max-h-full max-w-full object-contain z-10 mx-auto"
+                          onError={(e) => {
+                            console.error('Local image failed to load');
+                            e.currentTarget.onerror = null; // Prevent infinite error loop
+                            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNMTAwIDcwQzExNy42NyA3MCAxMzIgODQuMzMgMTMyIDEwMkMxMzIgMTE5LjY3IDExNy42NyAxMzQgMTAwIDEzNEM4Mi4zMyAxMzQgNjggMTE5LjY3IDY4IDEwMkM2OCA4NC4zMyA4Mi4zMyA3MCAxMDAgNzBaIiBmaWxsPSIjOTRBM0IzIi8+PHBhdGggZD0iTTYwIDEzNkM2MCAxMjIuNzQ1IDcwLjc0NSAxMTIgODQgMTEySDExNkMxMjkuMjU1IDExMiAxNDAgMTIyLjc0NSAxNDAgMTM2VjE0MEg2MFYxMzZaIiBmaWxsPSIjOTRBM0IzIi8+PC9zdmc+'; // Fallback image
+                          }}
+                        />
+                      )
+                    ) : (
+                      <img 
+                        src={uploadedImageUrl} 
+                        alt="Uploaded" 
+                        className="max-h-full max-w-full object-contain z-10 mx-auto" 
+                        onError={(e) => {
+                          console.error('Image failed to load:', uploadedImageUrl);
+                          e.currentTarget.onerror = null; // Prevent infinite error loop
+                          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNMTAwIDcwQzExNy42NyA3MCAxMzIgODQuMzMgMTMyIDEwMkMxMzIgMTE5LjY3IDExNy42NyAxMzQgMTAwIDEzNEM4Mi4zMyAxMzQgNjggMTE5LjY3IDY4IDEwMkM2OCA4NC4zMyA4Mi4zMyA3MCAxMDAgNzBaIiBmaWxsPSIjOTRBM0IzIi8+PHBhdGggZD0iTTYwIDEzNkM2MCAxMjIuNzQ1IDcwLjc0NSAxMTIgODQgMTEySDExNkMxMjkuMjU1IDExMiAxNDAgMTIyLjc0NSAxNDAgMTM2VjE0MEg2MFYxMzZaIiBmaWxsPSIjOTRBM0IzIi8+PC9zdmc+'; // Fallback image
+                        }}
+                      />
+                    )}
                     {isGenerating && (
                       <>
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 animate-pulse flex items-center justify-center z-20"></div>
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-slide-right z-30"></div>
+                        
+                        {/* Progress bar overlay */}
+                        <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 w-3/4 max-w-md z-40">
+                          <div className="w-full bg-gray-700/70 rounded-full h-2 mb-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300" 
+                              style={{ width: `${processingProgress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        {/* Status text */}
                         <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-white text-lg font-medium bg-black/70 px-6 py-3 rounded-full z-40 shadow-xl flex items-center">
                           <FiLoader className="animate-spin mr-3" size={20} />
                           {getStatusText()}
@@ -1512,14 +1660,14 @@ const VideoCreatorPage: React.FC = () => {
                   <h3 className="text-md font-medium mb-3 text-gray-800 dark:text-gray-200">Video Generation Options</h3>
                   
                   <div className="space-y-4">
-                    {/* Option 1: Text-to-Video with Negative Prompt */}
+                    {/* Option 1: Text-to-Video */}
                     <div className="p-3 border rounded-md border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 cursor-pointer transition-all"
                          onClick={() => {
                            setTemplate("");
                            // Always set negative prompt to "no blur" to ensure it's treated as user input
-                           // This forces it to be included in the API request
+                           // This forces it to be included in the API request but is hidden from the user
                            setNegativePrompt("no blur");
-                           setShowAdvanced(true);
+                           setShowAdvanced(false);
                            // Enable prompt input
                            document.getElementById('promptInput')?.removeAttribute('disabled');
                          }}
@@ -1528,38 +1676,13 @@ const VideoCreatorPage: React.FC = () => {
                         <div className="h-4 w-4 rounded-full border border-gray-400 dark:border-gray-500 flex items-center justify-center mr-2">
                           {!template && <div className="h-2 w-2 rounded-full bg-blue-500"></div>}
                         </div>
-                        <h4 className="font-medium text-gray-800 dark:text-gray-200">Text-to-Video with Negative Prompt</h4>
+                        <h4 className="font-medium text-gray-800 dark:text-gray-200">Text-to-Video</h4>
                       </div>
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-6">
-                        Generate video with your prompt and control over what to exclude
+                        Generate video with your prompt
                       </p>
-                      
-                      {/* Negative prompt input - Always shown for this option */}
-                      {!template && (
-                        <div className="mt-2 ml-6">
-                          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Negative Prompt</label>
-                          <textarea
-                            value={negativePrompt || "no blur"}
-                            onChange={(e) => {
-                              // Ensure we never set an empty value
-                              const value = e.target.value.trim() === "" ? "no blur" : e.target.value;
-                              setNegativePrompt(value);
-                            }}
-                            placeholder="Describe what you don't want to see in the video..."
-                            className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 h-20"
-                            disabled={isGenerating}
-                            onFocus={() => {
-                              // If the negative prompt is empty or just the default, select it all for easy replacement
-                              if (!negativePrompt || negativePrompt === "no blur") {
-                                const textarea = document.activeElement as HTMLTextAreaElement;
-                                if (textarea) {
-                                  textarea.select();
-                                }
-                              }
-                            }}
-                          />
-                        </div>
-                      )}
+                      {/* Hidden input for negative prompt - not shown to user */}
+                      <input type="hidden" value="no blur" />
                     </div>
                     
                     {/* Option 2: Template-based Generation */}
@@ -1718,14 +1841,13 @@ const VideoCreatorPage: React.FC = () => {
                     This may be due to server issues or the image not being suitable for animation. Try using a different image with a clear subject or try again later.
                   </p>
                 )}
-                {(error?.includes('HEIC image format')) && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400 pl-6">
-                    HEIC is an Apple image format that is not widely supported by web browsers and APIs. 
-                    Please convert your image to JPG or PNG using an image converter tool before uploading.
+                {(error?.includes('Converting HEIC image')) && (
+                  <p className="mt-2 text-sm text-amber-600 dark:text-amber-400 pl-6">
+                    <strong>Please wait:</strong> HEIC is an Apple image format that is being converted to JPG for compatibility.
                     <br/><br/>
-                    <strong>Why this happens:</strong> HEIC images from iPhones are not compatible with our video generation API.
+                    <strong>What's happening:</strong> Your HEIC image is being converted to JPG format right now.
                     <br/>
-                    <strong>How to fix:</strong> Use an image converter app or website to convert your HEIC image to JPG or PNG format.
+                    <strong>No action needed:</strong> The image will be displayed once conversion is complete.
                   </p>
                 )}
               </div>
@@ -1827,7 +1949,7 @@ const VideoCreatorPage: React.FC = () => {
                     <p className="text-red-500 dark:text-red-400 text-sm mb-2">Error loading history</p>
                     <p className="text-red-500 dark:text-red-400 text-xs">{historyError}</p>
                     <button
-                      onClick={fetchVideoHistory}
+                      onClick={() => fetchVideoHistory(1, false)}
                       className="mt-4 px-4 py-2 rounded-lg bg-blue-500 text-white hover-bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-sm"
                     >
                       Retry
@@ -1851,6 +1973,10 @@ const VideoCreatorPage: React.FC = () => {
                               className="w-16 h-12 object-cover rounded border"
                               muted
                               preload="metadata"
+                              onError={(e) => {
+                                console.error('Video thumbnail failed to load:', video.videoUrl);
+                                e.currentTarget.style.display = 'none';
+                              }}
                             />
                           </div>
                         )}
@@ -1867,26 +1993,34 @@ const VideoCreatorPage: React.FC = () => {
                               {video.size}
                             </p>
                           </div>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              video.taskStatus === 'SUCCEEDED' || video.taskStatus === 'completed' || video.statusDisplay === 'Ready'
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                : video.taskStatus === 'RUNNING' || video.taskStatus === 'PENDING' || 
-                                  video.taskStatus === 'processing' || video.taskStatus === 'generating' ||
-                                  video.statusDisplay === 'Processing' || video.statusDisplay === 'Queued'
-                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                : video.taskStatus === 'FAILED' || video.taskStatus === 'failed' || video.statusDisplay === 'Failed'
-                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                            }`}>
-                              {/* Use the statusDisplay field which is already formatted by transformVideoData */}
-                              {video.statusDisplay}
-                            </span>
+                          <div className="flex flex-col space-y-1 mt-1">
+                            <div className="flex items-center space-x-2">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                (video.taskStatus === 'SUCCEEDED' || video.statusDisplay === 'Ready')
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : (video.taskStatus === 'RUNNING' || video.taskStatus === 'PENDING' || 
+                                    video.taskStatus === 'processing' || video.taskStatus === 'generating' ||
+                                    video.statusDisplay === 'Processing' || video.statusDisplay === 'Queued')
+                                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                  : (video.taskStatus === 'FAILED' || video.taskStatus === 'failed' || video.statusDisplay === 'Failed')
+                                  ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                              }`}>
+                                {/* Use the statusDisplay field which is already formatted by transformVideoData */}
+                                {video.statusDisplay}
+                              </span>
+                            </div>
+                            {/* Display error message if video failed and has an error message */}
+                            {(video.taskStatus === 'FAILED' || video.taskStatus === 'failed' || video.statusDisplay === 'Failed') && video.error_message && (
+                              <p className="text-xs text-red-500 dark:text-red-400 italic">
+                                {video.error_message}
+                              </p>
+                            )}
                           </div>
                         </div>
                         
                         <div className="flex space-x-2">
-                          {video.videoUrl && (video.taskStatus === 'SUCCEEDED' || video.taskStatus === 'completed' || video.statusDisplay === 'Ready') && (
+                          {video.videoUrl && (video.isReady || video.statusDisplay === 'Ready') && (
                             <>
                               <button
                                 onClick={() => setVideoUrl(video.videoUrl || null)}
@@ -1914,6 +2048,51 @@ const VideoCreatorPage: React.FC = () => {
                         </div>
                       </div>
                     ))}
+                    
+                    {/* Loading indicator */}
+                    {isLoadingMoreHistory && (
+                      <div className="flex items-center justify-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500 dark:border-blue-400 mr-2"></div>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Loading more...</span>
+                      </div>
+                    )}
+                    
+                    {/* Pagination controls */}
+                    {videoHistory.length > 0 && !isLoadingMoreHistory && (
+                      <div className="flex justify-between items-center py-3">
+                        <button 
+                          onClick={() => {
+                            if (historyPage > 1) {
+                              const prevPage = historyPage - 1;
+                              setHistoryPage(prevPage);
+                              fetchVideoHistory(prevPage, false);
+                            }
+                          }}
+                          disabled={historyPage <= 1}
+                          className={`px-4 py-2 rounded-lg text-sm transition-colors duration-300 ${historyPage <= 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                        >
+                          Previous
+                        </button>
+                        
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Page {historyPage} of {totalPages}
+                        </span>
+                        
+                        <button 
+                          onClick={() => {
+                            if (hasMoreHistory) {
+                              const nextPage = historyPage + 1;
+                              setHistoryPage(nextPage);
+                              fetchVideoHistory(nextPage, false);
+                            }
+                          }}
+                          disabled={!hasMoreHistory}
+                          className={`px-4 py-2 rounded-lg text-sm transition-colors duration-300 ${!hasMoreHistory ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </motion.div>

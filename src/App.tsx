@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
+import './styles/CommonStyles.css';
 
 // Import pages
 import { 
@@ -262,23 +263,7 @@ const App: React.FC = () => {
                 } 
               />
               
-              <Route 
-                path="/tools/humanise-text" 
-                element={
-                  <PublicToolLayout>
-                    <HumaniseTextPage />
-                  </PublicToolLayout>
-                } 
-              />
-              
-              <Route 
-                path="/tools/detect-ai" 
-                element={
-                  <PublicToolLayout>
-                    <DetectAIPage />
-                  </PublicToolLayout>
-                } 
-              />
+              {/* Routes for Humanizer and AI Detector removed as they are now accessible only through Content Writer tabs */}
               
               <Route 
                 path="/tools/presentation-creator" 

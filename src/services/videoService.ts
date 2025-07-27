@@ -1,283 +1,51 @@
-interface VideoCreationResponse {
+// Video Service Interfaces
+interface VideoGenerationResponse {
   message: string;
   videoId: string;
-  taskId: string;
-  taskStatus: string; // Server returns taskStatus for the initial status
-  status?: string; // Keep this for backward compatibility
-  requestId?: string;
-  coinsDeducted?: number;
-  imageUrl?: string; // For image-to-video API
-  videoUrl?: string; // For immediate video URL response
-  error?: string; // For error responses
+  status: string;
+  videoUrl?: string;
+  taskId?: string;
+  error?: string;
 }
 
-// VideoStatusResponse interface removed as it's no longer needed - no polling required
-
-interface VideoListResponse {
+interface VideoHistoryResponse {
   message: string;
   videos: Array<{
     video_id: string;
     prompt_text: string;
-    size: string;
-    task_status: string;
     video_url?: string;
+    status: string;
     created_at: string;
+    task_id?: string;
+    template?: string;
+    image_url?: string;
+    size?: string;
+    error_message?: string;
   }>;
-  totalCount: number;
-}
-
-interface EnhancedVideoListResponse {
-  message: string;
-  uid: string;
-  summary: {
-    total: number;
-    ready: number;
-    processing: number;
-    failed: number;
-    unknown: number;
+  totalItems?: number;
+  currentPage?: number;
+  itemsPerPage?: number;
+  totalPages?: number;
+  pagination?: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    itemsPerPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
   };
-  videos: Array<{
-    videoId: string;
-    promptText: string;
-    size: string;
-    taskId: string;
-    taskStatus: string;
-    statusDisplay: string;
-    isReady: boolean;
-    hasVideo: boolean;
-    videoUrl?: string;
-    createdAt: string;
-    ageDisplay: string;
-    apiType: string;
-    requestId?: string;
-    submitTime?: string;
-    scheduledTime?: string;
-    endTime?: string;
-    origPrompt?: string;
-    actualPrompt?: string;
-  }>;
-  totalCount: number;
 }
 
 interface VideoRemoveResponse {
   message: string;
 }
 
-const API_BASE_URL = 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run';
+const API_BASE_URL = 'http://localhost:3002';
 
+// Export the videoService object
 export const videoService = {
-  /**
-   * Validates if an image URL is from a supported domain and has a valid format
-   */
-  validateImageUrl: (imageUrl: string): { isValid: boolean; message?: string } => {
-    try {
-      // Log the original URL for debugging
-      console.log('Original image URL in validateImageUrl:', imageUrl);
-      
-      // Clean the URL - remove quotes, backticks, and spaces using multiple steps
-      let cleanedUrl = imageUrl;
-      // First trim any whitespace
-      cleanedUrl = cleanedUrl.trim();
-      // Then remove all quotes and backticks
-      cleanedUrl = cleanedUrl.replace(/["'`]/g, '');
-      // No longer removing spaces as they should be properly handled by the API
-      
-      console.log('Final cleaned URL in validateImageUrl:', cleanedUrl);
-      
-      // Check if it's a valid URL format
-      const url = new URL(cleanedUrl);
-      
-      // Check if it's from a supported domain
-      const supportedDomains = [
-        'supabase.co',
-        'supabase.in',
-        'amazonaws.com',
-        'cloudfront.net',
-        'imgur.com',
-        'ibb.co',
-        'postimg.cc'
-      ];
-      
-      const isDomainSupported = supportedDomains.some(domain => url.hostname.includes(domain));
-      if (!isDomainSupported) {
-        return { 
-          isValid: false, 
-          message: `Image URL domain not supported. Please use images from supported services like Supabase, AWS, or image hosting sites.` 
-        };
-      }
-      
-      // Check if it has a valid image extension
-      const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-      const hasValidExtension = validExtensions.some(ext => url.pathname.toLowerCase().endsWith(ext));
-      
-      if (!hasValidExtension && !url.pathname.includes('object/public')) {
-        return { 
-          isValid: false, 
-          message: `Image URL does not have a valid image extension. Please use .jpg, .jpeg, .png, .gif, or .webp files.` 
-        };
-      }
-      
-      return { isValid: true };
-    } catch (error) {
-      return { 
-        isValid: false, 
-        message: `Invalid image URL format: ${error instanceof Error ? error.message : 'Unknown error'}` 
-      };
-    }
-  },
-  
-  // Create video with image URL
-  createVideoWithUrl: async (uid: string, promptText: string, imageUrl: string, negative_prompt?: string, template?: string): Promise<VideoCreationResponse> => {
-    // Log the original image URL for debugging
-    console.log('Original imageUrl:', imageUrl);
-    
-    // Clean and validate the image URL - remove quotes, backticks, and extra spaces
-    // Apply thorough cleaning in multiple steps
-    let cleanedImageUrl = imageUrl;
-    // First trim any whitespace
-    cleanedImageUrl = cleanedImageUrl.trim();
-    // Then remove all quotes and backticks - ensure we're removing ALL backticks
-    cleanedImageUrl = cleanedImageUrl.replace(/["'`]/g, '');
-    // Double-check for any remaining backticks (sometimes regex can miss them)
-    while (cleanedImageUrl.includes('`')) {
-      cleanedImageUrl = cleanedImageUrl.replace('`', '');
-    }
-    
-    console.log('Cleaned imageUrl:', cleanedImageUrl);
-    
-    // Validate the image URL
-    const validation = videoService.validateImageUrl(cleanedImageUrl);
-    if (!validation.isValid) {
-      console.error('Image URL validation failed:', validation.message);
-      throw new Error(validation.message || 'Invalid image URL');
-    }
-    
-    console.log('Image URL is valid');
-    
-    // Additional validation for DashScope API requirements
-    if (cleanedImageUrl.includes('`')) {
-      console.error('WARNING: Image URL still contains backticks after initial cleaning');
-      // Force remove ALL backticks using string split and join
-      cleanedImageUrl = cleanedImageUrl.split('`').join('');
-      console.log('Additional cleaning applied to image URL:', cleanedImageUrl);
-    }
-    
-    // Create request body with required fields based on the selected option
-    const requestBody: any = {
-      uid,
-      imageUrl: cleanedImageUrl
-    };
-    
-    // Handle the two specific API call options
-    if (template) {
-      // Option 1: Template-based Generation
-      requestBody.template = template.trim();
-      // For template-based generation, include empty promptText to satisfy API requirement
-    
-      // Send imageUrl, template, empty promptText, negative_prompt, and uid
-    } else {
-      // Option 2: Text-to-Video with Negative Prompt
-      requestBody.promptText = promptText.trim();
-      // Always include negative_prompt for Text-to-Video with Negative Prompt option
-   
-      // Send imageUrl, prompt, negative_prompt, and uid
-    }
-    
-    console.log('createVideoWithUrl request body:', requestBody);
-    
-    // Final verification of the image URL before sending to API
-    if (requestBody.imageUrl && requestBody.imageUrl.includes('`')) {
-      console.error('WARNING: Image URL still contains backticks after cleaning');
-      // Force remove any remaining backticks
-      requestBody.imageUrl = requestBody.imageUrl.split('`').join('');
-      console.log('Final cleaned imageUrl:', requestBody.imageUrl);
-    }
-    
-    try {
-      // Add Accept header to match curl command
-      // Make sure negative_prompt is included if provided
-      if (negative_prompt) {
-        requestBody.negative_prompt = negative_prompt.trim();
-      }
-      
-      // Convert to JSON string and verify no backticks remain
-      let requestBodyString = JSON.stringify(requestBody);
-      
-      // Final safety check - ensure no backticks in the stringified JSON
-      if (requestBodyString.includes('`')) {
-        console.error('WARNING: Stringified request body still contains backticks');
-        // Replace any remaining backticks in the JSON string
-        requestBodyString = requestBodyString.replace(/`/g, '');
-        console.log('Final cleaned request body string:', requestBodyString);
-      }
-      
-      // Log the final request body for debugging
-      console.log('Final request body being sent to API:', JSON.parse(requestBodyString));
-      
-      const response = await fetch(`${API_BASE_URL}/api/video/createVideowithurl`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: requestBodyString,
-      });
-
-      // Log the response status and headers
-      console.log('createVideoWithUrl response status:', response.status);
-      console.log('createVideoWithUrl response status text:', response.statusText);
-      
-      if (!response.ok) {
-        // Try to get the error response body
-        const errorText = await response.text();
-        console.error('Error response body:', errorText);
-        
-        // Define an interface for the error data
-        interface ErrorData {
-          message?: string;
-          error?: string;
-          details?: string;
-        }
-        
-        let errorData: ErrorData = {};
-        try {
-          errorData = JSON.parse(errorText) as ErrorData;
-          
-          // Check for specific DashScope API error about media resource timeout
-          if (errorData.error && errorData.error.includes('Download the media resource timed out')) {
-            console.error('DashScope media resource timeout detected');
-            throw new Error('Image download timeout: The server could not download your image. Please ensure your image is accessible and try again with a smaller image file or a different image.');
-          }
-          
-          // Check for other DashScope API errors
-          if (errorData.error && errorData.error.includes('DashScope API error')) {
-            const errorMessage = 'AI service error: The video generation AI encountered an issue. ' + 
-                              (errorData.error.includes('Bad Request') ? 'Your request format may be incorrect. ' : '') + 
-                              'Please try with a different image or prompt.';
-            throw new Error(errorMessage);
-          }
-        } catch (e) {
-          if (e instanceof Error && e.message.includes('Image download timeout')) {
-            // Re-throw the specific error we just created
-            throw e;
-          }
-          console.error('Failed to parse error response as JSON:', e);
-        }
-        
-        throw new Error(errorData.message || errorData.error || `Failed to create video from image (Status: ${response.status})`);
-      }
-
-      const responseData = await response.json();
-      console.log('createVideoWithUrl response data:', responseData);
-      return responseData;
-    } catch (error) {
-      console.error('createVideoWithUrl caught error:', error);
-      throw error;
-    }
-  },
-  
-  // Create video
-  createVideo: async (uid: string, promptText: string, size: string = '1280*720'): Promise<VideoCreationResponse> => {
+  // Create video with text prompt only
+  createVideo: async (uid: string, promptText: string, size: string = '720P'): Promise<VideoGenerationResponse> => {
     const response = await fetch(`${API_BASE_URL}/api/video/createVideo`, {
       method: 'POST',
       headers: {
@@ -286,57 +54,240 @@ export const videoService = {
       body: JSON.stringify({
         uid,
         promptText,
-      }),
+        size
+      })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || errorData.error || 'Failed to create video');
+      throw new Error(errorData.message || errorData.error || 'Failed to generate video');
     }
 
     return response.json();
   },
 
-  // getVideoStatus function removed as it's no longer needed - no polling required
+  // Helper function to compress images to under 5MB
+  compressImage: async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          // Maintain aspect ratio while reducing size
+          const MAX_WIDTH = 1920;
+          const MAX_HEIGHT = 1080;
+          
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width = Math.round((width * MAX_HEIGHT) / height);
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Start with high quality
+          let quality = 0.9;
+          let compressedFile: File;
+          
+          const compressWithQuality = (q: number) => {
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  reject(new Error('Failed to compress image'));
+                  return;
+                }
+                
+                compressedFile = new File([blob], file.name.replace(/\.[^\.]+$/, '.jpg'), {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                });
+                
+                // If still too large and quality can be reduced further
+                if (compressedFile.size > 5 * 1024 * 1024 && q > 0.3) {
+                  // Reduce quality and try again
+                  compressWithQuality(q - 0.1);
+                } else {
+                  console.log(`Compressed image to ${(compressedFile.size / (1024 * 1024)).toFixed(2)}MB with quality ${q}`);
+                  resolve(compressedFile);
+                }
+              },
+              'image/jpeg',
+              q
+            );
+          };
+          
+          compressWithQuality(quality);
+        };
+        img.onerror = () => {
+          reject(new Error('Failed to load image for compression'));
+        };
+      };
+      reader.onerror = () => {
+        reject(new Error('Failed to read image file'));
+      };
+    });
+  },
+  
+  // Helper function to convert HEIC/HEIF to JPEG
+  convertHeicToJpeg: async (file: File): Promise<File> => {
+    try {
+      // Check if the file is HEIC/HEIF format based on extension or type
+      const isHeic = file.type === 'image/heic' || 
+                    file.name.toLowerCase().endsWith('.heic') || 
+                    file.name.toLowerCase().endsWith('.heif');
+      
+      if (!isHeic) {
+        console.log('Not a HEIC image, returning original file');
+        return file;
+      }
+      
+      console.log('Converting HEIC image to JPEG using heic-to...');
+      
+      // Dynamically import heic-to
+      const { heicTo } = await import('heic-to');
+      
+      // Convert HEIC to JPEG
+      const resultBlob = await heicTo({
+        blob: file,
+        type: 'image/jpeg',
+        quality: 0.8
+      });
+      
+      // Create a new File from the blob
+      const convertedFile = new File([resultBlob], file.name.replace(/\.[^\.]+$/, '.jpg'), {
+        type: 'image/jpeg',
+        lastModified: Date.now()
+      });
+      
+      console.log(`Converted HEIC to JPEG: ${(convertedFile.size / (1024 * 1024)).toFixed(2)}MB`);
+      
+      // If the converted file is still too large, compress it further
+      if (convertedFile.size > 5 * 1024 * 1024) {
+        console.log('Converted image is still larger than 5MB, compressing further...');
+        return videoService.compressImage(convertedFile);
+      }
+      
+      return convertedFile;
+    } catch (error) {
+      console.error('Error converting HEIC to JPEG:', error);
+      throw new Error('Failed to convert HEIC image. Please try another image format.');
+    }
+  },
+  
+  // Create video with image file
+  createVideoWithImage: async (uid: string, imageFile: File, template?: string, promptText?: string, size: string = '720P'): Promise<VideoGenerationResponse> => {
+    try {
+      // Check if image is in HEIC format and convert if needed
+      let processedImageFile = imageFile;
+      const isHeic = imageFile.type === 'image/heic' || 
+                    imageFile.name.toLowerCase().endsWith('.heic') || 
+                    imageFile.name.toLowerCase().endsWith('.heif');
+      
+      if (isHeic) {
+        console.log('HEIC format detected, converting to JPEG...');
+        // Use the dedicated HEIC to JPEG converter
+        processedImageFile = await videoService.convertHeicToJpeg(imageFile);
+      }
+      
+      // Check if file is larger than 5MB and compress if needed
+      if (processedImageFile.size > 5 * 1024 * 1024) {
+        console.log('Image is larger than 5MB, compressing...');
+        processedImageFile = await videoService.compressImage(processedImageFile);
+      }
+      
+      const formData = new FormData();
+      formData.append('uid', uid);
+      formData.append('image', processedImageFile);
+      
+      if (template) {
+        formData.append('template', template);
+      }
+      
+      if (promptText) {
+        formData.append('promptText', promptText);
+      }
+      
+      if (size) {
+        formData.append('size', size);
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/api/video/createVideo`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || 'Failed to generate video from image');
+      }
+      
+      return response.json();
+    } catch (error) {
+      console.error('Error in createVideoWithImage:', error);
+      throw error;
+    }
+  },
 
-  // Get all videos (simple)
-  getAllVideos: async (uid: string): Promise<VideoListResponse> => {
-    const response = await fetch(`${API_BASE_URL}/api/video/getAllVideos`, {
+  // Create video with image URL
+  createVideoWithUrl: async (uid: string, promptText: string, imageUrl: string, negativePrompt?: string, template?: string): Promise<VideoGenerationResponse> => {
+    try {
+      // For this implementation, we'll use the direct file upload method
+      // First, fetch the image from the URL
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error('Failed to fetch image from URL');
+      }
+      
+      const imageBlob = await imageResponse.blob();
+      const imageFile = new File([imageBlob], 'image.jpg', { type: 'image/jpeg' });
+      
+      // Now use the file upload method
+      return videoService.createVideoWithImage(uid, imageFile, template, promptText);
+    } catch (error) {
+      console.error('Error in createVideoWithUrl:', error);
+      throw error;
+    }
+  },
+
+  // Get all videos for a user
+  getAllVideos: async (uid: string, page: number = 1, itemsPerPage: number = 10): Promise<VideoHistoryResponse> => {
+    const response = await fetch(`${API_BASE_URL}/api/video/getVideoHistory`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        uid
-      }),
+        uid,
+        page,
+        itemsPerPage
+      })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || errorData.error || 'Failed to get videos');
+      throw new Error(errorData.message || errorData.error || 'Failed to fetch video history');
     }
 
     return response.json();
   },
 
-  // Get all videos (enhanced with GET endpoint)
-  getAllVideosEnhanced: async (uid: string): Promise<EnhancedVideoListResponse> => {
-    const response = await fetch(`${API_BASE_URL}/api/video/getAllVideos/${encodeURIComponent(uid)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || errorData.error || 'Failed to get enhanced videos');
-    }
-
-    return response.json();
-  },
-
-  // Remove video
+  // Remove a video
   removeVideo: async (uid: string, videoId: string): Promise<VideoRemoveResponse> => {
     const response = await fetch(`${API_BASE_URL}/api/video/removeVideo`, {
       method: 'POST',
@@ -346,14 +297,17 @@ export const videoService = {
       body: JSON.stringify({
         uid,
         videoId
-      }),
+      })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to remove video');
+      throw new Error(errorData.message || errorData.error || 'Failed to remove video');
     }
 
     return response.json();
   }
 };
+
+// Add default export
+export default videoService;

@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Navbar, Sidebar, Footer } from './';
+import { Navbar, Sidebar, Footer, FooterLinks } from './';
 import { ThemeContext } from '../context/ThemeContext';
-import { FiMenu, FiX } from 'react-icons/fi';
+import { FiGithub, FiInstagram, FiLinkedin, FiMenu, FiTwitter, FiX, FiYoutube } from 'react-icons/fi';
 import { useLocation } from 'react-router-dom';
 
 interface LayoutProps {
@@ -56,7 +56,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'} ${isDesktop && sidebarWidth === 64 ? 'sidebar-collapsed' : ''}`}>
+    <div className={`min-h-screen ${darkMode ? 'dark text-white' : 'text-gray-900'} ${isDesktop && sidebarWidth === 64 ? 'sidebar-collapsed' : ''}`}>
       {/* Mobile sidebar overlay */}
       {isMobileSidebarOpen && (
         <div 
@@ -93,7 +93,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         
         <Navbar />
         
-        <main className={`flex-1 flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <main className="flex-1 flex flex-col">
           <div className="flex-1">
             {children}
           </div>
@@ -101,7 +101,67 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Only render Footer if not on a chat route */}
         {!isChatRoute && (
           <div className="w-full z-20">
-            <Footer />
+            <FooterLinks 
+              categories={[
+          {
+            title: "Tools",
+            links: [
+              { name: "Image Generator", url: "tools/image-generator" },
+              { name: "Video Generator", url: "tools/video-creator" },
+              { name: "Content Writer", url: "tools/content-writer" },
+              { name: "Speech to Text", url: "tools/speech-to-text" },
+              { name: "Chat", url: "/chat" }
+            ]
+          },
+          {
+            title: "Features",
+            links: [
+              { name: "Image to Video", url: "tools/video-creator" },
+              { name: "Text to Image", url: "tools/image-generator" },
+              { name: "Content Generation", url: "tools/content-writer" },
+              { name: "Speech to Text", url: "tools/speech-to-text" },
+              { name: "AI Chat", url: "tools/chat" }
+            ]
+          },
+          {
+            title: "Explore",
+            links: [
+              { name: "About Us", url: "/about" },
+              { name: "Features", url: "/features" },
+              { name: "Blog", url: "/blog" },
+              { name: "Enterprise", url: "/enterprise" },
+              { name: "Careers", url: "/careers" },
+              { name: "Contact", url: "/contact" }
+            ]
+          },
+          {
+            title: "Resources",
+            links: [
+              { name: "Privacy Policy", url: "/privacy" },
+              { name: "Terms of Service", url: "/terms" },
+              { name: "Cookies Policy", url: "/cookies" },
+              { name: "Referral Program", url: "/referral" }
+            ]
+          },
+          {
+            title: "Help",
+            links: [
+              { name: "Subscription", url: "/subscription" },
+              { name: "FAQ", url: "/faq" },
+              { name: "Help Center", url: "/help" },
+              { name: "System Status", url: "/status" }
+            ]
+          }
+        ]}
+        socialLinks={[
+          { icon: <FiInstagram className="h-6 w-6" />, url: "https://instagram.com" },
+          { icon: <FiTwitter className="h-6 w-6" />, url: "https://twitter.com" },
+          { icon: <FiYoutube className="h-6 w-6" />, url: "https://youtube.com" },
+          { icon: <FiGithub className="h-6 w-6" />, url: "https://github.com" },
+          { icon: <FiLinkedin className="h-6 w-6" />, url: "https://linkedin.com" }
+        ]}
+        companyName="matrixai.asia"
+      />
           </div>
         )}
       </div>
