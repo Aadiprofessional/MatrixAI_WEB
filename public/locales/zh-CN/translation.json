@@ -92,7 +92,14 @@
     "unlockCreativePotential": "解锁您的创造力",
     "upgradeToAccess": "升级以访问",
     "upgradeToPro": "升级到专业",
-    "veryHigh": "很高"
+    "veryHigh": "很高",
+    "next": "下一个",
+    "no": "不",
+    "pageOf": "{{attry}}的页{{current}}",
+    "previous": "以前的",
+    "remove": "消除",
+    "retry": "重试",
+    "yes": "是的"
   },
   "content": "内容",
   "contentWriter": {
@@ -517,5 +524,158 @@
     "freeLeftPlural": "{{count}}免费视频",
     "subtitle": "使用AI将图像转换为令人惊叹的视频",
     "title": "视频创建者"
+  },
+  "imageGenerator": {
+    "backToGenerator": "返回发电机",
+    "clickToUpload": "点击上传图像",
+    "confirmRemoveImage": "您确定要删除此图像吗？",
+    "describeImage": "描述您要生成的图像",
+    "description": "从文本说明中创建令人惊叹的AI生成的图像",
+    "downloadImage": "下载图像",
+    "enhanceImage": "增强图像",
+    "enhancementPlaceholder": "使我的形象看起来像动漫电影...",
+    "enhancingImage": "增强您的形象...",
+    "enterPromptToGenerate": "输入提示并生成您的第一个图像",
+    "errorLoadingHistory": "错误加载历史记录",
+    "failedToDownloadImage": "无法下载图像。\n请尝试右键单击并保存。",
+    "failedToEnhanceImage": "无法增强图像。\n请重试。",
+    "failedToLoadHistory": "无法加载图像历史记录",
+    "failedToRemoveImage": "无法删除图像",
+    "failedToShareImage": "无法共享图像。\n请重试。",
+    "fileFormats": "JPG，PNG，GIF（最大5MB）",
+    "fixedForEnhancement": "（修复图像增强）",
+    "freeGenerationsRemaining": "剩下的几代人",
+    "generateFirstImage": "生成您的第一个图像在这里看到它",
+    "generateImages": "生成图像",
+    "generatedImage": "生成的图像",
+    "generatedImageAlt": "生成的图像{{number}}",
+    "generatingImages": "生成图像...",
+    "generationPlaceholder": "一个带有飞行汽车和霓虹灯的未来派城市...",
+    "imageDownloadedSuccess": "图像成功下载了！",
+    "imageEnhancedSuccess": "图像成功增强！",
+    "imageEnhancementFailed": "图像增强失败",
+    "imageGenerationFailed": "图像生成失败",
+    "imageNumber": "图像",
+    "imageRemovedSuccess": "图像成功地删除了",
+    "imageSizeLimit": "图像大小应小于5MB",
+    "imageUrlCopied": "图像URL复制到剪贴板！",
+    "imagesGeneratedSuccess": "图像成功生成！",
+    "initializingGeneration": "初始化图像生成...",
+    "matrixAIGeneratedImage": "Matrixai生成的图像",
+    "noImagesYet": "尚未产生图像",
+    "numberOfImages": "图像数：",
+    "pleaseUploadImageFile": "请上传图像文件",
+    "preparingToEnhance": "准备增强...",
+    "processingImage": "处理图像...",
+    "quickPrompt1": "一个带有飞行汽车的未来派城市",
+    "quickPrompt2": "逼真的山区景观",
+    "quickPrompt3": "战士的动漫风格肖像",
+    "quickPrompt4": "抽象的数字艺术和鲜艳的颜色",
+    "quickPrompts": "快速提示",
+    "ready": "准备好",
+    "recentImages": "最近的图像",
+    "removeImage": "删除图像",
+    "shareImage": "共享图像",
+    "title": "AI图像发生器",
+    "uploadImageOptional": "上传图像以增强（可选）",
+    "uploadedImage": "上传图像",
+    "uploading": "上传... {{uploadProgress}}％",
+    "uploadingImage": "上传图像...",
+    "viewHistory": "查看历史",
+    "viewImage": "查看图像",
+    "describeEnhancement": "描述如何增强形象"
+  },
+  "comparisonSection": {
+    "chooseAiTool": "选择您的AI工具",
+    "chooseAiToolDesc": "从视频创建，图像生成，语音到文本，内容写作或AI聊天中进行选择 - 都在一个具有统一界面的平台中。",
+    "describeWhatYouWant": "描述你想要什么",
+    "describeWhatYouWantDesc": "使用自然语言来解释您的愿景。\n我们的AI了解所有工具的上下文，样式偏好和创造性方向。",
+    "description": "体验即时AI驱动的创造力与您所有创意需求的老式生产头痛之间的区别。",
+    "getProfessionalResults": "立即获得专业成绩",
+    "getProfessionalResultsDesc": "我们的AI处理复杂的工作。\n无论是视频，图像，转录，内容还是聊天响应，都会在几分钟而不是几天内获得高质量的结果。",
+    "learnComplexSoftware": "学习多个复杂的软件接口",
+    "manageInconsistentQuality": "管理不同提供商的质量不一致",
+    "matrixAiTitle": "Matrixai的多合一平台",
+    "payMultipleSubscriptions": "支付多个订阅和服务",
+    "payPremiumPrices": "为每种服务支付高级价格",
+    "researchHireSpecialists": "研究和雇用不同专家为每项任务",
+    "title": "为什么要等几周？\n在几分钟而不是几天之内使用AI创建",
+    "titleSecondLine": "",
+    "traditionalTitle": "传统的创意方法",
+    "traditionalVideoProduction": "传统的视频制作",
+    "vs": "vs",
+    "waitDaysWeeks": "等待几天或几周的修订和最终交货"
+  },
+  "modelsShowcase": {
+    "aiChat": {
+      "description": "与我们的闪电狂欢AI助手互动。",
+      "detailedDescription": "我们的高级AI聊天系统提供了对查询，创造性帮助和解决问题的支持的即时响应。\n体验最小的潜伏期和高质量的互动，以实现生产力和创造性工作。",
+      "name": "AI聊天"
+    },
+    "contentGeneration": {
+      "description": "为任何目的创建引人入胜的书面内容。",
+      "detailedDescription": "为博客，社交媒体，营销材料等生成高质量的书面内容。\n我们的AI了解上下文，可以匹配您的品牌声音，以获得一致，引人入胜的内容。",
+      "name": "内容产生"
+    },
+    "creativeSuite": {
+      "description": "一个集成平台中的所有创意AI工具。",
+      "detailedDescription": "在一个无缝平台中访问我们完整的AI创意工具套件。\n结合视频生成，图像创建，语音到文本，内容写作和AI聊天，以质量稳定地进行全面的创意项目。",
+      "name": "创意套房"
+    },
+    "featureSections": {
+      "aiChat": {
+        "description": "我们的高级AI聊天系统提供了对查询，创造性帮助和解决问题的支持的即时响应。\n体验最小的潜伏期和高质量的互动，以实现生产力和创造性工作。\n与我们的响应式AI助手获取即时答案，集思广益的想法，草稿等等。",
+        "modelName": "AI聊天助理",
+        "subtitle": "AI聊天助理",
+        "title": "体验闪电般的AI聊天"
+      },
+      "imageGeneration": {
+        "description": "从简单的文本描述中生成高质量的自定义图像。\n我们的AI图像生成模型了解复杂的提示，并产生与您的规格相匹配的详细创意视觉效果。\n非常适合为营销，设计项目或创意灵感创建独特的视觉效果。",
+        "modelName": "图像生成",
+        "subtitle": "图像生成",
+        "title": "创建令人惊叹的AI生成的图像"
+      },
+      "speechToText": {
+        "description": "我们的高级语音识别技术以高精度将录音转换为精确的文本转录。\n非常适合会议，访谈，内容创建和可访问性。\n与我们的内容一代结合使用，将您的口语想法立即转化为精美的书面内容。",
+        "modelName": "对文字的讲话",
+        "subtitle": "对文字的讲话",
+        "title": "将语音转换为准确的文字"
+      },
+      "videoGeneration": {
+        "description": "通过我们的高级AI视频生成，将任何静态图像变成高质量的寿命视频。\n上传您的启动图像，添加可选参数，然后观察我们的模型以自然运动创建无缝的电影过渡。\n非常适合营销，社交媒体内容，产品演示和创意项目。",
+        "modelName": "视频生成",
+        "subtitle": "视频生成",
+        "title": "将图像转换为动态视频"
+      }
+    },
+    "imageGeneration": {
+      "description": "通过文本提示创建令人惊叹的AI生成的图像。",
+      "detailedDescription": "从简单的文本描述中生成高质量的自定义图像。\n非常适合为营销，设计项目或创意灵感创建独特的视觉效果。",
+      "name": "图像生成"
+    },
+    "speechToText": {
+      "description": "将口语单词转换为准确的文本转录。",
+      "detailedDescription": "我们的高级语音识别技术以高精度将录音转换为精确的文本转录。\n非常适合会议，访谈，内容创建和可访问性。",
+      "name": "对文字的讲话"
+    },
+    "subtitle": "使用matrixai.asia，您始终拥有正确的工具 - 不仅仅是一个选项。\n立即在一个地方访问视频生成，图像创建，语音到文本，内容写作和AI聊天。",
+    "title": "一个平台上的所有领先的AI模型和功能",
+    "tryNow": "现在尝试→",
+    "videoGeneration": {
+      "description": "将静态图像转换为动态视频。",
+      "detailedDescription": "我们的视频生成模型将任何图像变成具有自然运动和电影质量的高质量，栩栩如生的视频。\n非常适合营销，社交媒体和创意项目。",
+      "name": "视频生成"
+    }
+  },
+  "useCasesSection": {
+    "aiChat": "AI聊天",
+    "aiTools": "AI工具。",
+    "contentWriting": "内容写作",
+    "creativeProjects": "创意项目",
+    "imageGeneration": "图像生成",
+    "speechToText": "对文字的讲话",
+    "subtitle": "查看专业人士如何使用我们的AI工具。",
+    "title": "为每个创造者制作。",
+    "videoCreation": "视频创建"
   }
 }

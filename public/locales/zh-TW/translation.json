@@ -92,7 +92,14 @@
     "unlockCreativePotential": "解鎖您的創造力",
     "upgradeToAccess": "升級以訪問",
     "upgradeToPro": "升級到專業",
-    "veryHigh": "很高"
+    "veryHigh": "很高",
+    "next": "下一個",
+    "no": "不",
+    "pageOf": "{{attry}}的頁{{current}}",
+    "previous": "以前的",
+    "remove": "消除",
+    "retry": "重試",
+    "yes": "是的"
   },
   "content": "內容",
   "contentWriter": {
@@ -517,5 +524,158 @@
     "freeLeftPlural": "{{count}}免費視頻",
     "subtitle": "使用AI將圖像轉換為令人驚嘆的視頻",
     "title": "視頻創建者"
+  },
+  "imageGenerator": {
+    "backToGenerator": "返回發電機",
+    "clickToUpload": "點擊上傳圖像",
+    "confirmRemoveImage": "您確定要刪除此圖像嗎？",
+    "describeEnhancement": "描述如何增強形象",
+    "describeImage": "描述您要生成的圖像",
+    "description": "從文本說明中創建令人驚嘆的AI生成的圖像",
+    "downloadImage": "下載圖像",
+    "enhanceImage": "增強圖像",
+    "enhancementPlaceholder": "使我的形像看起來像動漫電影...",
+    "enhancingImage": "增強您的形象...",
+    "enterPromptToGenerate": "輸入提示並生成您的第一個圖像",
+    "errorLoadingHistory": "錯誤加載歷史記錄",
+    "failedToDownloadImage": "無法下載圖像。請嘗試右鍵單擊並保存。",
+    "failedToEnhanceImage": "無法增強圖像。請重試。",
+    "failedToLoadHistory": "無法加載圖像歷史記錄",
+    "failedToRemoveImage": "無法刪除圖像",
+    "failedToShareImage": "無法共享圖像。請重試。",
+    "fileFormats": "JPG，PNG，GIF（最大5MB）",
+    "fixedForEnhancement": "（修復圖像增強）",
+    "freeGenerationsRemaining": "剩下的幾代人",
+    "generateFirstImage": "生成您的第一個圖像在這裡看到它",
+    "generateImages": "生成圖像",
+    "generatedImage": "生成的圖像",
+    "generatedImageAlt": "生成的圖像{{number}}",
+    "generatingImages": "生成圖像...",
+    "generationPlaceholder": "一個帶有飛行汽車和霓虹燈的未來派城市...",
+    "imageDownloadedSuccess": "圖像成功下載了！",
+    "imageEnhancedSuccess": "圖像成功增強！",
+    "imageEnhancementFailed": "圖像增強失敗",
+    "imageGenerationFailed": "圖像生成失敗",
+    "imageNumber": "圖像",
+    "imageRemovedSuccess": "圖像成功地刪除了",
+    "imageSizeLimit": "圖像大小應小於5MB",
+    "imageUrlCopied": "圖像URL複製到剪貼板！",
+    "imagesGeneratedSuccess": "圖像成功生成！",
+    "initializingGeneration": "初始化圖像生成...",
+    "matrixAIGeneratedImage": "Matrixai生成的圖像",
+    "noImagesYet": "尚未產生圖像",
+    "numberOfImages": "圖像數：",
+    "pleaseUploadImageFile": "請上傳圖像文件",
+    "preparingToEnhance": "準備增強...",
+    "processingImage": "處理圖像...",
+    "quickPrompt1": "一個帶有飛行汽車的未來派城市",
+    "quickPrompt2": "逼真的山區景觀",
+    "quickPrompt3": "戰士的動漫風格肖像",
+    "quickPrompt4": "抽象的數字藝術和鮮豔的顏色",
+    "quickPrompts": "快速提示",
+    "ready": "準備好",
+    "recentImages": "最近的圖像",
+    "removeImage": "刪除圖像",
+    "shareImage": "共享圖像",
+    "title": "AI圖像發生器",
+    "uploadImageOptional": "上傳圖像以增強（可選）",
+    "uploadedImage": "上傳圖像",
+    "uploading": "上傳... {{uploadProgress}}％",
+    "uploadingImage": "上傳圖像...",
+    "viewHistory": "查看歷史",
+    "viewImage": "查看圖像"
+  },
+  "comparisonSection": {
+    "chooseAiTool": "選擇您的AI工具",
+    "chooseAiToolDesc": "從視頻創建，圖像生成，語音到文本，內容寫作或AI聊天中進行選擇 - 都在一個具有統一界面的平台中。",
+    "describeWhatYouWant": "描述你想要什麼",
+    "describeWhatYouWantDesc": "使用自然語言來解釋您的願景。我們的AI了解所有工具的上下文，樣式偏好和創造性方向。",
+    "description": "體驗即時AI驅動的創造力與您所有創意需求的老式生產頭痛之間的區別。",
+    "getProfessionalResults": "立即獲得專業成績",
+    "getProfessionalResultsDesc": "我們的AI處理複雜的工作。無論是視頻，圖像，轉錄，內容還是聊天響應，都會在幾分鐘而不是幾天內獲得高質量的結果。",
+    "learnComplexSoftware": "學習多個複雜的軟件接口",
+    "manageInconsistentQuality": "管理不同提供商的質量不一致",
+    "matrixAiTitle": "Matrixai的多合一平台",
+    "payMultipleSubscriptions": "支付多個訂閱和服務",
+    "payPremiumPrices": "為每種服務支付高級價格",
+    "researchHireSpecialists": "研究和僱用不同專家為每項任務",
+    "title": "為什麼要等幾週？在幾分鐘而不是幾天之內使用AI創建",
+    "titleSecondLine": "",
+    "traditionalTitle": "傳統的創意方法",
+    "traditionalVideoProduction": "傳統的視頻製作",
+    "vs": "vs",
+    "waitDaysWeeks": "等待幾天或幾週的修訂和最終交貨"
+  },
+  "modelsShowcase": {
+    "aiChat": {
+      "description": "與我們的閃電狂歡AI助手互動。",
+      "detailedDescription": "我們的高級AI聊天系統提供了對查詢，創造性幫助和解決問題的支持的即時響應。體驗最小的潛伏期和高質量的互動，以實現生產力和創造性工作。",
+      "name": "AI聊天"
+    },
+    "contentGeneration": {
+      "description": "為任何目的創建引人入勝的書面內容。",
+      "detailedDescription": "為博客，社交媒體，營銷材料等生成高質量的書面內容。我們的AI了解上下文，可以匹配您的品牌聲音，以獲得一致，引人入勝的內容。",
+      "name": "內容產生"
+    },
+    "creativeSuite": {
+      "description": "一個集成平台中的所有創意AI工具。",
+      "detailedDescription": "在一個無縫平台中訪問我們完整的AI創意工具套件。結合視頻生成，圖像創建，語音到文本，內容寫作和AI聊天，以質量穩定地進行全面的創意項目。",
+      "name": "創意套房"
+    },
+    "featureSections": {
+      "aiChat": {
+        "description": "我們的高級AI聊天系統提供了對查詢，創造性幫助和解決問題的支持的即時響應。體驗最小的潛伏期和高質量的互動，以實現生產力和創造性工作。與我們的響應式AI助手獲取即時答案，集思廣益的想法，草稿等等。",
+        "modelName": "AI聊天助理",
+        "subtitle": "AI聊天助理",
+        "title": "體驗閃電般的AI聊天"
+      },
+      "imageGeneration": {
+        "description": "從簡單的文本描述中生成高質量的自定義圖像。我們的AI圖像生成模型了解複雜的提示，並產生與您的規格相匹配的詳細創意視覺效果。非常適合為營銷，設計項目或創意靈感創建獨特的視覺效果。",
+        "modelName": "圖像生成",
+        "subtitle": "圖像生成",
+        "title": "創建令人驚嘆的AI生成的圖像"
+      },
+      "speechToText": {
+        "description": "我們的高級語音識別技術以高精度將錄音轉換為精確的文本轉錄。非常適合會議，訪談，內容創建和可訪問性。與我們的內容一代結合使用，將您的口語想法立即轉化為精美的書面內容。",
+        "modelName": "對文字的講話",
+        "subtitle": "對文字的講話",
+        "title": "將語音轉換為準確的文字"
+      },
+      "videoGeneration": {
+        "description": "通過我們的高級AI視頻生成，將任何靜態圖像變成高質量的壽命視頻。上傳您的啟動圖像，添加可選參數，然後觀察我們的模型以自然運動創建無縫的電影過渡。非常適合營銷，社交媒體內容，產品演示和創意項目。",
+        "modelName": "視頻生成",
+        "subtitle": "視頻生成",
+        "title": "將圖像轉換為動態視頻"
+      }
+    },
+    "imageGeneration": {
+      "description": "通過文本提示創建令人驚嘆的AI生成的圖像。",
+      "detailedDescription": "從簡單的文本描述中生成高質量的自定義圖像。非常適合為營銷，設計項目或創意靈感創建獨特的視覺效果。",
+      "name": "圖像生成"
+    },
+    "speechToText": {
+      "description": "將口語單詞轉換為準確的文本轉錄。",
+      "detailedDescription": "我們的高級語音識別技術以高精度將錄音轉換為精確的文本轉錄。非常適合會議，訪談，內容創建和可訪問性。",
+      "name": "對文字的講話"
+    },
+    "subtitle": "使用matrixai.asia，您始終擁有正確的工具 - 不僅僅是一個選項。立即在一個地方訪問視頻生成，圖像創建，語音到文本，內容寫作和AI聊天。",
+    "title": "一個平台上的所有領先的AI模型和功能",
+    "tryNow": "現在嘗試→",
+    "videoGeneration": {
+      "description": "將靜態圖像轉換為動態視頻。",
+      "detailedDescription": "我們的視頻生成模型將任何圖像變成具有自然運動和電影質量的高質量，栩栩如生的視頻。非常適合營銷，社交媒體和創意項目。",
+      "name": "視頻生成"
+    }
+  },
+  "useCasesSection": {
+    "aiChat": "AI聊天",
+    "aiTools": "AI工具。",
+    "contentWriting": "內容寫作",
+    "creativeProjects": "創意項目",
+    "imageGeneration": "圖像生成",
+    "speechToText": "對文字的講話",
+    "subtitle": "查看專業人士如何使用我們的AI工具。",
+    "title": "為每個創造者製作。",
+    "videoCreation": "視頻創建"
   }
 }

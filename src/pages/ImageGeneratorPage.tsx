@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAlert } from '../context/AlertContext';
 import { imageService } from '../services/imageService';
 import { uploadImageToStorage } from '../supabaseClient';
+import { useTranslation } from 'react-i18next';
 import './ImageGeneratorPage.css';
 
 // Add gradient animation style
@@ -48,6 +49,7 @@ const ImageGeneratorPage: React.FC = () => {
   const { user } = useAuth();
   const { darkMode } = useTheme();
   const { showAlert, showSuccess, showError, showInfo, showWarning, showConfirmation } = useAlert();
+  const { t } = useTranslation();
   const uid = user?.id || '';
 
   // State for image generation
@@ -242,19 +244,19 @@ const ImageGeneratorPage: React.FC = () => {
   // Function to get status text
   const getStatusText = () => {
     if (isUploading) {
-      return `Uploading image... ${Math.round(uploadProgress)}%`;
+      return `${t('imageGenerator.uploadingImage')} ${Math.round(uploadProgress)}%`;
     } else if (isEnhancing) {
-      return 'Enhancing your image...';
+      return t('imageGenerator.enhancingImage');
     } else {
       switch (generationStatus) {
         case 'processing':
-          return uploadedImage ? 'Processing your image...' : 'Generating images...';
+          return uploadedImage ? t('imageGenerator.processingImage') : t('imageGenerator.generatingImages');
         case 'completed':
-          return uploadedImage ? 'Image enhanced successfully!' : 'Images generated successfully!';
+          return uploadedImage ? t('imageGenerator.imageEnhancedSuccess') : t('imageGenerator.imagesGeneratedSuccess');
         case 'failed':
-          return uploadedImage ? 'Image enhancement failed' : 'Image generation failed';
+          return uploadedImage ? t('imageGenerator.imageEnhancementFailed') : t('imageGenerator.imageGenerationFailed');
         default:
-          return uploadedImage ? 'Preparing to enhance...' : 'Initializing image generation...';
+          return uploadedImage ? t('imageGenerator.preparingToEnhance') : t('imageGenerator.initializingGeneration');
       }
     }
   };
@@ -339,7 +341,7 @@ const ImageGeneratorPage: React.FC = () => {
       setIsLoading(false);
     } catch (err: any) {
       console.error('Error fetching image history:', err);
-      setHistoryError(err.message || "Failed to load image history");
+      setHistoryError(err.message || t('imageGenerator.failedToLoadHistory'));
       setIsLoading(false);
     }
   };
@@ -375,13 +377,13 @@ const ImageGeneratorPage: React.FC = () => {
     
     // Check file type
     if (!file.type.startsWith('image/')) {
-      showError('Please upload an image file');
+      showError(t('imageGenerator.pleaseUploadImageFile'));
       return;
     }
     
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      showError('Image size should be less than 5MB');
+      showError(t('imageGenerator.imageSizeLimit'));
       return;
     }
     
@@ -499,7 +501,7 @@ const ImageGeneratorPage: React.FC = () => {
       setIsEnhancing(false);
       setShowSkeleton(false);
       setGenerationStatus('failed');
-      setError(error.message || 'Failed to enhance image. Please try again.');
+      setError(error.message || t('imageGenerator.failedToEnhanceImage'));
     }
   };
 
@@ -509,7 +511,7 @@ const ImageGeneratorPage: React.FC = () => {
     
     // Use confirmation dialog with Yes/No buttons
     showConfirmation(
-      "Are you sure you want to remove this image?",
+      t('imageGenerator.confirmRemoveImage'),
       // onConfirm callback
       async () => {
         try {
@@ -554,10 +556,10 @@ const ImageGeneratorPage: React.FC = () => {
           }
           
           // Show success message
-          showSuccess("Image removed successfully");
+          showSuccess(t('imageGenerator.imageRemovedSuccess'));
         } catch (error) {
           console.error('Error removing image:', error);
-          showError("Failed to remove image");
+          showError(t('imageGenerator.failedToRemoveImage'));
         } finally {
           setIsLoading(false);
         }
@@ -567,8 +569,8 @@ const ImageGeneratorPage: React.FC = () => {
         // Do nothing when canceled
       },
       {
-        confirmText: "Yes",
-        cancelText: "No",
+        confirmText: t('common.yes'),
+        cancelText: t('common.no'),
         type: "warning"
       }
     );
@@ -655,10 +657,10 @@ const ImageGeneratorPage: React.FC = () => {
         link.download = `matrixai-image-${new Date().getTime()}.jpg`;
         link.target = '_blank';
         link.click();
-        showSuccess('Image downloaded successfully!');
+        showSuccess(t('imageGenerator.imageDownloadedSuccess'));
       } catch (fallbackError) {
         // Show error message
-        showError('Failed to download image. Please try right-click and save.');
+        showError(t('imageGenerator.failedToDownloadImage'));
       }
     }
   };
@@ -668,16 +670,16 @@ const ImageGeneratorPage: React.FC = () => {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: 'MatrixAI Generated Image',
+          title: t('imageGenerator.matrixAIGeneratedImage'),
           url: imageUrl
         });
       } else {
         navigator.clipboard.writeText(imageUrl);
-        showSuccess('Image URL copied to clipboard!');
+        showSuccess(t('imageGenerator.imageUrlCopied'));
       }
     } catch (error) {
       console.error('Error sharing image:', error);
-      showError('Failed to share image. Please try again.');
+      showError(t('imageGenerator.failedToShareImage'));
     }
   };
 
@@ -760,7 +762,7 @@ const ImageGeneratorPage: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 animate-gradient-x"
               >
-                AI Image Generator
+                {t('imageGenerator.title')}
               </motion.h1>
               <motion.p 
                 initial={{ opacity: 0, y: -10 }}
@@ -768,7 +770,7 @@ const ImageGeneratorPage: React.FC = () => {
                 transition={{ delay: 0.1 }}
                 className="text-gray-500 dark:text-gray-400"
               >
-                Create stunning AI-generated images from text descriptions
+                {t('imageGenerator.description')}
               </motion.p>
             </div>
             
@@ -780,14 +782,14 @@ const ImageGeneratorPage: React.FC = () => {
                 <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <label className="block text-sm font-medium text-gray-200">
-                    Upload an image to enhance (optional)
+                    {t('imageGenerator.uploadImageOptional')}
                   </label>
                   {uploadedImage && (
                     <button
                       onClick={removeUploadedImage}
                       className="text-xs flex items-center text-red-400 hover:text-red-300"
                     >
-                      <FiX className="mr-1" /> Remove
+                      <FiX className="mr-1" /> {t('common.remove')}
                     </button>
                   )}
                 </div>
@@ -817,7 +819,7 @@ const ImageGeneratorPage: React.FC = () => {
                               style={{ width: `${uploadProgress}%` }}
                             ></div>
                           </div>
-                          <p className="text-white text-sm text-center">Uploading... {Math.round(uploadProgress)}%</p>
+                          <p className="text-white text-sm text-center">{t('imageGenerator.uploading')} {Math.round(uploadProgress)}%</p>
                         </div>
                       </div>
                     )}
@@ -833,7 +835,7 @@ const ImageGeneratorPage: React.FC = () => {
                             </div>
                             <div className="h-12"></div>
                           </div>
-                          <p className="text-white text-sm text-center mt-2">Enhancing your image...</p>
+                          <p className="text-white text-sm text-center mt-2">{t('imageGenerator.enhancingImage')}</p>
                         </div>
                       </div>
                     )}
@@ -844,21 +846,21 @@ const ImageGeneratorPage: React.FC = () => {
                     className="w-full h-24 border-2 border-dashed rounded-lg flex flex-col items-center justify-center mb-3 transition-colors border-gray-600 hover:border-indigo-500 text-gray-400 bg-gray-800/30 backdrop-blur-sm"
                   >
                     <FiUpload className="w-6 h-6 mb-2" />
-                    <span className="text-sm">Click to upload an image</span>
-                    <span className="text-xs mt-1 text-gray-500">JPG, PNG, GIF (max 5MB)</span>
+                    <span className="text-sm">{t('imageGenerator.clickToUpload')}</span>
+                    <span className="text-xs mt-1 text-gray-500">{t('imageGenerator.fileFormats')}</span>
                   </AuthRequiredButton>
                 )}
               </div>
               
               <div className="mb-3 md:mb-4">
                 <label htmlFor="prompt" className="block text-sm font-medium mb-2 text-gray-200">
-                  {uploadedImage ? 'Describe how to enhance your image' : 'Describe the image you want to generate'}
+                  {uploadedImage ? t('imageGenerator.describeEnhancement') : t('imageGenerator.describeImage')}
                 </label>
                 <textarea
                   id="prompt"
                   className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg text-sm md:text-base bg-gray-800/70 text-white border-gray-700 focus:border-indigo-500 border focus:ring-2 focus:ring-indigo-500 focus:outline-none backdrop-blur-sm"
                   rows={3}
-                  placeholder={uploadedImage ? "Make my image look like an anime movie..." : "A futuristic city with flying cars and neon lights..."}
+                  placeholder={uploadedImage ? t('imageGenerator.enhancementPlaceholder') : t('imageGenerator.generationPlaceholder')}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                 />
@@ -867,7 +869,7 @@ const ImageGeneratorPage: React.FC = () => {
               <div className="mb-4">
                 <div className="flex items-center">
                   <label className="text-xs md:text-sm font-medium mr-2 text-gray-200">
-                    Number of images:
+                    {t('imageGenerator.numberOfImages')}
                   </label>
                   <select 
                     value={uploadedImage ? 1 : imageCount}
@@ -886,7 +888,7 @@ const ImageGeneratorPage: React.FC = () => {
                   </select>
                   {uploadedImage && (
                     <span className="ml-2 text-xs text-gray-400">
-                      (Fixed for image enhancement)
+                      {t('imageGenerator.fixedForEnhancement')}
                     </span>
                   )}
                 </div>
@@ -918,7 +920,7 @@ const ImageGeneratorPage: React.FC = () => {
                         onClick={cancelGeneration}
                         className="text-xs md:text-sm flex items-center text-red-400 hover:text-red-300"
                       >
-                        <FiX className="mr-1" /> Cancel
+                        <FiX className="mr-1" /> {t('common.cancel')}
                       </button>
                     </div>
                   </div>
@@ -933,20 +935,20 @@ const ImageGeneratorPage: React.FC = () => {
                     } transition backdrop-blur-sm`}
                   >
                     <FiImage className="mr-1.5 md:mr-2" />
-                    {uploadedImage ? 'Enhance Image' : 'Generate Images'}
+                    {uploadedImage ? t('imageGenerator.enhanceImage') : t('imageGenerator.generateImages')}
                   </AuthRequiredButton>
                 )}
               </div>
               
               {!isPro && (
                 <div className="mt-3 md:mt-4 text-xs md:text-sm text-yellow-300">
-                  Free generations remaining: {freeGenerationsLeft}
+                  {t('imageGenerator.freeGenerationsRemaining')}: {freeGenerationsLeft}
                   {freeGenerationsLeft === 0 && (
                     <button 
                       onClick={() => setShowProAlert(true)}
                       className="ml-2 text-indigo-400 hover:text-indigo-300 font-medium"
                     >
-                      Upgrade to Pro
+                      {t('common.upgradeToPro')}
                     </button>
                   )}
                 </div>
@@ -966,7 +968,7 @@ const ImageGeneratorPage: React.FC = () => {
                   }`}
                 >
                   <FiList className="mr-1.5 md:mr-2" />
-                  <span>{showHistory ? 'Back to Generator' : 'View History'}</span>
+                  <span>{showHistory ? t('imageGenerator.backToGenerator') : t('imageGenerator.viewHistory')}</span>
                 </AuthRequiredButton>
               </div>
               
@@ -974,14 +976,14 @@ const ImageGeneratorPage: React.FC = () => {
               {!showHistory && (
                 <div className="mt-4">
                   <label className="block text-sm font-medium mb-2 text-gray-200">
-                    Quick Prompts
+                    {t('imageGenerator.quickPrompts')}
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      "A futuristic city with flying cars",
-                      "Photorealistic mountain landscape",
-                      "Anime style portrait of a warrior",
-                      "Abstract digital art with vibrant colors"
+                      t('imageGenerator.quickPrompt1'),
+                      t('imageGenerator.quickPrompt2'),
+                      t('imageGenerator.quickPrompt3'),
+                      t('imageGenerator.quickPrompt4')
                     ].map((prompt, index) => (
                       <button
                         key={index}
@@ -1009,7 +1011,7 @@ const ImageGeneratorPage: React.FC = () => {
               // History View
                 <div className="p-4 md:p-6 h-[600px] overflow-y-auto">
                 <div className="mb-4 md:mb-6">
-                    <h2 className="text-lg md:text-xl font-bold text-white">Recent Images</h2>
+                    <h2 className="text-lg md:text-xl font-bold text-white">{t('imageGenerator.recentImages')}</h2>
                   </div>
                 
                 {isLoading && imageHistory.length === 0 ? (
@@ -1027,20 +1029,20 @@ const ImageGeneratorPage: React.FC = () => {
                   </div>
                 ) : historyError ? (
                   <div className="text-center py-8 text-red-400">
-                    <p className="text-lg mb-2">Error loading history</p>
+                    <p className="text-lg mb-2">{t('imageGenerator.errorLoadingHistory')}</p>
                     <p className="text-sm">{historyError}</p>
                     <button
                       onClick={() => fetchImageHistory(1)}
                       className="mt-4 px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20"
                     >
-                      Retry
+                      {t('common.retry')}
                     </button>
                   </div>
                 ) : imageHistory.length === 0 ? (
                   <div className="text-center py-16 text-gray-400">
                     <FiImage className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                    <p className="text-lg">No images generated yet</p>
-                    <p className="text-sm mt-2">Generate your first image to see it here</p>
+                    <p className="text-lg">{t('imageGenerator.noImagesYet')}</p>
+                    <p className="text-sm mt-2">{t('imageGenerator.generateFirstImage')}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -1068,7 +1070,7 @@ const ImageGeneratorPage: React.FC = () => {
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between">
                             <div className="flex-1 min-w-0 text-center sm:text-left">
                               <h3 className="text-xs md:text-sm font-medium truncate text-white">
-                                {image.prompt_text || 'Generated Image'}
+                                {image.prompt_text || t('imageGenerator.generatedImage')}
                               </h3>
                               <p className="text-xs mt-1 text-gray-400">
                                 {new Date(image.created_at).toLocaleDateString('en-US', {
@@ -1081,10 +1083,10 @@ const ImageGeneratorPage: React.FC = () => {
                               </p>
                               <div className="flex items-center mt-2 space-x-2 justify-center sm:justify-start">
                                 <span className="inline-flex items-center px-2 py-0.5 md:py-1 rounded-full text-xs font-medium bg-green-900/70 text-green-200">
-                                  Ready
+                                  {t('imageGenerator.ready')}
                                 </span>
                                 <span className="text-xs text-gray-400">
-                                  Image #{imageHistory.length - index}
+                                  {t('imageGenerator.imageNumber', { number: imageHistory.length - index })}
                                 </span>
                               </div>
                             </div>
@@ -1097,28 +1099,28 @@ const ImageGeneratorPage: React.FC = () => {
                                   setShowHistory(false);
                                 }}
                                 className="p-1.5 md:p-2 rounded-lg transition-colors text-indigo-400 hover:bg-gray-700/70"
-                                title="View image"
+                                title={t('imageGenerator.viewImage')}
                               >
                                 <FiImage size={14} className="md:w-4 md:h-4" />
                               </button>
                               <button 
                                 onClick={() => handleDownload(image.image_url, image.prompt_text)}
                                 className="p-1.5 md:p-2 rounded-lg transition-colors text-gray-400 hover:bg-gray-700/70"
-                                title="Download image"
+                                title={t('imageGenerator.downloadImage')}
                               >
                                 <FiDownload size={14} className="md:w-4 md:h-4" />
                               </button>
                               <button 
                                 onClick={() => handleShare(image.image_url)}
                                 className="p-1.5 md:p-2 rounded-lg transition-colors text-gray-400 hover:bg-gray-700/70"
-                                title="Share image"
+                                title={t('imageGenerator.shareImage')}
                               >
                                 <FiShare2 size={14} className="md:w-4 md:h-4" />
                               </button>
                               <button 
                                 onClick={() => handleRemoveImage(image.image_id)}
                                 className="p-1.5 md:p-2 rounded-lg transition-colors text-red-400 hover:bg-gray-700/70"
-                                title="Remove image"
+                                title={t('imageGenerator.removeImage')}
                               >
                                 <FiTrash size={14} className="md:w-4 md:h-4" />
                               </button>
@@ -1140,11 +1142,11 @@ const ImageGeneratorPage: React.FC = () => {
                         }`}
                       >
                         <FiChevronLeft className="mr-1" />
-                        Previous
+                        {t('common.previous')}
                       </button>
                       
                       <div className="text-xs md:text-sm order-first sm:order-none text-gray-300">
-                        Page {currentPage} of {totalPages}
+                        {t('common.pageOf', { current: currentPage, total: totalPages })}
                       </div>
                       
                       <button
@@ -1159,7 +1161,7 @@ const ImageGeneratorPage: React.FC = () => {
                             : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20'
                         }`}
                       >
-                        Next
+                        {t('common.next')}
                         <FiChevronRight className="ml-1" />
                       </button>
                     </div>
@@ -1177,7 +1179,7 @@ const ImageGeneratorPage: React.FC = () => {
                         {/* Display the uploaded image */}
                         <img 
                           src={uploadedImageUrl} 
-                          alt="Uploaded image" 
+                          alt={t('imageGenerator.uploadedImage')} 
                           className="w-full h-full object-contain"
                           style={{ aspectRatio: '16/9' }}
                         />
@@ -1224,7 +1226,7 @@ const ImageGeneratorPage: React.FC = () => {
                       >
                         <img 
                           src={imageUrl} 
-                          alt={`Generated image ${index + 1}`} 
+                          alt={t('imageGenerator.generatedImageAlt', { number: index + 1 })} 
                           className="w-full h-full object-cover"
                         />
                         <div className={`absolute inset-0 flex flex-col justify-end p-2 md:p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/80 via-black/40 to-transparent`}>
@@ -1249,7 +1251,7 @@ const ImageGeneratorPage: React.FC = () => {
                 ) : (
                   <div className="text-center text-gray-400 h-[600px] flex flex-col items-center justify-center p-4 md:p-6 bg-gray-900/30 backdrop-blur-md overflow-hidden border border-gray-700/30">
                     <FiImage className="w-16 h-16 md:w-20 md:h-40 mx-auto mb-4 md:mb-5 opacity-30" />
-                    <p className="text-base md:text-lg max-w-xs">Enter a prompt and generate your first image</p>
+                    <p className="text-base md:text-lg max-w-xs">{t('imageGenerator.enterPromptToGenerate')}</p>
                   </div>
                 )}
               </div>

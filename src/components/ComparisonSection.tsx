@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface ComparisonItemProps {
   icon: React.ReactNode;
@@ -19,6 +20,8 @@ const ComparisonItem: React.FC<ComparisonItemProps> = ({ icon, text, isPositive 
 };
 
 const ComparisonSection: React.FC = () => {
+  const { t } = useTranslation();
+  
   return (
     <section className="py-20 bg-gradient-to-b from-black to-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,7 +32,7 @@ const ComparisonSection: React.FC = () => {
           viewport={{ once: true }}
           className="text-4xl font-bold text-white text-center mb-4"
         >
-          Why wait weeks? Create with AI<br />in minutes, not days
+          {t('comparisonSection.title', 'Why wait weeks? Create with AI')}<br />{t('comparisonSection.titleSecondLine', 'in minutes, not days')}
         </motion.h2>
         
         <motion.p
@@ -39,7 +42,7 @@ const ComparisonSection: React.FC = () => {
           viewport={{ once: true }}
           className="text-xl text-gray-300 text-center mb-16 max-w-3xl mx-auto"
         >
-          Experience the difference between instant AI-powered creativity and old-school production headaches across all your creative needs.
+          {t('comparisonSection.description', 'Experience the difference between instant AI-powered creativity and old-school production headaches across all your creative needs.')}
         </motion.p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 relative">
@@ -71,31 +74,31 @@ const ComparisonSection: React.FC = () => {
                   className="w-full h-64 object-cover rounded-lg"
                 />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">MatrixAI's All-in-One Platform</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">{t('comparisonSection.matrixAiTitle', 'MatrixAI\'s All-in-One Platform')}</h3>
               
               <ComparisonItem 
                 icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>}
-                text="Choose Your AI Tool"
+                text={t('comparisonSection.chooseAiTool', 'Choose Your AI Tool')}
               />
-              <p className="text-sm text-gray-400 ml-8 mb-4">Select from video creation, image generation, speech-to-text, content writing, or AI chat—all in one platform with a unified interface.</p>
+              <p className="text-sm text-gray-400 ml-8 mb-4">{t('comparisonSection.chooseAiToolDesc', 'Select from video creation, image generation, speech-to-text, content writing, or AI chat—all in one platform with a unified interface.')}</p>
               
               <ComparisonItem 
                 icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>}
-                text="Describe What You Want"
+                text={t('comparisonSection.describeWhatYouWant', 'Describe What You Want')}
               />
-              <p className="text-sm text-gray-400 ml-8 mb-4">Use natural language to explain your vision. Our AI understands context, style preferences, and creative direction across all tools.</p>
+              <p className="text-sm text-gray-400 ml-8 mb-4">{t('comparisonSection.describeWhatYouWantDesc', 'Use natural language to explain your vision. Our AI understands context, style preferences, and creative direction across all tools.')}</p>
               
               <ComparisonItem 
                 icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>}
-                text="Get Professional Results Instantly"
+                text={t('comparisonSection.getProfessionalResults', 'Get Professional Results Instantly')}
               />
-              <p className="text-sm text-gray-400 ml-8 mb-4">Our AI handles the complex work. Whether it's videos, images, transcriptions, content, or chat responses—get high-quality results in minutes, not days.</p>
+              <p className="text-sm text-gray-400 ml-8 mb-4">{t('comparisonSection.getProfessionalResultsDesc', 'Our AI handles the complex work. Whether it\'s videos, images, transcriptions, content, or chat responses—get high-quality results in minutes, not days.')}</p>
             </div>
           </motion.div>
           
@@ -138,14 +141,14 @@ const ComparisonSection: React.FC = () => {
                   className="w-full h-64 object-cover rounded-lg"
                 />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">Traditional Creative Methods</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">{t('comparisonSection.traditionalTitle', 'Traditional Creative Methods')}</h3>
               
               <div className="space-y-4">
                 <ComparisonItem 
                   icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>}
-                  text="Research and hire different specialists for each task"
+                  text={t('comparisonSection.researchHireSpecialists', 'Research and hire different specialists for each task')}
                   isPositive={false}
                 />
                 
@@ -153,7 +156,7 @@ const ComparisonSection: React.FC = () => {
                   icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>}
-                  text="Pay for multiple subscriptions and services"
+                  text={t('comparisonSection.payMultipleSubscriptions', 'Pay for multiple subscriptions and services')}
                   isPositive={false}
                 />
                 
@@ -161,7 +164,7 @@ const ComparisonSection: React.FC = () => {
                   icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>}
-                  text="Learn multiple complex software interfaces"
+                  text={t('comparisonSection.learnComplexSoftware', 'Learn multiple complex software interfaces')}
                   isPositive={false}
                 />
                 
@@ -169,7 +172,7 @@ const ComparisonSection: React.FC = () => {
                   icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>}
-                  text="Wait days or weeks for revisions and final delivery"
+                  text={t('comparisonSection.waitDaysWeeks', 'Wait days or weeks for revisions and final delivery')}
                   isPositive={false}
                 />
                 
@@ -177,7 +180,7 @@ const ComparisonSection: React.FC = () => {
                   icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>}
-                  text="Manage inconsistent quality across different providers"
+                  text={t('comparisonSection.manageInconsistentQuality', 'Manage inconsistent quality across different providers')}
                   isPositive={false}
                 />
                 
@@ -185,7 +188,7 @@ const ComparisonSection: React.FC = () => {
                   icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>}
-                  text="Pay premium prices for each individual service"
+                  text={t('comparisonSection.payPremiumPrices', 'Pay premium prices for each individual service')}
                   isPositive={false}
                 />
               </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface UseCaseTabProps {
   id: string;
@@ -20,16 +21,17 @@ const UseCaseTab = ({ id, label, isActive, onClick }: UseCaseTabProps): React.Re
 };
 
 const UseCasesSection: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('ads');
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState('video-creation');
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const useCases = [
-    { id: 'video-creation', label: 'Video Creation' },
-    { id: 'image-generation', label: 'Image Generation' },
-    { id: 'speech-to-text', label: 'Speech to Text' },
-    { id: 'content-writing', label: 'Content Writing' },
-    { id: 'ai-chat', label: 'AI Chat' },
-    { id: 'creative-projects', label: 'Creative Projects' },
+    { id: 'video-creation', label: t('useCasesSection.videoCreation', 'Video Creation') },
+    { id: 'image-generation', label: t('useCasesSection.imageGeneration', 'Image Generation') },
+    { id: 'speech-to-text', label: t('useCasesSection.speechToText', 'Speech to Text') },
+    { id: 'content-writing', label: t('useCasesSection.contentWriting', 'Content Writing') },
+    { id: 'ai-chat', label: t('useCasesSection.aiChat', 'AI Chat') },
+    { id: 'creative-projects', label: t('useCasesSection.creativeProjects', 'Creative Projects') },
   ];
   
   // Video/image content for each tab
@@ -110,9 +112,9 @@ const UseCasesSection: React.FC = () => {
               viewport={{ once: true }}
               className="text-4xl md:text-5xl font-bold text-white mb-6"
             >
-              Made for every creator.<br />
-              See how pros use our<br />
-              AI tools.
+              {t('useCasesSection.title', 'Made for every creator.')}<br />
+              {t('useCasesSection.subtitle', 'See how pros use our')}<br />
+              {t('useCasesSection.aiTools', 'AI tools.')}
             </motion.h2>
             
             <div className="flex flex-col space-y-4">

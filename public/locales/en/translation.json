@@ -40,7 +40,14 @@
     "copy": "Copy",
     "download": "Download",
     "save": "Save",
-    "saved": "Saved"
+    "saved": "Saved",
+    "remove": "Remove",
+    "yes": "Yes",
+    "no": "No",
+    "retry": "Retry",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {{current}} of {{total}}"
   },
   "chat": {
     "newChat": "New Chat",
@@ -456,6 +463,159 @@
         "faq": "FAQ",
         "helpCenter": "Help Center",
         "systemStatus": "System Status"
+      }
+    }
+  },
+  "imageGenerator": {
+    "title": "AI Image Generator",
+    "description": "Create stunning AI-generated images from text descriptions",
+    "describeEnhancement": "Describe how to enhance your image",
+    "describeImage": "Describe the image you want to generate",
+    "enhancementPlaceholder": "Make my image look like an anime movie...",
+    "generationPlaceholder": "A futuristic city with flying cars and neon lights...",
+    "uploadImageOptional": "Upload an image to enhance (optional)",
+    "clickToUpload": "Click to upload an image",
+    "fileFormats": "JPG, PNG, GIF (max 5MB)",
+    "pleaseUploadImageFile": "Please upload an image file",
+    "imageSizeLimit": "Image size should be less than 5MB",
+    "uploading": "Uploading... {{uploadProgress}}%",
+    "uploadedImage": "Uploaded image",
+    "uploadingImage": "Uploading image...",
+    "enhancingImage": "Enhancing your image...",
+    "processingImage": "Processing your image...",
+    "generatingImages": "Generating images...",
+    "preparingToEnhance": "Preparing to enhance...",
+    "initializingGeneration": "Initializing image generation...",
+    "imageEnhancedSuccess": "Image enhanced successfully!",
+    "imagesGeneratedSuccess": "Images generated successfully!",
+    "imageEnhancementFailed": "Image enhancement failed",
+    "imageGenerationFailed": "Image generation failed",
+    "failedToEnhanceImage": "Failed to enhance image. Please try again.",
+    "failedToLoadHistory": "Failed to load image history",
+    "confirmRemoveImage": "Are you sure you want to remove this image?",
+    "imageRemovedSuccess": "Image removed successfully",
+    "failedToRemoveImage": "Failed to remove image",
+    "imageDownloadedSuccess": "Image downloaded successfully!",
+    "failedToDownloadImage": "Failed to download image. Please try right-click and save.",
+    "matrixAIGeneratedImage": "MatrixAI Generated Image",
+    "imageUrlCopied": "Image URL copied to clipboard!",
+    "failedToShareImage": "Failed to share image. Please try again.",
+    "numberOfImages": "Number of images:",
+    "fixedForEnhancement": "(Fixed for image enhancement)",
+    "enhanceImage": "Enhance Image",
+    "generateImages": "Generate Images",
+    "freeGenerationsRemaining": "Free generations remaining",
+    "backToGenerator": "Back to Generator",
+    "viewHistory": "View History",
+    "quickPrompts": "Quick Prompts",
+    "quickPrompt1": "A futuristic city with flying cars",
+    "quickPrompt2": "Photorealistic mountain landscape",
+    "quickPrompt3": "Anime style portrait of a warrior",
+    "quickPrompt4": "Abstract digital art with vibrant colors",
+    "recentImages": "Recent Images",
+    "errorLoadingHistory": "Error loading history",
+    "noImagesYet": "No images generated yet",
+    "generateFirstImage": "Generate your first image to see it here",
+    "generatedImage": "Generated Image",
+    "ready": "Ready",
+    "imageNumber": "Image #{{number}}",
+    "viewImage": "View image",
+    "downloadImage": "Download image",
+    "shareImage": "Share image",
+    "removeImage": "Remove image",
+    "generatedImageAlt": "Generated image {{number}}",
+    "enterPromptToGenerate": "Enter a prompt and generate your first image"
+  },
+  "useCasesSection": {
+    "videoCreation": "Video Creation",
+    "imageGeneration": "Image Generation",
+    "speechToText": "Speech to Text",
+    "contentWriting": "Content Writing",
+    "aiChat": "AI Chat",
+    "creativeProjects": "Creative Projects",
+    "title": "Made for every creator.",
+    "subtitle": "See how pros use our AI tools.",
+    "aiTools": "AI tools."
+  },
+  "comparisonSection": {
+    "title": "Why wait weeks? Create with AI in minutes, not days",
+    "titleSecondLine": "",
+    "description": "Experience the difference between instant AI-powered creativity and old-school production headaches across all your creative needs.",
+    "matrixAiTitle": "MatrixAI's All-in-One Platform",
+    "chooseAiTool": "Choose Your AI Tool",
+    "chooseAiToolDesc": "Select from video creation, image generation, speech-to-text, content writing, or AI chat—all in one platform with a unified interface.",
+    "describeWhatYouWant": "Describe What You Want",
+    "describeWhatYouWantDesc": "Use natural language to explain your vision. Our AI understands context, style preferences, and creative direction across all tools.",
+    "getProfessionalResults": "Get Professional Results Instantly",
+    "getProfessionalResultsDesc": "Our AI handles the complex work. Whether it's videos, images, transcriptions, content, or chat responses—get high-quality results in minutes, not days.",
+    "vs": "vs",
+    "traditionalTitle": "Traditional Creative Methods",
+    "traditionalVideoProduction": "Traditional Video Production",
+    "researchHireSpecialists": "Research and hire different specialists for each task",
+    "payMultipleSubscriptions": "Pay for multiple subscriptions and services",
+    "learnComplexSoftware": "Learn multiple complex software interfaces",
+    "waitDaysWeeks": "Wait days or weeks for revisions and final delivery",
+    "manageInconsistentQuality": "Manage inconsistent quality across different providers",
+    "payPremiumPrices": "Pay premium prices for each individual service"
+  },
+  "modelsShowcase": {
+    "title": "All the leading AI models and features on one platform",
+    "subtitle": "With matrixai.asia, you always have the right tool—never just one option. Instantly access video generation, image creation, speech-to-text, content writing, and AI chat, all in one place.",
+    "tryNow": "Try now →",
+    "videoGeneration": {
+      "name": "Video Generation",
+      "description": "Transform static images into dynamic videos.",
+      "detailedDescription": "Our video generation models turn any image into high-quality, lifelike video with natural motion and cinematic quality. Perfect for marketing, social media, and creative projects."
+    },
+    "imageGeneration": {
+      "name": "Image Generation",
+      "description": "Create stunning AI-generated images from text prompts.",
+      "detailedDescription": "Generate high-quality, customized images from simple text descriptions. Perfect for creating unique visuals for marketing, design projects, or creative inspiration."
+    },
+    "speechToText": {
+      "name": "Speech to Text",
+      "description": "Convert spoken words into accurate text transcriptions.",
+      "detailedDescription": "Our advanced speech recognition technology converts audio recordings into precise text transcriptions with high accuracy. Perfect for meetings, interviews, content creation, and accessibility."
+    },
+    "contentGeneration": {
+      "name": "Content Generation",
+      "description": "Create engaging written content for any purpose.",
+      "detailedDescription": "Generate high-quality written content for blogs, social media, marketing materials, and more. Our AI understands context and can match your brand voice for consistent, engaging content."
+    },
+    "aiChat": {
+      "name": "AI Chat",
+      "description": "Engage with our lightning-fast AI assistant.",
+      "detailedDescription": "Our advanced AI chat system provides instant responses to queries, creative assistance, and problem-solving support. Experience minimal latency and high-quality interactions for productivity and creative work."
+    },
+    "creativeSuite": {
+      "name": "Creative Suite",
+      "description": "All creative AI tools in one integrated platform.",
+      "detailedDescription": "Access our complete suite of AI creative tools in one seamless platform. Combine video generation, image creation, speech-to-text, content writing, and AI chat for comprehensive creative projects with consistent quality."
+    },
+    "featureSections": {
+      "videoGeneration": {
+        "title": "Transform Images into Dynamic Videos",
+        "subtitle": "VIDEO GENERATION",
+        "modelName": "VIDEO GENERATION",
+        "description": "Turn any static image into high-quality, lifelike video with our advanced AI video generation. Upload your starting image, add optional parameters, and watch as our models create seamless, cinematic transitions with natural motion. Perfect for marketing, social media content, product demos, and creative projects."
+      },
+      "imageGeneration": {
+        "title": "Create Stunning AI-Generated Images",
+        "subtitle": "IMAGE GENERATION",
+        "modelName": "IMAGE GENERATION",
+        "description": "Generate high-quality, customized images from simple text descriptions. Our AI image generation models understand complex prompts and produce detailed, creative visuals that match your specifications. Perfect for creating unique visuals for marketing, design projects, or creative inspiration."
+      },
+      "speechToText": {
+        "title": "Convert Speech to Accurate Text",
+        "subtitle": "SPEECH TO TEXT & CONTENT WRITING",
+        "modelName": "SPEECH TO TEXT & CONTENT WRITING",
+        "description": "Our advanced speech recognition technology converts audio recordings into precise text transcriptions with high accuracy. Perfect for meetings, interviews, content creation, and accessibility. Combine with our content generation to transform your spoken ideas into polished written content instantly."
+      },
+      "aiChat": {
+        "title": "Experience Lightning-Fast AI Chat",
+        "subtitle": "AI CHAT ASSISTANT",
+        "modelName": "AI CHAT ASSISTANT",
+        "description": "Our advanced AI chat system provides instant responses to queries, creative assistance, and problem-solving support. Experience minimal latency and high-quality interactions for productivity and creative work. Get immediate answers, brainstorm ideas, draft content, and more with our responsive AI assistant."
       }
     }
   },

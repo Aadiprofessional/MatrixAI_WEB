@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface ModelInfo {
   id: string;
@@ -167,6 +168,7 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
 };
 
 const ModelsShowcaseSection: React.FC = () => {
+  const { t } = useTranslation();
   const [selectedModel, setSelectedModel] = useState<string>('google-veo');
   
   // Define a common background style for all sections
@@ -178,9 +180,9 @@ const ModelsShowcaseSection: React.FC = () => {
   const models: ModelInfo[] = [
     {
       id: 'video-generation',
-      name: 'Video Generation',
-      description: 'Transform static images into dynamic videos.',
-      detailedDescription: 'Our video generation models turn any image into high-quality, lifelike video with natural motion and cinematic quality. Perfect for marketing, social media, and creative projects.',
+      name: t('modelsShowcase.videoGeneration.name', 'Video Generation'),
+      description: t('modelsShowcase.videoGeneration.description', 'Transform static images into dynamic videos.'),
+      detailedDescription: t('modelsShowcase.videoGeneration.detailedDescription', 'Our video generation models turn any image into high-quality, lifelike video with natural motion and cinematic quality. Perfect for marketing, social media, and creative projects.'),
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l-3 3m0 0l-3-3m3 3V8M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V16" />
@@ -189,9 +191,9 @@ const ModelsShowcaseSection: React.FC = () => {
     },
     {
       id: 'image-generation',
-      name: 'Image Generation',
-      description: 'Create stunning AI-generated images from text prompts.',
-      detailedDescription: 'Generate high-quality, customized images from simple text descriptions. Perfect for creating unique visuals for marketing, design projects, or creative inspiration.',
+      name: t('modelsShowcase.imageGeneration.name', 'Image Generation'),
+      description: t('modelsShowcase.imageGeneration.description', 'Create stunning AI-generated images from text prompts.'),
+      detailedDescription: t('modelsShowcase.imageGeneration.detailedDescription', 'Generate high-quality, customized images from simple text descriptions. Perfect for creating unique visuals for marketing, design projects, or creative inspiration.'),
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -200,9 +202,9 @@ const ModelsShowcaseSection: React.FC = () => {
     },
     {
       id: 'speech-to-text',
-      name: 'Speech to Text',
-      description: 'Convert spoken words into accurate text transcriptions.',
-      detailedDescription: 'Our advanced speech recognition technology converts audio recordings into precise text transcriptions with high accuracy. Perfect for meetings, interviews, content creation, and accessibility.',
+      name: t('modelsShowcase.speechToText.name', 'Speech to Text'),
+      description: t('modelsShowcase.speechToText.description', 'Convert spoken words into accurate text transcriptions.'),
+      detailedDescription: t('modelsShowcase.speechToText.detailedDescription', 'Our advanced speech recognition technology converts audio recordings into precise text transcriptions with high accuracy. Perfect for meetings, interviews, content creation, and accessibility.'),
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
@@ -211,9 +213,9 @@ const ModelsShowcaseSection: React.FC = () => {
     },
     {
       id: 'content-generation',
-      name: 'Content Generation',
-      description: 'Create engaging written content for any purpose.',
-      detailedDescription: 'Generate high-quality written content for blogs, social media, marketing materials, and more. Our AI understands context and can match your brand voice for consistent, engaging content.',
+      name: t('modelsShowcase.contentGeneration.name', 'Content Generation'),
+      description: t('modelsShowcase.contentGeneration.description', 'Create engaging written content for any purpose.'),
+      detailedDescription: t('modelsShowcase.contentGeneration.detailedDescription', 'Generate high-quality written content for blogs, social media, marketing materials, and more. Our AI understands context and can match your brand voice for consistent, engaging content.'),
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -222,9 +224,9 @@ const ModelsShowcaseSection: React.FC = () => {
     },
     {
       id: 'ai-chat',
-      name: 'AI Chat',
-      description: 'Engage with our lightning-fast AI assistant.',
-      detailedDescription: 'Our advanced AI chat system provides instant responses to queries, creative assistance, and problem-solving support. Experience minimal latency and high-quality interactions for productivity and creative work.',
+      name: t('modelsShowcase.aiChat.name', 'AI Chat'),
+      description: t('modelsShowcase.aiChat.description', 'Engage with our lightning-fast AI assistant.'),
+      detailedDescription: t('modelsShowcase.aiChat.detailedDescription', 'Our advanced AI chat system provides instant responses to queries, creative assistance, and problem-solving support. Experience minimal latency and high-quality interactions for productivity and creative work.'),
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -233,9 +235,9 @@ const ModelsShowcaseSection: React.FC = () => {
     },
     {
       id: 'creative-suite',
-      name: 'Creative Suite',
-      description: 'All creative AI tools in one integrated platform.',
-      detailedDescription: 'Access our complete suite of AI creative tools in one seamless platform. Combine video generation, image creation, speech-to-text, content writing, and AI chat for comprehensive creative projects with consistent quality.',
+      name: t('modelsShowcase.creativeSuite.name', 'Creative Suite'),
+      description: t('modelsShowcase.creativeSuite.description', 'All creative AI tools in one integrated platform.'),
+      detailedDescription: t('modelsShowcase.creativeSuite.detailedDescription', 'Access our complete suite of AI creative tools in one seamless platform. Combine video generation, image creation, speech-to-text, content writing, and AI chat for comprehensive creative projects with consistent quality.'),
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
@@ -258,7 +260,7 @@ const ModelsShowcaseSection: React.FC = () => {
             viewport={{ once: true }}
             className="text-4xl font-bold text-white text-center mb-4"
           >
-            All the leading AI models and features on one platform
+            {t('modelsShowcase.title', 'All the leading AI models and features on one platform')}
           </motion.h2>
           
           <motion.p
@@ -268,7 +270,7 @@ const ModelsShowcaseSection: React.FC = () => {
             viewport={{ once: true }}
             className="text-xl text-gray-300 text-center mb-16 max-w-3xl mx-auto"
           >
-            With matrixai.asia, you always have the right tool—never just one option. Instantly access video generation, image creation, speech-to-text, content writing, and AI chat, all in one place.
+            {t('modelsShowcase.subtitle', 'With matrixai.asia, you always have the right tool—never just one option. Instantly access video generation, image creation, speech-to-text, content writing, and AI chat, all in one place.')}
           </motion.p>
           
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -338,7 +340,7 @@ const ModelsShowcaseSection: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                         className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg transition-colors shadow-lg shadow-indigo-500/20 font-medium"
                       >
-                        Try now →
+                        {t('modelsShowcase.tryNow', 'Try now →')}
                       </motion.button>
                     </div>
                   </div>
@@ -351,10 +353,10 @@ const ModelsShowcaseSection: React.FC = () => {
       
       {/* Feature Sections for different AI capabilities */}
       <FeatureSection 
-        title="Transform Images into Dynamic Videos"
-        subtitle="VIDEO GENERATION"
-        modelName="VIDEO GENERATION"
-        description="Turn any static image into high-quality, lifelike video with our advanced AI video generation. Upload your starting image, add optional parameters, and watch as our models create seamless, cinematic transitions with natural motion. Perfect for marketing, social media content, product demos, and creative projects."
+        title={t('modelsShowcase.featureSections.videoGeneration.title', 'Transform Images into Dynamic Videos')}
+        subtitle={t('modelsShowcase.featureSections.videoGeneration.subtitle', 'VIDEO GENERATION')}
+        modelName={t('modelsShowcase.featureSections.videoGeneration.modelName', 'VIDEO GENERATION')}
+        description={t('modelsShowcase.featureSections.videoGeneration.description', 'Turn any static image into high-quality, lifelike video with our advanced AI video generation. Upload your starting image, add optional parameters, and watch as our models create seamless, cinematic transitions with natural motion. Perfect for marketing, social media content, product demos, and creative projects.')}
         imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
         imageAlt="Video Generation demonstration"
         videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
@@ -364,10 +366,10 @@ const ModelsShowcaseSection: React.FC = () => {
       />
       
       <FeatureSection 
-        title="Create Stunning AI-Generated Images"
-        subtitle="IMAGE GENERATION"
-        modelName="IMAGE GENERATION"
-        description="Generate high-quality, customized images from simple text descriptions. Our AI image generation models understand complex prompts and produce detailed, creative visuals that match your specifications. Perfect for creating unique visuals for marketing, design projects, or creative inspiration."
+        title={t('modelsShowcase.featureSections.imageGeneration.title', 'Create Stunning AI-Generated Images')}
+        subtitle={t('modelsShowcase.featureSections.imageGeneration.subtitle', 'IMAGE GENERATION')}
+        modelName={t('modelsShowcase.featureSections.imageGeneration.modelName', 'IMAGE GENERATION')}
+        description={t('modelsShowcase.featureSections.imageGeneration.description', 'Generate high-quality, customized images from simple text descriptions. Our AI image generation models understand complex prompts and produce detailed, creative visuals that match your specifications. Perfect for creating unique visuals for marketing, design projects, or creative inspiration.')}
         imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
         imageAlt="Image Generation demonstration"
         videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
@@ -378,10 +380,10 @@ const ModelsShowcaseSection: React.FC = () => {
       />
       
       <FeatureSection 
-        title="Convert Speech to Accurate Text"
-        subtitle="SPEECH TO TEXT & CONTENT WRITING"
-        modelName="SPEECH TO TEXT & CONTENT WRITING"
-        description="Our advanced speech recognition technology converts audio recordings into precise text transcriptions with high accuracy. Perfect for meetings, interviews, content creation, and accessibility. Combine with our content generation to transform your spoken ideas into polished written content instantly."
+        title={t('modelsShowcase.featureSections.speechToText.title', 'Convert Speech to Accurate Text')}
+        subtitle={t('modelsShowcase.featureSections.speechToText.subtitle', 'SPEECH TO TEXT & CONTENT WRITING')}
+        modelName={t('modelsShowcase.featureSections.speechToText.modelName', 'SPEECH TO TEXT & CONTENT WRITING')}
+        description={t('modelsShowcase.featureSections.speechToText.description', 'Our advanced speech recognition technology converts audio recordings into precise text transcriptions with high accuracy. Perfect for meetings, interviews, content creation, and accessibility. Combine with our content generation to transform your spoken ideas into polished written content instantly.')}
         imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
         imageAlt="Speech to Text demonstration"
         videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
@@ -391,10 +393,10 @@ const ModelsShowcaseSection: React.FC = () => {
       />
       
       <FeatureSection 
-        title="Experience Lightning-Fast AI Chat"
-        subtitle="AI CHAT ASSISTANT"
-        modelName="AI CHAT ASSISTANT"
-        description="Our advanced AI chat system provides instant responses to queries, creative assistance, and problem-solving support. Experience minimal latency and high-quality interactions for productivity and creative work. Get immediate answers, brainstorm ideas, draft content, and more with our responsive AI assistant."
+        title={t('modelsShowcase.featureSections.aiChat.title', 'Experience Lightning-Fast AI Chat')}
+        subtitle={t('modelsShowcase.featureSections.aiChat.subtitle', 'AI CHAT ASSISTANT')}
+        modelName={t('modelsShowcase.featureSections.aiChat.modelName', 'AI CHAT ASSISTANT')}
+        description={t('modelsShowcase.featureSections.aiChat.description', 'Our advanced AI chat system provides instant responses to queries, creative assistance, and problem-solving support. Experience minimal latency and high-quality interactions for productivity and creative work. Get immediate answers, brainstorm ideas, draft content, and more with our responsive AI assistant.')}
         imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
         imageAlt="AI Chat demonstration"
         videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
