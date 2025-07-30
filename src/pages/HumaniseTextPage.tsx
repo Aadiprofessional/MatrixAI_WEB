@@ -52,22 +52,22 @@ const HumaniseTextPage: React.FC = () => {
 
   // Tone options
   const toneOptions = [
-    { id: 'casual', name: t('common.casual') || 'Casual' },
-    { id: 'friendly', name: t('common.friendly') || 'Friendly' },
-    { id: 'conversational', name: t('common.conversational') || 'Conversational' },
-    { id: 'professional', name: t('common.professional') || 'Professional' },
-    { id: 'humorous', name: t('common.humorous') || 'Humorous' },
-    { id: 'enthusiastic', name: t('common.enthusiastic') || 'Enthusiastic' },
-    { id: 'thoughtful', name: t('common.thoughtful') || 'Thoughtful' },
-    { id: 'simple', name: t('common.simple') || 'Simple' },
+    { id: 'casual', name: t('casual') },
+    { id: 'friendly', name: t('friendly') },
+    { id: 'conversational', name: t('conversational') },
+    { id: 'professional', name: t('professional') },
+    { id: 'humorous', name: t('humorous') },
+    { id: 'enthusiastic', name: t('enthusiastic') },
+    { id: 'thoughtful', name: t('thoughtful') },
+    { id: 'simple', name: t('simple') },
   ];
 
   // Humanisation levels
   const levelOptions = [
-    { id: 'light', name: t('common.light') || 'Light Changes' },
-    { id: 'medium', name: t('common.medium') || 'Medium Changes' },
-    { id: 'heavy', name: t('common.heavy') || 'Significant Rewrite' },
-    { id: 'creative', name: t('common.creative') || 'Creative Rewrite' },
+    { id: 'light', name: t('light') },
+    { id: 'medium', name: t('medium') },
+    { id: 'heavy', name: t('heavy') },
+    { id: 'creative', name: t('creative') },
   ];
 
   // Fetch user's humanization history
@@ -165,7 +165,7 @@ const HumaniseTextPage: React.FC = () => {
         // Show success toast notification with button to transfer to Content Writer
         toast.success(
           <div>
-            <div>Text successfully humanized!</div>
+            <div>{t('humanizeText.success.textHumanized')}</div>
             <button 
               onClick={() => {
                 // Store the humanized text in localStorage
@@ -175,7 +175,7 @@ const HumaniseTextPage: React.FC = () => {
               }}
               className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
             >
-              <FiFileText className="mr-1" /> Use in Content Writer
+              <FiFileText className="mr-1" /> {t('humanizeText.success.useInContentWriter')}
             </button>
           </div>
         );
@@ -187,8 +187,8 @@ const HumaniseTextPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error humanising text:', error);
-      setHumanisedText('Error humanising text. Please try again later.');
-      toast.error('Failed to humanize text. Please try again.');
+      setHumanisedText(t('humanizeText.errors.humanizingError'));
+      toast.error(t('humanizeText.errors.failedToHumanize'));
     } finally {
       setIsProcessing(false);
     }
@@ -210,7 +210,7 @@ const HumaniseTextPage: React.FC = () => {
     navigator.clipboard.writeText(humanisedText);
     toast.success(
       <div>
-        <div>Humanized text copied to clipboard!</div>
+        <div>{t('humanizeText.success.textCopied')}</div>
         <button 
           onClick={() => {
             // Store the humanized text in localStorage
@@ -220,7 +220,7 @@ const HumaniseTextPage: React.FC = () => {
           }}
           className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
         >
-          <FiFileText className="mr-1" /> Use in Content Writer
+          <FiFileText className="mr-1" /> {t('humanizeText.success.useInContentWriter')}
         </button>
       </div>
     );
@@ -290,7 +290,7 @@ const HumaniseTextPage: React.FC = () => {
                 <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-1.5 rounded-md mr-2">
                   <FiFileText className="w-5 h-5" />
                 </span>
-                {t('humanizeText.humanizeAction')}
+                {t('humanizeText.title')}
               </h2>
               
               <div className="space-y-4">

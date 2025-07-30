@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ThemeContext } from '../context/ThemeContext';
 import { Layout } from '../components';
+import { useTranslation } from 'react-i18next';
 import { 
   FiMoon, 
   FiSun, 
@@ -170,6 +171,7 @@ const NotificationToast = ({ message, type, onClose }: {
 };
 
 const SettingsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const [activeTab, setActiveTab] = useState('appearance');
   const [notification, setNotification] = useState<{
@@ -449,22 +451,22 @@ const SettingsPage: React.FC = () => {
                     />
 
                     <ToggleSwitch
-                      label="Marketing Emails"
-                      description="Receive newsletters and promotional content"
+                      label={t('settings.marketingEmails')}
+                      description={t('settings.marketingEmailsDescription')}
                       isEnabled={settings.marketingEmails}
                       toggleFunction={() => toggleSetting('marketingEmails')}
                     />
 
                     <ToggleSwitch
-                      label="New Feature Announcements"
-                      description="Be the first to know about new features"
+                      label={t('settings.newFeatureAnnouncements')}
+                      description={t('settings.newFeatureAnnouncementsDescription')}
                       isEnabled={settings.newFeatureAnnouncements}
                       toggleFunction={() => toggleSetting('newFeatureAnnouncements')}
                     />
 
                     <ToggleSwitch
-                      label="Weekly Activity Digest"
-                      description="Get a summary of your weekly activity"
+                      label={t('settings.weeklyActivityDigest')}
+                      description={t('settings.weeklyActivityDigestDescription')}
                       isEnabled={settings.weeklyDigest}
                       toggleFunction={() => toggleSetting('weeklyDigest')}
                     />

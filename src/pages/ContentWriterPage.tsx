@@ -79,21 +79,21 @@ const ContentWriterPage: React.FC = () => {
   
   // Dynamic title and subtitle
   const [pageTitle, setPageTitle] = useState(t('content.title', 'AI Content Writer'));
-  const [pageSubtitle, setPageSubtitle] = useState('Generate professional content for applications, essays, letters, and more');
+  const [pageSubtitle, setPageSubtitle] = useState(t('contentWriter.subtitle'));
 
   // Update page title and subtitle when tab changes
   useEffect(() => {
     if (activeTab === 'content-writer') {
-      setPageTitle('AI Content Writer');
-      setPageSubtitle('Generate professional content for applications, essays, letters, and more');
+      setPageTitle(t('contentWriter.title'));
+      setPageSubtitle(t('contentWriter.subtitle'));
     } else if (activeTab === 'humanizer') {
-      setPageTitle('Humanizer');
-      setPageSubtitle('Make AI-generated text sound more human and undetectable');
+      setPageTitle(t('humanizeText.title'));
+      setPageSubtitle(t('humanizeText.subtitle'));
     } else if (activeTab === 'ai-detector') {
-      setPageTitle('AI Detector');
-      setPageSubtitle('Check if text was written by AI or a human');
+      setPageTitle(t('detectAI.title'));
+      setPageSubtitle(t('detectAI.subtitle'));
     }
-  }, [activeTab]);
+  }, [activeTab, t]);
   
   // Listen for custom event to switch to Content Writer tab and use transferred text
   useEffect(() => {
@@ -109,7 +109,7 @@ const ContentWriterPage: React.FC = () => {
         // Clear localStorage
         localStorage.removeItem('transferToContentWriter');
         // Show toast notification
-        toast.success('Text transferred to Content Writer');
+        toast.success(t('contentWriter.success.textTransferred'));
       }
     };
     
@@ -136,7 +136,7 @@ const ContentWriterPage: React.FC = () => {
   const [streamingContent, setStreamingContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [contentTitle, setContentTitle] = useState('Untitled Content');
+  const [contentTitle, setContentTitle] = useState(t('common.untitled'));
 
   // UI state
   const [showProAlert, setShowProAlert] = useState(false);
@@ -230,7 +230,7 @@ const ContentWriterPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching content history:', error);
-      toast.error('Failed to load content history');
+      toast.error(t('contentWriter.errors.failedToLoadHistory'));
       setContentHistory([]);
     } finally {
       console.log('Setting isLoadingHistory to false');
@@ -260,16 +260,16 @@ const ContentWriterPage: React.FC = () => {
             // Set the content in the editor
             setEditedContent(response.content.content);
             setGeneratedContent(response.content.content);
-            toast.success('Shared content loaded successfully');
+            toast.success(t('contentWriter.success.sharedContentLoaded'));
             
             // Clear the share ID from URL to prevent reloading on refresh
             window.history.replaceState({}, document.title, window.location.pathname);
           } else {
-            toast.error('Failed to load shared content');
+            toast.error(t('contentWriter.errors.failedToLoadSharedContent'));
           }
         } catch (error) {
           console.error('Error loading shared content:', error);
-          toast.error('An error occurred while loading shared content');
+          toast.error(t('contentWriter.errors.errorLoadingSharedContent'));
         }
       }
     };
@@ -281,51 +281,51 @@ const ContentWriterPage: React.FC = () => {
   const quickQuestions: QuickQuestion[] = [
     {
       id: 'blog-post',
-      text: 'Write a blog post about sustainable living tips',
-      description: 'Create an engaging blog post with practical advice',
-      category: 'Blog'
+      text: t('contentWriter.quickQuestions.blogPost'),
+      description: t('contentWriter.quickQuestions.blogPostDesc'),
+      category: t('contentWriter.categories.blog')
     },
     {
       id: 'product-description',
-      text: 'Write a compelling product description for a new smartwatch',
-      description: 'Professional marketing copy that converts',
-      category: 'Marketing'
+      text: t('contentWriter.quickQuestions.productDescription'),
+      description: t('contentWriter.quickQuestions.productDescriptionDesc'),
+      category: t('contentWriter.categories.marketing')
     },
     {
       id: 'email-newsletter',
-      text: 'Create an email newsletter about the latest tech trends',
-      description: 'Informative and engaging newsletter content',
-      category: 'Email'
+      text: t('contentWriter.quickQuestions.emailNewsletter'),
+      description: t('contentWriter.quickQuestions.emailNewsletterDesc'),
+      category: t('contentWriter.categories.email')
     },
     {
       id: 'social-media',
-      text: 'Write social media captions for a new restaurant opening',
-      description: 'Catchy and shareable social media content',
-      category: 'Social Media'
+      text: t('contentWriter.quickQuestions.socialMedia'),
+      description: t('contentWriter.quickQuestions.socialMediaDesc'),
+      category: t('contentWriter.categories.socialMedia')
     },
     {
       id: 'business-proposal',
-      text: 'Draft a business proposal for a mobile app development project',
-      description: 'Professional proposal with clear structure',
-      category: 'Business'
+      text: t('contentWriter.quickQuestions.businessProposal'),
+      description: t('contentWriter.quickQuestions.businessProposalDesc'),
+      category: t('contentWriter.categories.business')
     },
     {
       id: 'essay-education',
-      text: 'Write an essay about the impact of artificial intelligence on education',
-      description: 'Academic essay with research-based insights',
-      category: 'Essay'
+      text: t('contentWriter.quickQuestions.aiEducationEssay'),
+      description: t('contentWriter.quickQuestions.aiEducationEssayDesc'),
+      category: t('contentWriter.categories.essay')
     },
     {
       id: 'cover-letter',
-      text: 'Create a cover letter for a software engineer position',
-      description: 'Professional cover letter highlighting skills',
-      category: 'Professional'
+      text: t('contentWriter.quickQuestions.coverLetter'),
+      description: t('contentWriter.quickQuestions.coverLetterDesc'),
+      category: t('contentWriter.categories.professional')
     },
     {
       id: 'creative-story',
-      text: 'Write a short story about time travel and its consequences',
-      description: 'Creative fiction with engaging narrative',
-      category: 'Creative'
+      text: t('contentWriter.quickQuestions.creativeStory'),
+      description: t('contentWriter.quickQuestions.creativeStoryDesc'),
+      category: t('contentWriter.categories.creative')
     }
   ];
 
@@ -340,26 +340,26 @@ const ContentWriterPage: React.FC = () => {
 
   // Tone options
   const toneOptions = [
-    { id: 'professional', name: t('common.professional') || 'Professional' },
-    { id: 'casual', name: t('common.casual') || 'Casual' },
-    { id: 'friendly', name: t('common.friendly') || 'Friendly' },
-    { id: 'formal', name: 'Formal' },
-    { id: 'creative', name: t('common.creative') || 'Creative' },
-    { id: 'persuasive', name: 'Persuasive' },
+    { id: 'professional', name: t('common.professional') },
+    { id: 'casual', name: t('common.casual') },
+    { id: 'friendly', name: t('common.friendly') },
+    { id: 'formal', name: t('contentWriter.tones.formal') },
+    { id: 'creative', name: t('common.creative') },
+    { id: 'persuasive', name: t('contentWriter.tones.persuasive') },
   ];
 
   // Content type options
   const contentTypeOptions = [
-    { id: 'essay', name: 'Essay' },
-    { id: 'article', name: 'Article' },
-    { id: 'blog', name: 'Blog Post' },
-    { id: 'letter', name: 'Letter' },
-    { id: 'email', name: 'Email' },
-    { id: 'report', name: 'Report' },
-    { id: 'story', name: 'Story' },
-    { id: 'social', name: 'Social Media' },
-    { id: 'marketing', name: 'Marketing Copy' },
-    { id: 'proposal', name: 'Business Proposal' }
+    { id: 'essay', name: t('contentWriter.contentTypes.essay') },
+    { id: 'article', name: t('contentWriter.contentTypes.article') },
+    { id: 'blog', name: t('contentWriter.contentTypes.blog') },
+    { id: 'letter', name: t('contentWriter.contentTypes.letter') },
+    { id: 'email', name: t('contentWriter.contentTypes.email') },
+    { id: 'report', name: t('contentWriter.contentTypes.report') },
+    { id: 'story', name: t('contentWriter.contentTypes.story') },
+    { id: 'social', name: t('contentWriter.contentTypes.social') },
+    { id: 'marketing', name: t('contentWriter.contentTypes.marketing') },
+    { id: 'proposal', name: t('contentWriter.contentTypes.proposal') }
   ];
 
   // Enhanced Code Block Component for markdown rendering
@@ -602,7 +602,7 @@ Create content that is original, well-researched, and engaging for the target au
 
   const handleGenerateContent = async () => {
     if (!prompt.trim()) {
-      toast.error('Please enter a prompt for content generation');
+      toast.error(t('contentWriter.errors.enterPrompt'));
       return;
     }
     
@@ -630,10 +630,10 @@ Create content that is original, well-researched, and engaging for the target au
       if (uid) {
         try {
           await userService.subtractCoins(uid, 2, 'content_generation');
-          toast.success('2 coins deducted for content generation');
+          toast.success(t('contentWriter.success.coinsDeducted'));
         } catch (coinError) {
           console.error('Error deducting coins:', coinError);
-          toast.error('Could not deduct coins. Please check your balance.');
+          toast.error(t('contentWriter.errors.insufficientCoins'));
           return;
         }
       }
@@ -688,10 +688,10 @@ Create content that is original, well-researched, and engaging for the target au
         if (saveResponse.success) {
           // Refresh content history
           fetchContentHistory();
-          toast.success('Content generated and saved successfully!');
+          toast.success(t('contentWriter.success.contentGenerated'));
         } else {
           console.error('Failed to save content:', saveResponse);
-          toast.error('Content generated but failed to save');
+          toast.error(t('contentWriter.errors.failedToSave'));
           
           // Add to local content history as fallback
           const newContentItem: ContentItem = {
@@ -709,7 +709,7 @@ Create content that is original, well-researched, and engaging for the target au
         }
       } catch (error) {
         console.error('Error saving content:', error);
-        toast.error('Content generated but failed to save');
+        toast.error(t('contentWriter.errors.failedToSave'));
         
         // Add to local content history as fallback
         const newContentItem: ContentItem = {
@@ -728,11 +728,11 @@ Create content that is original, well-researched, and engaging for the target au
       
     } catch (error) {
       console.error('Error generating content:', error);
-      setError('Error generating content. Please try again later.');
+      setError(t('contentWriter.errors.generateError'));
       setGeneratedContent('');
       setEditedContent('');
       setStreamingContent('');
-      toast.error('Failed to generate content. Please try again.');
+      toast.error(t('contentWriter.errors.failedToGenerate'));
     } finally {
       setIsGenerating(false);
       setIsStreaming(false);
@@ -777,12 +777,12 @@ Create content that is original, well-researched, and engaging for the target au
 
   const handleCopyContent = () => {
     navigator.clipboard.writeText(editedContent);
-    toast.success('Content copied to clipboard!');
+    toast.success(t('contentWriter.success.contentCopied'));
   };
 
   const handleDownloadContent = async (format: 'txt' | 'pdf' | 'doc') => {
     if (!editedContent) {
-      toast.error('No content to download');
+      toast.error(t('contentWriter.errors.noContentToDownload'));
       return;
     }
     
@@ -802,7 +802,7 @@ Create content that is original, well-researched, and engaging for the target au
           // Create a blob from the content
           const blob = new Blob([response.content], { type: 'text/plain' });
           saveAs(blob, response.filename);
-          toast.success(`Content downloaded as ${format.toUpperCase()}`);
+          toast.success(t('contentWriter.success.contentDownloaded', { format: format.toUpperCase() }));
           return;
         }
       } catch (error) {
@@ -840,10 +840,10 @@ Create content that is original, well-researched, and engaging for the target au
         await generateDOCX(editedContent, filename);
       }
 
-      toast.success(`Content downloaded as ${format.toUpperCase()}!`);
+      toast.success(t('contentWriter.success.contentDownloaded', { format: format.toUpperCase() }));
     } catch (error) {
       console.error('Download error:', error);
-      toast.error(`Failed to download ${format.toUpperCase()} file`);
+      toast.error(t('contentWriter.errors.failedToDownload', { format: format.toUpperCase() }));
     } finally {
       setIsDownloading(false);
     }
@@ -860,13 +860,13 @@ Create content that is original, well-researched, and engaging for the target au
     // Title
     pdf.setFontSize(20);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Generated Content', margin, yPosition);
+    pdf.text(t('contentWriter.pdf.title'), margin, yPosition);
     yPosition += 15;
 
     // Date
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, yPosition);
+    pdf.text(t('contentWriter.pdf.generatedOn', { date: new Date().toLocaleDateString() }), margin, yPosition);
     yPosition += 20;
 
     // Process content by lines
@@ -1181,9 +1181,9 @@ Create content that is original, well-researched, and engaging for the target au
 
   const getStatusText = () => {
     if (isStreaming) {
-      return 'Generating content...';
+      return t('contentWriter.generatingContent');
     }
-    return 'Ready to generate';
+    return t('contentWriter.readyToGenerate');
   };
 
   // Only check for Pro status if user is authenticated
@@ -1280,7 +1280,7 @@ Create content that is original, well-researched, and engaging for the target au
           >
             <div className="flex items-center">
               <FiFileText className="mr-2" />
-              Content Writer
+              {t('contentWriter.title')}
             </div>
           </button>
           <button
@@ -1291,7 +1291,7 @@ Create content that is original, well-researched, and engaging for the target au
           >
             <div className="flex items-center">
               <FiUser className="mr-2" />
-              Humanizer
+              {t('humanizeText.title')}
             </div>
           </button>
           <button
@@ -1302,7 +1302,7 @@ Create content that is original, well-researched, and engaging for the target au
           >
             <div className="flex items-center">
               <FiShield className="mr-2" />
-              AI Detector
+              {t('detectAI.title')}
             </div>
           </button>
         </div>
@@ -1340,7 +1340,7 @@ Create content that is original, well-researched, and engaging for the target au
                 <div>
                   <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300 flex items-center">
                     <FiZap className="w-4 h-4 mr-1" />
-                    Quick Content Ideas
+                    {t('contentWriter.quickPrompts')}
                   </label>
                   <div className="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto pr-1">
                     {quickQuestions.map((question) => (
@@ -1423,11 +1423,11 @@ Create content that is original, well-researched, and engaging for the target au
                     className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     disabled={isGenerating}
                   >
-                    <option value={250}>250 words</option>
-                    <option value={500}>500 words</option>
-                    <option value={750}>750 words</option>
-                    <option value={1000}>1000 words</option>
-                    <option value={1500}>1500 words</option>
+                    <option value={250}>{t('contentWriter.wordCounts.250')}</option>
+                    <option value={500}>{t('contentWriter.wordCounts.500')}</option>
+                    <option value={750}>{t('contentWriter.wordCounts.750')}</option>
+                    <option value={1000}>{t('contentWriter.wordCounts.1000')}</option>
+                    <option value={1500}>{t('contentWriter.wordCounts.1500')}</option>
                   </select>
                 </div>
                 
@@ -1492,7 +1492,7 @@ Create content that is original, well-researched, and engaging for the target au
                   <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1.5 rounded-md mr-2">
                     <FiFileText className="w-5 h-5" />
                   </span>
-                  Generated Content
+                  {t('contentWriter.generatedContent')}
                 </h3>
                 {editedContent && (
                   <div className="flex space-x-2">
@@ -1501,7 +1501,7 @@ Create content that is original, well-researched, and engaging for the target au
                       className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm"
                     >
                       <FiCopy className="w-4 h-4 mr-1" />
-                      Copy
+                      {t('common.copy')}
                     </AuthRequiredButton>
                     
                     <AuthRequiredButton
@@ -1509,7 +1509,7 @@ Create content that is original, well-researched, and engaging for the target au
                       className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm"
                     >
                       <FiEdit className="w-4 h-4 mr-1" />
-                      {isEditing ? 'View' : 'Edit'}
+                      {isEditing ? t('common.view') : t('common.edit')}
                     </AuthRequiredButton>
                     
                     {/* Download Dropdown */}
@@ -1519,7 +1519,7 @@ Create content that is original, well-researched, and engaging for the target au
                         className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center text-sm disabled:opacity-50"
                       >
                         <FiDownload className="w-4 h-4 mr-1" />
-                        {isDownloading ? 'Downloading...' : 'Download'}
+                        {isDownloading ? t('common.downloading') : t('common.download')}
                       </AuthRequiredButton>
                       
                       <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
@@ -1529,7 +1529,7 @@ Create content that is original, well-researched, and engaging for the target au
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg disabled:opacity-50"
                         >
                           <FiFileText className="w-4 h-4 inline mr-2" />
-                          Text (.txt)
+                          {t('common.formats.text')}
                         </AuthRequiredButton>
                         <AuthRequiredButton
                           onClick={() => handleDownloadContent('pdf')}
@@ -1537,7 +1537,7 @@ Create content that is original, well-researched, and engaging for the target au
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                         >
                           <FiFileText className="w-4 h-4 inline mr-2" />
-                          PDF (.pdf)
+                          {t('common.formats.pdf')}
                         </AuthRequiredButton>
                         <AuthRequiredButton
                           onClick={() => handleDownloadContent('doc')}
@@ -1545,7 +1545,7 @@ Create content that is original, well-researched, and engaging for the target au
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg disabled:opacity-50"
                         >
                           <FiFileText className="w-4 h-4 inline mr-2" />
-                          Word (.docx)
+                          {t('common.formats.word')}
                         </AuthRequiredButton>
                       </div>
                     </div>
@@ -1555,7 +1555,7 @@ Create content that is original, well-researched, and engaging for the target au
                       className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center text-sm"
                     >
                       <FiShare2 className="w-4 h-4 mr-1" />
-                      Share
+                      {t('common.share')}
                     </AuthRequiredButton>
                   </div>
                 )}
@@ -1592,14 +1592,14 @@ Create content that is original, well-researched, and engaging for the target au
                           className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm mr-2"
                         >
                           <FiTrash className="w-4 h-4 mr-1" />
-                          Clear
+                          {t('common.clear')}
                         </button>
                         <button
                           onClick={() => setIsEditing(false)}
                           className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center text-sm"
                         >
                           <FiCheck className="w-4 h-4 mr-1" />
-                          Done
+                          {t('common.done')}
                         </button>
                       </div>
                     </div>
@@ -1624,9 +1624,9 @@ Create content that is original, well-researched, and engaging for the target au
                   <div className="h-20 w-20 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-opacity-10 flex items-center justify-center mb-4">
                     <FiFileText className="h-10 w-10 text-blue-500 dark:text-blue-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Content Generated Yet</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t('contentWriter.noContentGenerated')}</h3>
                   <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
-                    Enter a prompt, choose from quick content ideas, and configure your settings to generate high-quality content with AI.
+                    {t('contentWriter.subtitle')}
                   </p>
                   
                   {/* Featured Quick Questions for Empty State */}
@@ -1791,12 +1791,12 @@ Create content that is original, well-researched, and engaging for the target au
                       onClick={() => {
                         setEditedContent(item.content);
                         setGeneratedContent(item.content);
-                        toast.success('Content loaded from history');
+                        toast.success(t('contentWriter.success.contentLoadedFromHistory'));
                       }}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
-                          {item.title || 'Untitled'}
+                          {item.title || t('common.untitled')}
                         </h4>
                         <button
                           onClick={(e) => {
@@ -1852,7 +1852,7 @@ Create content that is original, well-researched, and engaging for the target au
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Share Content
+                {t('contentWriter.shareContent')}
               </h3>
               <AuthRequiredButton
                 onClick={() => setShowShareModal(false)}
@@ -1863,7 +1863,7 @@ Create content that is original, well-researched, and engaging for the target au
             </div>
             
             <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
-              Share your generated content on social media or copy the link
+              {t('contentWriter.shareDescription')}
             </p>
             
             <div className="grid grid-cols-2 gap-3">
@@ -1872,7 +1872,7 @@ Create content that is original, well-researched, and engaging for the target au
                 className="flex items-center justify-center px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
                 <FiTwitter className="w-5 h-5 mr-2" />
-                Twitter
+                {t('common.twitter')}
               </AuthRequiredButton>
               
               <AuthRequiredButton
@@ -1880,7 +1880,7 @@ Create content that is original, well-researched, and engaging for the target au
                 className="flex items-center justify-center px-4 py-3 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors"
               >
                 <FiLinkedin className="w-5 h-5 mr-2" />
-                LinkedIn
+                {t('common.linkedin')}
               </AuthRequiredButton>
               
               <AuthRequiredButton
@@ -1888,7 +1888,7 @@ Create content that is original, well-researched, and engaging for the target au
                 className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <FiFacebook className="w-5 h-5 mr-2" />
-                Facebook
+                {t('common.facebook')}
               </AuthRequiredButton>
               
               <AuthRequiredButton
@@ -1896,7 +1896,7 @@ Create content that is original, well-researched, and engaging for the target au
                 className="flex items-center justify-center px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
               >
                 <FiMail className="w-5 h-5 mr-2" />
-                Email
+                {t('common.email')}
               </AuthRequiredButton>
             </div>
             
@@ -1906,7 +1906,7 @@ Create content that is original, well-researched, and engaging for the target au
                 className="w-full flex items-center justify-center px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 <FiLink className="w-5 h-5 mr-2" />
-                Copy Link
+                {t('common.copyLink')}
               </AuthRequiredButton>
             </div>
           </motion.div>

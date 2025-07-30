@@ -20,23 +20,23 @@
     "professional": "Professional",
     "casual": "Casual",
     "friendly": "Friendly",
-    "creative": "Creative",
+    "creative": "Creative Rewrite",
     "cancel": "Cancel",
     "create": "Create",
     "hideHistory": "Hide History",
-    "low": "Low",
-    "balanced": "Balanced",
-    "high": "High",
-    "veryHigh": "Very High",
+    "low": "Low - Fewer false positives",
+    "balanced": "Balanced - Default detection",
+    "high": "High - Stricter detection",
+    "veryHigh": "Very High - Maximum sensitivity",
     "copied": "Copied",
     "conversational": "Conversational",
     "humorous": "Humorous",
     "enthusiastic": "Enthusiastic",
     "thoughtful": "Thoughtful",
     "simple": "Simple",
-    "light": "Light",
-    "medium": "Medium",
-    "heavy": "Heavy",
+    "light": "Light Changes",
+    "medium": "Medium Changes",
+    "heavy": "Significant Rewrite",
     "copy": "Copy",
     "download": "Download",
     "save": "Save",
@@ -49,7 +49,30 @@
     "next": "Next",
     "pageOf": "Page {{current}} of {{total}}",
     "errorLoadingHistory": "Error Loading History",
-    "showHistory": "Show History"
+    "showHistory": "Show History",
+    "untitled": "Untitled Content",
+    "edit": "Edit",
+    "view": "View",
+    "downloading": "Downloading...",
+    "formats": {
+      "text": "Text (.txt)",
+      "pdf": "PDF (.pdf)",
+      "word": "Word (.docx)"
+    },
+    "socialMedia": {
+      "twitter": "Twitter",
+      "facebook": "Facebook",
+      "linkedin": "LinkedIn",
+      "whatsapp": "WhatsApp"
+    },
+    "clear": "Clear",
+    "copyLink": "Copy Link",
+    "done": "Done",
+    "facebook": "Email",
+    "email": "Email",
+    "share": "Share",
+    "linkedin": "Linkdin",
+    "twitter": "Twitter"
   },
   "chat": {
     "newChat": "New Chat",
@@ -197,7 +220,8 @@
     "try_again": "Try Again"
   },
   "contentWriter": {
-    "title": "Content Writer",
+    "title": "AI Content Writer",
+    "subtitle": "Enter a prompt, choose from quick content ideas, and configure your settings to generate high-quality content with AI.",
     "insufficientCoins": "Insufficient Coins",
     "needMoreCoins": "You need more coins to generate content",
     "buyCoins": "Buy Coins",
@@ -208,7 +232,181 @@
     "wordCount": "Word Count",
     "generateContent": "Generate Content",
     "history": "History",
-    "noHistory": "No content generation history yet"
+    "noHistory": "No content generation history yet",
+    "wordCounts": {
+      "250": "250 words",
+      "500": "500 words",
+      "750": "750 words",
+      "1000": "1000 words",
+      "1500": "1500 words"
+    },
+    "success": {
+      "textTransferred": "Text transferred to Content Writer",
+      "coinsDeducted": "2 coins deducted for content generation",
+      "sharedContentLoaded": "Shared content loaded successfully",
+      "contentGenerated": "Content generated successfully",
+      "contentDownloaded": "{{format}} file downloaded successfully",
+      "contentCopied": "Content copied to clipboard",
+      "contentLoadedFromHistory": "Content loaded from history"
+    },
+    "errors": {
+      "failedToLoadHistory": "Failed to load content history",
+      "failedToLoadSharedContent": "Failed to load shared content",
+      "errorLoadingSharedContent": "An error occurred while loading shared content",
+      "enterPrompt": "Please enter a prompt",
+      "insufficientCoins": "Insufficient coins",
+      "failedToSave": "Failed to save content",
+      "generateError": "Error generating content",
+      "failedToGenerate": "Failed to generate content",
+      "failedToDownload": "Failed to download {{format}} file",
+      "noContentToDownload": "No content available to download"
+    },
+    "contentTypes": {
+      "essay": "Essay",
+      "article": "Article",
+      "blog": "Blog Post",
+      "letter": "Letter",
+      "email": "Email",
+      "report": "Report",
+      "story": "Story",
+      "social": "Social Media",
+      "marketing": "Marketing",
+      "proposal": "Proposal"
+    },
+    "tones": {
+      "formal": "Formal",
+      "persuasive": "Persuasive"
+    },
+    "categories": {
+      "essay": "Academic",
+      "professional": "Professional",
+      "creative": "Creative",
+      "blog": "Blog",
+      "marketing": "Marketing",
+      "email": "Email",
+      "business": "Business",
+      "socialMedia": "Social Media"
+    },
+    "quickPrompts": "Quick Prompts",
+    "quickQuestions": {
+      "personalStatement": "Write a personal statement for college application",
+      "personalStatementDesc": "Craft a compelling personal statement that highlights your achievements and goals",
+      "coverLetter": "Create a professional cover letter",
+      "coverLetterDesc": "Write a tailored cover letter for your job application",
+      "creativeStory": "Write a creative short story",
+      "creativeStoryDesc": "Generate an engaging short story with compelling characters and plot",
+      "blogPost": "Write a compelling blog post",
+      "blogPostDesc": "Create an engaging blog post that captures your audience's attention",
+      "productDescription": "Write a product description",
+      "productDescriptionDesc": "Create compelling product descriptions that drive sales",
+      "emailNewsletter": "Create an email newsletter",
+      "emailNewsletterDesc": "Design engaging email newsletters for your subscribers",
+      "socialMedia": "Write social media content",
+      "socialMediaDesc": "Create engaging posts for your social media platforms",
+      "businessProposal": "Write a business proposal",
+      "businessProposalDesc": "Create professional business proposals that win clients",
+      "aiEducationEssay": "Write an educational essay about AI",
+      "aiEducationEssayDesc": "Create informative essays about artificial intelligence and technology"
+    },
+    "generatingContent": "Generating content...",
+    "readyToGenerate": "Ready to generate content",
+    "generatedContent": "Generated Content",
+    "noContentGenerated": "No content generated yet",
+    "shareContent": "Share Content",
+    "shareDescription": "Share your generated content with others",
+    "pdf": {
+      "title": "Generated Content",
+      "generatedOn": "Generated on {{date}}"
+    }
+  },
+  "humanizeText": {
+    "recent": "Recent",
+    "result": "Humanized Result",
+    "title": "Humanize AI Text",
+    "humanizeAction": "Humanize Text",
+    "placeholder": "Paste AI-generated text here to make it sound more human...",
+    "processing": "Humanizing text...",
+    "tone": "Tone",
+    "level": "Humanization Level",
+    "aiDetector": "AI Detector",
+    "empty": "No text to humanize",
+    "emptyDesc": "Please enter some AI-generated text to humanize",
+    "history": "Humanization History",
+    "noHistory": "No humanization history yet",
+    "bestResultsTip": "For best results, provide at least 100+ words of text. Longer texts yield more accurate humanization results.",
+    "levelDescriptions": {
+      "light": "Minimal changes to maintain original meaning while making text sound more natural.",
+      "medium": "Moderate rewriting to improve flow and reduce AI detection patterns.",
+      "heavy": "Significant restructuring for maximum human-like quality and undetectability."
+    },
+    "historyItems": {
+      "makeNatural": "Make this AI text sound more natural",
+      "humanizeEssay": "Humanize this essay to bypass AI detection",
+      "improveFlow": "Improve the flow and make it sound human-written"
+    },
+    "subtitle": "Make AI-generated text sound more human and undetectable"
+  },
+  "detectAI": {
+    "result": "Detection Result",
+    "title": "AI Content Detector",
+    "detectAction": "Detect AI Content",
+    "placeholder": "Paste your text here to detect if it was generated by AI...",
+    "sensitivity": "Detection Sensitivity",
+    "analyzing": "Analyzing content...",
+    "empty": "No content to analyze",
+    "emptyDesc": "Please enter some text to detect AI-generated content",
+    "history": "Detection History",
+    "noHistory": "No detection history yet",
+    "aiProbability": "AI PROBABILITY",
+    "detailedAnalysis": "Detailed Analysis",
+    "additionalFeedback": "Additional Feedback",
+    "bestResultsTip": "For best results, provide at least 100+ words of text. Longer texts yield more accurate detection results.",
+    "titlePlaceholder": "Enter a title for this detection (optional)",
+    "balanced": "Balanced",
+    "high": "High",
+    "veryHigh": "Very High",
+    "low": "Low",
+    "analyzeContent": "Analyze Content",
+    "useInContentWriter": "Use in Content Writer",
+    "summary": {
+      "humanWritten": "Human Written",
+      "aiGenerated": "AI Generated"
+    },
+    "probability": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "sensitivityDescriptions": {
+      "low": "Less strict detection, may miss subtle AI patterns but reduces false positives.",
+      "normal": "Balanced detection suitable for most content types and general use cases.",
+      "high": "More sensitive detection that catches subtle AI patterns but may increase false positives.",
+      "veryHigh": "Maximum sensitivity for detecting even the most sophisticated AI-generated content."
+    },
+    "historyItems": {
+      "isThisAI": "Is this text written by AI or human?",
+      "checkEssay": "Check if this essay is AI-generated",
+      "detectReview": "Detect AI in this product review",
+      "generalAnalysis": "General Analysis",
+      "sourceDetection": "Source Detection",
+      "academicCheck": "Academic Check",
+      "reviewCheck": "Review Check",
+      "generalAnalysisDesc": "Comprehensive AI detection analysis for any type of content",
+      "sourceDetectionDesc": "Identify potential AI writing tools and sources used",
+      "academicCheckDesc": "Specialized detection for academic papers and research content",
+      "reviewCheckDesc": "Analyze reviews and testimonials for AI-generated content"
+    },
+    "quickPrompts": {
+      "generalAnalysisTitle": "General Analysis",
+      "generalAnalysisDesc": "Comprehensive AI detection analysis for any type of content",
+      "sourceDetectionTitle": "Source Detection",
+      "sourceDetectionDesc": "Identify potential AI writing tools and sources used",
+      "academicCheckTitle": "Academic Check",
+      "academicCheckDesc": "Specialized detection for academic papers and research content",
+      "reviewCheckTitle": "Review Check",
+      "reviewCheckDesc": "Analyze reviews and testimonials for AI-generated content"
+    },
+    "subtitle": "Check if text was written by AI or a human"
   },
   "dashboard": {
     "popular": "Popular",
@@ -251,33 +449,6 @@
     "startNewChat": "Start new chat",
     "createVideo": "Create video",
     "buyMoreCoins": "Buy more coins"
-  },
-  "detectAI": {
-    "result": "Detection Result",
-    "title": "AI Content Detector",
-    "detectAction": "Detect AI Content",
-    "placeholder": "Paste your text here to detect if it was generated by AI...",
-    "sensitivity": "Detection Sensitivity",
-    "analyzing": "Analyzing content...",
-    "empty": "No content to analyze",
-    "emptyDesc": "Please enter some text to detect AI-generated content",
-    "history": "Detection History",
-    "noHistory": "No detection history yet"
-  },
-  "humanizeText": {
-    "recent": "Recent",
-    "result": "Humanized Result",
-    "title": "Humanize AI Text",
-    "humanizeAction": "Humanize Text",
-    "placeholder": "Paste AI-generated text here to make it sound more human...",
-    "processing": "Humanizing text...",
-    "tone": "Tone",
-    "level": "Humanization Level",
-    "aiDetector": "AI Detector",
-    "empty": "No text to humanize",
-    "emptyDesc": "Please enter some AI-generated text to humanize",
-    "history": "Humanization History",
-    "noHistory": "No humanization history yet"
   },
   "homePage": {
     "useCasesSection": {
@@ -541,7 +712,7 @@
   },
   "comparisonSection": {
     "title": "Why wait weeks? Create with AI in minutes, not days",
-    "titleSecondLine": "",
+    "titleSecondLine": "Matrix AI is the best platform for all your needs",
     "description": "Experience the difference between instant AI-powered creativity and old-school production headaches across all your creative needs.",
     "matrixAiTitle": "MatrixAI's All-in-One Platform",
     "chooseAiTool": "Choose Your AI Tool",
@@ -869,5 +1040,20 @@
     "updating": "Updating...",
     "success": "Password Updated!",
     "successMessage": "Your password has been successfully updated. You will be redirected to the login page shortly."
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "language": "Language",
+    "theme": "Theme",
+    "save": "Save Changes",
+    "marketingEmails": "Marketing Emails",
+    "marketingEmailsDescription": "Receive emails about new features, promotions, and updates",
+    "newFeatureAnnouncements": "New Feature Announcements",
+    "newFeatureAnnouncementsDescription": "Get notified when we release new features and improvements",
+    "weeklyActivityDigest": "Weekly Activity Digest",
+    "weeklyActivityDigestDescription": "Receive a weekly summary of your account activity and usage"
   }
 }

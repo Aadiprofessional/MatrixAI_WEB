@@ -4,6 +4,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { Layout } from '../components';
+import { useTranslation } from 'react-i18next';
 import '../styles/CommonStyles.css';
 import { 
   FiUsers, 
@@ -18,6 +19,7 @@ import {
 import { toast } from 'react-hot-toast';
 
 const ReferralPage: React.FC = () => {
+  const { t } = useTranslation();
   const { darkMode } = useContext(ThemeContext);
   const { user } = useAuth();
   const { userData } = useUser();
@@ -286,21 +288,21 @@ const ReferralPage: React.FC = () => {
               {/* Social Share */}
               <div className="mb-6">
                 <div className={`text-sm font-medium mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Share via Social Media
+                  {t('referral.shareViaSocialMedia')}
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {[
-                    { name: 'Twitter', color: 'bg-[#1DA1F2]' },
-                    { name: 'Facebook', color: 'bg-[#4267B2]' },
-                    { name: 'LinkedIn', color: 'bg-[#0077B5]' },
-                    { name: 'WhatsApp', color: 'bg-[#25D366]' }
+                    { name: 'twitter', color: 'bg-[#1DA1F2]', label: t('common.socialMedia.twitter') },
+                    { name: 'facebook', color: 'bg-[#4267B2]', label: t('common.socialMedia.facebook') },
+                    { name: 'linkedin', color: 'bg-[#0077B5]', label: t('common.socialMedia.linkedin') },
+                    { name: 'whatsapp', color: 'bg-[#25D366]', label: t('common.socialMedia.whatsapp') }
                   ].map((platform) => (
                     <button
                       key={platform.name}
-                      onClick={() => shareVia(platform.name.toLowerCase())}
+                      onClick={() => shareVia(platform.name)}
                       className={`px-4 py-2 rounded-lg text-white ${platform.color} hover:opacity-90 transition-opacity`}
                     >
-                      {platform.name}
+                      {platform.label}
                     </button>
                   ))}
                 </div>

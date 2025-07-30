@@ -290,36 +290,15 @@ const HelpPage: React.FC = () => {
                       Our team typically responds within 24 hours
                     </p>
                     <a 
-                      href="mailto:support@matrixai.com"
+                      href="mailto:support@matrixaiglobal.com"
                       className="mt-2 inline-block font-medium text-blue-400 hover:text-blue-300"
                     >
-                      support@matrixai.com
+                      support@matrixaiglobal.com
                     </a>
                   </div>
                 </div>
                 
-                <div className="flex items-start">
-                  <div className="rounded-lg p-3 bg-gray-700 text-purple-400 mr-4">
-                    <FiPhone className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-primary">
-                      Phone Support
-                    </h3>
-                    <p className="text-secondary mt-1">
-                      Available for Pro and Business plans
-                    </p>
-                    <a 
-                      href="tel:+18005551234"
-                      className="mt-2 inline-block font-medium text-purple-400 hover:text-purple-300"
-                    >
-                      +1 (800) 555-1234
-                    </a>
-                    <p className="text-sm text-tertiary mt-1">
-                      Mon-Fri, 9AM-5PM EST
-                    </p>
-                  </div>
-                </div>
+               
               </div>
             </div>
           </motion.div>

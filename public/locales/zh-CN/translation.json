@@ -102,7 +102,30 @@
     "retry": "重试",
     "yes": "是的",
     "showHistory": "展示历史",
-    "errorLoadingHistory": "错误加载历史记录"
+    "errorLoadingHistory": "错误加载历史记录",
+    "downloading": "下载...",
+    "edit": "编辑",
+    "formats": {
+      "pdf": "PDF（.pdf）",
+      "text": "文本（.txt）",
+      "word": "字（.docx）"
+    },
+    "untitled": "无标题的内容",
+    "view": "看法",
+    "socialMedia": {
+      "facebook": "Facebook",
+      "linkedin": "LinkedIn",
+      "twitter": "叽叽喳喳",
+      "whatsapp": "WhatsApp"
+    },
+    "share": "分享",
+    "clear": "清除",
+    "done": "完毕",
+    "twitter": "叽叽喳喳",
+    "linkedin": "linkdin",
+    "email": "电子邮件",
+    "copyLink": "复制链接",
+    "facebook": "电子邮件"
   },
   "content": "内容",
   "contentWriter": {
@@ -117,7 +140,93 @@
     "promptPlaceholder": "描述您要生成的内容...",
     "title": "内容作家",
     "tone": "语气",
-    "wordCount": "字数"
+    "wordCount": "字数",
+    "categories": {
+      "creative": "有创造力的",
+      "essay": "学术的",
+      "professional": "专业的",
+      "blog": "博客",
+      "business": "商业",
+      "email": "电子邮件",
+      "marketing": "营销",
+      "socialMedia": "社交媒体"
+    },
+    "contentTypes": {
+      "article": "文章",
+      "blog": "博客文章",
+      "email": "电子邮件",
+      "essay": "散文",
+      "letter": "信",
+      "marketing": "营销",
+      "proposal": "提议",
+      "report": "报告",
+      "social": "社交媒体",
+      "story": "故事"
+    },
+    "errors": {
+      "enterPrompt": "请输入提示",
+      "errorLoadingSharedContent": "加载共享内容时发生错误",
+      "failedToDownload": "无法下载{{format}}文件",
+      "failedToGenerate": "无法生成内容",
+      "failedToLoadHistory": "无法加载内容历史记录",
+      "failedToLoadSharedContent": "无法加载共享内容",
+      "failedToSave": "无法保存内容",
+      "insufficientCoins": "硬币不足",
+      "generateError": "错误生成内容",
+      "noContentToDownload": "无需下载内容"
+    },
+    "quickQuestions": {
+      "coverLetterDesc": "为您的工作申请写量身定制的求职信",
+      "creativeStory": "写一个创意的短篇小说",
+      "creativeStoryDesc": "通过引人入胜的角色和情节产生一个引人入胜的短篇小说",
+      "personalStatement": "为大学申请撰写个人陈述",
+      "personalStatementDesc": "制作令人信服的个人陈述，突出您的成就和目标",
+      "coverLetter": "创建专业求职信",
+      "aiEducationEssay": "写一篇有关人工智能的教育文章",
+      "aiEducationEssayDesc": "创建有关人工智能和技术的信息文章",
+      "blogPost": "写一篇引人入胜的博客文章",
+      "blogPostDesc": "创建一篇引人入胜的博客文章，引起您的观众的注意",
+      "businessProposal": "撰写业务建议",
+      "businessProposalDesc": "创建专业的业务建议赢得客户",
+      "productDescription": "写产品描述",
+      "productDescriptionDesc": "创建引人入胜的产品描述来推动销售",
+      "socialMedia": "编写社交媒体内容",
+      "socialMediaDesc": "为您的社交媒体平台创建引人入胜的帖子",
+      "emailNewsletter": "创建电子邮件通讯",
+      "emailNewsletterDesc": "为您的订户设计引人入胜的电子邮件新闻通讯"
+    },
+    "subtitle": "为应用程序，论文，信件等生成专业内容",
+    "success": {
+      "coinsDeducted": "2枚硬币用于内容生成",
+      "contentDownloaded": "{{format}}文件成功下载了文件",
+      "contentGenerated": "内容成功生成",
+      "sharedContentLoaded": "共享的内容成功加载了",
+      "textTransferred": "文字转移到内容作者",
+      "contentCopied": "复制到剪贴板的内容",
+      "contentLoadedFromHistory": "从历史上加载的内容"
+    },
+    "tones": {
+      "formal": "正式的",
+      "persuasive": "有说服力"
+    },
+    "wordCounts": {
+      "250": "250个字",
+      "500": "500个字",
+      "750": "750个字",
+      "1000": "1000个字",
+      "1500": "1500个字"
+    },
+    "generatedContent": "生成的内容",
+    "generatingContent": "生成内容...",
+    "noContentGenerated": "还没有生成的内容",
+    "pdf": {
+      "generatedOn": "在{{date}}上生成",
+      "title": "生成的内容"
+    },
+    "readyToGenerate": "准备生成内容",
+    "shareContent": "共享内容",
+    "shareDescription": "与他人分享您生成的内容",
+    "quickPrompts": "快速提示"
   },
   "customizeWithContent": "自定义内容",
   "dashboard": {
@@ -173,7 +282,57 @@
     "placeholder": "在此处粘贴您的文本以检测其是否由AI生成...",
     "result": "检测结果",
     "sensitivity": "检测灵敏度",
-    "title": "AI内容检测器"
+    "title": "AI内容检测器",
+    "subtitle": "检查文字是由AI还是人撰写的",
+    "historyItems": {
+      "checkEssay": "检查本文是否为AI生成",
+      "detectReview": "在本产品评论中检测AI",
+      "isThisAI": "该文本是由AI还是人撰写的？",
+      "academicCheck": "学术检查",
+      "academicCheckDesc": "专门检测学术论文和研究内容",
+      "generalAnalysis": "一般分析",
+      "generalAnalysisDesc": "任何类型的内容的全面AI检测分析",
+      "reviewCheck": "检查检查",
+      "reviewCheckDesc": "分析AI生成内容的评论和推荐",
+      "sourceDetection": "源检测",
+      "sourceDetectionDesc": "确定潜在的AI写作工具和所使用的来源"
+    },
+    "additionalFeedback": "其他反馈",
+    "aiProbability": "AI概率",
+    "bestResultsTip": "为了获得最佳结果，至少提供100个文字。\n较长的文本产生更准确的检测结果。",
+    "detailedAnalysis": "详细分析",
+    "sensitivityDescriptions": {
+      "high": "更敏感的检测会捕获微妙的AI模式，但可能会增加误报。",
+      "low": "不太严格的检测可能会错过微妙的AI模式，但会降低误报。",
+      "normal": "平衡检测适用于大多数内容类型和一般用例。",
+      "veryHigh": "即使检测最复杂的AI生成的含量，最大的灵敏度。"
+    },
+    "titlePlaceholder": "输入此检测的标题（可选）",
+    "analyzeContent": "",
+    "balanced": "均衡",
+    "high": "高的",
+    "low": "低的",
+    "probability": {
+      "high": "高的",
+      "low": "低的",
+      "medium": "中等的"
+    },
+    "summary": {
+      "aiGenerated": "AI生成",
+      "humanWritten": "人写的"
+    },
+    "useInContentWriter": "在内容作者中使用",
+    "veryHigh": "很高",
+    "quickPrompts": {
+      "academicCheckTitle": "学术检查",
+      "generalAnalysisTitle": "一般分析",
+      "reviewCheckTitle": "检查检查",
+      "sourceDetectionTitle": "源检测",
+      "academicCheckDesc": "专门检测学术论文和研究内容",
+      "generalAnalysisDesc": "任何类型的内容的全面AI检测分析",
+      "reviewCheckDesc": "分析AI生成内容的评论和推荐",
+      "sourceDetectionDesc": "确定潜在的AI写作工具和所使用的来源"
+    }
   },
   "editSlide": "编辑幻灯片",
   "export": "出口",
@@ -291,7 +450,22 @@
     "recent": "最近的",
     "result": "人性化结果",
     "title": "人性化文本",
-    "tone": "语气"
+    "tone": "语气",
+    "historyItems": {
+      "humanizeEssay": "人性化这篇文章以绕过AI检测",
+      "improveFlow": "改善流量并使其听起来像人为书写",
+      "makeNatural": "使此AI文字听起来更自然"
+    },
+    "subtitle": "使AI生成的文本听起来更人性化和无法检测",
+    "bestResultsTip": "为了获得最佳结果，至少提供100个文字。\n较长的文本产生更准确的人性化结果。",
+    "levelDescriptions": {
+      "heavy": "重大重组，以实现最大的人类样质量和无法检测的性能。",
+      "light": "最小的变化以保持原始含义，同时使文本听起来更自然。",
+      "medium": "中等重写以改善流量并减少AI检测模式。"
+    },
+    "success": {
+      "textHumanized": ""
+    }
   },
   "language": {
     "select": "选择语言"
@@ -603,7 +777,7 @@
     "payPremiumPrices": "为每种服务支付高级价格",
     "researchHireSpecialists": "研究和雇用不同专家为每项任务",
     "title": "为什么要等几周？\n在几分钟而不是几天之内使用AI创建",
-    "titleSecondLine": "",
+    "titleSecondLine": "矩阵AI是满足您所有需求的最佳平台",
     "traditionalTitle": "传统的创意方法",
     "traditionalVideoProduction": "传统的视频制作",
     "vs": "vs",
@@ -869,5 +1043,22 @@
     "urlUploadDeprecated": "使用基于URL的映像上传已不推荐使用，请使用直接文件上传",
     "videoGenerationInfo": "视频生成大约需要2分钟。\n请耐心等待。",
     "videoRemovedSuccessfully": "视频成功删除了"
-  }
+  },
+  "settings": {
+    "language": "语言",
+    "marketingEmails": "营销电子邮件",
+    "marketingEmailsDescription": "接收有关新功能，促销和更新的电子邮件",
+    "newFeatureAnnouncements": "新功能公告",
+    "newFeatureAnnouncementsDescription": "当我们发布新功能和改进时得到通知",
+    "notifications": "通知",
+    "privacy": "隐私",
+    "profile": "轮廓",
+    "save": "保存更改",
+    "theme": "主题",
+    "title": "设置",
+    "weeklyActivityDigest": "每周活动消化",
+    "weeklyActivityDigestDescription": "收到您的帐户活动和使用的每周摘要"
+  },
+  "low": "",
+  "casual": ""
 }

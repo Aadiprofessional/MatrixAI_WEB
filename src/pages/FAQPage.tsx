@@ -136,10 +136,7 @@ const FAQPage: React.FC = () => {
                       question: 'How quickly will I receive a response to my support request?',
                       answer: 'We aim to respond to all inquiries within 24 hours during business days. For urgent support issues, premium and enterprise customers have access to expedited response times.'
                     },
-                    {
-                      question: 'Do you offer phone support?',
-                      answer: 'Phone support is available for enterprise customers. All customers can reach us via email, chat, or by submitting a contact form through our website.'
-                    },
+                   
                     {
                       question: 'Do you have a knowledge base or help center?',
                       answer: 'Yes, we have an extensive knowledge base with tutorials, guides, and FAQs at help.matrixai.asia. It\'s a great first stop for common questions and learning how to use our platform effectively.'

@@ -722,4 +722,4 @@ Enable detailed logging by setting the `DEBUG=true` environment variable. This w
 
 ### Support
 
-For additional support, contact the MatrixAI team at support@matrixai.com.
+For additional support, contact the MatrixAI team at support@matrixaiglobal.com.

@@ -84,10 +84,10 @@ const DetectAIPage: React.FC = () => {
   const [freeDetectionsLeft, setFreeDetectionsLeft] = useState(1);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<string[]>([
-    t('detect.analyze-content', 'Analyze this content for AI generation'),
-    'Is this text written by AI or human?',
-    'Check if this essay is AI-generated',
-    'Detect AI in this product review'
+    t('detectAI.analyzeContent'),
+    t('detectAI.historyItems.isThisAI'),
+    t('detectAI.historyItems.checkEssay'),
+    t('detectAI.historyItems.detectReview')
   ]);
   
   // Fetch user's detection history
@@ -147,10 +147,10 @@ const DetectAIPage: React.FC = () => {
 
   // Sensitivity levels
   const sensitivityOptions = [
-    { id: 'low', name: t('common.low') || 'Low - Fewer false positives' },
-    { id: 'balanced', name: t('common.balanced') || 'Balanced - Default detection' },
-    { id: 'high', name: t('common.high') || 'High - Stricter detection' },
-    { id: 'very-high', name: t('common.veryHigh') || 'Very High - Maximum sensitivity' },
+    { id: 'low', name: t('low') },
+    { id: 'balanced', name: t('balanced') },
+    { id: 'high', name: t('high') },
+    { id: 'very-high', name: t('veryHigh') },
   ];
 
   const handleDetectAI = async () => {
@@ -193,7 +193,7 @@ const DetectAIPage: React.FC = () => {
           isAIGenerated: !detection.is_human,
           score: detection.fake_percentage / 100, // Convert percentage to decimal
           analysis: `## AI Detection Results\n\n**Text Analysis:**\n\nThis text contains ${detection.ai_words} AI-generated words out of ${detection.text_words} total words (${detection.fake_percentage}% AI probability).\n\n**Sentence Breakdown:**\n\n${detection.sentences.map((sentence: string, index: number) => `${index + 1}. ${sentence}`).join('\n\n')}`,
-          summary: detection.is_human ? "This text appears to be human-written." : "This text appears to be AI-generated.",
+          summary: detection.is_human ? t('detectAI.summary.humanWritten') : t('detectAI.summary.aiGenerated'),
           fake_percentage: detection.fake_percentage,
           ai_words: detection.ai_words,
           text_words: detection.text_words,
@@ -208,7 +208,7 @@ const DetectAIPage: React.FC = () => {
         if (detection.fake_percentage > 80) {
           toast.error(
             <div>
-              <div>High AI probability detected!</div>
+              <div>{t('detectAI.probability.high')}</div>
               <button 
                 onClick={() => {
                   // Store the text in localStorage
@@ -218,14 +218,14 @@ const DetectAIPage: React.FC = () => {
                 }}
                 className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
               >
-                <FiFileText className="mr-1" /> Use in Content Writer
+                <FiFileText className="mr-1" /> {t('detectAI.useInContentWriter')}
               </button>
             </div>
           );
         } else if (detection.fake_percentage > 40) {
           toast(
             <div>
-              <div>Medium AI probability detected.</div>
+              <div>{t('detectAI.probability.medium')}</div>
               <button 
                 onClick={() => {
                   // Store the text in localStorage
@@ -235,7 +235,7 @@ const DetectAIPage: React.FC = () => {
                 }}
                 className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
               >
-                <FiFileText className="mr-1" /> Use in Content Writer
+                <FiFileText className="mr-1" /> {t('detectAI.useInContentWriter')}
               </button>
             </div>,
             {
@@ -249,7 +249,7 @@ const DetectAIPage: React.FC = () => {
         } else {
           toast.success(
             <div>
-              <div>Low AI probability detected.</div>
+              <div>{t('detectAI.probability.low')}</div>
               <button 
                 onClick={() => {
                   // Store the text in localStorage
@@ -259,7 +259,7 @@ const DetectAIPage: React.FC = () => {
                 }}
                 className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
               >
-                <FiFileText className="mr-1" /> Use in Content Writer
+                <FiFileText className="mr-1" /> {t('detectAI.useInContentWriter')}
               </button>
             </div>
           );
@@ -328,7 +328,7 @@ ${detectionResult.analysis}`;
           }}
           className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
         >
-          <FiFileText className="mr-1" /> Use in Content Writer
+          <FiFileText className="mr-1" /> {t('detectAI.useInContentWriter')}
         </button>
       </div>
     );
@@ -382,7 +382,7 @@ ${text}
       isAIGenerated: !savedItem.is_human,
       score: savedItem.fake_percentage / 100, // Convert percentage to decimal
       analysis: `## AI Detection Results\n\n**Text Analysis:**\n\nThis text contains ${savedItem.ai_words} AI-generated words out of ${savedItem.text_words} total words (${savedItem.fake_percentage}% AI probability).\n\n**Sentence Breakdown:**\n\n${savedItem.sentences.map((sentence: string, index: number) => `${index + 1}. ${sentence}`).join('\n\n')}`,
-      summary: savedItem.is_human ? "This text appears to be human-written." : "This text appears to be AI-generated.",
+      summary: savedItem.is_human ? t('detectAI.summary.humanWritten') : t('detectAI.summary.aiGenerated'),
       fake_percentage: savedItem.fake_percentage,
        ai_words: savedItem.ai_words,
        text_words: savedItem.text_words,
@@ -497,13 +497,13 @@ ${text}
                   
                   <text 
                     x="50" 
-                    y="65" 
+                    y="50" 
                     textAnchor="middle" 
                     fontSize="10" 
                     fill="#6b7280"
                     className="dark:fill-gray-400"
                   >
-                    AI PROBABILITY
+                    {t('detectAI.aiProbability')}
                   </text>
                 </svg>
               </div>
@@ -511,13 +511,13 @@ ${text}
               <div className="text-center mt-4">
                 <div className="flex justify-center gap-2 mb-2">
                   <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                    0-49%: Human
+                    {t('detectAI.ranges.human')}
                   </span>
                   <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
-                    50-79%: Mixed
+                    {t('detectAI.ranges.mixed')}
                   </span>
                   <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
-                    80-100%: AI
+                    {t('detectAI.ranges.ai')}
                   </span>
                 </div>
               </div>
@@ -530,7 +530,7 @@ ${text}
             <span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 p-1.5 rounded-md mr-2">
               <FiFileText className="w-5 h-5" />
             </span>
-            Detailed Analysis
+            {t('detectAI.detailedAnalysis')}
           </h3>
           <div className="prose prose-sm max-w-none dark:prose-invert">
             <ReactMarkdown>
@@ -544,7 +544,7 @@ ${text}
                 <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1 rounded-md mr-2">
                   <FiMessageCircle className="w-4 h-4" />
                 </span>
-                Additional Feedback
+                {t('detectAI.additionalFeedback')}
               </h4>
               <div className="prose prose-sm max-w-none dark:prose-invert">
                 <ReactMarkdown>
@@ -626,18 +626,18 @@ ${text}
                               }`}
                               disabled={isProcessing}
                             >
-                              {option.id === 'low' && 'Low'}
-                              {option.id === 'balanced' && 'Normal'}
-                              {option.id === 'high' && 'High'}
-                              {option.id === 'very-high' && 'Very High'}
+                              {option.id === 'low' && t('detectAI.sensitivityLevels.low')}
+                              {option.id === 'balanced' && t('detectAI.sensitivityLevels.balanced')}
+                              {option.id === 'high' && t('detectAI.sensitivityLevels.high')}
+                              {option.id === 'very-high' && t('detectAI.sensitivityLevels.veryHigh')}
                             </button>
                           ))}
                         </div>
                         <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                          {sensitivity === 'low' && 'Lower sensitivity reduces false positives but may miss subtle AI patterns.'}
-                          {sensitivity === 'balanced' && 'Balanced detection offers a good compromise between accuracy and false positives.'}
-                          {sensitivity === 'high' && 'Higher sensitivity catches more AI text but may include some false positives.'}
-                          {sensitivity === 'very-high' && 'Maximum sensitivity for detecting even minimal AI influence in text.'}
+                          {sensitivity === 'low' && t('detectAI.sensitivityDescriptions.low')}
+                          {sensitivity === 'balanced' && t('detectAI.sensitivityDescriptions.balanced')}
+                          {sensitivity === 'high' && t('detectAI.sensitivityDescriptions.high')}
+                          {sensitivity === 'very-high' && t('detectAI.sensitivityDescriptions.veryHigh')}
                         </div>
                       </div>
                     </motion.div>
@@ -647,7 +647,7 @@ ${text}
                 <div className="w-full bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-3 text-xs text-gray-700 dark:text-gray-300 border border-indigo-100 dark:border-indigo-800/50">
                   <div className="flex items-start">
                     <FiAlertTriangle className="text-indigo-500 dark:text-indigo-400 mt-0.5 mr-2 flex-shrink-0" />
-                    <span>For best results, provide at least 100+ words of text. Longer texts yield more accurate detection results.</span>
+                    <span>{t('detectAI.bestResultsTip')}</span>
                   </div>
                 </div>
                 
@@ -656,7 +656,7 @@ ${text}
                     <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('humanizeText.recent')}</h3>
                     <div className="flex flex-wrap gap-2">
                       <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mr-1">
-                        <FiClock className="mr-1" /> History:
+                        <FiClock className="mr-1" /> {t('common.showHistory')}:
                       </div>
                       {history.map((item, index) => (
                         <button
@@ -749,17 +749,17 @@ ${text}
               <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-100 dark:border-indigo-800/50">
                 <div className="flex items-center">
                   <input
-                    type="text"
-                    value={editingTitle}
-                    onChange={(e) => setEditingTitle(e.target.value)}
-                    placeholder="Enter a title for your saved analysis"
-                    className="flex-1 p-2 border rounded-md mr-2 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
+                        type="text"
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        placeholder={t('detectAI.enterTitlePlaceholder')}
+                        className="flex-1 p-2 border rounded-md mr-2 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      />
                   <button
                     onClick={handleSaveContent}
                     className="p-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors"
                   >
-                    Save
+                    {t('common.save')}
                   </button>
                   <button
                     onClick={() => setShowTitleEdit(false)}
@@ -792,50 +792,50 @@ ${text}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl">
                     <motion.div 
                       whileHover={{ scale: 1.02 }}
-                      onClick={() => setText('Analyze this content for AI generation')}
+                      onClick={() => setText(t('detectAI.quickPrompts.generalAnalysis'))}
                       className="cursor-pointer p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 text-left border border-purple-200 dark:border-purple-800"
                     >
                       <div className="flex items-center text-purple-500 dark:text-purple-400 mb-1 text-sm font-medium">
                         <FiPlus className="mr-1.5" />
-                        <span>General Analysis</span>
+                        <span>{t('detectAI.quickPrompts.generalAnalysisTitle')}</span>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Analyze content for AI generation</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{t('detectAI.quickPrompts.generalAnalysisDesc')}</p>
                     </motion.div>
                     
                     <motion.div 
                       whileHover={{ scale: 1.02 }}
-                      onClick={() => setText('Is this text written by AI or human?')}
+                      onClick={() => setText(t('detectAI.quickPrompts.sourceDetection'))}
                       className="cursor-pointer p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-left border border-indigo-200 dark:border-indigo-800"
                     >
                       <div className="flex items-center text-indigo-500 dark:text-indigo-400 mb-1 text-sm font-medium">
                         <FiPlus className="mr-1.5" />
-                        <span>Source Detection</span>
+                        <span>{t('detectAI.quickPrompts.sourceDetectionTitle')}</span>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">AI or human-written text?</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{t('detectAI.quickPrompts.sourceDetectionDesc')}</p>
                     </motion.div>
                     
                     <motion.div 
                       whileHover={{ scale: 1.02 }}
-                      onClick={() => setText('Check if this essay is AI-generated')}
+                      onClick={() => setText(t('detectAI.quickPrompts.academicCheck'))}
                       className="cursor-pointer p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 text-left border border-blue-200 dark:border-blue-800"
                     >
                       <div className="flex items-center text-blue-500 dark:text-blue-400 mb-1 text-sm font-medium">
                         <FiPlus className="mr-1.5" />
-                        <span>Academic Check</span>
+                        <span>{t('detectAI.quickPrompts.academicCheckTitle')}</span>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Check if essay is AI-generated</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{t('detectAI.quickPrompts.academicCheckDesc')}</p>
                     </motion.div>
                     
                     <motion.div 
                       whileHover={{ scale: 1.02 }}
-                      onClick={() => setText('Detect AI in this product review')}
+                      onClick={() => setText(t('detectAI.quickPrompts.reviewCheck'))}
                       className="cursor-pointer p-3 bg-teal-50 dark:bg-teal-900/20 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-900/30 text-left border border-teal-200 dark:border-teal-800"
                     >
                       <div className="flex items-center text-teal-500 dark:text-teal-400 mb-1 text-sm font-medium">
                         <FiPlus className="mr-1.5" />
-                        <span>Review Check</span>
+                        <span>{t('detectAI.quickPrompts.reviewCheckTitle')}</span>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Detect AI in product reviews</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{t('detectAI.quickPrompts.reviewCheckDesc')}</p>
                     </motion.div>
                   </div>
                 </motion.div>

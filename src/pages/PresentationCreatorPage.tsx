@@ -190,9 +190,9 @@ const PresentationCreatorPage: React.FC = () => {
   // Style options for presentations
   const styleOptions = [
     { id: 'professional', name: t('presentation.style.professional', 'Professional') },
-    { id: 'creative', name: 'Creative' },
-    { id: 'minimalist', name: 'Minimalist' },
-    { id: 'academic', name: 'Academic' },
+    { id: 'creative', name: t('presentation.style.creative', 'Creative') },
+    { id: 'minimalist', name: t('presentation.style.minimalist', 'Minimalist') },
+    { id: 'academic', name: t('presentation.style.academic', 'Academic') },
     { id: 'corporate', name: 'Corporate' },
     { id: 'modern', name: 'Modern' },
   ];
