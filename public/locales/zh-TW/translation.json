@@ -576,9 +576,13 @@
       "imageGeneration": "圖像生成",
       "speechToText": "對文字的講話",
       "title": "為每個創造者製作。查看專業人士如何使用我們的AI工具。",
-      "videoCreation": "視頻創建"
+      "videoCreation": "視頻創建",
+      "tryNow": "現在嘗試"
     },
-    "userCount": "11M用戶"
+    "userCount": "11M用戶",
+    "descriptionMobile": "由創作者信任。從圖像中生成令人驚嘆的視頻，創建精美的藝術品，將語音轉錄到文本，寫引人入勝的內容以及與我們的閃電狂潮AI助手聊天 - 都在一個平台中。",
+    "titleMobile": "您完整的AI創意套件",
+    "startCreatingMobile": "開始創建"
   },
   "humanizeText": {
     "aiDetector": "人工智能檢測器",
@@ -691,7 +695,14 @@
     "speechToTextDesc": "將音頻轉換為文字",
     "tools": "工具",
     "videoGenerator": "視頻生成器",
-    "videoGeneratorDesc": "從圖像或文字創建視頻"
+    "videoGeneratorDesc": "從圖像或文字創建視頻",
+    "languages": {
+      "english": "英語",
+      "simplifiedChinese": "簡體中文",
+      "traditionalChinese": "繁體中文"
+    },
+    "selectLanguage": "選擇語言",
+    "signUp": "報名"
   },
   "next": "下一個",
   "of": "的",

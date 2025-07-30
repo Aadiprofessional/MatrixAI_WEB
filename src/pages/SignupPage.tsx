@@ -278,9 +278,7 @@ const SignupPage: React.FC = () => {
       </button>
 
       {/* Language Selector */}
-      <div className="fixed top-6 right-20 z-50">
-        <LanguageSelector />
-      </div>
+     
 
       {/* Left Side - Website Info */}
       <div className="hidden lg:flex lg:w-1/2 relative z-10 items-center justify-center p-12">
@@ -353,12 +351,12 @@ const SignupPage: React.FC = () => {
       </div>
       
       {/* Right Side - Signup Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative z-10">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-2 lg:p-8 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="w-full max-w-md p-10 rounded-3xl shadow-2xl backdrop-blur-md bg-black/30 text-white border border-white/10"
+          className="w-[98%] lg:w-full max-w-md p-6 lg:p-10 rounded-3xl shadow-2xl backdrop-blur-md bg-black/30 text-white border border-white/10"
         >
           <div className="lg:hidden flex justify-center mb-8 z-10">
             <motion.div 
@@ -368,8 +366,8 @@ const SignupPage: React.FC = () => {
               className="relative"
             >
               <div className="relative flex items-center justify-center">
-                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-white mb-2">
-                  <img src="/logo192.png" alt="MatrixAI Logo" className="h-10 w-10" />  
+                <div className="bg-white rounded-2xl p-3 shadow-lg">
+                  <img src={matrix} alt="MatrixAI" className="h-16 w-16 object-contain" />
                 </div>
               </div>
             </motion.div>

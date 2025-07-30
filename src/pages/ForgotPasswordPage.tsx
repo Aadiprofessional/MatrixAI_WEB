@@ -63,10 +63,7 @@ const ForgotPasswordPage: React.FC = () => {
           {darkMode ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
         </button>
 
-        {/* Language Selector */}
-        <div className="fixed top-6 right-20 z-50">
-          <LanguageSelector />
-        </div>
+      
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -146,10 +143,7 @@ const ForgotPasswordPage: React.FC = () => {
         {darkMode ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
       </button>
 
-      {/* Language Selector */}
-      <div className="fixed top-6 right-20 z-50">
-        <LanguageSelector />
-      </div>
+     
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

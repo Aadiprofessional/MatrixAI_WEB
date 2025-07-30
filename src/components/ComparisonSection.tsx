@@ -23,7 +23,7 @@ const ComparisonSection: React.FC = () => {
   const { t } = useTranslation();
   
   return (
-    <section className="py-20 bg-gradient-to-b from-black to-gray-900">
+    <section className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
@@ -45,14 +45,14 @@ const ComparisonSection: React.FC = () => {
           {t('comparisonSection.description', 'Experience the difference between instant AI-powered creativity and old-school production headaches across all your creative needs.')}
         </motion.p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 relative">
+        <div className="md:grid md:grid-cols-2 md:gap-16 relative">
           {/* Left side - AI Video Generator */}
           <motion.div 
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="relative rounded-xl overflow-hidden"
+            className="relative rounded-xl overflow-hidden mb-8 md:mb-0"
           >
             {/* Outer layer - white opacity border with glow */}
             <div className="absolute inset-0 border-2 border-white/40 rounded-xl shadow-lg shadow-blue-500/20"></div>
@@ -71,7 +71,7 @@ const ComparisonSection: React.FC = () => {
                 <img 
                   src="/images/ai-generator.svg" 
                   alt="AI Video Generator" 
-                  className="w-full h-64 object-cover rounded-lg"
+                  className="w-full h-32 md:h-64 object-cover rounded-lg"
                 />
               </div>
               <h3 className="text-xl font-semibold text-white mb-4">{t('comparisonSection.matrixAiTitle', 'MatrixAI\'s All-in-One Platform')}</h3>
@@ -102,15 +102,30 @@ const ComparisonSection: React.FC = () => {
             </div>
           </motion.div>
           
-          {/* VS in the middle with vertical line */}
+          {/* Mobile VS (below MatrixAI component) */}
+          <div className="md:hidden relative flex items-center justify-center my-8">
+            {/* Horizontal line */}
+            <div className="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+            
+            {/* VS in the middle */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="relative z-10 px-6 py-3"
+            >
+              <span className="text-2xl font-semibold text-white">vs</span>
+            </motion.div>
+          </div>
+          
+          {/* Desktop VS in the middle with vertical line */}
           <div className="hidden md:flex absolute left-1/2 top-0 bottom-0 -translate-x-1/2 items-center justify-center z-20">
             {/* Vertical line */}
             <div className="absolute h-full w-[1px] bg-gradient-to-b from-transparent via-white/30 to-transparent"></div>
             
             {/* VS in the middle */}
-          
-              <span className="text-2xl font-semibold text-white">vs</span>
-        
+            <span className="text-2xl font-semibold text-white">vs</span>
           </div>
           
           {/* Right side - Traditional Video Production */}
@@ -138,7 +153,7 @@ const ComparisonSection: React.FC = () => {
                 <img 
                   src="/images/traditional-video.svg" 
                   alt="Traditional Video Production" 
-                  className="w-full h-64 object-cover rounded-lg"
+                  className="w-full h-32 md:h-64 object-cover rounded-lg"
                 />
               </div>
               <h3 className="text-xl font-semibold text-white mb-4">{t('comparisonSection.traditionalTitle', 'Traditional Creative Methods')}</h3>
@@ -196,22 +211,7 @@ const ComparisonSection: React.FC = () => {
           </motion.div>
         </div>
         
-        {/* Mobile VS (only visible on small screens) */}
-        <div className="md:hidden relative flex items-center justify-center mt-8 mb-8">
-          {/* Horizontal line */}
-          <div className="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-          
-          {/* VS in the middle */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            viewport={{ once: true }}
-            className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full px-6 py-3 shadow-lg shadow-indigo-500/20"
-          >
-            <span className="text-2xl font-semibold text-white">vs</span>
-          </motion.div>
-        </div>
+
       </div>
     </section>
   );

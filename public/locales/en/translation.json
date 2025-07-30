@@ -212,7 +212,14 @@
     "googlePlayStore": "Google Play Store",
     "pricing": "Pricing",
     "login": "Log in",
-    "getStarted": "Get started now"
+    "signUp": "Sign up",
+    "getStarted": "Get started now",
+    "selectLanguage": "Select Language",
+    "languages": {
+      "english": "English",
+      "simplifiedChinese": "简体中文",
+      "traditionalChinese": "繁體中文"
+    }
   },
   "select-language": "Select Language",
   "language": {
@@ -529,10 +536,14 @@
     "buyMoreCoins": "Buy more coins"
   },
   "homePage": {
+    "descriptionMobile": "Trusted by creators. Generate stunning videos from images, create beautiful artwork, transcribe speech to text, write compelling content, and chat with our lightning-fast AI assistant—all in one platform.",
+    "titleMobile": "Your Complete AI Creative Suite",
+    "startCreatingMobile": "Start creating",
     "useCasesSection": {
       "title": "Made for every creator. See how pros use our AI tools.",
       "videoCreation": "Video Creation",
       "imageGeneration": "Image Generation",
+      "tryNow": "Try now",
       "speechToText": "Speech to Text",
       "contentWriting": "Content Writing",
       "aiChat": "AI Chat",

@@ -5,6 +5,7 @@ import { FiMail, FiLock, FiEye, FiEyeOff, FiMoon, FiSun } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import matrix from '../assets/matrix.png';
 import LanguageSelector from '../components/LanguageSelector';
 import ReCAPTCHA from 'react-google-recaptcha';
 
@@ -42,6 +43,11 @@ const LoginPage: React.FC = () => {
     }
   }, [user, navigate]);
 
+  // Check if we're in localhost/development environment
+  const isLocalhost = window.location.hostname === 'localhost' || 
+                     window.location.hostname === '127.0.0.1' || 
+                     window.location.hostname === '0.0.0.0';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -50,7 +56,8 @@ const LoginPage: React.FC = () => {
       return;
     }
 
-    if (!recaptchaToken) {
+    // Skip reCAPTCHA validation for localhost
+    if (!isLocalhost && !recaptchaToken) {
       setError('Please complete the reCAPTCHA verification');
       return;
     }
@@ -62,8 +69,8 @@ const LoginPage: React.FC = () => {
     } catch (err) {
       // Error is already set in the auth context
       console.error('Login error:', err);
-      // Reset reCAPTCHA on error
-      if (recaptchaRef.current) {
+      // Reset reCAPTCHA on error (only if not localhost)
+      if (!isLocalhost && recaptchaRef.current) {
         recaptchaRef.current.reset();
         setRecaptchaToken(null);
       }
@@ -106,10 +113,7 @@ const LoginPage: React.FC = () => {
       </button>
 
       {/* Language Selector */}
-      <div className="fixed top-6 right-20 z-50">
-        <LanguageSelector />
-      </div>
-
+    
       {/* Left Side - Website Info */}
       <div className="hidden lg:flex lg:w-1/2 relative z-10 items-center justify-center p-12">
         <div className="max-w-xl">
@@ -181,12 +185,12 @@ const LoginPage: React.FC = () => {
       </div>
       
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative z-10">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-2 lg:p-8 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="w-full max-w-md p-10 rounded-3xl shadow-2xl backdrop-blur-md bg-black/30 text-white border border-white/10"
+          className="w-[98%] lg:w-full max-w-md p-6 lg:p-10 rounded-3xl shadow-2xl backdrop-blur-md bg-black/30 text-white border border-white/10"
         >
           <div className="lg:hidden flex justify-center mb-8">
             <motion.div 
@@ -196,8 +200,8 @@ const LoginPage: React.FC = () => {
               className="relative"
             >
               <div className="relative flex items-center justify-center">
-                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-white mb-2">
-                  <img src="/logo192.png" alt="MatrixAI Logo" className="h-10 w-10" />
+                <div className="bg-white rounded-2xl p-3 shadow-lg">
+                  <img src={matrix} alt="MatrixAI" className="h-16 w-16 object-contain" />
                 </div>
               </div>
             </motion.div>
@@ -318,20 +322,36 @@ const LoginPage: React.FC = () => {
                 </div>
               </motion.div>
               
-              {/* reCAPTCHA */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.65, duration: 0.5 }}
-                className="mt-6 flex justify-center"
-              >
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || ''}
-                  onChange={handleRecaptchaChange}
-                  theme={darkMode ? 'dark' : 'light'}
-                />
-              </motion.div>
+              {/* reCAPTCHA - Only show in production */}
+              {!isLocalhost && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.65, duration: 0.5 }}
+                  className="mt-6 flex justify-center"
+                >
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || ''}
+                    onChange={handleRecaptchaChange}
+                    theme={darkMode ? 'dark' : 'light'}
+                  />
+                </motion.div>
+              )}
+              
+              {/* Development notice for localhost */}
+              {isLocalhost && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.65, duration: 0.5 }}
+                  className="mt-6 flex justify-center"
+                >
+                  <div className="text-sm text-yellow-400 bg-yellow-900/20 px-3 py-2 rounded-lg border border-yellow-500/30">
+                    Development Mode: reCAPTCHA bypassed for localhost
+                  </div>
+                </motion.div>
+              )}
               
               <motion.div
                 initial={{ opacity: 0, y: 10 }}

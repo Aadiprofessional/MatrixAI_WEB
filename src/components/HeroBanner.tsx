@@ -58,7 +58,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
           
           {/* Video container with increased width */}
           <div className="relative w-full max-w-9xl mx-auto rounded-lg overflow-hidden border border-gray-700/50 shadow-2xl shadow-purple-900/20 mb-10">
-            <div style={{ height: '500px' }} className="w-full">
+            <div className="w-full h-64 md:h-96 lg:h-[500px]">
               <video 
                 ref={videoRef}
                 src="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"

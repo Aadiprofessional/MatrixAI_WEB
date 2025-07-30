@@ -138,7 +138,7 @@ const UseCasesSection: React.FC = () => {
                         to={useCase.route}
                         className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg transition-all duration-300 shadow-lg shadow-indigo-500/20 font-medium inline-flex items-center gap-2 hover:scale-105 transform text-sm"
                       >
-                        {t('useCasesSection.tryNow', 'Try now')} →
+                        {t('homePage.useCasesSection.tryNow', 'Try now')} →
                       </Link>
                     </motion.div>
                   )}

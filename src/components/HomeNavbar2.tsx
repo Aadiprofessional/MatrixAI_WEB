@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { FiArrowRight, FiChevronDown, FiImage, FiVideo, FiMessageSquare, FiMoon, FiSun, FiMic, FiFileText } from 'react-icons/fi';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
-import LanguageSelector from './LanguageSelector';
+import SimpleLanguageSelector from './SimpleLanguageSelector';
 
 interface HomeNavbarProps {}
 
@@ -40,11 +40,11 @@ const HomeNavbar2: React.FC<HomeNavbarProps> = () => {
       <div className="max-w-7xl mx-auto">
         <div className="px-2 py-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/" className="font-bold text-base pl-0">matrixai<span className="text-red-500">.</span>asia</Link>
+            <div className="flex items-center space-x-2 md:space-x-4">
+              <Link to="/" className="font-bold text-sm md:text-base pl-0">matrixai<span className="text-red-500">.</span>asia</Link>
               
-              {/* Tools Dropdown */}
-              <div className="relative">
+              {/* Tools Dropdown - Hidden on mobile */}
+              <div className="relative hidden md:block">
                 <button 
                   onClick={toggleDropdown}
                   className="flex items-center text-gray-200 hover:text-white transition-colors duration-200 text-sm bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-md"
@@ -134,25 +134,28 @@ const HomeNavbar2: React.FC<HomeNavbarProps> = () => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-3">
-              {/* Dark Mode Toggle */}
+            <div className="flex items-center space-x-1 md:space-x-3">
+              {/* Dark Mode Toggle - Hidden on mobile */}
               <button 
                 onClick={toggleDarkMode}
-                className="p-1.5 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors duration-200"
+                className="hidden md:block p-1.5 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors duration-200"
                 aria-label="Toggle dark mode"
               >
                 {darkMode ? <FiSun className="w-4 h-4" /> : <FiMoon className="w-4 h-4" />}
               </button>
 
-              {/* Language Selector */}
-              <LanguageSelector />
+              {/* Language Selector - Visible on both desktop and mobile */}
+              <div>
+                <SimpleLanguageSelector />
+              </div>
               
               <Link 
                 to="/signup" 
-                className="inline-flex items-center px-3 py-1.5 rounded-lg font-medium text-xs bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-300"
+                className="inline-flex items-center px-2 py-1 md:px-3 md:py-1.5 rounded-lg font-medium text-xs bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-300"
               >
-                Get started now
-                <FiArrowRight className="ml-1.5 w-3 h-3" />
+                <span className="hidden sm:inline">Get started now</span>
+                <span className="sm:hidden">Sign up</span>
+                <FiArrowRight className="ml-1 md:ml-1.5 w-3 h-3" />
               </Link>
             </div>
           </div>

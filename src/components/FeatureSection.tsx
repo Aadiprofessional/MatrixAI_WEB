@@ -45,7 +45,7 @@ const FeatureCard: React.FC<FeatureCardProps & { index?: number }> = ({ title, d
   }, []);
   
   return (
-    <div className={`rounded-xl overflow-hidden h-full relative ${position === 'left' ? 'col-span-1' : 'col-span-2'}`}>
+    <div className={`rounded-xl overflow-hidden h-full relative ${position === 'left' ? 'col-span-1' : 'col-span-1 md:col-span-2'}`}>
       {/* Outer layer - white opacity border with glow */}
       <div className="absolute inset-0 border-2 border-white/10 rounded-xl shadow-lg shadow-blue-500/20"></div>
       
@@ -57,7 +57,7 @@ const FeatureCard: React.FC<FeatureCardProps & { index?: number }> = ({ title, d
         {/* Content container with glass morphism */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-80"></div>
         
-        <div className={`relative z-10 ${isSquare ? 'aspect-square' : 'aspect-video'}`}>
+        <div className={`relative z-10 ${isSquare ? 'aspect-[2/1] md:aspect-square' : 'aspect-[2/1] md:aspect-video'}`}>
           {videoSrc ? (
             <video 
               ref={videoRef}

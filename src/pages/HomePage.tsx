@@ -80,11 +80,13 @@ const HomePage: React.FC = () => {
             transition={{ duration: 0.7 }}
             className="max-w-3xl mx-auto"
           >
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-6">
-              {t('homePage.title', 'Your Complete AI')}<br />{t('homePage.titleSecondLine', 'Creative Suite')}
+            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-6">
+              <span className="hidden md:inline">{t('homePage.title', 'Your Complete AI')}<br />{t('homePage.titleSecondLine', 'Creative Suite')}</span>
+              <span className="md:hidden">{t('homePage.titleMobile', 'Creative Suite')}</span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-200 mb-10 max-w-2xl mx-auto">
-              {t('homePage.description', 'Trusted by creators. Powered by top AI models. Generate stunning videos from images, create beautiful artwork, transcribe speech to text, write compelling content, and chat with our lightning-fast AI assistant—all in one platform.')}
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-200 mb-6 md:mb-10 max-w-2xl mx-auto">
+              <span className="hidden md:inline">{t('homePage.description', 'Trusted by creators. Powered by top AI models. Generate stunning videos from images, create beautiful artwork, transcribe speech to text, write compelling content, and chat with our lightning-fast AI assistant—all in one platform.')}</span>
+              <span className="md:hidden">{t('homePage.descriptionMobile', 'Trusted by creators. Generate stunning videos from images, create beautiful artwork, transcribe speech to text, write compelling content, and chat with our lightning-fast AI assistant—all in one platform.')}</span>
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
               <motion.div 
@@ -93,8 +95,10 @@ const HomePage: React.FC = () => {
                 transition={{ delay: 0.3, duration: 0.5 }}
                 className="w-full sm:w-auto"
               >
-                <Link to="/signup" className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-lg font-medium text-lg shadow-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-300">
-                  {t('homePage.startCreating', 'Start creating with AI')} <FiArrowRight className="ml-2" />
+                <Link to="/signup" className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 md:px-8 md:py-4 rounded-lg font-medium text-base md:text-lg shadow-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-300">
+                  <span className="hidden sm:inline">{t('homePage.startCreating', 'Start creating with AI')}</span>
+                  <span className="sm:hidden">{t('homePage.startCreatingMobile', 'Get Started')}</span>
+                  <FiArrowRight className="ml-2" />
                 </Link>
               </motion.div>
             </div>
@@ -139,7 +143,7 @@ const HomePage: React.FC = () => {
       <HeroBanner 
         title={t('homePage.heroBannerTitle', 'Powerful AI tools for every creative need')}
         description={t('homePage.heroBannerDescription', "Skip the frustration of complicated tools and clunky software. With MatrixAI, you\'ll create stunning videos from images, generate beautiful artwork, transcribe speech to text with high accuracy, write compelling content, and get instant answers from our AI chat—all in one platform. No training, no fiddling, no roadblocks. Our advanced AI takes care of the hard work, delivering professional-quality results every time. Just describe what you want, and watch the magic happen.")}
-        backgroundImage="/images/runway-feature.jpg"
+     
       />
 
            <AnimatedGridBanner 

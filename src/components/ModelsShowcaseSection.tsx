@@ -61,7 +61,7 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
   };
 
   return (
-    <section className="min-h-screen flex items-center">
+    <section className="py-16 md:py-28 flex items-center">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`flex flex-col ${isReversed ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-12`}>
           {/* Text content */}
@@ -128,13 +128,13 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
                   {/* Left side - Image */}
                   <div className="md:w-5/12 relative">
                     {imageSrc && (
-                      <img src={imageSrc} alt={imageAlt || title} className="rounded-lg w-full object-cover h-96 md:h-128" />
+                      <img src={imageSrc} alt={imageAlt || title} className="rounded-lg w-full object-cover h-48 md:h-96" />
                     )}
                   </div>
                   
                   {/* Middle - Arrow - Positioned absolutely to overlap both containers */}
                   <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 bg-black/70 rounded-lg p-2">
-                    <img src="/images/arrow-right.svg" alt="Arrow right" className="w-8 h-8 filter invert" />
+                    <img src="/images/arrow-right.svg" alt="Arrow right" className="w-8 h-8 filter invert rotate-90 md:rotate-0" />
                   </div>
                   
                   {/* Right side - Video */}
@@ -144,7 +144,7 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
                         <video 
                           ref={videoRef}
                           src={videoSrc} 
-                          className="rounded-lg w-full object-cover h-96 md:h-128" 
+                          className="rounded-lg w-full object-cover h-48 md:h-96" 
                           loop 
                           muted={isMuted}
                           playsInline
@@ -190,7 +190,7 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
                         </div>
                       </div>
                     ) : imageSrc && (
-                      <img src={imageSrc} alt={imageAlt || title} className="rounded-lg w-full object-cover h-96 md:h-128" />
+                      <img src={imageSrc} alt={imageAlt || title} className="rounded-lg w-full object-cover h-48 md:h-96" />
                     )}
                   </div>
                 </div>
