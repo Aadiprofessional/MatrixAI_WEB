@@ -30,7 +30,7 @@ interface Transaction {
   transaction_name: string;
   coin_amount: number;
   remaining_coins: number;
-  description?: string;
+
   created_at?: string;
   time?: string;
   status: string;
@@ -45,7 +45,7 @@ const getMockTransactions = (t: any): Transaction[] => [
     transaction_name: 'Credit',
     coin_amount: 500,
     remaining_coins: 500,
-    description: t('transactions.mockData.welcomeBonus'),
+  
     created_at: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
     status: 'Completed'
   },
@@ -55,7 +55,7 @@ const getMockTransactions = (t: any): Transaction[] => [
     transaction_name: 'Content generation',
     coin_amount: -50,
     remaining_coins: 450,
-    description: t('transactions.mockData.contentGeneration'),
+
     created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
     status: 'Completed'
   },
@@ -65,7 +65,7 @@ const getMockTransactions = (t: any): Transaction[] => [
     transaction_name: 'Credit',
     coin_amount: 100,
     remaining_coins: 550,
-    description: t('transactions.mockData.referralReward'),
+  
     created_at: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
     status: 'Completed'
   },
@@ -75,7 +75,7 @@ const getMockTransactions = (t: any): Transaction[] => [
     transaction_name: 'Subscription',
     coin_amount: -200,
     remaining_coins: 350,
-    description: t('transactions.mockData.monthlySubscription'),
+
     created_at: new Date(Date.now() - 86400000 * 15).toISOString(), // 15 days ago
     status: 'Completed'
   },
@@ -85,7 +85,7 @@ const getMockTransactions = (t: any): Transaction[] => [
     transaction_name: 'Refund',
     coin_amount: 75,
     remaining_coins: 425,
-    description: t('transactions.mockData.serviceCredit'),
+
     created_at: new Date(Date.now() - 86400000 * 3).toISOString(), // 3 days ago
     status: 'Completed'
   }
@@ -408,9 +408,7 @@ const TransactionsPage: React.FC = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         {t('transactions.table.type')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        {t('transactions.table.description')}
-                      </th>
+                    
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         {t('transactions.table.amount')}
                       </th>
@@ -451,16 +449,14 @@ const TransactionsPage: React.FC = () => {
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
-                            {transaction.description || transaction.transaction_name || t('transactions.defaultTransactionName')}
-                          </td>
+                         
                           <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
                             transaction.coin_amount > 0
                               ? 'text-green-400'
                               : 'text-red-400'
                           }`}>
                             {transaction.coin_amount > 0
-                              ? `+${transaction.coin_amount}`
+                              ? `-${transaction.coin_amount}`
                               : transaction.coin_amount
                             } {t('transactions.coins')}
                           </td>

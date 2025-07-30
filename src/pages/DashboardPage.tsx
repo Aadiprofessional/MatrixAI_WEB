@@ -26,6 +26,7 @@ import {
   FiArrowUp,
   FiCornerLeftUp
 } from 'react-icons/fi';
+import coinImage from '../assets/coin.png';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -449,7 +450,7 @@ const DashboardPage: React.FC = () => {
               </div>
               <div className={`mt-3 text-xs ${darkMode ? 'text-purple-400' : 'text-purple-600'} flex items-center gap-1`}>
                 <FiTrendingUp className="w-3 h-3" />
-                <span>total</span>
+                <span>{t('dashboard.total')}</span>
               </div>
             </motion.div>
           )}
@@ -564,7 +565,7 @@ const DashboardPage: React.FC = () => {
                   <Link to="/transactions" className={`text-sm flex items-center gap-1 ${
                     darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
                   } font-medium`}>
-                    View all
+                    {t('dashboard.viewAllActivity', 'View all activity')}
                     <FiArrowRight className="w-4 h-4" />
                   </Link>
                   <FiActivity className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
@@ -614,7 +615,7 @@ const DashboardPage: React.FC = () => {
                             {activity.date}
                           </span>
                           <span className="text-xs text-yellow-500 flex items-center gap-1">
-                            <FiDollarSign className="w-3 h-3" />
+                            <img src={coinImage} alt="coin" className="w-3 h-3" />
                             {activity.coins}
                           </span>
                         </div>

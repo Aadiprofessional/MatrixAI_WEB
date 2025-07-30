@@ -18,52 +18,27 @@ const AboutPage: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
-  const teamMembers = [
-    {
-      name: 'Alex Johnson',
-      role: 'CEO & Co-founder',
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80',
-      bio: 'Former ML researcher with 10+ years experience in AI development. Led AI initiatives at Google before founding our company.'
-    },
-    {
-      name: 'Sarah Chen',
-      role: 'CTO & Co-founder',
-      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80',
-      bio: 'PhD in Computer Science specializing in NLP. Previously developed conversational AI systems at Amazon.'
-    },
-    {
-      name: 'Marcus Torres',
-      role: 'Head of Product',
-      image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80',
-      bio: 'Product leader with experience at Slack and Microsoft. Passionate about creating intuitive user experiences.'
-    },
-    {
-      name: 'Priya Sharma',
-      role: 'Lead ML Engineer',
-      image: 'https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80',
-      bio: 'Expert in large language models and reinforcement learning. Previously worked on language understanding at DeepMind.'
-    }
-  ];
+
 
   const values = [
     {
-      title: "User-Centric Innovation",
-      description: "We build AI that enhances human capabilities without replacing the human connection. Our products are designed to solve real problems for real people.",
+      title: t('about.values.userCentric.title'),
+      description: t('about.values.userCentric.description'),
       icon: <FiUsers className="h-12 w-12 text-indigo-600 dark:text-indigo-400" />
     },
     {
-      title: "Responsible AI",
-      description: "We believe in developing AI systems ethically and responsibly, with transparency in how we train our models and handle data.",
+      title: t('about.values.responsibleAI.title'),
+      description: t('about.values.responsibleAI.description'),
       icon: <FiStar className="h-12 w-12 text-indigo-600 dark:text-indigo-400" />
     },
     {
-      title: "Open Communication",
-      description: "We foster honest and open dialogue, both within our team and with our customers, to build trust and continuously improve.",
+      title: t('about.values.openCommunication.title'),
+      description: t('about.values.openCommunication.description'),
       icon: <FiMessageCircle className="h-12 w-12 text-indigo-600 dark:text-indigo-400" />
     },
     {
-      title: "Global Perspective",
-      description: "We're building AI that works for everyone, accounting for diverse languages, cultures, and use cases around the world.",
+      title: t('about.values.globalPerspective.title'),
+      description: t('about.values.globalPerspective.description'),
       icon: <FiGlobe className="h-12 w-12 text-indigo-600 dark:text-indigo-400" />
     }
   ];
@@ -191,135 +166,7 @@ const AboutPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Team section */}
-      <div className="py-16 relative overflow-hidden">
-        
-        {/* Animated grid background */}
-        <div className="absolute inset-0 z-0 opacity-30">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        </div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-            className="text-center"
-          >
-            <h2 className="section-title text-3xl font-extrabold">{t('about.team.title')}</h2>
-            <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-300">
-              {t('about.team.description')}
-            </p>
-          </motion.div>
-          
-          <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {teamMembers.map((member, index) => (
-              <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="glass-effect overflow-hidden shadow-md hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
-              >
-                <div className="h-64 relative overflow-hidden">
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-60"></div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-lg font-bold text-white">{member.name}</h3>
-                  <p className="text-purple-400">{member.role}</p>
-                  <p className="mt-4 text-gray-300">{member.bio}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      {/* Stats section */}
-      <div className="glass-effect-light py-16 my-8 mx-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-center"
-            >
-              <div className="text-4xl font-extrabold text-white">30+</div>
-              <div className="mt-2 text-indigo-100">Team Members</div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-center"
-            >
-              <div className="text-4xl font-extrabold text-white">5000+</div>
-              <div className="mt-2 text-indigo-100">Customers</div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="text-center"
-            >
-              <div className="text-4xl font-extrabold text-white">12M+</div>
-              <div className="mt-2 text-indigo-100">AI Conversations</div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="text-center"
-            >
-              <div className="text-4xl font-extrabold text-white">20+</div>
-              <div className="mt-2 text-indigo-100">Countries</div>
-            </motion.div>
-          </div>
-        </div>
-      </div>
-
-      {/* Investors & Partners */}
-      <div className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center"
-        >
-          <h2 className="section-title text-3xl font-extrabold">Backed By</h2>
-          <p className="mt-4 max-w-3xl mx-auto text-xl text-secondary">
-            Partnering with leading technology investors to build the future of AI
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-16 grid grid-cols-2 gap-8 md:grid-cols-4"
-        >
-          <div className="flex justify-center items-center h-16 px-4 opacity-70 grayscale transition-all hover:opacity-100 hover:grayscale-0">
-            <div className="text-xl font-bold text-secondary">Sequoia Capital</div>
-          </div>
-          <div className="flex justify-center items-center h-16 px-4 opacity-70 grayscale transition-all hover:opacity-100 hover:grayscale-0">
-            <div className="text-xl font-bold text-secondary">Andreessen Horowitz</div>
-          </div>
-          <div className="flex justify-center items-center h-16 px-4 opacity-70 grayscale transition-all hover:opacity-100 hover:grayscale-0">
-            <div className="text-xl font-bold text-secondary">Google Ventures</div>
-          </div>
-          <div className="flex justify-center items-center h-16 px-4 opacity-70 grayscale transition-all hover:opacity-100 hover:grayscale-0">
-            <div className="text-xl font-bold text-secondary">Y Combinator</div>
-          </div>
-        </motion.div>
-      </div>
     </div>
   );
 };

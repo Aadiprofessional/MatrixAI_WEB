@@ -14,9 +14,12 @@ import {
   FiFileText,
   FiSliders,
   FiRotateCw,
-  FiX
+  FiX,
+  FiGrid,
+  FiChevronLeft,
+  FiChevronRight
 } from 'react-icons/fi';
-import { ProFeatureAlert } from '../components';
+import { AuthRequiredButton, ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
@@ -25,6 +28,7 @@ import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
 import './ContentWriterPage.css';
 import '../styles/CommonStyles.css';
+import coinImage from '../assets/coin.png';
 
 // Gradient animation style is now in CommonStyles.css
 
@@ -33,6 +37,7 @@ const HumaniseTextPage: React.FC = () => {
   const { t } = useTranslation();
   const { darkMode } = useTheme();
   const [text, setText] = useState('');
+  const [wordCount, setWordCount] = useState(0);
   const [humanisedText, setHumanisedText] = useState('');
   const [tone, setTone] = useState('casual');
   const [level, setLevel] = useState('medium');
@@ -47,6 +52,9 @@ const HumaniseTextPage: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<{id: string, title: string, original_text: string, humanized_text: string, createdAt: string}[]>([]);
   const [aiDetector, setAiDetector] = useState('ZeroGPT.com');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
@@ -122,6 +130,22 @@ const HumaniseTextPage: React.FC = () => {
       fetchUserHumanizations();
     }
   }, [userData?.uid]);
+
+  const handleTextChange = (value: string) => {
+    const words = value.trim().split(/\s+/).filter(word => word.length > 0);
+    const currentWordCount = value.trim() === '' ? 0 : words.length;
+    
+    if (currentWordCount <= 2000) {
+      setText(value);
+      setWordCount(currentWordCount);
+    } else {
+      // Truncate to 2000 words
+      const truncatedWords = words.slice(0, 2000);
+      const truncatedText = truncatedWords.join(' ');
+      setText(truncatedText);
+      setWordCount(2000);
+    }
+  };
 
   const handleHumaniseText = async () => {
     if (!text.trim()) return;
@@ -298,9 +322,9 @@ const HumaniseTextPage: React.FC = () => {
                   <div className="relative">
                     <textarea
                       value={text}
-                      onChange={(e) => setText(e.target.value)}
+                      onChange={(e) => handleTextChange(e.target.value)}
                       placeholder={t('humanizeText.placeholder')}
-                      className="w-full p-4 pr-12 border rounded-lg shadow-sm h-36 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full p-4 pr-12 border rounded-lg shadow-sm h-56 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       disabled={isProcessing}
                     />
                     <div className="absolute top-2 right-2">
@@ -312,7 +336,15 @@ const HumaniseTextPage: React.FC = () => {
                         <FiSliders />
                       </button>
                     </div>
+                    <div className="absolute bottom-2 right-2 text-xs text-gray-500 dark:text-gray-400">
+                      <span className={wordCount > 2000 ? 'text-red-500' : ''}>
+                        {wordCount}/2000 words
+                      </span>
+                    </div>
                   </div>
+                  {wordCount > 2000 && (
+                    <p className="text-red-500 text-xs mt-1">Word limit exceeded. Text has been truncated to 2000 words.</p>
+                  )}
                 </div>
                 
                 <button
@@ -333,9 +365,27 @@ const HumaniseTextPage: React.FC = () => {
                     <div className="flex items-center justify-center">
                       <FiZap className="w-4 h-4 mr-2" />
                       {t('humanizeText.humanizeAction')}
+                      <span className="ml-2 flex items-center text-yellow-300">
+                        -40
+                        <img src={coinImage} alt="coin" className="w-4 h-4 ml-1" />
+                      </span>
                     </div>
                   )}
                 </button>
+
+                   <AuthRequiredButton
+                  onClick={() => setShowHistory(!showHistory)}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all mt-4 ${
+                    darkMode
+                      ? 'bg-purple-900/30 text-purple-400 hover:bg-purple-900/50'
+                      : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-center">
+                    <FiFileText className="w-4 h-4 mr-2" />
+                    {showHistory ? t('common.hideHistory') || 'Hide History' : t('contentWriter.history')}
+                  </div>
+                </AuthRequiredButton>
                 
                 {/* Settings panel */}
                 {showSettings && (
@@ -402,31 +452,7 @@ const HumaniseTextPage: React.FC = () => {
                   </motion.div>
                 )}
                 
-                {history.length > 0 && (
-                  <div className="mt-4">
-                    <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300 flex items-center">
-                      <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1 rounded-md mr-2">
-                        <FiMessageSquare className="w-3 h-3" />
-                      </span>
-                      {t('humanizeText.recent')}
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {history.map((item) => (
-                        <button
-                          key={item.id}
-                          className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-all hover:scale-105 text-gray-800 dark:text-gray-200"
-                          onClick={() => {
-                            setText(item.original_text);
-                            setHumanisedText(item.humanized_text);
-                          }}
-                          disabled={isProcessing}
-                        >
-                          {item.title.length > 25 ? item.title.substring(0, 25) + '...' : item.title}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+              
               </div>
             </div>
           </div>
@@ -551,53 +577,153 @@ const HumaniseTextPage: React.FC = () => {
       
       {/* History Button and History from API */}
       <div className="mt-8">
-        <button
-          onClick={() => setShowHistory(!showHistory)}
-          className="flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors mb-4"
-        >
-          <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1.5 rounded-md mr-2">
-            <FiMessageSquare className="w-5 h-5" />
-          </span>
-          {showHistory ? t('common.hideHistory') || 'Hide History' : t('humanizeText.history')}
-        </button>
-        
         {showHistory && (
           <div>
             {history.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {history.map((item) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow cursor-pointer glass-effect"
-                onClick={() => {
-                  setText(item.original_text);
-                  setHumanisedText(item.humanized_text);
-                }}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
-                    {item.title}
-                  </h4>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteHumanization(item.id);
-                    }}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    <FiTrash className="w-4 h-4" />
-                  </button>
+              <div>
+                {/* View Mode Toggle */}
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {t('humanizeText.history') || 'Humanization History'}
+                  </h3>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`p-2 rounded-lg transition-colors ${
+                        viewMode === 'grid'
+                          ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400'
+                          : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                      }`}
+                    >
+                      <FiGrid className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`p-2 rounded-lg transition-colors ${
+                        viewMode === 'list'
+                          ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400'
+                          : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                      }`}
+                    >
+                      <FiList className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  {new Date(item.createdAt).toLocaleDateString()}
-                </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
-                  {item.humanized_text}
-                </p>
-              </motion.div>
-            ))}
+
+                {/* Grid View */}
+                {viewMode === 'grid' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {history.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="glass-effect p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => {
+                          setText(item.original_text);
+                          setHumanisedText(item.humanized_text);
+                        }}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+                            {item.title}
+                          </h4>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteHumanization(item.id);
+                            }}
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <FiTrash className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                          {new Date(item.createdAt).toLocaleDateString()}
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
+                          {item.humanized_text}
+                        </p>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+
+                {/* List View */}
+                {viewMode === 'list' && (
+                  <div className="space-y-4">
+                    {history.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="glass-effect p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => {
+                          setText(item.original_text);
+                          setHumanisedText(item.humanized_text);
+                        }}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {item.title}
+                              </h4>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {new Date(item.createdAt).toLocaleDateString()}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteHumanization(item.id);
+                                  }}
+                                  className="text-gray-400 hover:text-red-500 transition-colors"
+                                >
+                                  <FiTrash className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                              {item.humanized_text}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Pagination */}
+                {history.length > itemsPerPage && (
+                  <div className="glass-effect p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm mt-6">
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/70 dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-white dark:hover:bg-gray-600 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
+                      >
+                        <FiChevronLeft className="w-4 h-4 mr-2" />
+                        Previous
+                      </button>
+                      
+                      <div className="flex items-center space-x-2">
+                        <span className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/70 dark:bg-gray-700/70 rounded-lg border border-gray-300 dark:border-gray-600 backdrop-blur-sm">
+                          Page {currentPage} of {Math.ceil(history.length / itemsPerPage)}
+                        </span>
+                      </div>
+                      
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(history.length / itemsPerPage)))}
+                        disabled={currentPage === Math.ceil(history.length / itemsPerPage)}
+                        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/70 dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-white dark:hover:bg-gray-600 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
+                      >
+                        Next
+                        <FiChevronRight className="w-4 h-4 ml-2" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">

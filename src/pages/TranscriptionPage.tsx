@@ -1649,6 +1649,20 @@ const TranscriptionPage: React.FC = () => {
                   <div className="overflow-auto h-[calc(100vh-400px)] p-4 font-medium leading-relaxed text-gray-700 dark:text-gray-300">
                     {paragraphs.map((paragraph, paraIndex) => (
                       <div key={paraIndex} className="mb-6">
+                        {/* Paragraph timestamp - above paragraph on left side */}
+                        <div className="flex items-center mb-2">
+                          <div className="flex flex-col items-start">
+                            <span className="text-xs font-mono text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md shadow-sm">
+                              {formatTime(paragraph.startTime)}
+                            </span>
+                            {/* Current time indicator - only show if current time is within this paragraph */}
+                            {currentTime >= paragraph.startTime && currentTime <= paragraph.endTime && (
+                              <span className="text-xs font-mono text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md shadow-sm mt-1 animate-pulse">
+                                {formatTime(currentTime)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                         {/* Original paragraph */}
                         <p 
                           className={`mb-3 rounded-lg transition-all duration-200 ${
@@ -2428,18 +2442,7 @@ const TranscriptionPage: React.FC = () => {
                           {t('transcription.audio.downloadAudio')}
                         </button>
                         
-                        <button 
-                          onClick={() => {
-                            if (window.confirm(t('transcription.audio.confirmRegeneration'))) {
-                              // Implementation for regeneration
-                              alert(t('transcription.audio.regenerationInitiated'));
-                            }
-                          }}
-                          className="w-full flex items-center justify-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors"
-                        >
-                          <FiRefreshCw className="mr-2" />
-                          {t('transcription.audio.regenerateTranscription')}
-                        </button>
+                      
                       </div>
                     </div>
                   </div>

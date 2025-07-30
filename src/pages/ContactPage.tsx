@@ -2,27 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiMail, FiMapPin, FiPhone, FiHelpCircle, FiMessageSquare, FiUsers } from 'react-icons/fi';
 import { useLocation } from 'react-router-dom';
-
-const contactOptions = [
-  {
-    name: 'General Inquiries',
-    description: 'Questions about our products or services',
-    icon: FiHelpCircle,
-    iconClass: 'text-blue-500',
-  },
-  {
-    name: 'Sales',
-    description: 'Talk to our sales team about your needs',
-    icon: FiUsers,
-    iconClass: 'text-green-500',
-  },
-  {
-    name: 'Support',
-    description: 'Get help with your existing account',
-    icon: FiMessageSquare,
-    iconClass: 'text-purple-500',
-  },
-];
+import { useTranslation } from 'react-i18next';
 
 const offices = [
   {
@@ -52,6 +32,28 @@ const offices = [
 ];
 
 const ContactPage: React.FC = () => {
+  const { t } = useTranslation();
+  
+  const contactOptions = [
+    {
+      name: t('contact.generalInquiries'),
+      description: t('contact.generalInquiriesDesc'),
+      icon: FiHelpCircle,
+      iconClass: 'text-blue-500',
+    },
+    {
+    name: t('contact.sales'),
+      description: t('contact.salesDesc'),
+      icon: FiUsers,
+      iconClass: 'text-green-500',
+    },
+    {
+      name: t('contact.support'),
+      description: t('contact.supportDesc'),
+      icon: FiMessageSquare,
+      iconClass: 'text-purple-500',
+    },
+  ];
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const typeParam = searchParams.get('type');
@@ -110,10 +112,10 @@ const ContactPage: React.FC = () => {
               transition={{ duration: 0.7 }}
             >
               <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
-                Get in Touch
+                {t('contact.title')}
               </h1>
               <p className="mt-6 text-xl text-gray-300 max-w-3xl mx-auto">
-                Have questions or need help? We're here for you. Reach out to our team and we'll get back to you shortly.
+                {t('contact.subtitle')}
               </p>
             </motion.div>
           </div>
@@ -172,7 +174,7 @@ const ContactPage: React.FC = () => {
                         <span className="absolute w-2 h-2 mx-1 my-1 rounded-full bg-white" />
                       )}
                     </span>
-                    Select
+                    {t('contact.select')}
                   </label>
                 </div>
               </motion.div>
@@ -203,11 +205,11 @@ const ContactPage: React.FC = () => {
               {!submitted ? (
                 <>
                   <div className="text-center mb-10">
-                    <h2 className="text-3xl font-bold text-white">Send us a message</h2>
+                    <h2 className="text-3xl font-bold text-white">{t('contact.sendMessage')}</h2>
                     <p className="mt-4 text-lg text-gray-300">
                       {contactReason
-                        ? `You've selected ${contactReason}. Fill out the form below and we'll get back to you as soon as possible.`
-                        : 'Please select a reason for contact above and fill out the form below.'}
+                        ? t('contact.selectedReason', { reason: contactReason })
+                        : t('contact.selectReason')}
                     </p>
                   </div>
                   
@@ -215,7 +217,7 @@ const ContactPage: React.FC = () => {
                     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
                       <div>
                         <label htmlFor="first-name" className="block text-sm font-medium text-gray-300">
-                          First name
+                          {t('contact.firstName')}
                         </label>
                         <div className="mt-1">
                           <input
@@ -230,7 +232,7 @@ const ContactPage: React.FC = () => {
                       </div>
                       <div>
                         <label htmlFor="last-name" className="block text-sm font-medium text-gray-300">
-                          Last name
+                          {t('contact.lastName')}
                         </label>
                         <div className="mt-1">
                           <input
@@ -248,7 +250,7 @@ const ContactPage: React.FC = () => {
                     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
                       <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-                          Email
+                          {t('contact.email')}
                         </label>
                         <div className="mt-1">
                           <input
@@ -263,7 +265,7 @@ const ContactPage: React.FC = () => {
                       </div>
                       <div>
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-300">
-                          Phone
+                          {t('contact.phone')}
                         </label>
                         <div className="mt-1">
                           <input
@@ -279,7 +281,7 @@ const ContactPage: React.FC = () => {
                     
                     <div>
                       <label htmlFor="company" className="block text-sm font-medium text-gray-300">
-                        Company
+                        {t('contact.company')}
                       </label>
                       <div className="mt-1">
                         <input
@@ -294,7 +296,7 @@ const ContactPage: React.FC = () => {
                     
                     <div>
                       <label htmlFor="subject" className="block text-sm font-medium text-gray-300">
-                        Subject
+                        {t('contact.subject')}
                       </label>
                       <div className="mt-1">
                         <input
@@ -309,7 +311,7 @@ const ContactPage: React.FC = () => {
                     
                     <div>
                       <label htmlFor="message" className="block text-sm font-medium text-gray-300">
-                        Message
+                        {t('contact.message')}
                       </label>
                       <div className="mt-1">
                         <textarea
@@ -318,7 +320,7 @@ const ContactPage: React.FC = () => {
                           rows={6}
                           required
                           className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
-                          placeholder="How can we help you?"
+                          placeholder={t('contact.messagePlaceholder')}
                         />
                       </div>
                     </div>
@@ -332,7 +334,7 @@ const ContactPage: React.FC = () => {
                         className="h-4 w-4 text-purple-600 focus:ring-purple-500 bg-black/50 border-gray-700 rounded"
                       />
                       <label htmlFor="agree-terms" className="ml-2 block text-sm text-gray-300">
-                        I agree to the privacy policy and terms of service.
+                        {t('contact.agreeTerms')}
                       </label>
                     </div>
                     
@@ -341,7 +343,7 @@ const ContactPage: React.FC = () => {
                         type="submit"
                         className="inline-flex justify-center py-3 px-6 border border-transparent shadow-lg text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300"
                       >
-                        Send Message
+                        {t('contact.sendButton')}
                       </button>
                     </div>
                   </form>
@@ -355,15 +357,15 @@ const ContactPage: React.FC = () => {
                   <svg className="w-16 h-16 text-purple-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <h2 className="mt-6 text-3xl font-bold text-white">Thank you!</h2>
+                  <h2 className="mt-6 text-3xl font-bold text-white">{t('contact.thankYou')}</h2>
                   <p className="mt-2 text-lg text-gray-300">
-                    Your message has been sent successfully. We'll get back to you as soon as possible.
+                    {t('contact.successMessage')}
                   </p>
                   <button
                     className="mt-8 inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300"
                     onClick={() => setSubmitted(false)}
                   >
-                    Send another message
+                    {t('contact.sendAnother')}
                   </button>
                 </motion.div>
               )}
@@ -390,9 +392,9 @@ const ContactPage: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.7 }}
             >
-              <h2 className="text-3xl font-bold text-white">Our Offices</h2>
+              <h2 className="text-3xl font-bold text-white">{t('contact.ourOffices')}</h2>
               <p className="mt-4 text-xl text-gray-300">
-                Visit us at one of our global offices
+                {t('contact.visitOffices')}
               </p>
             </motion.div>
           </div>

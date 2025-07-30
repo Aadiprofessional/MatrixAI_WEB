@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   FiCalendar, 
   FiUser, 
@@ -25,6 +26,7 @@ const formatDate = (dateString: string) => {
 };
 
 const BlogPage: React.FC = () => {
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isScrolled, setIsScrolled] = useState(false);
@@ -40,7 +42,7 @@ const BlogPage: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const categories = ['All', 'AI Technology', 'Tutorials'];
+  const categories = [t('blog.categories.all'), t('blog.categories.aiTechnology'), t('blog.categories.tutorials')];
 
   const featuredPost = {
     id: 1,
@@ -156,7 +158,7 @@ const BlogPage: React.FC = () => {
       {/* Blog header with logo and title */}
       <div className="relative pt-24 pb-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="flex items-center gap-2 mb-4">
-          <h1 className="page-title text-xl font-medium tracking-tight">Blog</h1>
+          <h1 className="page-title text-xl font-medium tracking-tight">{t('blog.title')}</h1>
         </div>
       </div>
       
@@ -169,7 +171,7 @@ const BlogPage: React.FC = () => {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Search articles..."
+                placeholder={t('blog.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-black/50 backdrop-blur-sm text-white placeholder-gray-400"
@@ -212,10 +214,10 @@ const BlogPage: React.FC = () => {
             className="text-center mb-12"
           >
             <h1 className="page-title text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
-              MatrixAI Blog
+              {t('blog.pageTitle')}
             </h1>
             <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-300 sm:mt-4">
-              Insights, updates, and deep dives into the world of AI technology
+              {t('blog.pageDescription')}
             </p>
           </motion.div>
           
@@ -471,10 +473,10 @@ const BlogPage: React.FC = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl font-bold text-primary mb-4 section-title">
-              Latest Articles
+              {t('blog.latestArticles')}
             </h2>
             <p className="text-xl text-secondary">
-              {filteredPosts.length} {filteredPosts.length === 1 ? 'article' : 'articles'} found
+              {filteredPosts.length} {filteredPosts.length === 1 ? t('blog.articleSingular') : t('blog.articlePlural')} {t('blog.found')}
             </p>
           </motion.div>
 
@@ -553,7 +555,7 @@ const BlogPage: React.FC = () => {
                       to={`/blog/${post.id}`}
                       className="text-purple-400 hover:text-purple-300 font-medium flex items-center gap-1 transition-colors duration-200"
                     >
-                      Read More
+                      {t('blog.readMore')}
                       <FiArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
@@ -566,10 +568,10 @@ const BlogPage: React.FC = () => {
             <div className="text-center py-12 glass-effect rounded-xl">
               <FiBookOpen className="h-16 w-16 text-tertiary mx-auto mb-4" />
               <h3 className="text-xl font-medium text-primary mb-2">
-                No articles found
+                {t('blog.noArticlesFound')}
               </h3>
               <p className="text-tertiary">
-                Try adjusting your search or filter criteria
+                {t('blog.tryAdjusting')}
               </p>
             </div>
           )}
@@ -586,19 +588,19 @@ const BlogPage: React.FC = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-3xl font-bold text-primary mb-4 section-title">
-              Stay Updated
+              {t('blog.stayUpdated')}
             </h2>
             <p className="text-xl text-secondary mb-8">
-              Subscribe to our newsletter for the latest AI insights and updates
+              {t('blog.subscribeNewsletter')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('blog.enterEmail')}
                 className="flex-1 px-4 py-3 rounded-lg border-0 focus:ring-2 focus:ring-blue-300 focus:outline-none"
               />
               <button className="bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                Subscribe
+                {t('blog.subscribe')}
               </button>
             </div>
           </motion.div>

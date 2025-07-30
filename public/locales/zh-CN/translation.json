@@ -52,7 +52,98 @@
     "personalDescription": "您的个人AI伴侣日常问题和创造性帮助",
     "placeholder": "在这里输入您的消息...",
     "selectSpecializedRole": "为您的AI助手选择专业角色",
-    "welcomeToMatrixAI": "欢迎来到Matrixai"
+    "welcomeToMatrixAI": "欢迎来到Matrixai",
+    "autoSpeakOff": "自动说话",
+    "autoSpeakOn": "自动说话",
+    "chatHistory": "聊天历史",
+    "coinsUsed": "{{count}}使用的硬币",
+    "coinsUsed_plural": "{{count}}使用的硬币",
+    "copyToClipboard": "复制到剪贴板",
+    "deleteChat": "删除聊天",
+    "deleteConfirmation": "您确定要删除此聊天吗？",
+    "fileTypes": {
+      "doc": "Doc",
+      "docx": "DOCX",
+      "pdf": "PDF"
+    },
+    "initialMessage": "你好！\n我是您的AI助手。\n今天我该如何帮助您？",
+    "lastMonth": "上个月",
+    "lastWeek": "上星期",
+    "messagesLeft": "{{count}}消息留下",
+    "recentConversations": "最近的对话",
+    "roles": {
+      "analyst": {
+        "description": "数据分析，商业智能和战略见解的专家",
+        "name": "业务分析师"
+      },
+      "architect": {
+        "description": "专门从事建筑设计，建筑概念和空间规划",
+        "name": "建筑助理"
+      },
+      "business": {
+        "description": "专注于业务战略，分析和专业沟通",
+        "name": "业务分析师"
+      },
+      "creative": {
+        "description": "专门从事创意写作，讲故事和内容创建",
+        "name": "创意作家"
+      },
+      "doctor": {
+        "description": "知识渊博的医学主题和与健康有关的信息",
+        "name": "医疗助理"
+      },
+      "educational": {
+        "description": "专门从事教学，解释概念和教育支持",
+        "name": "教育导师"
+      },
+      "engineer": {
+        "description": "专门研究工程原理，设计和技术解决问题",
+        "name": "工程专家"
+      },
+      "financial": {
+        "description": "金融，投资策略和经济分析专家",
+        "name": "财务顾问"
+      },
+      "general": {
+        "description": "用于日常任务和问题的多功能AI助手",
+        "name": "总助理"
+      },
+      "lawyer": {
+        "description": "专门从事法律概念，法规和法律文件",
+        "name": "法律助理"
+      },
+      "programmer": {
+        "description": "专门从事编码，软件开发和技术解决方案",
+        "name": "编程专家"
+      },
+      "psychologist": {
+        "description": "知识渊博的心理学，心理健康和行为见解",
+        "name": "心理助理"
+      },
+      "surveyor": {
+        "description": "数据收集，研究方法和调查分析专家",
+        "name": "调查专家"
+      },
+      "teacher": {
+        "description": "教学，解释概念和教育支持的专家",
+        "name": "教育导师"
+      },
+      "technical": {
+        "description": "编程，技术和技术解决问题的专家",
+        "name": "技术专家"
+      }
+    },
+    "sendMessage": "发送消息",
+    "shareMessage": "分享消息",
+    "speakMessage": "说话",
+    "stopSpeaking": "停止讲话",
+    "today": "今天",
+    "toggleChatHistory": "切换聊天历史记录",
+    "uploadFile": "上传文件",
+    "uploadedImage": "上传图像",
+    "viewAllHistory": "查看所有历史",
+    "roleChangeMessage": "你好！\n我现在是您的{{rolename}}。 \n{{roledescription}}我今天如何为您提供帮助？",
+    "yesterday": "昨天"
   },
   "chooseFromProfessionalTemplates": "从专业模板中选择",
   "chooseTemplateOrCreateOwn": "选择模板或创建自己的",
@@ -269,7 +360,8 @@
     "upgradeAvailable": "可升级可用",
     "videosCreated": "创建的视频",
     "viewAllTools": "查看所有工具",
-    "welcome": "欢迎回来"
+    "welcome": "欢迎回来",
+    "total": "全部的"
   },
   "describePresentationTopic": "描述您的演示主题",
   "detectAI": {
@@ -591,7 +683,8 @@
   "mindmap": {
     "generate": "生成思维图",
     "generating": "生成思维图...",
-    "noData": "没有可用的数据"
+    "noData": "没有可用的数据",
+    "title": "思维地图"
   },
   "nav": {
     "chat": "聊天",
@@ -1688,5 +1781,143 @@
       "viewTranscript": "查看成绩单",
       "wordsPerMinute": "单词/分钟"
     }
+  },
+  "about": {
+    "description": "我们正在建立AI驱动的生产力工具的未来。\n我们的使命是使每个人都可以访问先进的人工智能，从而使个人和企业能够通过智能自动化获得更多成就。",
+    "ourStory": {
+      "paragraph1": "Matrixai成立于2023年，源于一种简单的信念：人工智能应提高人类的创造力和生产力，而不是取代它。\n我们的人工智能研究人员，工程师和设计师团队融合了民主化使用强大的AI工具的共同愿景。",
+      "paragraph2": "最初是一个小型项目来创建更好的AI写作工具，已经发展成为一个为全球数千名用户提供服务的综合平台。\n我们已经构建了从智能聊天机器人到高级图像生成系统的所有内容，始终在最前沿的用户体验。",
+      "paragraph3": "如今，Matrixai继续在AI上突破可能的界限，同时保持我们对道德发展和用户隐私的承诺。\n我们认为，工作的未来是协作的 - 人类和人工智能共同努力，以取得非凡的成果。",
+      "title": "我们的故事"
+    },
+    "title": "关于Matrixai",
+    "values": {
+      "description": "这些核心原则指导我们所做的一切，从产品开发到客户关系。",
+      "globalPerspective": {
+        "description": "我们正在建立适合所有人的人工智能，考虑到世界各地的各种语言，文化和用例。",
+        "title": "全球视角"
+      },
+      "openCommunication": {
+        "description": "我们在团队内部和客户中培养诚实和公开的对话，以建立信任并不断提高。",
+        "title": "开放沟通"
+      },
+      "responsibleAI": {
+        "description": "我们相信，在培训模型和处理数据方面，以透明度在道德和负责任地开发AI系统。",
+        "title": "负责人AI"
+      },
+      "title": "我们的价值观",
+      "userCentric": {
+        "description": "我们建立了AI，可以增强人类能力，而无需取代人类的联系。\n我们的产品旨在解决真正的人的真正问题。",
+        "title": "以用户为中心的创新"
+      }
+    }
+  },
+  "blog": {
+    "categories": {
+      "aiTechnology": "AI技术",
+      "all": "全部",
+      "tutorials": "教程"
+    },
+    "pageDescription": "洞察力，更新和深入研究AI技术的世界",
+    "pageTitle": "Matrixai博客",
+    "searchPlaceholder": "搜索文章...",
+    "title": "博客"
+  },
+  "contact": {
+    "agreeTerms": "我同意隐私政策和服务条款。",
+    "company": "公司",
+    "email": "电子邮件",
+    "firstName": "名",
+    "generalInquiries": "一般查询",
+    "generalInquiriesDesc": "有关我们的产品或服务的问题",
+    "lastName": "姓",
+    "message": "信息",
+    "messagePlaceholder": "我们该如何帮助您？",
+    "ourOffices": "我们的办公室",
+    "phone": "电话",
+    "sales": "销售量",
+    "salesDesc": "与我们的销售团队谈谈您的需求",
+    "select": "选择",
+    "selectReason": "请选择上面的联系理由并填写以下表格。",
+    "selectedReason": "您已经选择了{{{原因}}。\n填写下面的表格，我们将尽快与您联系。",
+    "sendAnother": "发送另一个消息",
+    "sendButton": "发送消息",
+    "sendMessage": "向我们发送消息",
+    "subject": "主题",
+    "subtitle": "有问题还是需要帮助？\n我们在这里为您服务。\n与我们的团队联系，我们很快就会与您联系。",
+    "successMessage": "您的消息已成功发送。\n我们将尽快与您联系。",
+    "support": "支持",
+    "supportDesc": "在您现有帐户中获得帮助",
+    "thankYou": "谢谢你！",
+    "title": "取得联系",
+    "visitOffices": "在我们的全球办事处之一拜访我们"
+  },
+  "notFound": {
+    "needHelp": "需要帮助吗？",
+    "returnHome": "回家",
+    "title": "找不到页面",
+    "contactUs": "联系我们",
+    "description": "您要寻找的页面不存在或已移动。"
+  },
+  "pricing": {
+    "addonFeature1": "现有用户的额外硬币",
+    "addonFeature2": "在月末过期",
+    "addonFeature3": "增加当前余额",
+    "addonFeature4": "即时激活",
+    "addonPack": "插件包",
+    "aiChat": "AI聊天",
+    "aiServicesPricing": "AI服务定价",
+    "audioTranscription": "音频转录",
+    "coinSystemDescription": "我们的定价基于硬币系统。\n不同的AI服务消耗了不同数量的硬币。",
+    "coins": "硬币",
+    "contactSales": "联系销售",
+    "contentWriting": "内容写作",
+    "faq": "常见问题",
+    "faqAnswer1": "我们的平台使用基于硬币的系统，其中不同的AI服务消耗了不同数量的硬币。\n您购买了一个计划，可以为您提供一定数量的硬币，然后您可以将其用于各种AI服务。",
+    "faqAnswer2": "是的，每月计划的硬币在每个计费周期结束时到期。\n测试人员计划的硬币在15天后到期。 \nAddon Pack硬币将于本月底到期。",
+    "faqAnswer3": "是的，您可以随时升级计划。\n升级时，我们将为您当前计划的剩余价值进行筹集资金，并将其应用于您的新计划。",
+    "faqAnswer4": "我们接受主要的信用卡（Visa，万事达卡），以及中国的支撑式香港和Alipay中国付款。",
+    "faqDescription": "对我们的定价有疑问吗？\n在下面找到常见问题的答案。",
+    "faqQuestion1": "硬币系统如何工作？",
+    "faqQuestion2": "硬币过期吗？",
+    "faqQuestion3": "我可以升级我的计划吗？",
+    "faqQuestion4": "您接受什么付款方式？",
+    "humaniseText": "人性化文字",
+    "imageGeneration": "图像生成",
+    "loginToJoin": "登录加入",
+    "monthly": "每月",
+    "monthlyFeature1": "非常适合普通用户",
+    "monthlyFeature2": "每月分配硬币",
+    "monthlyFeature3": "优先支持",
+    "monthlyFeature4": "完全访问所有功能",
+    "mostPopular": "最受欢迎",
+    "oneCoin": "1个硬币",
+    "perFiveSeconds": "每5秒",
+    "perImage": "每个图像",
+    "perMessage": "每条消息",
+    "perMinute": "每分钟",
+    "perMonth": "/月",
+    "perRequest": "根据请求",
+    "readyToStart": "准备开始了吗？",
+    "save10": "节省10％",
+    "signUpNow": "立即注册",
+    "subscribeNow": "立即订阅",
+    "subtitle": "选择最适合您的计划。\n所有计划都包括访问我们的完整AI工具套件。",
+    "tester": "测试仪",
+    "testerFeature1": "非常适合尝试我们的服务",
+    "testerFeature2": "有效期15天",
+    "testerFeature3": "基本支持",
+    "testerFeature4": "访问所有AI工具",
+    "thirtyCoins": "30个硬币",
+    "threeCoins": "3个硬币",
+    "title": "简单，透明的定价",
+    "twoCoins": "2个硬币",
+    "videoGeneration": "视频生成",
+    "yearly": "每年",
+    "yearlyFeature1": "最佳价值计划",
+    "yearlyFeature2": "每月1380硬币",
+    "yearlyFeature3": "全年订阅",
+    "yearlyFeature4": "高级支持",
+    "yearlyFeature5": "10％折扣"
   }
 }

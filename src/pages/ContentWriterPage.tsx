@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FiFileText, FiZap, FiCopy, FiDownload, FiShare2, FiTrash, FiRotateCw, FiEdit, FiCheck, FiX, FiSave, FiSliders, FiSend, FiPlus, FiChevronLeft, FiChevronRight, FiMail, FiTwitter, FiLinkedin, FiFacebook, FiLink, FiLoader, FiShield, FiUser } from 'react-icons/fi';
+import { FiFileText, FiZap, FiCopy, FiDownload, FiShare2, FiTrash, FiRotateCw, FiEdit, FiCheck, FiX, FiSave, FiSliders, FiSend, FiPlus, FiChevronLeft, FiChevronRight, FiMail, FiTwitter, FiLinkedin, FiFacebook, FiLink, FiLoader, FiShield, FiUser, FiGrid, FiList } from 'react-icons/fi';
 import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -23,6 +23,7 @@ import html2canvas from 'html2canvas';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
 import './ContentWriterPage.css';
+import coinImage from '../assets/coin.png';
 
 // Import the other page components
 import HumaniseTextPage from './HumaniseTextPage';
@@ -124,11 +125,12 @@ const ContentWriterPage: React.FC = () => {
 
   // Content generation state
   const [prompt, setPrompt] = useState('');
+  const [wordCount, setWordCount] = useState(0);
   const [generatedContent, setGeneratedContent] = useState('');
   const [editedContent, setEditedContent] = useState('');
   const [tone, setTone] = useState('professional');
   const [contentType, setContentType] = useState('essay');
-  const [wordCount, setWordCount] = useState(500);
+  const [targetWordCount, setTargetWordCount] = useState(500);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [fontSize, setFontSize] = useState(16);
@@ -151,8 +153,10 @@ const ContentWriterPage: React.FC = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Fixed value, no need for state
+  const itemsPerPage = 6; // Updated to match other pages
   const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const contentDisplayRef = useRef<HTMLDivElement>(null);
@@ -165,17 +169,7 @@ const ContentWriterPage: React.FC = () => {
     
     try {
       setIsLoadingHistory(true);
-      console.log('Fetching content history for user:', userId);
-      
-      // Get the current total pages before making the request
-      const currentTotalPages = getTotalPages();
-      
-      // If current page is greater than total pages and we have total items data,
-      // adjust the current page before making the request
-      if (currentPage > currentTotalPages && currentTotalPages > 0) {
-        setCurrentPage(currentTotalPages);
-        return; // The useEffect will trigger another call with the corrected page
-      }
+      console.log('Fetching content history for user:', userId, 'page:', currentPage);
       
       const response = await contentService.getUserContent(userId, {
         page: currentPage,
@@ -183,8 +177,7 @@ const ContentWriterPage: React.FC = () => {
       });
       console.log('Content history response:', response);
       
-      console.log('Raw response structure:', JSON.stringify(response, null, 2));
-      // The API response has content but might not have a success flag
+      // The API response structure based on our test
       if (response && response.content && Array.isArray(response.content)) {
         // Map API response to ContentItem format
         const formattedContent = response.content.map(item => ({
@@ -193,45 +186,28 @@ const ContentWriterPage: React.FC = () => {
         }));
         
         console.log('Setting content history:', formattedContent);
-        if (formattedContent && formattedContent.length > 0) {
-          setContentHistory(formattedContent);
-          // Use totalItems from response if available, otherwise fallback to total or length
-          setTotalItems(response.totalItems || response.total || formattedContent.length);
-          console.log('Content history items:', formattedContent.length);
-          console.log('Total items:', response.totalItems || response.total || formattedContent.length);
-        } else {
-          console.warn('Formatted content is empty');
-          setContentHistory([]);
-          setTotalItems(0);
-        }
-      } else if (response && Array.isArray(response.content)) {
-        // Handle the case where the API returns content but might not have a success flag set to true
-        const formattedContent = response.content.map(item => ({
-          ...item,
-          createdAt: item.created_at || new Date().toISOString()
-        }));
+        setContentHistory(formattedContent);
         
-        console.log('Setting content history from alternative response format:', formattedContent);
-        if (formattedContent && formattedContent.length > 0) {
-          setContentHistory(formattedContent);
-          // Use totalItems from response if available, otherwise fallback to total or length
-          setTotalItems(response.totalItems || response.total || formattedContent.length);
-          console.log('Content history items:', formattedContent.length);
-          console.log('Total items:', response.totalItems || response.total || formattedContent.length);
-        } else {
-          console.warn('Formatted content is empty');
-          setContentHistory([]);
-          setTotalItems(0);
-        }
+        // Use pagination info from API response
+        setTotalItems(response.totalItems || response.total || 0);
+        setTotalPages(response.totalPages || 1);
+        
+        console.log('Content history items:', formattedContent.length);
+        console.log('Total items:', response.totalItems || response.total || 0);
+        console.log('Current page:', response.currentPage || currentPage);
+        console.log('Total pages from API:', response.totalPages);
       } else {
         console.warn('No content array in response');
         setContentHistory([]);
         setTotalItems(0);
+        setTotalPages(1);
       }
     } catch (error) {
       console.error('Error fetching content history:', error);
       toast.error(t('contentWriter.errors.failedToLoadHistory'));
       setContentHistory([]);
+      setTotalItems(0);
+      setTotalPages(1);
     } finally {
       console.log('Setting isLoadingHistory to false');
       setIsLoadingHistory(false);
@@ -470,7 +446,7 @@ const ContentWriterPage: React.FC = () => {
 
 Please create ${contentType} content with the following specifications:
 - Tone: ${tone}
-- Target word count: approximately ${wordCount} words
+- Target word count: approximately ${targetWordCount} words
 - Style: Well-structured, engaging, and professional
 - Format: Use proper markdown formatting with headers, lists, and emphasis where appropriate
 
@@ -598,6 +574,22 @@ Create content that is original, well-researched, and engaging for the target au
         reject(new Error('Failed to generate content. Please try again.'));
       }
     });
+  };
+
+  const handlePromptChange = (value: string) => {
+    const words = value.trim().split(/\s+/).filter(word => word.length > 0);
+    const currentWordCount = value.trim() === '' ? 0 : words.length;
+    
+    if (currentWordCount <= 2000) {
+      setPrompt(value);
+      setWordCount(currentWordCount);
+    } else {
+      // Truncate to 2000 words
+      const truncatedWords = words.slice(0, 2000);
+      const truncatedText = truncatedWords.join(' ');
+      setPrompt(truncatedText);
+      setWordCount(2000);
+    }
   };
 
   const handleGenerateContent = async () => {
@@ -1141,7 +1133,7 @@ Create content that is original, well-researched, and engaging for the target au
   };
 
   // Pagination helper functions
-  const getTotalPages = () => Math.ceil(totalItems / itemsPerPage);
+  const getTotalPages = () => totalPages;
   
   const handlePageChange = (page: number) => {
     // Allow page changes regardless of authentication status
@@ -1163,20 +1155,10 @@ Create content that is original, well-researched, and engaging for the target au
     }
   }, [totalItems]);
 
-  const getPaginatedItems = (items: any[]) => {
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      console.warn('getPaginatedItems received invalid items:', items);
-      return [];
-    }
-    try {
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      console.log('Paginating items:', { startIndex, endIndex, itemsLength: items.length });
-      return items.slice(startIndex, endIndex);
-    } catch (error) {
-      console.error('Error in getPaginatedItems:', error);
-      return [];
-    }
+  // Server-side pagination - no need for client-side slicing
+  const getCurrentPageItems = (items: any[]) => {
+    // Since we're using server-side pagination, return all items from the current page
+    return items || [];
   };
 
   const getStatusText = () => {
@@ -1327,13 +1309,23 @@ Create content that is original, well-researched, and engaging for the target au
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('contentWriter.prompt')}</label>
-                  <textarea
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    placeholder={t('contentWriter.promptPlaceholder')}
-                    className="w-full p-3 border rounded-lg shadow-sm h-32 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={isGenerating}
-                  />
+                  <div className="relative">
+                    <textarea
+                      value={prompt}
+                      onChange={(e) => handlePromptChange(e.target.value)}
+                      placeholder={t('contentWriter.promptPlaceholder')}
+                      className="w-full p-3 border rounded-lg shadow-sm h-32 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isGenerating}
+                    />
+                    <div className="absolute bottom-2 right-2 text-xs text-gray-500 dark:text-gray-400">
+                      <span className={wordCount > 2000 ? 'text-red-500' : ''}>
+                        {wordCount}/2000 words
+                      </span>
+                    </div>
+                  </div>
+                  {wordCount > 2000 && (
+                    <p className="text-red-500 text-xs mt-1">Word limit exceeded. Text has been truncated to 2000 words.</p>
+                  )}
                 </div>
 
                 {/* Quick Questions */}
@@ -1418,8 +1410,8 @@ Create content that is original, well-researched, and engaging for the target au
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('contentWriter.wordCount')}</label>
                   <select 
-                    value={wordCount}
-                    onChange={(e) => setWordCount(Number(e.target.value))}
+                    value={targetWordCount}
+                    onChange={(e) => setTargetWordCount(Number(e.target.value))}
                     className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     disabled={isGenerating}
                   >
@@ -1449,6 +1441,10 @@ Create content that is original, well-researched, and engaging for the target au
                     <div className="flex items-center justify-center">
                       <FiZap className="w-4 h-4 mr-2" />
                       {t('contentWriter.generateContent')}
+                      <div className="flex items-center ml-2 text-yellow-300">
+                        <span className="text-sm">-3</span>
+                        <img src={coinImage} alt="coin" className="w-4 h-4 ml-1" />
+                      </div>
                     </div>
                   )}
                 </AuthRequiredButton>
@@ -1680,142 +1676,176 @@ Create content that is original, well-researched, and engaging for the target au
 
         {/* History Button - Moved outside the grid to span full width */}
         <div className="mt-8 ml-8 lg:col-span-5 order-3">
-          <button
-            onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors mb-4"
-          >
-            <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
-              <FiFileText className="w-5 h-5" />
-            </span>
-            {showHistory ? t('common.hideHistory') : t('contentWriter.history')}
-          </button>
+        
           
           {/* Content History Section - Conditionally rendered with full page width */}
           {showHistory && (
             <div className="w-full px-4">
-              <h2 className="text-xl font-medium mb-4 flex items-center justify-between">
+              {contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 ? (
+                <div>
+                  {/* View Mode Toggle */}
+                  <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center">
                       <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
                         <FiFileText className="w-5 h-5" />
                       </span>
-                      {t('contentWriter.history')} {contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 && `(${contentHistory.length})`}
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {t('contentWriter.history')} ({contentHistory.length})
+                      </h3>
                     </div>
-              
-                    {/* Pagination Controls - Moved to right end of Content History title */}
-                    {getTotalPages() > 0 ? (
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className={`p-2 rounded-md transition-colors ${
-                            currentPage === 1
-                              ? 'text-gray-400 cursor-not-allowed'
-                              : darkMode
-                              ? 'text-gray-300 hover:bg-gray-700'
-                              : 'text-gray-600 hover:bg-gray-100'
-                          }`}
-                        >
-                          <FiChevronLeft className="w-5 h-5" />
-                        </button>
-                        
-                        <div className="flex items-center space-x-1">
-                          {Array.from({ length: getTotalPages() }, (_, i) => i + 1)
-                            .filter(page => 
-                              page === 1 || 
-                              page === getTotalPages() || 
-                              Math.abs(page - currentPage) <= 1
-                            )
-                            .map((page, index, array) => (
-                              <React.Fragment key={page}>
-                                {index > 0 && array[index - 1] !== page - 1 && (
-                                  <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                    ...
-                                  </span>
-                                )}
-                                <button
-                                  onClick={() => handlePageChange(page)}
-                                  className={`w-8 h-8 rounded-md text-xs font-medium transition-colors ${
-                                    page === currentPage
-                                      ? 'bg-blue-500 text-white'
-                                      : darkMode
-                                      ? 'text-gray-300 hover:bg-gray-700'
-                                      : 'text-gray-600 hover:bg-gray-100'
-                                  }`}
-                                  disabled={page > getTotalPages()}
-                                >
-                                  {page}
-                                </button>
-                              </React.Fragment>
-                            ))
-                          }
-                        </div>
-                        
-                        <button
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === getTotalPages()}
-                          className={`p-2 rounded-md transition-colors ${
-                            currentPage === getTotalPages()
-                              ? 'text-gray-400 cursor-not-allowed'
-                              : darkMode
-                              ? 'text-gray-300 hover:bg-gray-700'
-                              : 'text-gray-600 hover:bg-gray-100'
-                          }`}
-                        >
-                          <FiChevronRight className="w-5 h-5" />
-                        </button>
-                      </div>
-                    ) : (
-                      <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        Page 1 of 1
-                      </span>
-                    )}
-                  </h2>
-
-              {isLoadingHistory ? (
-                <div className="text-center py-8">
-                  <div className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
-                    <FiLoader className="w-6 h-6 text-blue-500 dark:text-blue-400 animate-spin" />
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setViewMode('grid')}
+                        className={`p-2 rounded-lg transition-colors ${
+                          viewMode === 'grid'
+                            ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400'
+                            : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                        }`}
+                      >
+                        <FiGrid className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setViewMode('list')}
+                        className={`p-2 rounded-lg transition-colors ${
+                          viewMode === 'list'
+                            ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400'
+                            : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                        }`}
+                      >
+                        <FiList className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Loading content history...
-                  </p>
-                </div>
-              ) : contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                  {getPaginatedItems(contentHistory).map((item, index) => item && item.id ? (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow cursor-pointer glass-effect"
-                      onClick={() => {
-                        setEditedContent(item.content);
-                        setGeneratedContent(item.content);
-                        toast.success(t('contentWriter.success.contentLoadedFromHistory'));
-                      }}
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
-                          {item.title || t('common.untitled')}
-                        </h4>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteContent(item.id);
-                          }}
-                          className="text-gray-400 hover:text-red-500 transition-colors"
-                        >
-                          <FiTrash className="w-4 h-4" />
-                        </button>
+
+                  {isLoadingHistory ? (
+                    <div className="text-center py-8">
+                      <div className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
+                        <FiLoader className="w-6 h-6 text-blue-500 dark:text-blue-400 animate-spin" />
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                        {new Date(item.createdAt).toLocaleDateString()}
-                      </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
-                        {item.content}
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Loading content history...
                       </p>
-                    </motion.div>
-                  ) : null)}
+                    </div>
+                  ) : (
+                    <>
+                      {/* Grid View */}
+                      {viewMode === 'grid' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {getCurrentPageItems(contentHistory).map((item, index) => item && item.id ? (
+                            <motion.div
+                              key={item.id}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="glass-effect p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                              onClick={() => {
+                                setEditedContent(item.content);
+                                setGeneratedContent(item.content);
+                                toast.success(t('contentWriter.success.contentLoadedFromHistory'));
+                              }}
+                            >
+                              <div className="flex items-start justify-between mb-2">
+                                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+                                  {item.title || t('common.untitled')}
+                                </h4>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteContent(item.id);
+                                  }}
+                                  className="text-gray-400 hover:text-red-500 transition-colors"
+                                >
+                                  <FiTrash className="w-4 h-4" />
+                                </button>
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                {new Date(item.createdAt).toLocaleDateString()}
+                              </div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
+                                {item.content}
+                              </p>
+                            </motion.div>
+                          ) : null)}
+                        </div>
+                      )}
+
+                      {/* List View */}
+                      {viewMode === 'list' && (
+                        <div className="space-y-4">
+                          {getCurrentPageItems(contentHistory).map((item, index) => item && item.id ? (
+                            <motion.div
+                              key={item.id}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="glass-effect p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                              onClick={() => {
+                                setEditedContent(item.content);
+                                setGeneratedContent(item.content);
+                                toast.success(t('contentWriter.success.contentLoadedFromHistory'));
+                              }}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                      {item.title || t('common.untitled')}
+                                    </h4>
+                                    <div className="flex items-center space-x-2">
+                                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                                        {new Date(item.createdAt).toLocaleDateString()}
+                                      </span>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteContent(item.id);
+                                        }}
+                                        className="text-gray-400 hover:text-red-500 transition-colors"
+                                      >
+                                        <FiTrash className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                                    {item.content}
+                                  </p>
+                                </div>
+                              </div>
+                            </motion.div>
+                          ) : null)}
+                        </div>
+                      )}
+
+                      {/* Pagination */}
+                      {getTotalPages() > 1 && (
+                        <div className="glass-effect p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm mt-6">
+                          <div className="flex items-center justify-between">
+                            <button
+                              onClick={() => handlePageChange(currentPage - 1)}
+                              disabled={currentPage === 1}
+                              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/70 dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-white dark:hover:bg-gray-600 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
+                            >
+                              <FiChevronLeft className="w-4 h-4 mr-2" />
+                              Previous
+                            </button>
+                            
+                            <div className="flex items-center space-x-2">
+                              <span className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/70 dark:bg-gray-700/70 rounded-lg border border-gray-300 dark:border-gray-600 backdrop-blur-sm">
+                                Page {currentPage} of {getTotalPages()}
+                              </span>
+                            </div>
+                            
+                            <button
+                              onClick={() => handlePageChange(currentPage + 1)}
+                              disabled={currentPage === getTotalPages()}
+                              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/70 dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-white dark:hover:bg-gray-600 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
+                            >
+                              Next
+                              <FiChevronRight className="w-4 h-4 ml-2" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">

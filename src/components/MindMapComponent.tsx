@@ -825,7 +825,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
       className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
     >
       <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Mind Map Visualization</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t('mindmap.title')}</h2>
         <div className="flex space-x-2">
           <button 
             onClick={regenerateMindMap}

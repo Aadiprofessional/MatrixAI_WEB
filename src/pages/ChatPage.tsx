@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import OpenAI from 'openai';
+import { useTranslation } from 'react-i18next';
 import { 
   FiMessageSquare, FiSend, FiUser, FiCpu, FiChevronDown, FiPlus, FiClock, FiX,
   FiCopy, FiShare2, FiVolume2, FiPause, FiPlay, FiDownload, FiUpload, FiImage,
@@ -58,29 +59,10 @@ interface Chat {
 }
 
 // Sample role options for the AI assistant
-const roleOptions = [
-  { id: 'general', name: 'General Assistant', description: 'Provides general assistance for any topic' },
-  { id: 'analyst', name: 'MatrixAI Data Analyst', description: 'Helps analyze and visualize data with advanced AI capabilities' },
-  { id: 'doctor', name: 'Medical Assistant', description: 'Provides health-related information' },
-  { id: 'lawyer', name: 'Legal Advisor', description: 'Offers legal guidance and information' },
-  { id: 'teacher', name: 'Education Tutor', description: 'Assists with learning and homework' },
-  { id: 'programmer', name: 'Code Helper', description: 'Assists with programming and debugging' },
-  { id: 'psychologist', name: 'Psychologist', description: 'Provides mental health guidance' },
-  { id: 'engineer', name: 'Engineer', description: 'Helps with technical solutions' },
-  { id: 'surveyor', name: 'Surveyor', description: 'Advises on land and property matters' },
-  { id: 'architect', name: 'Architect', description: 'Offers design and building insights' },
-  { id: 'financial', name: 'Financial Advisor', description: 'Provides financial planning guidance' },
-];
+// Sample role options for the AI assistant - will be moved inside component
 
 // Sample messages for welcome panel or returning users
-const initialMessages: Message[] = [
-  { 
-    id: 1, 
-    role: 'assistant', 
-    content: 'Hello! I\'m MatrixAI. How can I help you today?',
-    timestamp: new Date(Date.now() - 120000).toISOString()
-  }
-];
+// Initial messages will be created inside component to access t function
 
 // Empty array for new chats - this should be used whenever creating a new chat
 const emptyInitialMessages: Message[] = [];
@@ -239,10 +221,36 @@ const preprocessContent = (content: string): string => {
 };
 
 const ChatPage: React.FC = () => {
+  const { t } = useTranslation();
   const { userData, isPro } = useUser();
   const { user } = useAuth();
   const { showSuccess, showError, showWarning } = useAlert();
   const navigate = useNavigate();
+  
+  // Role options with translations
+  const roleOptions = [
+    { id: 'general', name: t('chat.roles.general.name'), description: t('chat.roles.general.description') },
+    { id: 'analyst', name: t('chat.roles.analyst.name'), description: t('chat.roles.analyst.description') },
+    { id: 'doctor', name: t('chat.roles.doctor.name'), description: t('chat.roles.doctor.description') },
+    { id: 'lawyer', name: t('chat.roles.lawyer.name'), description: t('chat.roles.lawyer.description') },
+    { id: 'teacher', name: t('chat.roles.teacher.name'), description: t('chat.roles.teacher.description') },
+    { id: 'programmer', name: t('chat.roles.programmer.name'), description: t('chat.roles.programmer.description') },
+    { id: 'psychologist', name: t('chat.roles.psychologist.name'), description: t('chat.roles.psychologist.description') },
+    { id: 'engineer', name: t('chat.roles.engineer.name'), description: t('chat.roles.engineer.description') },
+    { id: 'surveyor', name: t('chat.roles.surveyor.name'), description: t('chat.roles.surveyor.description') },
+    { id: 'architect', name: t('chat.roles.architect.name'), description: t('chat.roles.architect.description') },
+    { id: 'financial', name: t('chat.roles.financial.name'), description: t('chat.roles.financial.description') },
+  ];
+  
+  // Initial messages with translations
+  const initialMessages: Message[] = [
+    { 
+      id: 1, 
+      role: 'assistant', 
+      content: t('chat.initialMessage'),
+      timestamp: new Date(Date.now() - 120000).toISOString()
+    }
+  ];
   const location = useLocation();
   const { chatId: routeChatId } = useParams<{ chatId: string }>();
   const uid = user?.id;
@@ -1475,7 +1483,7 @@ const ChatPage: React.FC = () => {
     const roleChangeMessage = {
       id: 1,
       role: 'assistant',
-      content: `Hello! I am now your ${role.name}. ${role.description} How can I help you today?`,
+      content: t('chat.roleChangeMessage', { roleName: role.name, roleDescription: role.description }),
       timestamp: new Date().toISOString()
     };
     
@@ -2065,14 +2073,14 @@ const ChatPage: React.FC = () => {
         <AuthRequiredButton
           onClick={(e) => {
             e.stopPropagation();
-            if (window.confirm('Are you sure you want to delete this chat?')) {
+            if (window.confirm(t('chat.deleteConfirmation'))) {
               deleteChat(chat.id);
             }
           }}
           className={`p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
             darkMode ? 'hover:bg-gray-600 text-gray-400' : 'hover:bg-gray-200 text-gray-500'
           }`}
-          title="Delete chat"
+          title={t('chat.deleteChat')}
         >
           <FiX className="w-3.5 h-3.5" />
         </AuthRequiredButton>
@@ -2166,7 +2174,7 @@ const ChatPage: React.FC = () => {
           ></div>
           <div className={`w-72 ${darkMode ? 'bg-gray-800' : 'bg-white'} flex flex-col h-full`}>
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-              <h2 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Chat History</h2>
+              <h2 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{t('chat.chatHistory')}</h2>
               <AuthRequiredButton 
                 onClick={() => setShowChatHistory(false)}
                 className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`}
@@ -2176,19 +2184,19 @@ const ChatPage: React.FC = () => {
             </div>
             <div className="flex-1 overflow-y-auto p-3">
               <div className="mb-4">
-                <h3 className="px-3 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Today</h3>
+                <h3 className="px-3 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.today')}</h3>
                 {groupedChatHistory.today.map(chat => renderChatHistoryItem(chat, 'Today'))}
               </div>
               
               <div className="mb-4">
-                <h3 className="px-3 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Yesterday</h3>
+                <h3 className="px-3 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.yesterday')}</h3>
                 {groupedChatHistory.yesterday.map(chat => renderChatHistoryItem(chat, 'Yesterday'))}
               </div>
 
               {/* Last week chats */}
               {groupedChatHistory.lastWeek.length > 0 && (
                 <div className="mb-3">
-                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Last Week</h4>
+                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.lastWeek')}</h4>
                   {groupedChatHistory.lastWeek.map(chat => renderChatHistoryItem(chat, 'Last week'))}
                 </div>
               )}
@@ -2196,7 +2204,7 @@ const ChatPage: React.FC = () => {
               {/* Last month chats */}
               {groupedChatHistory.lastMonth.length > 0 && (
                 <div>
-                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Last Month</h4>
+                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.lastMonth')}</h4>
                   {groupedChatHistory.lastMonth.map(chat => renderChatHistoryItem(chat, 'Last month'))}
                 </div>
               )}
@@ -2228,7 +2236,7 @@ const ChatPage: React.FC = () => {
                   ? 'bg-gray-800 text-white hover:bg-gray-700' 
                   : 'bg-white text-gray-800 hover:bg-gray-100'
               } shadow-md`}
-              aria-label="Toggle chat history"
+              aria-label={t('chat.toggleChatHistory')}
             >
               <FiMessageSquare className="w-5 h-5" />
             </AuthRequiredButton>
@@ -2283,13 +2291,13 @@ const ChatPage: React.FC = () => {
                       {!isPro && (
                         <div className="hidden md:flex items-center text-sm text-yellow-600 dark:text-yellow-400 mr-2">
                           <FiMessageSquare className="mr-1 h-4 w-4" />
-                          <span>{remainingMessages} messages left</span>
+                          <span>{t('chat.messagesLeft', { count: remainingMessages })}</span>
                         </div>
                       )}
                       <AuthRequiredButton 
                         onClick={handleStartNewChat}
                         className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                        title="New Chat"
+                        title={t('chat.newChat')}
                       >
                         <FiPlus className="w-5 h-5" />
                       </AuthRequiredButton>
@@ -2303,7 +2311,7 @@ const ChatPage: React.FC = () => {
                               ? (darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-700') 
                               : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                           }`}
-                          title="Chat History"
+                          title={t('chat.chatHistory')}
                         >
                           <FiClock className="w-5 h-5" />
                         </AuthRequiredButton>
@@ -2316,7 +2324,7 @@ const ChatPage: React.FC = () => {
                             }`}
                           >
                             <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                              <h3 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Recent Conversations</h3>
+                              <h3 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{t('chat.recentConversations')}</h3>
                               <AuthRequiredButton 
                                 onClick={() => setShowHistoryDropdown(false)}
                                 className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
@@ -2329,7 +2337,7 @@ const ChatPage: React.FC = () => {
                               {/* Today's chats */}
                               {groupedChatHistory.today.length > 0 && (
                                 <div className="mb-3">
-                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Today</h4>
+                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.today')}</h4>
                                   {groupedChatHistory.today.map(chat => renderChatHistoryItem(chat, 'Today'))}
                                 </div>
                               )}
@@ -2337,7 +2345,7 @@ const ChatPage: React.FC = () => {
                               {/* Yesterday's chats */}
                               {groupedChatHistory.yesterday.length > 0 && (
                                 <div className="mb-3">
-                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Yesterday</h4>
+                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.yesterday')}</h4>
                                   {groupedChatHistory.yesterday.map(chat => renderChatHistoryItem(chat, 'Yesterday'))}
                                 </div>
                               )}
@@ -2345,7 +2353,7 @@ const ChatPage: React.FC = () => {
                               {/* Last week chats */}
                               {groupedChatHistory.lastWeek.length > 0 && (
                                 <div className="mb-3">
-                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Last Week</h4>
+                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.lastWeek')}</h4>
                                   {groupedChatHistory.lastWeek.map(chat => renderChatHistoryItem(chat, 'Last week'))}
                                 </div>
                               )}
@@ -2353,7 +2361,7 @@ const ChatPage: React.FC = () => {
                               {/* Last month chats */}
                               {groupedChatHistory.lastMonth.length > 0 && (
                                 <div>
-                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Last Month</h4>
+                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.lastMonth')}</h4>
                                   {groupedChatHistory.lastMonth.map(chat => renderChatHistoryItem(chat, 'Last month'))}
                                 </div>
                               )}
@@ -2367,7 +2375,7 @@ const ChatPage: React.FC = () => {
                                     : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                                 }`}
                               >
-                                View All History
+{t('chat.viewAllHistory')}
                               </AuthRequiredButton>
                             </div>
                           </div>
@@ -2381,7 +2389,7 @@ const ChatPage: React.FC = () => {
                           ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-600')
                           : (darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700')
                         }`}
-                        title={autoSpeak ? "Auto-speak On" : "Auto-speak Off"}
+                        title={autoSpeak ? t('chat.autoSpeakOn') : t('chat.autoSpeakOff')}
                       >
                         {autoSpeak ? <FiVolume2 className="w-5 h-5" /> : <FiVolume className="w-5 h-5" />}
                       </AuthRequiredButton>
@@ -2429,15 +2437,15 @@ const ChatPage: React.FC = () => {
                                       <FiFile className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                                       <span className="text-sm truncate flex-1">
                                         {message.fileName}
-                                        {message.fileName.toLowerCase().endsWith('.pdf') && ' (PDF)'}
-                                        {message.fileName.toLowerCase().endsWith('.doc') && ' (DOC)'}
-                                        {message.fileName.toLowerCase().endsWith('.docx') && ' (DOCX)'}
+                                        {message.fileName.toLowerCase().endsWith('.pdf') && ` (${t('chat.fileTypes.pdf')})`}
+                                        {message.fileName.toLowerCase().endsWith('.doc') && ` (${t('chat.fileTypes.doc')})`}
+                                        {message.fileName.toLowerCase().endsWith('.docx') && ` (${t('chat.fileTypes.docx')})`}
                                       </span>
                                     </div>
                                   ) : (
                                     <img 
                                       src={message.fileContent as string} 
-                                      alt={message.fileName as string || 'Uploaded image'} 
+                                      alt={message.fileName as string || t('chat.uploadedImage')} 
                                       className="max-w-full rounded-lg"
                                     />
                                   )}
@@ -2478,7 +2486,7 @@ const ChatPage: React.FC = () => {
                                   <span className={`text-xs ${
                                     darkMode ? 'text-gray-400' : 'text-gray-500'
                                   }`}>
-                                    {coinsUsed[message.id]} coin{coinsUsed[message.id] !== 1 ? 's' : ''} used
+                                    {t('chat.coinsUsed', { count: coinsUsed[message.id] })}
                                   </span>
                                 </div>
                               )}
@@ -2496,7 +2504,7 @@ const ChatPage: React.FC = () => {
                                   <button 
                                     onClick={() => copyToClipboard(message.content)}
                                     className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-                                    aria-label="Copy to clipboard"
+                                    aria-label={t('chat.copyToClipboard')}
                                   >
                                     <FiCopy size={14} />
                                   </button>
@@ -2509,7 +2517,7 @@ const ChatPage: React.FC = () => {
                                             ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-600')
                                             : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')
                                         }`}
-                                        aria-label={speakingMessageId === message.id ? "Stop speaking" : "Speak message"}
+                                        aria-label={speakingMessageId === message.id ? t('chat.stopSpeaking') : t('chat.speakMessage')}
                                       >
                                         {speakingMessageId === message.id ? 
                                           <FiSquare size={14} /> : 
@@ -2519,7 +2527,7 @@ const ChatPage: React.FC = () => {
                                       <button 
                                         onClick={() => handleShareMessage(message.content)}
                                         className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-                                        aria-label="Share message"
+                                        aria-label={t('chat.shareMessage')}
                                       >
                                         <FiShare2 size={14} />
                                       </button>
@@ -2574,7 +2582,7 @@ const ChatPage: React.FC = () => {
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Type your message..."
+                        placeholder={t('chat.placeholder')}
                         rows={1}
                         className={`flex-1 py-3 px-4 bg-transparent focus:outline-none resize-none max-h-32 ${darkMode ? 'text-white placeholder-gray-400' : 'text-gray-700 placeholder-gray-400'}`}
                       />
@@ -2589,7 +2597,7 @@ const ChatPage: React.FC = () => {
                         <AuthRequiredButton 
                           onClick={handleFileUpload}
                           className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
-                          aria-label="Upload file"
+                          aria-label={t('chat.uploadFile')}
                         >
                           <FiFile />
                         </AuthRequiredButton>
@@ -2601,7 +2609,7 @@ const ChatPage: React.FC = () => {
                               ? (darkMode ? 'text-gray-500 bg-gray-800' : 'text-gray-400 bg-gray-100') 
                               : (darkMode ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600')
                           }`}
-                          aria-label="Send message"
+                          aria-label={t('chat.sendMessage')}
                         >
                           <FiSend />
                         </AuthRequiredButton>

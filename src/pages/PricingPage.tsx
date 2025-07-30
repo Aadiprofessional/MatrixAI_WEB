@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import HomeNavbar from '../components/HomeNavbar';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface PricingPlan {
   id: string;
@@ -33,6 +34,7 @@ interface ServiceInfo {
 }
 
 const PricingPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState<string>('monthly');
@@ -41,15 +43,15 @@ const PricingPage: React.FC = () => {
   const pricingPlans: PricingPlan[] = [
     {
       id: 'tester',
-      name: 'Tester',
+      name: t('pricing.tester'),
       coins: 450,
       price: 50,
       currency: 'HKD',
       features: [
-        'Perfect for trying our service',
-        'Valid for 15 days',
-        'Basic support',
-        'Access to all AI tools'
+        t('pricing.testerFeature1'),
+        t('pricing.testerFeature2'),
+        t('pricing.testerFeature3'),
+        t('pricing.testerFeature4')
       ],
       icon: <FiZap className="w-6 h-6" />,
       color: 'blue',
@@ -57,16 +59,16 @@ const PricingPage: React.FC = () => {
     },
     {
       id: 'monthly',
-      name: 'Monthly',
+      name: t('pricing.monthly'),
       coins: 1380,
       price: 138,
       currency: 'HKD',
       popular: true,
       features: [
-        'Perfect for regular users',
-        'Monthly allocation of coins',
-        'Priority support',
-        'Full access to all features'
+        t('pricing.monthlyFeature1'),
+        t('pricing.monthlyFeature2'),
+        t('pricing.monthlyFeature3'),
+        t('pricing.monthlyFeature4')
       ],
       icon: <FiStar className="w-6 h-6" />,
       color: 'purple',
@@ -74,19 +76,19 @@ const PricingPage: React.FC = () => {
     },
     {
       id: 'yearly',
-      name: 'Yearly',
+      name: t('pricing.yearly'),
       coins: 1380,
       price: 1490,
       currency: 'HKD',
-      period: '/month',
+      period: t('pricing.perMonth'),
       originalPrice: 1656,
-      discount: 'Save 10%',
+      discount: t('pricing.save10'),
       features: [
-        'Best value plan',
-        '1380 coins every month',
-        'Full year subscription',
-        'Premium support',
-        '10% discount'
+        t('pricing.yearlyFeature1'),
+        t('pricing.yearlyFeature2'),
+        t('pricing.yearlyFeature3'),
+        t('pricing.yearlyFeature4'),
+        t('pricing.yearlyFeature5')
       ],
       icon: <FiTrendingUp className="w-6 h-6" />,
       color: 'green',
@@ -94,15 +96,15 @@ const PricingPage: React.FC = () => {
     },
     {
       id: 'addon',
-      name: 'Addon Pack',
+      name: t('pricing.addonPack'),
       coins: 550,
       price: 50,
       currency: 'HKD',
       features: [
-        'Extra coins for existing users',
-        'Expires at month end',
-        'Add to current balance',
-        'Instant activation'
+        t('pricing.addonFeature1'),
+        t('pricing.addonFeature2'),
+        t('pricing.addonFeature3'),
+        t('pricing.addonFeature4')
       ],
       icon: <FiPackage className="w-6 h-6" />,
       color: 'amber',
@@ -113,50 +115,50 @@ const PricingPage: React.FC = () => {
   // AI services pricing info from ChargeModal.tsx
   const aiServicesInfo: ServiceInfo[] = [
     {
-      type: 'AI Chat',
+      type: t('pricing.aiChat'),
       icon: <FiMessageSquare className="w-5 h-5" />,
-      cost: '1 coin',
-      unit: 'per message',
+      cost: t('pricing.oneCoin'),
+      unit: t('pricing.perMessage'),
       color: 'text-blue-600 dark:text-blue-400',
       bgColor: 'bg-blue-100 dark:bg-blue-900/30'
     },
     {
-      type: 'Image Generation',
+      type: t('pricing.imageGeneration'),
       icon: <FiImage className="w-5 h-5" />,
-      cost: '3 coins',
-      unit: 'per image',
+      cost: t('pricing.threeCoins'),
+      unit: t('pricing.perImage'),
       color: 'text-purple-600 dark:text-purple-400',
       bgColor: 'bg-purple-100 dark:bg-purple-900/30'
     },
     {
-      type: 'Video Generation',
+      type: t('pricing.videoGeneration'),
       icon: <FiVideo className="w-5 h-5" />,
-      cost: '30 coins',
-      unit: 'per 5 seconds',
+      cost: t('pricing.thirtyCoins'),
+      unit: t('pricing.perFiveSeconds'),
       color: 'text-red-600 dark:text-red-400',
       bgColor: 'bg-red-100 dark:bg-red-900/30'
     },
     {
-      type: 'Audio Transcription',
+      type: t('pricing.audioTranscription'),
       icon: <FiMic className="w-5 h-5" />,
-      cost: '2 coins',
-      unit: 'per minute',
+      cost: t('pricing.twoCoins'),
+      unit: t('pricing.perMinute'),
       color: 'text-green-600 dark:text-green-400',
       bgColor: 'bg-green-100 dark:bg-green-900/30'
     },
     {
-      type: 'Content Writing',
+      type: t('pricing.contentWriting'),
       icon: <FiEdit3 className="w-5 h-5" />,
-      cost: '1 coin',
-      unit: 'per request',
+      cost: t('pricing.oneCoin'),
+      unit: t('pricing.perRequest'),
       color: 'text-orange-600 dark:text-orange-400',
       bgColor: 'bg-orange-100 dark:bg-orange-900/30'
     },
     {
-      type: 'Humanise Text',
+      type: t('pricing.humaniseText'),
       icon: <FiZap className="w-5 h-5" />,
-      cost: '1 coin',
-      unit: 'per request',
+      cost: t('pricing.oneCoin'),
+      unit: t('pricing.perRequest'),
       color: 'text-cyan-600 dark:text-cyan-400',
       bgColor: 'bg-cyan-100 dark:bg-cyan-900/30'
     }
@@ -209,7 +211,7 @@ const PricingPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              Simple, Transparent Pricing
+              {t('pricing.title')}
             </motion.h1>
             <motion.p 
               className="text-xl text-gray-300 max-w-3xl mx-auto"
@@ -217,7 +219,7 @@ const PricingPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              Choose the plan that works best for you. All plans include access to our full suite of AI tools.
+              {t('pricing.subtitle')}
             </motion.p>
           </div>
 
@@ -240,7 +242,7 @@ const PricingPage: React.FC = () => {
                 {/* Popular badge */}
                 {plan.popular && (
                   <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1 rounded-bl-lg text-sm font-medium z-10">
-                    Most Popular
+                    {t('pricing.mostPopular')}
                   </div>
                 )}
                 
@@ -283,7 +285,7 @@ const PricingPage: React.FC = () => {
                     </div>
                     <div>
                       <span className="text-2xl font-bold text-amber-400">{plan.coins}</span>
-                      <span className="ml-2 text-gray-300">coins</span>
+                      <span className="ml-2 text-gray-300">{t('pricing.coins')}</span>
                     </div>
                   </div>
                 </div>
@@ -304,7 +306,7 @@ const PricingPage: React.FC = () => {
                       onClick={() => handleSubscribe(plan.name)}
                       className={`w-full py-3 rounded-lg bg-gradient-to-r ${plan.bgGradient} text-white font-medium hover:opacity-90 transition-opacity flex justify-center items-center`}
                     >
-                      {user ? 'Subscribe Now' : 'Login to Join'}
+                      {user ? t('pricing.subscribeNow') : t('pricing.loginToJoin')}
                       <FiArrowRight className="ml-2" />
                     </button>
                   </div>
@@ -321,9 +323,9 @@ const PricingPage: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-600">AI Services Pricing</h2>
+              <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-600">{t('pricing.aiServicesPricing')}</h2>
               <p className="text-gray-300 max-w-2xl mx-auto">
-                Our pricing is based on a coin system. Different AI services consume different amounts of coins.
+                {t('pricing.coinSystemDescription')}
               </p>
             </div>
             
@@ -363,29 +365,29 @@ const PricingPage: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.4 }}
           >
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">Frequently Asked Questions</h2>
-              <p className="text-gray-300">Have questions about our pricing? Find answers to common questions below.</p>
+              <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">{t('pricing.faq')}</h2>
+              <p className="text-gray-300">{t('pricing.faqDescription')}</p>
             </div>
             
             <div className="space-y-6">
               <div className="backdrop-blur-md bg-gray-950 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors duration-300">
-                <h3 className="text-xl font-semibold mb-2 text-white">How does the coin system work?</h3>
-                <p className="text-gray-300">Our platform uses a coin-based system where different AI services consume different amounts of coins. You purchase a plan that gives you a certain number of coins, which you can then spend on various AI services.</p>
+                <h3 className="text-xl font-semibold mb-2 text-white">{t('pricing.faqQuestion1')}</h3>
+                <p className="text-gray-300">{t('pricing.faqAnswer1')}</p>
               </div>
               
               <div className="backdrop-blur-md bg-gray-950 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors duration-300">
-                <h3 className="text-xl font-semibold mb-2 text-white">Do coins expire?</h3>
-                <p className="text-gray-300">Yes, coins from monthly plans expire at the end of each billing cycle. Coins from the Tester plan expire after 15 days. Addon pack coins expire at the end of the current month.</p>
+                <h3 className="text-xl font-semibold mb-2 text-white">{t('pricing.faqQuestion2')}</h3>
+                <p className="text-gray-300">{t('pricing.faqAnswer2')}</p>
               </div>
               
               <div className="backdrop-blur-md bg-gray-950 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors duration-300">
-                <h3 className="text-xl font-semibold mb-2 text-white">Can I upgrade my plan?</h3>
-                <p className="text-gray-300">Yes, you can upgrade your plan at any time. When you upgrade, we'll prorate the remaining value of your current plan and apply it to your new plan.</p>
+                <h3 className="text-xl font-semibold mb-2 text-white">{t('pricing.faqQuestion3')}</h3>
+                <p className="text-gray-300">{t('pricing.faqAnswer3')}</p>
               </div>
               
               <div className="backdrop-blur-md bg-gray-950 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors duration-300">
-                <h3 className="text-xl font-semibold mb-2 text-white">What payment methods do you accept?</h3>
-                <p className="text-gray-300">We accept major credit cards (Visa, Mastercard), as well as Alipay HK and Alipay China for payments.</p>
+                <h3 className="text-xl font-semibold mb-2 text-white">{t('pricing.faqQuestion4')}</h3>
+                <p className="text-gray-300">{t('pricing.faqAnswer4')}</p>
               </div>
             </div>
           </motion.div>
@@ -397,20 +399,20 @@ const PricingPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <h2 className="text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-600">Ready to get started?</h2>
+            <h2 className="text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-600">{t('pricing.readyToStart')}</h2>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link 
                 to="/signup" 
                 className="px-8 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-pink-700 text-white font-medium hover:opacity-90 transition-opacity flex items-center justify-center"
               >
-                Sign Up Now
+                {t('pricing.signUpNow')}
                 <FiArrowRight className="ml-2" />
               </Link>
               <Link 
                 to="/contact" 
                 className="px-8 py-3 rounded-lg border border-gray-600 text-white font-medium hover:bg-gray-800 transition-colors flex items-center justify-center"
               >
-                Contact Sales
+                {t('pricing.contactSales')}
               </Link>
             </div>
           </motion.div>

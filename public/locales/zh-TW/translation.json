@@ -52,7 +52,98 @@
     "personalDescription": "您的個人AI伴侶日常問題和創造性幫助",
     "placeholder": "在這裡輸入您的消息...",
     "selectSpecializedRole": "為您的AI助手選擇專業角色",
-    "welcomeToMatrixAI": "歡迎來到Matrixai"
+    "welcomeToMatrixAI": "歡迎來到Matrixai",
+    "autoSpeakOff": "自動說話",
+    "autoSpeakOn": "自動說話",
+    "chatHistory": "聊天歷史",
+    "coinsUsed": "{{count}}使用的硬幣",
+    "coinsUsed_plural": "{{count}}使用的硬幣",
+    "copyToClipboard": "複製到剪貼板",
+    "deleteChat": "刪除聊天",
+    "deleteConfirmation": "您確定要刪除此聊天嗎？",
+    "fileTypes": {
+      "doc": "Doc",
+      "docx": "DOCX",
+      "pdf": "PDF"
+    },
+    "initialMessage": "你好！我是您的AI助手。今天我該如何幫助您？",
+    "lastMonth": "上個月",
+    "lastWeek": "上星期",
+    "messagesLeft": "{{count}}消息留下",
+    "recentConversations": "最近的對話",
+    "roles": {
+      "analyst": {
+        "description": "數據分析，商業智能和戰略見解的專家",
+        "name": "業務分析師"
+      },
+      "architect": {
+        "description": "專門從事建築設計，建築概念和空間規劃",
+        "name": "建築助理"
+      },
+      "business": {
+        "description": "專注於業務戰略，分析和專業溝通",
+        "name": "業務分析師"
+      },
+      "creative": {
+        "description": "專門從事創意寫作，講故事和內容創建",
+        "name": "創意作家"
+      },
+      "doctor": {
+        "description": "知識淵博的醫學主題和與健康有關的信息",
+        "name": "醫療助理"
+      },
+      "educational": {
+        "description": "專門從事教學，解釋概念和教育支持",
+        "name": "教育導師"
+      },
+      "engineer": {
+        "description": "專門研究工程原理，設計和技術解決問題",
+        "name": "工程專家"
+      },
+      "financial": {
+        "description": "金融，投資策略和經濟分析專家",
+        "name": "財務顧問"
+      },
+      "general": {
+        "description": "用於日常任務和問題的多功能AI助手",
+        "name": "總助理"
+      },
+      "lawyer": {
+        "description": "專門從事法律概念，法規和法律文件",
+        "name": "法律助理"
+      },
+      "programmer": {
+        "description": "專門從事編碼，軟件開發和技術解決方案",
+        "name": "編程專家"
+      },
+      "psychologist": {
+        "description": "知識淵博的心理學，心理健康和行為見解",
+        "name": "心理助理"
+      },
+      "surveyor": {
+        "description": "數據收集，研究方法和調查分析專家",
+        "name": "調查專家"
+      },
+      "teacher": {
+        "description": "教學，解釋概念和教育支持的專家",
+        "name": "教育導師"
+      },
+      "technical": {
+        "description": "編程，技術和技術解決問題的專家",
+        "name": "技術專家"
+      }
+    },
+    "sendMessage": "發送消息",
+    "shareMessage": "分享消息",
+    "speakMessage": "說話",
+    "stopSpeaking": "停止講話",
+    "today": "今天",
+    "toggleChatHistory": "切換聊天歷史記錄",
+    "uploadFile": "上傳文件",
+    "uploadedImage": "上傳圖像",
+    "viewAllHistory": "查看所有歷史",
+    "roleChangeMessage": "你好！我現在是您的{{rolename}}。 {{roledescription}}我今天如何為您提供幫助？",
+    "yesterday": "昨天"
   },
   "chooseFromProfessionalTemplates": "從專業模板中選擇",
   "chooseTemplateOrCreateOwn": "選擇模板或創建自己的",
@@ -269,7 +360,8 @@
     "upgradeAvailable": "可升級可用",
     "videosCreated": "創建的視頻",
     "viewAllTools": "查看所有工具",
-    "welcome": "歡迎回來"
+    "welcome": "歡迎回來",
+    "total": "全部的"
   },
   "describePresentationTopic": "描述您的演示主題",
   "detectAI": {
@@ -332,7 +424,8 @@
       "generalAnalysisDesc": "任何類型的內容的全面AI檢測分析",
       "reviewCheckDesc": "分析AI生成內容的評論和推薦",
       "sourceDetectionDesc": "確定潛在的AI寫作工具和所使用的來源"
-    }
+    },
+    "historyTitle": "檢測史"
   },
   "editSlide": "編輯幻燈片",
   "export": "出口",
@@ -591,7 +684,8 @@
   "mindmap": {
     "generate": "生成思維圖",
     "generating": "生成思維圖...",
-    "noData": "沒有可用的數據"
+    "noData": "沒有可用的數據",
+    "title": "思維地圖"
   },
   "nav": {
     "chat": "聊天",
@@ -1543,9 +1637,7 @@
     },
     "audioTranscription": "音頻轉錄",
     "back": "後退",
-    
     "chat": {
-   
       "aiThinking": "AI在想...",
       "clearChat": "清晰的聊天",
       "confirmClearHistory": "您確定要清除聊天歷史嗎？",
@@ -1690,5 +1782,143 @@
       "viewTranscript": "查看成績單",
       "wordsPerMinute": "單詞/分鐘"
     }
+  },
+  "about": {
+    "description": "我們正在建立AI驅動的生產力工具的未來。我們的使命是使每個人都可以訪問先進的人工智能，從而使個人和企業能夠通過智能自動化獲得更多成就。",
+    "ourStory": {
+      "paragraph1": "Matrixai成立於2023年，源於一種簡單的信念：人工智能應提高人類的創造力和生產力，而不是取代它。我們的人工智能研究人員，工程師和設計師團隊融合了民主化使用強大的AI工具的共同願景。",
+      "paragraph2": "最初是一個小型項目來創建更好的AI寫作工具，已經發展成為一個為全球數千名用戶提供服務的綜合平台。我們已經構建了從智能聊天機器人到高級圖像生成系統的所有內容，始終在最前沿的用戶體驗。",
+      "paragraph3": "如今，Matrixai繼續在AI上突破可能的界限，同時保持我們對道德發展和用戶隱私的承諾。我們認為，工作的未來是協作的 - 人類和人工智能共同努力，以取得非凡的成果。",
+      "title": "我們的故事"
+    },
+    "title": "關於Matrixai",
+    "values": {
+      "description": "這些核心原則指導我們所做的一切，從產品開發到客戶關係。",
+      "globalPerspective": {
+        "description": "我們正在建立適合所有人的人工智能，考慮到世界各地的各種語言，文化和用例。",
+        "title": "全球視角"
+      },
+      "openCommunication": {
+        "description": "我們在團隊內部和客戶中培養誠實和公開的對話，以建立信任並不斷提高。",
+        "title": "開放溝通"
+      },
+      "responsibleAI": {
+        "description": "我們相信，在培訓模型和處理數據方面，以透明度在道德和負責任地開發AI系統。",
+        "title": "負責人AI"
+      },
+      "title": "我們的價值觀",
+      "userCentric": {
+        "description": "我們建立了AI，可以增強人類能力，而無需取代人類的聯繫。我們的產品旨在解決真正的人的真正問題。",
+        "title": "以用戶為中心的創新"
+      }
+    }
+  },
+  "blog": {
+    "categories": {
+      "aiTechnology": "AI技術",
+      "all": "全部",
+      "tutorials": "教程"
+    },
+    "pageDescription": "洞察力，更新和深入研究AI技術的世界",
+    "pageTitle": "Matrixai博客",
+    "searchPlaceholder": "搜索文章...",
+    "title": "部落格"
+  },
+  "contact": {
+    "agreeTerms": "我同意隱私政策和服務條款。",
+    "company": "公司",
+    "email": "電子郵件",
+    "firstName": "名",
+    "generalInquiries": "一般查詢",
+    "generalInquiriesDesc": "有關我們的產品或服務的問題",
+    "lastName": "姓",
+    "message": "訊息",
+    "messagePlaceholder": "我們該如何幫助您？",
+    "ourOffices": "我們的辦公室",
+    "phone": "電話",
+    "sales": "銷售量",
+    "salesDesc": "與我們的銷售團隊談談您的需求",
+    "select": "選擇",
+    "selectReason": "請選擇上面的聯繫理由並填寫以下表格。",
+    "selectedReason": "您已經選擇了{{{原因}}。填寫下面的表格，我們將盡快與您聯繫。",
+    "sendAnother": "發送另一個消息",
+    "sendButton": "發送消息",
+    "sendMessage": "向我們發送消息",
+    "subject": "主題",
+    "subtitle": "有問題還是需要幫助？我們在這里為您服務。與我們的團隊聯繫，我們很快就會與您聯繫。",
+    "successMessage": "您的消息已成功發送。我們將盡快與您聯繫。",
+    "support": "支持",
+    "supportDesc": "在您現有帳戶中獲得幫助",
+    "thankYou": "謝謝你！",
+    "title": "取得聯繫",
+    "visitOffices": "在我們的全球辦事處之一拜訪我們"
+  },
+  "notFound": {
+    "needHelp": "需要幫助嗎？",
+    "returnHome": "回家",
+    "title": "找不到頁面",
+    "description": "您要尋找的頁面不存在或已移動。",
+    "contactUs": "聯繫我們"
+  },
+  "pricing": {
+    "addonFeature1": "現有用戶的額外硬幣",
+    "addonFeature2": "在月末過期",
+    "addonFeature3": "增加當前餘額",
+    "addonFeature4": "即時激活",
+    "addonPack": "插件包",
+    "aiChat": "AI聊天",
+    "aiServicesPricing": "AI服務定價",
+    "audioTranscription": "音頻轉錄",
+    "coinSystemDescription": "我們的定價基於硬幣系統。不同的AI服務消耗了不同數量的硬幣。",
+    "coins": "硬幣",
+    "contactSales": "聯繫銷售",
+    "contentWriting": "內容寫作",
+    "faq": "常見問題",
+    "faqAnswer1": "我們的平台使用基於硬幣的系統，其中不同的AI服務消耗了不同數量的硬幣。您購買了一個計劃，可以為您提供一定數量的硬幣，然後您可以將其用於各種AI服務。",
+    "faqAnswer2": "是的，每月計劃的硬幣在每個計費周期結束時到期。測試人員計劃的硬幣在15天后到期。 Addon Pack硬幣將於本月底到期。",
+    "faqAnswer3": "是的，您可以隨時升級計劃。升級時，我們將為您當前計劃的剩餘價值進行籌集資金，並將其應用於您的新計劃。",
+    "faqAnswer4": "我們接受主要的信用卡（Visa，萬事達卡），以及中國的支撐式香港和Alipay中國付款。",
+    "faqDescription": "對我們的定價有疑問嗎？在下面找到常見問題的答案。",
+    "faqQuestion1": "硬幣系統如何工作？",
+    "faqQuestion2": "硬幣過期嗎？",
+    "faqQuestion3": "我可以升級我的計劃嗎？",
+    "faqQuestion4": "您接受什麼付款方式？",
+    "humaniseText": "人性化文字",
+    "imageGeneration": "圖像生成",
+    "loginToJoin": "登錄加入",
+    "monthly": "每月",
+    "monthlyFeature1": "非常適合普通用戶",
+    "monthlyFeature2": "每月分配硬幣",
+    "monthlyFeature3": "優先支持",
+    "monthlyFeature4": "完全訪問所有功能",
+    "mostPopular": "最受歡迎",
+    "oneCoin": "1個硬幣",
+    "perFiveSeconds": "每5秒",
+    "perImage": "每個圖像",
+    "perMessage": "每條消息",
+    "perMinute": "每分鐘",
+    "perMonth": "/月",
+    "perRequest": "根據請求",
+    "readyToStart": "準備開始了嗎？",
+    "save10": "節省10％",
+    "signUpNow": "立即註冊",
+    "subscribeNow": "立即訂閱",
+    "subtitle": "選擇最適合您的計劃。所有計劃都包括訪問我們的完整AI工具套件。",
+    "tester": "測試儀",
+    "testerFeature1": "非常適合嘗試我們的服務",
+    "testerFeature2": "有效期15天",
+    "testerFeature3": "基本支持",
+    "testerFeature4": "訪問所有AI工具",
+    "thirtyCoins": "30個硬幣",
+    "threeCoins": "3個硬幣",
+    "title": "簡單，透明的定價",
+    "twoCoins": "2個硬幣",
+    "videoGeneration": "視頻生成",
+    "yearly": "每年",
+    "yearlyFeature1": "最佳價值計劃",
+    "yearlyFeature2": "每月1380硬幣",
+    "yearlyFeature3": "全年訂閱",
+    "yearlyFeature4": "高級支持",
+    "yearlyFeature5": "10％折扣"
   }
 }

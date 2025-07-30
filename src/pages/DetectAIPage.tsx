@@ -17,9 +17,13 @@ import {
   FiRotateCw,
   FiX,
   FiClock,
-  FiMessageCircle
+  FiMessageCircle,
+  FiGrid,
+  FiList,
+  FiChevronLeft,
+  FiChevronRight
 } from 'react-icons/fi';
-import { ProFeatureAlert } from '../components';
+import { AuthRequiredButton, ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
@@ -27,6 +31,7 @@ import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
 import './ContentWriterPage.css';
+import coinImage from '../assets/coin.png';
 
 const DetectAIPage: React.FC = () => {
   const { userData, isPro } = useUser();
@@ -59,6 +64,7 @@ const DetectAIPage: React.FC = () => {
     };
   }, []);
   const [text, setText] = useState('');
+  const [wordCount, setWordCount] = useState(0);
   const [detectionResult, setDetectionResult] = useState<{
     isAIGenerated: boolean;
     score: number;
@@ -90,27 +96,40 @@ const DetectAIPage: React.FC = () => {
     t('detectAI.historyItems.detectReview')
   ]);
   
+  // Pagination and view states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const itemsPerPage = 10;
+  
   // Fetch user's detection history
-  const fetchUserDetections = async () => {
+  const fetchUserDetections = async (page: number = currentPage) => {
     if (!userData?.uid) return;
     
+    setIsLoadingHistory(true);
     try {
       const response = await axios.get(
-        'http://localhost:3002/api/detection/getUserDetections',
+        'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/detection/getUserDetections',
         {
           params: {
             uid: userData.uid,
-            page: 1,
-            itemsPerPage: 10
+            page: page,
+            itemsPerPage: itemsPerPage
           }
         }
       );
       
       if (response.data && response.data.detections) {
         setSavedContents(response.data.detections);
+        setTotalPages(Math.ceil((response.data.total || 0) / itemsPerPage));
+        setCurrentPage(page);
       }
     } catch (error) {
       console.error('Error fetching detection history:', error);
+    } finally {
+      setIsLoadingHistory(false);
     }
   };
   
@@ -118,9 +137,12 @@ const DetectAIPage: React.FC = () => {
   const deleteDetection = async (detectionId: string) => {
     if (!userData?.uid) return;
     
+    // Add to deleting set to show loading state
+    setDeletingIds(prev => new Set(prev).add(detectionId));
+    
     try {
       await axios.delete(
-        'http://localhost:3002/api/detection/deleteDetection',
+        'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/detection/deleteDetection',
         {
           data: {
             uid: userData.uid,
@@ -131,8 +153,17 @@ const DetectAIPage: React.FC = () => {
       
       // Remove from local state
       setSavedContents(prev => prev.filter(item => item.id !== detectionId));
+      toast.success('Detection deleted successfully');
     } catch (error) {
       console.error('Error deleting detection:', error);
+      toast.error('Failed to delete detection');
+    } finally {
+      // Remove from deleting set
+      setDeletingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(detectionId);
+        return newSet;
+      });
     }
   };
 
@@ -152,6 +183,22 @@ const DetectAIPage: React.FC = () => {
     { id: 'high', name: t('high') },
     { id: 'very-high', name: t('veryHigh') },
   ];
+
+  const handleTextChange = (value: string) => {
+    const words = value.trim().split(/\s+/).filter(word => word.length > 0);
+    const currentWordCount = value.trim() === '' ? 0 : words.length;
+    
+    if (currentWordCount <= 2000) {
+      setText(value);
+      setWordCount(currentWordCount);
+    } else {
+      // Truncate to 2000 words
+      const truncatedWords = words.slice(0, 2000);
+      const truncatedText = truncatedWords.join(' ');
+      setText(truncatedText);
+      setWordCount(2000);
+    }
+  };
 
   const handleDetectAI = async () => {
     if (!text.trim()) return;
@@ -176,7 +223,7 @@ const DetectAIPage: React.FC = () => {
       
       // Make API request to the new detection API
       const response = await axios.post(
-        'http://localhost:3002/api/detection/createDetection',
+        'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/detection/createDetection',
         requestPayload,
         {
           headers: {
@@ -589,7 +636,7 @@ ${text}
                   <div className="relative">
                     <textarea
                       value={text}
-                      onChange={(e) => setText(e.target.value)}
+                      onChange={(e) => handleTextChange(e.target.value)}
                       placeholder={t('detectAI.placeholder')}
                       className="w-full p-4 pr-12 border rounded-lg shadow-sm h-36 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       disabled={isProcessing}
@@ -603,7 +650,15 @@ ${text}
                         <FiSliders />
                       </button>
                     </div>
+                    <div className="absolute bottom-2 right-2 text-xs text-gray-500 dark:text-gray-400">
+                      <span className={wordCount > 2000 ? 'text-red-500' : ''}>
+                        {wordCount}/2000 words
+                      </span>
+                    </div>
                   </div>
+                  {wordCount > 2000 && (
+                    <p className="text-red-500 text-xs mt-1">Word limit exceeded. Text has been truncated to 2000 words.</p>
+                  )}
 
                   {showSettings && (
                     <motion.div 
@@ -613,7 +668,7 @@ ${text}
                       className="mt-4 p-4 border rounded-lg shadow-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                     >
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('detectAI.sensitivity')}</label>
+                        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('detectAI.sensitivity.title')}</label>
                         <div className="grid grid-cols-4 gap-2">
                           {sensitivityOptions.map(option => (
                             <button
@@ -626,10 +681,10 @@ ${text}
                               }`}
                               disabled={isProcessing}
                             >
-                              {option.id === 'low' && t('detectAI.sensitivityLevels.low')}
-                              {option.id === 'balanced' && t('detectAI.sensitivityLevels.balanced')}
-                              {option.id === 'high' && t('detectAI.sensitivityLevels.high')}
-                              {option.id === 'very-high' && t('detectAI.sensitivityLevels.veryHigh')}
+                              {option.id === 'low' && t('detectAI.sensitivity.low')}
+                              {option.id === 'balanced' && t('detectAI.sensitivity.balanced')}
+                              {option.id === 'high' && t('detectAI.sensitivity.high')}
+                              {option.id === 'very-high' && t('detectAI.sensitivity.veryHigh')}
                             </button>
                           ))}
                         </div>
@@ -650,56 +705,55 @@ ${text}
                     <span>{t('detectAI.bestResultsTip')}</span>
                   </div>
                 </div>
+
+                  <AuthRequiredButton
+                  onClick={handleDetectAI}
+                  disabled={!text.trim()}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all ${
+                    !text.trim() || isProcessing
+                      ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]'
+                  }`}
+                >
+                 <div className="flex items-center justify-center">
+                  {isProcessing ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {t('detectAI.analyzing')}
+                    </>
+                  ) : (
+                    <>
+                      {t('detectAI.detectAction')}
+                      <FiShield className="ml-2" />
+                      <span className="ml-2 flex items-center text-yellow-300">
+                        -40
+                        <img src={coinImage} alt="coin" className="w-4 h-4 ml-1" />
+                      </span>
+                    </>
+                  )}
+                </div>
+                </AuthRequiredButton>
                 
-                {history.length > 0 && (
-                  <div className="mt-4">
-                    <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('humanizeText.recent')}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mr-1">
-                        <FiClock className="mr-1" /> {t('common.showHistory')}:
-                      </div>
-                      {history.map((item, index) => (
-                        <button
-                          key={index}
-                          className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-all hover:scale-105 text-gray-800 dark:text-gray-200"
-                          onClick={() => setText(item)}
-                          disabled={isProcessing}
-                        >
-                          {item.length > 25 ? item.substring(0, 25) + '...' : item}
-                        </button>
-                      ))}
-                    </div>
+                <AuthRequiredButton
+                  onClick={() => setShowHistory(!showHistory)}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all mt-4 ${
+                    darkMode
+                      ? 'bg-purple-900/30 text-purple-400 hover:bg-purple-900/50'
+                      : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-center">
+                    <FiFileText className="w-4 h-4 mr-2" />
+                    {showHistory ? t('common.hideHistory') || 'Hide History' : t('contentWriter.history')}
                   </div>
-                )}
+                </AuthRequiredButton>
               </div>
             </div>
             
-            <div>
-              <button
-                onClick={handleDetectAI}
-                disabled={isProcessing || !text.trim()}
-                className={`px-4 py-4 min-w-24 rounded-lg font-medium shadow-sm transition-all flex items-center justify-center ${
-                  isProcessing || !text.trim()
-                    ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-                    : 'bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 text-white hover:shadow-md animate-gradient-x hover:scale-105'
-                }`}
-              >
-                {isProcessing ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    {t('detectAI.analyzing')}
-                  </>
-                ) : (
-                  <>
-                    {t('detectAI.detectAction')}
-                    <FiShield className="ml-2" />
-                  </>
-                )}
-              </button>
-            </div>
+          
           </div>
         </div>
         
@@ -847,75 +901,221 @@ ${text}
 
       {/* Detection History */}
       <div className="mt-10">
-        <button
-          onClick={() => setShowHistory(!showHistory)}
-          className="flex items-center px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-800/40 transition-colors mb-4"
-        >
-          <FiSave className="mr-2 text-indigo-500 dark:text-indigo-400" />
-          {showHistory ? t('common.hideHistory') || 'Hide History' : t('detectAI.history')}
-        </button>
-        
         {showHistory && (
-          <div>
-            {savedContents.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {savedContents.map((saved) => (
-              <motion.div 
-                key={saved.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="glass-effect p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-medium text-gray-800 dark:text-gray-200">{saved.title}</h3>
-                  <div className="flex space-x-1">
-                    <button
-                      onClick={() => handleLoadSaved(saved)}
-                      className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      title="Load"
-                    >
-                      <FiEdit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSaved(saved.id)}
-                      className="p-1.5 rounded-md text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      title="Delete"
-                    >
-                      <FiTrash className="w-4 h-4" />
-                    </button>
-                  </div>
+          <div className="p-6">
+            {/* History Header with View Toggle */}
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {t('detectAI.historyTitle') || 'Detection History'}
+              </h3>
+              <div className="flex items-center space-x-2">
+                <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded-md transition-colors ${
+                      viewMode === 'grid'
+                        ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                    title="Grid View"
+                  >
+                    <FiGrid className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded-md transition-colors ${
+                      viewMode === 'list'
+                        ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                    title="List View"
+                  >
+                    <FiList className="w-4 h-4" />
+                  </button>
                 </div>
-                <div className="flex items-center mt-1 mb-2">
-                  {saved.fake_percentage >= 80 ? (
-                    <div className="py-1 px-2 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium flex items-center">
-                      <FiAlertTriangle className="mr-1" /> 
-                      <span>{saved.fake_percentage}% AI</span>
-                    </div>
-                  ) : saved.fake_percentage >= 50 ? (
-                    <div className="py-1 px-2 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 text-xs font-medium flex items-center">
-                      <FiAlertTriangle className="mr-1" />
-                      <span>{saved.fake_percentage}% AI</span>
-                    </div>
-                  ) : (
-                    <div className="py-1 px-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-medium flex items-center">
-                      <FiCheckCircle className="mr-1" />
-                      <span>{saved.fake_percentage}% AI</span>
-                    </div>
-                  )}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  {new Date(saved.createdAt).toLocaleDateString()}
-                </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
-                  {saved.text}
-                </p>
-              </motion.div>
-            ))}
               </div>
+            </div>
+
+            {/* Loading State */}
+            {isLoadingHistory ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <span className="ml-3 text-gray-600 dark:text-gray-400">Loading history...</span>
+              </div>
+            ) : savedContents.length > 0 ? (
+              <>
+                {/* Grid View */}
+                {viewMode === 'grid' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {savedContents.map((saved) => (
+                      <motion.div 
+                        key={saved.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="glass-effect p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-medium text-gray-800 dark:text-gray-200 line-clamp-2">{saved.title}</h4>
+                          <div className="flex space-x-1">
+                            <button
+                              onClick={() => handleLoadSaved(saved)}
+                              className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
+                              title="Load"
+                            >
+                              <FiEdit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteSaved(saved.id)}
+                              disabled={deletingIds.has(saved.id)}
+                              className="p-1.5 rounded-md text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50"
+                              title="Delete"
+                            >
+                              {deletingIds.has(saved.id) ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
+                              ) : (
+                                <FiTrash className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex items-center mt-1 mb-2">
+                          {saved.fake_percentage >= 80 ? (
+                            <div className="py-1 px-2 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium flex items-center">
+                              <FiAlertTriangle className="mr-1" /> 
+                              <span>{saved.fake_percentage}% AI</span>
+                            </div>
+                          ) : saved.fake_percentage >= 50 ? (
+                            <div className="py-1 px-2 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 text-xs font-medium flex items-center">
+                              <FiAlertTriangle className="mr-1" />
+                              <span>{saved.fake_percentage}% AI</span>
+                            </div>
+                          ) : (
+                            <div className="py-1 px-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-medium flex items-center">
+                              <FiCheckCircle className="mr-1" />
+                              <span>{saved.fake_percentage}% AI</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                          {new Date(saved.createdAt).toLocaleDateString()}
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
+                          {saved.text}
+                        </p>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+
+                {/* List View */}
+                {viewMode === 'list' && (
+                  <div className="space-y-3">
+                    {savedContents.map((saved) => (
+                      <motion.div 
+                        key={saved.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="glass-effect flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex-shrink-0">
+                              {saved.fake_percentage >= 80 ? (
+                                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                              ) : saved.fake_percentage >= 50 ? (
+                                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                              ) : (
+                                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                {saved.title}
+                              </h4>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                {saved.text}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {saved.fake_percentage}% AI
+                          </div>
+                          <div className="text-xs text-gray-400 dark:text-gray-500">
+                            {new Date(saved.createdAt).toLocaleDateString()}
+                          </div>
+                          <div className="flex space-x-1">
+                            <button
+                              onClick={() => handleLoadSaved(saved)}
+                              className="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
+                              title="Load"
+                            >
+                              <FiEdit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteSaved(saved.id)}
+                              disabled={deletingIds.has(saved.id)}
+                              className="p-2 rounded-md text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50"
+                              title="Delete"
+                            >
+                              {deletingIds.has(saved.id) ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
+                              ) : (
+                                <FiTrash className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="mt-8">
+                    <div className="glass-effect p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                      <div className="flex items-center justify-between">
+                        <button
+                          onClick={() => fetchUserDetections(currentPage - 1)}
+                          disabled={currentPage === 1 || isLoadingHistory}
+                          className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/70 dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-white dark:hover:bg-gray-600 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
+                        >
+                          <FiChevronLeft className="w-4 h-4 mr-2" />
+                          Previous
+                        </button>
+                        
+                        <div className="flex items-center space-x-2">
+                          <span className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/70 dark:bg-gray-700/70 rounded-lg border border-gray-300 dark:border-gray-600 backdrop-blur-sm">
+                            Page {currentPage} of {totalPages}
+                          </span>
+                        </div>
+                        
+                        <button
+                          onClick={() => fetchUserDetections(currentPage + 1)}
+                          disabled={currentPage === totalPages || isLoadingHistory}
+                          className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/70 dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-white dark:hover:bg-gray-600 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
+                        >
+                          Next
+                          <FiChevronRight className="w-4 h-4 ml-2" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
-                <p className="text-gray-500 dark:text-gray-400">{t('detectAI.noHistory')}</p>
+              <div className="text-center py-12">
+                <FiFileText className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                  {t('detectAI.noHistory') || 'No detection history'}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Your AI detection results will appear here after you analyze some text.
+                </p>
               </div>
             )}
           </div>
