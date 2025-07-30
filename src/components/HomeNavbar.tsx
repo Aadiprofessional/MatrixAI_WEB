@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowRight, FiChevronDown, FiImage, FiVideo, FiMaximize, FiCrop, FiLayers, FiZoomIn, FiCode, FiFileText, FiUsers, FiHelpCircle, FiMessageSquare, FiEdit3, FiMic, FiDownload } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 interface HomeNavbarProps {}
+
 
 const HomeNavbar: React.FC<HomeNavbarProps> = () => {
   const [showToolsDropdown, setShowToolsDropdown] = useState(false);
   const [showResourcesDropdown, setShowResourcesDropdown] = useState(false);
+  const { t } = useTranslation();
   
   const toolsRef = useRef<HTMLDivElement>(null);
   const resourcesRef = useRef<HTMLDivElement>(null);
@@ -28,7 +31,7 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                 <button 
                   className="flex items-center text-gray-200 hover:text-white transition-colors duration-200 group-hover:text-white"
                 >
-                  <span>Tools</span>
+                  <span>{t('navbar.tools', 'Tools')}</span>
                   <FiChevronDown className="ml-1 w-4 h-4 transition-transform duration-200 group-hover:rotate-180 group-hover:text-white" />
                 </button>
                 
@@ -41,8 +44,8 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                           <FiImage className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
                         </div>
                         <div className="flex-1 whitespace-nowrap">
-                          <div className="font-medium text-base">Image Generator</div>
-                          <div className="text-sm text-gray-400">Create images from text</div>
+                          <div className="font-medium text-base">{t('navbar.imageGenerator', 'Image Generator')}</div>
+                          <div className="text-sm text-gray-400">{t('navbar.imageGeneratorDesc', 'Create images from text')}</div>
                         </div>
                       </Link>
                       <Link to="/tools/video-creator" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
@@ -50,8 +53,8 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                           <FiVideo className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
                         </div>
                         <div className="flex-1 whitespace-nowrap">
-                          <div className="font-medium text-lg">Video Generator</div>
-                          <div className="text-sm text-gray-400">Create videos from images or text</div>
+                          <div className="font-medium text-lg">{t('navbar.videoGenerator', 'Video Generator')}</div>
+                          <div className="text-sm text-gray-400">{t('navbar.videoGeneratorDesc', 'Create videos from images or text')}</div>
                         </div>
                       </Link>
                       <Link to="/chat" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
@@ -59,8 +62,8 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                           <FiMessageSquare className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
                         </div>
                         <div className="flex-1 whitespace-nowrap">
-                          <div className="font-medium text-lg">AI Chat</div>
-                          <div className="text-sm text-gray-400">Chat with our advanced AI assistant</div>
+                          <div className="font-medium text-lg">{t('navbar.aiChat', 'AI Chat')}</div>
+                          <div className="text-sm text-gray-400">{t('navbar.aiChatDesc', 'Chat with our advanced AI assistant')}</div>
                         </div>
                       </Link>
                       <Link to="/tools/content-writer" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
@@ -68,8 +71,8 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                           <FiEdit3 className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
                         </div>
                         <div className="flex-1 whitespace-nowrap">
-                          <div className="font-medium text-lg">Content Writer</div>
-                          <div className="text-sm text-gray-400">Generate professional content</div>
+                          <div className="font-medium text-lg">{t('navbar.contentWriter', 'Content Writer')}</div>
+                          <div className="text-sm text-gray-400">{t('navbar.contentWriterDesc', 'Generate professional content')}</div>
                         </div>
                       </Link>
                       <Link to="/tools/speech-to-text" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
@@ -77,8 +80,8 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                           <FiMic className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
                         </div>
                         <div className="flex-1 whitespace-nowrap">
-                          <div className="font-medium text-lg">Speech to Text</div>
-                          <div className="text-sm text-gray-400">Convert audio to text</div>
+                          <div className="font-medium text-lg">{t('navbar.speechToText', 'Speech to Text')}</div>
+                          <div className="text-sm text-gray-400">{t('navbar.speechToTextDesc', 'Convert audio to text')}</div>
                         </div>
                       </Link>
                     </div>
@@ -91,7 +94,7 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                 <button 
                   className="flex items-center text-gray-200 hover:text-white transition-colors duration-200 group-hover:text-white"
                 >
-                  <span>Resources</span>
+                  <span>{t('navbar.resources', 'Resources')}</span>
                   <FiChevronDown className="ml-1 w-4 h-4 transition-transform duration-200 group-hover:rotate-180 group-hover:text-white" />
                 </button>
                 
@@ -104,8 +107,8 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                           <FiFileText className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
                         </div>
                         <div className="flex-1 whitespace-nowrap">
-                          <div className="font-medium text-lg">Blog</div>
-                          <div className="text-sm text-gray-400">Latest news & updates</div>
+                          <div className="font-medium text-lg">{t('navbar.blog', 'Blog')}</div>
+                          <div className="text-sm text-gray-400">{t('navbar.blogDesc', 'Latest news & updates')}</div>
                         </div>
                       </Link>
                       <Link to="/about" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
@@ -113,8 +116,8 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                           <FiUsers className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
                         </div>
                         <div className="flex-1 whitespace-nowrap">
-                          <div className="font-medium text-lg">About Us</div>
-                          <div className="text-sm text-gray-400">Learn about our company</div>
+                          <div className="font-medium text-lg">{t('navbar.aboutUs', 'About Us')}</div>
+                          <div className="text-sm text-gray-400">{t('navbar.aboutUsDesc', 'Learn about our company')}</div>
                         </div>
                       </Link>
                       <Link to="/faq" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
@@ -122,8 +125,8 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                           <FiHelpCircle className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
                         </div>
                         <div className="flex-1 whitespace-nowrap">
-                          <div className="font-medium text-lg">FAQ</div>
-                          <div className="text-sm text-gray-400">Frequently asked questions</div>
+                          <div className="font-medium text-lg">{t('navbar.faq', 'FAQ')}</div>
+                          <div className="text-sm text-gray-400">{t('navbar.faqDesc', 'Frequently asked questions')}</div>
                         </div>
                       </Link>
                       <Link to="/contact" className="flex items-center px-6 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
@@ -131,8 +134,8 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                           <FiHelpCircle className="h-6 w-6 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
                         </div>
                         <div className="flex-1 whitespace-nowrap">
-                          <div className="font-medium text-lg">Contact</div>
-                          <div className="text-sm text-gray-400">Get in touch with us</div>
+                          <div className="font-medium text-lg">{t('navbar.contact', 'Contact')}</div>
+                          <div className="text-sm text-gray-400">{t('navbar.contactDesc', 'Get in touch with us')}</div>
                         </div>
                       </Link>
                     </div>
@@ -145,7 +148,7 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                 <button 
                   className="flex items-center text-gray-200 hover:text-white transition-colors duration-200 group-hover:text-white"
                 >
-                  <span>Download App</span>
+                  <span>{t('navbar.downloadApp', 'Download App')}</span>
                   <FiChevronDown className="ml-1 w-4 h-4 transition-transform duration-200 group-hover:rotate-180 group-hover:text-white" />
                 </button>
                 
@@ -158,7 +161,7 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                           <FiDownload className="h-5 w-5 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
                         </div>
                         <div className="flex-1 whitespace-nowrap">
-                          <div className="font-medium">iOS App Store</div>
+                          <div className="font-medium">{t('navbar.iosAppStore', 'iOS App Store')}</div>
                         </div>
                       </a>
                       <a href="https://play.google.com" target="_blank" rel="noopener noreferrer" className="flex items-center px-4 py-3 text-sm text-gray-200 hover:bg-black/50 hover:text-white transition-colors duration-150 rounded-md group/item">
@@ -166,23 +169,23 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                           <FiDownload className="h-5 w-5 text-gray-300 group-hover/item:text-purple-400 transition-colors duration-150" />
                         </div>
                         <div className="flex-1 whitespace-nowrap">
-                          <div className="font-medium">Google Play Store</div>
+                          <div className="font-medium">{t('navbar.googlePlayStore', 'Google Play Store')}</div>
                         </div>
                       </a>
                     </div>
                   </div>
                 </div>
               </div>
-              <Link to="/pricing" className="text-gray-200 hover:text-white transition-colors duration-200">Pricing</Link>
+              <Link to="/pricing" className="text-gray-200 hover:text-white transition-colors duration-200">{t('navbar.pricing', 'Pricing')}</Link>
             </div>
             
             <div className="flex items-center space-x-4">
-              <Link to="/login" className="text-gray-200 hover:text-white transition-colors duration-200">Log in</Link>
+              <Link to="/login" className="text-gray-200 hover:text-white transition-colors duration-200">{t('navbar.login', 'Log in')}</Link>
               <Link 
                 to="/signup" 
                 className="inline-flex items-center px-4 py-2 rounded-lg font-medium text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-300"
               >
-                Get started now
+                {t('navbar.getStarted', 'Get started now')}
                 <FiArrowRight className="ml-2" />
               </Link>
             </div>

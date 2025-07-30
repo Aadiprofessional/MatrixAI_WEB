@@ -32,7 +32,7 @@ import {
 } from 'react-icons/fi';
 import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 
 interface Slide {
@@ -88,6 +88,7 @@ interface TemplateCardProps {
 const TemplateCard: React.FC<TemplateCardProps> = ({ template, isSelected, onSelect }) => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
+  const { t } = useTranslation();
   
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -155,7 +156,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, isSelected, onSel
           {template.name}
         </h3>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          {template.slides.length} slides • {template.category}
+          {template.slides.length} {t('presentation.slides', 'slides')} {template.category}
         </p>
       </div>
     </div>
@@ -164,7 +165,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, isSelected, onSel
 
 const PresentationCreatorPage: React.FC = () => {
   const { userData, isPro } = useUser();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const [presentationTitle, setPresentationTitle] = useState('');
   const [slides, setSlides] = useState<Slide[]>([]);
@@ -188,7 +189,7 @@ const PresentationCreatorPage: React.FC = () => {
 
   // Style options for presentations
   const styleOptions = [
-    { id: 'professional', name: 'Professional' },
+    { id: 'professional', name: t('presentation.style.professional', 'Professional') },
     { id: 'creative', name: 'Creative' },
     { id: 'minimalist', name: 'Minimalist' },
     { id: 'academic', name: 'Academic' },

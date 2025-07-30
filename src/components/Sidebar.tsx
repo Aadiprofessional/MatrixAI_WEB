@@ -26,7 +26,7 @@ import {
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import matrix from '../assets/matrix.png';
@@ -42,7 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
   const { darkMode } = useContext(ThemeContext);
   const { userData, isPro } = useUser();
   const { signOut } = useAuth();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   
   // Speech to text state

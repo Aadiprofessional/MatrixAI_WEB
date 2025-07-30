@@ -1,8 +1,10 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Navbar, Sidebar, Footer, FooterLinks } from './';
 import { ThemeContext } from '../context/ThemeContext';
 import { FiGithub, FiInstagram, FiLinkedin, FiMenu, FiTwitter, FiX, FiYoutube } from 'react-icons/fi';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,6 +16,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarWidth, setSidebarWidth] = useState(256); // 256px = 16rem (w-64)
   const [isDesktop, setIsDesktop] = useState(false);
   const location = useLocation();
+  const { t } = useTranslation();
   
   // Check if current route is chat-related
   const isChatRoute = location.pathname.includes('/chat');
@@ -104,52 +107,52 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <FooterLinks 
               categories={[
           {
-            title: "Tools",
+            title: t('layout.footer.categories.tools'),
             links: [
-              { name: "Image Generator", url: "tools/image-generator" },
-              { name: "Video Generator", url: "tools/video-creator" },
-              { name: "Content Writer", url: "tools/content-writer" },
-              { name: "Speech to Text", url: "tools/speech-to-text" },
-              { name: "Chat", url: "/chat" }
+              { name: t('layout.footer.links.imageGenerator'), url: "tools/image-generator" },
+              { name: t('layout.footer.links.videoGenerator'), url: "tools/video-creator" },
+              { name: t('layout.footer.links.contentWriter'), url: "tools/content-writer" },
+              { name: t('layout.footer.links.speechToText'), url: "tools/speech-to-text" },
+              { name: t('layout.footer.links.chat'), url: "/chat" }
             ]
           },
           {
-            title: "Features",
+            title: t('layout.footer.categories.features'),
             links: [
-              { name: "Image to Video", url: "tools/video-creator" },
-              { name: "Text to Image", url: "tools/image-generator" },
-              { name: "Content Generation", url: "tools/content-writer" },
-              { name: "Speech to Text", url: "tools/speech-to-text" },
-              { name: "AI Chat", url: "tools/chat" }
+              { name: t('layout.footer.links.imageToVideo'), url: "tools/video-creator" },
+              { name: t('layout.footer.links.textToImage'), url: "tools/image-generator" },
+              { name: t('layout.footer.links.contentGeneration'), url: "tools/content-writer" },
+              { name: t('layout.footer.links.speechToText'), url: "tools/speech-to-text" },
+              { name: t('layout.footer.links.aiChat'), url: "tools/chat" }
             ]
           },
           {
-            title: "Explore",
+            title: t('layout.footer.categories.explore'),
             links: [
-              { name: "About Us", url: "/about" },
-              { name: "Features", url: "/features" },
-              { name: "Blog", url: "/blog" },
-              { name: "Enterprise", url: "/enterprise" },
-              { name: "Careers", url: "/careers" },
-              { name: "Contact", url: "/contact" }
+              { name: t('layout.footer.links.aboutUs'), url: "/about" },
+              { name: t('layout.footer.links.features'), url: "/features" },
+              { name: t('layout.footer.links.blog'), url: "/blog" },
+              { name: t('layout.footer.links.enterprise'), url: "/enterprise" },
+              { name: t('layout.footer.links.careers'), url: "/careers" },
+              { name: t('layout.footer.links.contact'), url: "/contact" }
             ]
           },
           {
-            title: "Resources",
+            title: t('layout.footer.categories.resources'),
             links: [
-              { name: "Privacy Policy", url: "/privacy" },
-              { name: "Terms of Service", url: "/terms" },
-              { name: "Cookies Policy", url: "/cookies" },
-              { name: "Referral Program", url: "/referral" }
+              { name: t('layout.footer.links.privacyPolicy'), url: "/privacy" },
+              { name: t('layout.footer.links.termsOfService'), url: "/terms" },
+              { name: t('layout.footer.links.cookiesPolicy'), url: "/cookies" },
+              { name: t('layout.footer.links.referralProgram'), url: "/referral" }
             ]
           },
           {
-            title: "Help",
+            title: t('layout.footer.categories.help'),
             links: [
-              { name: "Subscription", url: "/subscription" },
-              { name: "FAQ", url: "/faq" },
-              { name: "Help Center", url: "/help" },
-              { name: "System Status", url: "/status" }
+              { name: t('layout.footer.links.subscription'), url: "/subscription" },
+              { name: t('layout.footer.links.faq'), url: "/faq" },
+              { name: t('layout.footer.links.helpCenter'), url: "/help" },
+              { name: t('layout.footer.links.systemStatus'), url: "/status" }
             ]
           }
         ]}

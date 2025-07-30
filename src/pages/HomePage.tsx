@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiArrowRight, FiInstagram, FiTwitter, FiYoutube, FiGithub, FiLinkedin } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import { 
   HomeNavbar, 
   FeatureSection, 
@@ -17,31 +18,33 @@ import {
 
 
 const HomePage: React.FC = () => {
+  const { t } = useTranslation();
+  
   // FAQ data
   const faqData = [
     {
-      question: "What features does MatrixAI offer?",
-      answer: "MatrixAI offers a comprehensive suite of AI tools including image-to-video generation, image generation, speech-to-text transcription, content writing, and a fast AI chat assistant. Our platform integrates the latest AI models to provide you with cutting-edge capabilities for all your creative and productivity needs."
+      question: t('homePage.faq.features.question'),
+      answer: t('homePage.faq.features.answer')
     },
     {
-      question: "How does the AI Image to Video feature work?",
-      answer: "Our AI analyzes your image and generates a video by predicting motion, adding realistic movement, and maintaining the original style and content. Simply upload your image, add optional prompts for guidance, and our AI will create a high-quality video in seconds."
+      question: t('homePage.faq.imageToVideo.question'),
+      answer: t('homePage.faq.imageToVideo.answer')
     },
     {
-      question: "How accurate is the Speech to Text feature?",
-      answer: "Our Speech to Text feature achieves industry-leading accuracy rates of over 95% for clear audio in supported languages. The system can handle various accents, background noise, and even multiple speakers with our premium tier, making it perfect for transcribing meetings, interviews, and lectures."
+      question: t('homePage.faq.speechToText.question'),
+      answer: t('homePage.faq.speechToText.answer')
     },
     {
-      question: "What makes MatrixAI's content generation different?",
-      answer: "Our content generation tools use advanced language models trained on diverse writing styles and formats. You can generate blog posts, marketing copy, creative stories, and more with customizable tone, style, and length. The system also provides SEO optimization suggestions and can adapt to your brand voice."
+      question: t('homePage.faq.contentGeneration.question'),
+      answer: t('homePage.faq.contentGeneration.answer')
     },
     {
-      question: "How fast is the AI chat feature?",
-      answer: "Our AI chat feature delivers responses in near real-time, typically within 1-2 seconds, making it one of the fastest AI assistants available. It can handle complex queries, remember context throughout conversations, and provide helpful information on virtually any topic."
+      question: t('homePage.faq.aiChat.question'),
+      answer: t('homePage.faq.aiChat.answer')
     },
     {
-      question: "Can I use MatrixAI's features for commercial projects?",
-      answer: "Yes, all content generated on our platform can be used for commercial purposes under our standard license. Enterprise users receive additional rights and dedicated support for large-scale commercial applications across all our features."
+      question: t('homePage.faq.commercial.question'),
+      answer: t('homePage.faq.commercial.answer')
     }
   ];
 
@@ -78,12 +81,10 @@ const HomePage: React.FC = () => {
             className="max-w-3xl mx-auto"
           >
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-6">
-              Your Complete AI<br />Creative Suite
+              {t('homePage.title', 'Your Complete AI')}<br />{t('homePage.titleSecondLine', 'Creative Suite')}
             </h1>
             <p className="text-xl md:text-2xl text-gray-200 mb-10 max-w-2xl mx-auto">
-              Trusted by creators. Powered by top AI models. Generate stunning videos from images,
-              create beautiful artwork, transcribe speech to text, write compelling content,
-              and chat with our lightning-fast AI assistant—all in one platform.
+              {t('homePage.description', 'Trusted by creators. Powered by top AI models. Generate stunning videos from images, create beautiful artwork, transcribe speech to text, write compelling content, and chat with our lightning-fast AI assistant—all in one platform.')}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
               <motion.div 
@@ -93,19 +94,19 @@ const HomePage: React.FC = () => {
                 className="w-full sm:w-auto"
               >
                 <Link to="/signup" className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-lg font-medium text-lg shadow-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-300">
-                  Start creating with AI <FiArrowRight className="ml-2" />
+                  {t('homePage.startCreating', 'Start creating with AI')} <FiArrowRight className="ml-2" />
                 </Link>
               </motion.div>
             </div>
             <div className="flex items-center justify-center gap-8 text-gray-300 text-sm">
               <div className="flex items-center">
-                <span>11M+ users</span>
+                <span>{t('homePage.userCount', '11M+ users')}</span>
               </div>
               <div className="flex items-center">
-                <span>17 top models</span>
+                <span>{t('homePage.modelCount', '17 top models')}</span>
               </div>
               <div className="flex items-center">
-                <span>Founded in 2022</span>
+                <span>{t('homePage.foundedYear', 'Founded in 2022')}</span>
               </div>
             </div>
           </motion.div>
@@ -137,21 +138,21 @@ const HomePage: React.FC = () => {
 
       
       <HeroBanner 
-        title="Powerful AI tools for every creative need"
-         description="Skip the frustration of complicated tools and clunky software. With MatrixAI, you'll create stunning videos from images, generate beautiful artwork, transcribe speech to text with high accuracy, write compelling content, and get instant answers from our AI chat—all in one platform. No training, no fiddling, no roadblocks. Our advanced AI takes care of the hard work, delivering professional-quality results every time. Just describe what you want, and watch the magic happen."
+        title={t('homePage.heroBannerTitle', 'Powerful AI tools for every creative need')}
+        description={t('homePage.heroBannerDescription', "Skip the frustration of complicated tools and clunky software. With MatrixAI, you\'ll create stunning videos from images, generate beautiful artwork, transcribe speech to text with high accuracy, write compelling content, and get instant answers from our AI chat—all in one platform. No training, no fiddling, no roadblocks. Our advanced AI takes care of the hard work, delivering professional-quality results every time. Just describe what you want, and watch the magic happen.")}
         backgroundImage="/images/runway-feature.jpg"
       />
 
            <AnimatedGridBanner 
-        title="Don't settle for outdated and slow tools."
-        description="With MatrixAI, you get the fastest, most advanced AI creative platform. From image-to-video generation to image creation, speech transcription, content writing, and AI chat—all powered by cutting-edge models. Trusted by professionals, available to everyone. Don't miss out—get the newest AI models and features before anyone else."
-        buttonText="Start creating with AI"
+        title={t('homePage.gridBannerTitle', "Don\'t settle for outdated and slow tools.")}
+        description={t('homePage.gridBannerDescription', "With MatrixAI, you get the fastest, most advanced AI creative platform. From image-to-video generation to image creation, speech transcription, content writing, and AI chat—all powered by cutting-edge models. Trusted by professionals, available to everyone. Don\'t miss out—get the newest AI models and features before anyone else.")}
+        buttonText={t('homePage.startCreating', 'Start creating with AI')}
         buttonLink="/signup"
       />
       
       {/* FAQ Section - Third image */}
       <FAQSection 
-        title="Frequently Asked Questions"
+        title={t('homePage.faqTitle', 'Frequently Asked Questions')}
         faqs={faqData}
       />
       

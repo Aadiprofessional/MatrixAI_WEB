@@ -10,7 +10,7 @@ import {
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
 import { ProFeatureAlert } from '../components';
 import AuthRequiredButton from '../components/AuthRequiredButton';
@@ -62,7 +62,7 @@ const SpeechToTextPage: React.FC = () => {
   const { userData, isPro } = useUser();
   const { user } = useAuth();
   const { theme, getThemeColors } = useTheme();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const colors = getThemeColors();
   
@@ -107,7 +107,7 @@ const SpeechToTextPage: React.FC = () => {
   ]);
 
   const [languages] = useState([
-    { label: 'Bulgarian', value: 'bg' },
+    { label: t('languages.bulgarian', 'Bulgarian'), value: 'bg' },
     { label: 'Catalan', value: 'ca' },
     { label: 'Chinese', value: 'zh' },
     { label: 'Czech', value: 'cs' },

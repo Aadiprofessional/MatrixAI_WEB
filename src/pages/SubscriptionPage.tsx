@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -41,7 +41,7 @@ const PlanCard: React.FC<PlanProps> = ({
   onSelect 
 }) => {
   const { darkMode } = useContext(ThemeContext);
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   return (
     <motion.div
@@ -93,7 +93,7 @@ const PlanCard: React.FC<PlanProps> = ({
       }`}>
         <img 
           src="https://via.placeholder.com/24?text=$" 
-          alt="Coin" 
+          alt={t('coin')} 
           className="w-6 h-6 mr-2" 
           onError={(e) => {
             e.currentTarget.src = 'https://via.placeholder.com/24?text=$';
@@ -147,7 +147,7 @@ interface AddonCardProps {
 
 const AddonCard: React.FC<AddonCardProps> = ({ price, coins, description, onSelect }) => {
   const { darkMode } = useContext(ThemeContext);
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   return (
     <motion.div
@@ -218,7 +218,7 @@ const SubscriptionPage: React.FC = () => {
   const { userData, isPro } = useUser();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   
   const [selectedPlan, setSelectedPlan] = useState<'Tester' | 'Monthly' | 'Yearly'>('Monthly');
   const [showTnC, setShowTnC] = useState(false);

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, useRef } from 'react';
+import React, { createContext, useState, useEffect, useContext, useRef, ReactNode } from 'react';
 import { supabase, checkUser, signIn, signUp, signOut, signInWithGoogle, signInWithApple } from '../supabaseClient';
 
 // Define the shape of the auth context state

@@ -21,7 +21,7 @@ import {
 } from 'react-icons/fi';
 import { ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
@@ -30,7 +30,7 @@ import './ContentWriterPage.css';
 
 const DetectAIPage: React.FC = () => {
   const { userData, isPro } = useUser();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { darkMode } = useTheme();
   
   // Add gradient animation style to document head
@@ -84,7 +84,7 @@ const DetectAIPage: React.FC = () => {
   const [freeDetectionsLeft, setFreeDetectionsLeft] = useState(1);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<string[]>([
-    'Analyze this content for AI generation',
+    t('detect.analyze-content', 'Analyze this content for AI generation'),
     'Is this text written by AI or human?',
     'Check if this essay is AI-generated',
     'Detect AI in this product review'

@@ -5,7 +5,7 @@ import { FiVideo, FiUpload, FiPlay, FiPause, FiDownload, FiSliders, FiPlus, FiTr
 import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useAlert } from '../context/AlertContext';
 import { videoService } from '../services/videoService';
@@ -70,7 +70,7 @@ const VideoCreatorPage: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { userData, isPro } = useUser();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { darkMode } = useTheme();
   const [prompt, setPrompt] = useState('');
@@ -101,7 +101,7 @@ const VideoCreatorPage: React.FC = () => {
   const [showProAlert, setShowProAlert] = useState(false);
   const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(1);
   const [presetPrompts, setPresetPrompts] = useState([
-    'A timelapse of a bustling city from day to night',
+    t('video.preset.cityTimelapse', 'A timelapse of a bustling city from day to night'),
     'A drone shot flying over majestic mountains with snow caps',
     'An animation of a futuristic city with flying vehicles',
     'A nature scene with animals in a forest'

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiSend, FiPaperclip, FiImage, FiX, FiPlus, FiCopy, FiShare2 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import Lottie from 'lottie-react';
 
 interface Message {
@@ -26,7 +26,7 @@ interface ChatProps {
 }
 
 const ChatBot: React.FC<ChatProps> = ({ initialMessages = [], onNewChat, version }) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);

@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
 import { useTheme } from '../context/ThemeContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { FiLoader, FiDownload, FiSave, FiRefreshCw } from 'react-icons/fi';
 import { userService } from '../services/userService';
 
@@ -29,7 +29,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
   onXmlDataGenerated 
 }) => {
   const { theme, getThemeColors } = useTheme();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const colors = getThemeColors();
   
   const [graphData, setGraphData] = useState<MindMapNode[] | null>(null);

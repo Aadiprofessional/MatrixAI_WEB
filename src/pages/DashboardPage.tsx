@@ -29,7 +29,7 @@ import {
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { userService } from '../services/userService';
 import { videoService } from '../services/videoService';
 
@@ -112,6 +112,7 @@ const AIToolSection = ({ title, icon, description, color, route, isPopular = fal
   isPopular?: boolean
 }) => {
   const { darkMode } = useContext(ThemeContext);
+  const { t } = useTranslation();
 
   return (
     <Link to={route} className="block group">
@@ -122,7 +123,7 @@ const AIToolSection = ({ title, icon, description, color, route, isPopular = fal
       } hover:shadow-lg hover:scale-105`}>
         {isPopular && (
           <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-            Popular
+            {t('dashboard.popular', 'Popular')}
           </div>
         )}
         <div className={`w-12 h-12 ${color} rounded-lg flex items-center justify-center mb-4`}>
@@ -133,19 +134,20 @@ const AIToolSection = ({ title, icon, description, color, route, isPopular = fal
         <div className={`text-sm font-medium ${
           darkMode ? 'text-blue-400' : 'text-blue-600'
         } flex items-center group-hover:text-blue-500 transition-colors`}>
-          Get started
+          {t('dashboard.getStarted', 'Get started')}
           <FiArrowRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </div>
       </div>
     </Link>
   );
+
 };
 
 const DashboardPage: React.FC = () => {
   const { darkMode } = useContext(ThemeContext);
   const { userData, isPro } = useUser();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
     totalCoins: 0,
     coinsUsed: 0,
@@ -468,7 +470,7 @@ const DashboardPage: React.FC = () => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
-                  <span className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-sm font-medium`}>Subscription</span>
+                  <span className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-sm font-medium`}>{t('dashboard.subscription', 'Subscription')}</span>
                   <span className={`text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{dashboardStats.subscriptionStatus}</span>
                 </div>
                 <div className={`w-12 h-12 rounded-lg ${isPro ? 'bg-green-500' : 'bg-gray-500'} flex items-center justify-center text-white shadow-sm`}>
@@ -477,7 +479,7 @@ const DashboardPage: React.FC = () => {
               </div>
               <div className={`mt-3 text-xs ${darkMode ? 'text-green-400' : 'text-green-600'} flex items-center gap-1`}>
                 <FiTrendingUp className="w-3 h-3" />
-                <span>{isPro ? 'Active' : 'Upgrade available'}</span>
+                <span>{isPro ? t('dashboard.subscriptionActive', 'Active') : t('dashboard.upgradeAvailable', 'Upgrade available')}</span>
               </div>
             </motion.div>
           )}
@@ -495,46 +497,46 @@ const DashboardPage: React.FC = () => {
             >
               <div className="flex items-center justify-between mb-6">
                 <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  AI Tools
+                  {t('dashboard.aiTools', 'AI Tools')}
                 </h2>
                 <Link to="/tools" className={`text-sm flex items-center gap-1 ${
                   darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
                 } font-medium`}>
-                  View all tools
+                  {t('dashboard.viewAllTools', 'View all tools')}
                   <FiArrowRight className="w-4 h-4" />
                 </Link>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <AIToolSection 
-                  title="Chat Assistant" 
+                  title={t('dashboard.tools.chatAssistant.title', 'Chat Assistant')} 
                   icon={<FiMessageSquare className="text-white text-xl" />} 
-                  description="Get answers, ideas, and assistance through natural conversation." 
+                  description={t('dashboard.tools.chatAssistant.description', 'Get answers, ideas, and assistance through natural conversation.')} 
                   color="bg-gradient-to-r from-blue-500 to-cyan-500"
                   route="/chat"
                   isPopular={true}
                 />
                 
                 <AIToolSection 
-                  title="Video Creator" 
+                  title={t('dashboard.tools.videoCreator.title', 'Video Creator')} 
                   icon={<FiVideo className="text-white text-xl" />} 
-                  description="Transform ideas into captivating videos with AI." 
+                  description={t('dashboard.tools.videoCreator.description', 'Transform ideas into captivating videos with AI.')} 
                   color="bg-gradient-to-r from-purple-500 to-pink-600"
                   route="/tools/video-creator"
                 />
                 
                 <AIToolSection 
-                  title="Content Writer" 
+                  title={t('dashboard.tools.contentWriter.title', 'Content Writer')} 
                   icon={<FiFileText className="text-white text-xl" />} 
-                  description="Generate high-quality articles, essays, and content." 
+                  description={t('dashboard.tools.contentWriter.description', 'Generate high-quality articles, essays, and content.')} 
                   color="bg-gradient-to-r from-green-500 to-emerald-600"
                   route="/tools/content-writer"
                 />
                 
                 <AIToolSection 
-                  title="Speech to Text" 
+                  title={t('dashboard.tools.speechToText.title', 'Speech to Text')} 
                   icon={<FiMic className="text-white text-xl" />} 
-                  description="Convert audio files to accurate text transcriptions." 
+                  description={t('dashboard.tools.speechToText.description', 'Convert audio files to accurate text transcriptions.')} 
                   color="bg-gradient-to-r from-orange-500 to-red-500"
                   route="/tools/speech-to-text"
                 />
@@ -624,10 +626,10 @@ const DashboardPage: React.FC = () => {
                 <div className="text-center py-8">
                   <FiActivity className={`w-12 h-12 mx-auto mb-3 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    No recent activity yet
+                    {t('dashboard.noRecentActivity', 'No recent activity yet')}
                   </p>
                   <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'} mt-1`}>
-                    Start using AI tools to see your activity here
+                    {t('dashboard.startUsingTools', 'Start using AI tools to see your activity here')}
                   </p>
                 </div>
               )}
@@ -645,7 +647,7 @@ const DashboardPage: React.FC = () => {
               }`}
             >
               <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Quick Actions
+                {t('dashboard.quickActions', 'Quick Actions')}
               </h3>
               <div className="space-y-2">
                 <Link 
@@ -655,7 +657,7 @@ const DashboardPage: React.FC = () => {
                   }`}
                 >
                   <FiMessageSquare className="w-4 h-4" />
-                  <span className="text-sm">Start new chat</span>
+                  <span className="text-sm">{t('dashboard.startNewChat', 'Start new chat')}</span>
                 </Link>
                 <Link 
                   to="/tools/video-creator" 
@@ -664,7 +666,7 @@ const DashboardPage: React.FC = () => {
                   }`}
                 >
                   <FiVideo className="w-4 h-4" />
-                  <span className="text-sm">Create video</span>
+                  <span className="text-sm">{t('dashboard.createVideo', 'Create video')}</span>
                 </Link>
                 <Link 
                   to="/buy" 
@@ -673,7 +675,7 @@ const DashboardPage: React.FC = () => {
                   }`}
                 >
                   <FiDollarSign className="w-4 h-4" />
-                  <span className="text-sm">Buy more coins</span>
+                  <span className="text-sm">{t('dashboard.buyMoreCoins', 'Buy more coins')}</span>
                 </Link>
               </div>
             </motion.div>

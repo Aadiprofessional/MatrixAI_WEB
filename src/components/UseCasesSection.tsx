@@ -8,7 +8,7 @@ interface UseCaseTabProps {
   onClick: () => void;
 }
 
-const UseCaseTab: React.FC<UseCaseTabProps> = ({ id, label, isActive, onClick }) => {
+const UseCaseTab = ({ id, label, isActive, onClick }: UseCaseTabProps): React.ReactElement => {
   return (
     <button
       onClick={onClick}

@@ -16,7 +16,7 @@ import {
 } from 'react-icons/fi';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 interface ChargeModalProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ interface PricingPlan {
 const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins = 0 }) => {
   const { theme } = useTheme();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState<string>('monthly');
   const [loading, setLoading] = useState(false);

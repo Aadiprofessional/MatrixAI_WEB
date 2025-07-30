@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { ThemeContext } from '../context/ThemeContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { FiInfo, FiArrowLeft, FiCheck, FiPackage } from 'react-icons/fi';
 import { Layout } from '../components';
 import { motion } from 'framer-motion';
@@ -21,11 +21,11 @@ const BuyPage: React.FC = () => {
   const { darkMode } = useContext(ThemeContext);
   const { user } = useAuth();
   const { userData } = useUser();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   
   // Always set plan to Addon since this is specifically for addon purchases
   const uid = user?.id;
-  const plan = 'Addon';
+  const plan = t('payment.addon', 'Addon');
   const price = '50 HKD';
   
   const [couponCode, setCouponCode] = useState('');

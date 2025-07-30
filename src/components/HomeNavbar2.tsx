@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FiArrowRight, FiChevronDown, FiImage, FiVideo, FiMessageSquare, FiMoon, FiSun, FiMic, FiFileText } from 'react-icons/fi';
 import { useTheme } from '../context/ThemeContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import LanguageSelector from './LanguageSelector';
 
 interface HomeNavbarProps {}
@@ -11,7 +11,7 @@ const HomeNavbar2: React.FC<HomeNavbarProps> = () => {
   const location = useLocation();
   const [currentPage, setCurrentPage] = useState<string>('');
   const { darkMode, toggleDarkMode } = useTheme();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {

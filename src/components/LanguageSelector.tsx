@@ -1,21 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiGlobe, FiChevronDown, FiCheck } from 'react-icons/fi';
-import { useLanguage, Language } from '../context/LanguageContext';
-import { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ThemeContext } from '../context/ThemeContext';
 
+type Language = 'en' | 'zh-CN' | 'zh-TW';
+
 const LanguageSelector: React.FC = () => {
-  const { language, setLanguage, t } = useLanguage();
+  const { i18n, t } = useTranslation();
   const { darkMode } = useContext(ThemeContext);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedLang, setSelectedLang] = useState<Language>(language);
+  const [selectedLang, setSelectedLang] = useState<Language>(i18n.language as Language);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Update selected language when context language changes
+  // Update selected language when i18n language changes
   useEffect(() => {
-    setSelectedLang(language);
-  }, [language]);
+    setSelectedLang(i18n.language as Language);
+  }, [i18n.language]);
 
   const languages = [
     { code: 'en' as Language, name: 'English' },
@@ -52,12 +53,9 @@ const LanguageSelector: React.FC = () => {
   const handleLanguageChange = (langCode: Language) => {
     console.log('Language changed to:', langCode);
     setSelectedLang(langCode);
-    setLanguage(langCode);
+    localStorage.setItem('language', langCode);
+    i18n.changeLanguage(langCode);
     setIsOpen(false);
-    
-    // Force reload the page to ensure all components update
-    // This is a fallback in case context updates aren't propagating
-    window.location.reload();
   };
 
   return (
@@ -71,7 +69,7 @@ const LanguageSelector: React.FC = () => {
             ? 'bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700'
             : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 shadow-sm'
         }`}
-        aria-label="Select language"
+        aria-label={t('select-language')}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >

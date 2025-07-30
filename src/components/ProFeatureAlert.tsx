@@ -3,7 +3,7 @@ import { FiStar, FiLock, FiX } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 interface ProFeatureAlertProps {
   featureName: string;
@@ -13,7 +13,7 @@ interface ProFeatureAlertProps {
 const ProFeatureAlert: React.FC<ProFeatureAlertProps> = ({ featureName, onClose }) => {
   const { darkMode } = useContext(ThemeContext);
   const { userData } = useUser();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-70 backdrop-blur-sm">
@@ -110,4 +110,4 @@ const ProFeatureAlert: React.FC<ProFeatureAlertProps> = ({ featureName, onClose 
   );
 };
 
-export default ProFeatureAlert; 
+export default ProFeatureAlert;

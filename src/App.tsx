@@ -53,6 +53,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { UserProvider, useUser } from './context/UserContext';
 // Import LanguageProvider
 import { LanguageProvider } from './context/LanguageContext';
+// i18next is now imported in index.tsx
 // Import AlertProvider
 import { AlertProvider } from './context/AlertContext';
 import PricingPage from './pages/PricingPage';
@@ -166,11 +167,11 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <LanguageProvider>
         <AuthProvider>
           <UserProvider>
-            <AlertProvider>
-              <Router>
+            <LanguageProvider>
+              <AlertProvider>
+                <Router>
             <Routes>
               {/* Main site route */}
               <Route 
@@ -487,9 +488,9 @@ const App: React.FC = () => {
             </Routes>
             </Router>
             </AlertProvider>
+            </LanguageProvider>
           </UserProvider>
         </AuthProvider>
-      </LanguageProvider>
     </ThemeProvider>
   );
 };

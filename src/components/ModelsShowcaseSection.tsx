@@ -35,7 +35,7 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
   isReversed = false,
   hasPlayButton = false,
   hasSpeakerButton = false,
-  bgStyle
+  bgStyle,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);

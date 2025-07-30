@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface FeatureCardProps {
   title: string;
@@ -85,22 +86,24 @@ const FeatureCard: React.FC<FeatureCardProps & { index?: number }> = ({ title, d
 };
 
 const FeatureSection: React.FC = () => {
+  const { t } = useTranslation();
+  
   return (
     <section className="py-20 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-4xl font-bold text-white mb-10 text-left">Why creators are switching to MatrixAI</h2>
-        <p className="text-xl text-gray-300 mb-10 text-left max-w-3xl">Tired of slow tools and generic results? See how our all-in-one AI platform solves the problems nobody else can.</p>
+        <h2 className="text-4xl font-bold text-white mb-10 text-left">{t('featureSection.title', 'Why creators are switching to MatrixAI')}</h2>
+        <p className="text-xl text-gray-300 mb-10 text-left max-w-3xl">{t('featureSection.description', 'Tired of slow tools and generic results? See how our all-in-one AI platform solves the problems nobody else can.')}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FeatureCard 
-            title="Image to Video Magic"
-            description="Transform any image into stunning, cinematic videos with natural motion. Just upload, describe your vision, and get professional results in minutes."
+            title={t('featureSection.imageToVideo.title', 'Image to Video Magic')}
+            description={t('featureSection.imageToVideo.description', 'Transform any image into stunning, cinematic videos with natural motion. Just upload, describe your vision, and get professional results in minutes.')}
             videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4"
             position="left"
             index={0}
           />
           <FeatureCard 
-            title="AI Image Generation"
-            description="Create beautiful, unique images from text descriptions. Perfect for marketing materials, social media, illustrations, and creative projects."
+            title={t('featureSection.imageGeneration.title', 'AI Image Generation')}
+            description={t('featureSection.imageGeneration.description', 'Create beautiful, unique images from text descriptions. Perfect for marketing materials, social media, illustrations, and creative projects.')}
             videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4"
             position="right"
             index={1}
@@ -109,15 +112,15 @@ const FeatureSection: React.FC = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
           <FeatureCard 
-            title="Speech to Text & Content Writing"
-            description="Transcribe audio with 95%+ accuracy and generate compelling content for blogs, marketing, and more—all powered by advanced AI models."
+            title={t('featureSection.speechToText.title', 'Speech to Text & Content Writing')}
+            description={t('featureSection.speechToText.description', 'Transcribe audio with 95%+ accuracy and generate compelling content for blogs, marketing, and more—all powered by advanced AI models.')}
             videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4"
             position="right"
             index={2}
           />
           <FeatureCard 
-            title="Lightning-Fast AI Chat"
-            description="Get instant answers, creative ideas, and problem-solving assistance from our responsive AI assistant that remembers your conversation context."
+            title={t('featureSection.aiChat.title', 'Lightning-Fast AI Chat')}
+            description={t('featureSection.aiChat.description', 'Get instant answers, creative ideas, and problem-solving assistance from our responsive AI assistant that remembers your conversation context.')}
             videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/mainvideo.mp4"
             position="left"
             index={3}

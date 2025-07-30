@@ -4,14 +4,14 @@ import { motion } from 'framer-motion';
 import { FiCheck, FiLoader, FiAlertTriangle } from 'react-icons/fi';
 import { Layout } from '../components';
 import { useUser } from '../context/UserContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import * as paymentService from '../services/paymentService';
 
 const PaymentSuccessPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { refreshUserData } = useUser();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   
   // Parse query parameters
   const queryParams = new URLSearchParams(location.search);

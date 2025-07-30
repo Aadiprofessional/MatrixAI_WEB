@@ -4,7 +4,7 @@ import { FiFileText, FiZap, FiCopy, FiDownload, FiShare2, FiTrash, FiRotateCw, F
 import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { userService } from '../services/userService';
@@ -69,7 +69,7 @@ interface QuickQuestion {
 const ContentWriterPage: React.FC = () => {
   const { userData, isPro } = useUser();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { darkMode } = useTheme();
   const navigate = useNavigate();
   const uid = user?.id;
@@ -78,7 +78,7 @@ const ContentWriterPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('content-writer');
   
   // Dynamic title and subtitle
-  const [pageTitle, setPageTitle] = useState('AI Content Writer');
+  const [pageTitle, setPageTitle] = useState(t('content.title', 'AI Content Writer'));
   const [pageSubtitle, setPageSubtitle] = useState('Generate professional content for applications, essays, letters, and more');
 
   // Update page title and subtitle when tab changes
@@ -166,6 +166,17 @@ const ContentWriterPage: React.FC = () => {
     try {
       setIsLoadingHistory(true);
       console.log('Fetching content history for user:', userId);
+      
+      // Get the current total pages before making the request
+      const currentTotalPages = getTotalPages();
+      
+      // If current page is greater than total pages and we have total items data,
+      // adjust the current page before making the request
+      if (currentPage > currentTotalPages && currentTotalPages > 0) {
+        setCurrentPage(currentTotalPages);
+        return; // The useEffect will trigger another call with the corrected page
+      }
+      
       const response = await contentService.getUserContent(userId, {
         page: currentPage,
         limit: itemsPerPage
@@ -1143,6 +1154,14 @@ Create content that is original, well-researched, and engaging for the target au
       }
     }
   };
+  
+  // Ensure current page is valid whenever totalItems changes
+  useEffect(() => {
+    const maxPage = getTotalPages();
+    if (currentPage > maxPage && maxPage > 0) {
+      setCurrentPage(maxPage);
+    }
+  }, [totalItems]);
 
   const getPaginatedItems = (items: any[]) => {
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -1291,10 +1310,11 @@ Create content that is original, well-researched, and engaging for the target au
 
       {/* Content based on active tab */}
       {activeTab === 'content-writer' && (
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 px-4 py-4">
-        {/* Left Panel - Controls */}
-        <div className="lg:col-span-2 order-2 lg:order-1">
-          <div className="sticky top-6 space-y-6">
+      <>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 px-4 py-4">
+          {/* Left Panel - Controls */}
+          <div className="lg:col-span-2 order-2 lg:order-1">
+            <div className="sticky top-6 space-y-6">
             {/* Content Generation Form */}
             <div className="glass-effect rounded-lg shadow-sm p-6 m-2 hover:shadow-md transition-shadow">
               <h2 className="text-xl font-medium mb-4 flex items-center">
@@ -1655,29 +1675,102 @@ Create content that is original, well-researched, and engaging for the target au
                               )}
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* History Button */}
-            <div className="mt-8">
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                className="flex items-center px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors mb-4"
-              >
-                <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
-                  <FiFileText className="w-5 h-5" />
-                </span>
-                {showHistory ? t('common.hideHistory') : t('contentWriter.history')}
-              </button>
+        {/* History Button - Moved outside the grid to span full width */}
+        <div className="mt-8 ml-8 lg:col-span-5 order-3">
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="flex items-center px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors mb-4"
+          >
+            <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
+              <FiFileText className="w-5 h-5" />
+            </span>
+            {showHistory ? t('common.hideHistory') : t('contentWriter.history')}
+          </button>
+          
+          {/* Content History Section - Conditionally rendered with full page width */}
+          {showHistory && (
+            <div className="w-full px-4">
+              <h2 className="text-xl font-medium mb-4 flex items-center justify-between">
+                    <div className="flex items-center">
+                      <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
+                        <FiFileText className="w-5 h-5" />
+                      </span>
+                      {t('contentWriter.history')} {contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 && `(${contentHistory.length})`}
+                    </div>
               
-              {/* Content History Section - Conditionally rendered */}
-              {showHistory && (
-                <div>
-                  <h2 className="text-xl font-medium mb-4 flex items-center">
-                    <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
-                      <FiFileText className="w-5 h-5" />
-                    </span>
-                    {t('contentWriter.history')} {contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 && `(${contentHistory.length})`}
+                    {/* Pagination Controls - Moved to right end of Content History title */}
+                    {getTotalPages() > 0 ? (
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className={`p-2 rounded-md transition-colors ${
+                            currentPage === 1
+                              ? 'text-gray-400 cursor-not-allowed'
+                              : darkMode
+                              ? 'text-gray-300 hover:bg-gray-700'
+                              : 'text-gray-600 hover:bg-gray-100'
+                          }`}
+                        >
+                          <FiChevronLeft className="w-5 h-5" />
+                        </button>
+                        
+                        <div className="flex items-center space-x-1">
+                          {Array.from({ length: getTotalPages() }, (_, i) => i + 1)
+                            .filter(page => 
+                              page === 1 || 
+                              page === getTotalPages() || 
+                              Math.abs(page - currentPage) <= 1
+                            )
+                            .map((page, index, array) => (
+                              <React.Fragment key={page}>
+                                {index > 0 && array[index - 1] !== page - 1 && (
+                                  <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    ...
+                                  </span>
+                                )}
+                                <button
+                                  onClick={() => handlePageChange(page)}
+                                  className={`w-8 h-8 rounded-md text-xs font-medium transition-colors ${
+                                    page === currentPage
+                                      ? 'bg-blue-500 text-white'
+                                      : darkMode
+                                      ? 'text-gray-300 hover:bg-gray-700'
+                                      : 'text-gray-600 hover:bg-gray-100'
+                                  }`}
+                                  disabled={page > getTotalPages()}
+                                >
+                                  {page}
+                                </button>
+                              </React.Fragment>
+                            ))
+                          }
+                        </div>
+                        
+                        <button
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === getTotalPages()}
+                          className={`p-2 rounded-md transition-colors ${
+                            currentPage === getTotalPages()
+                              ? 'text-gray-400 cursor-not-allowed'
+                              : darkMode
+                              ? 'text-gray-300 hover:bg-gray-700'
+                              : 'text-gray-600 hover:bg-gray-100'
+                          }`}
+                        >
+                          <FiChevronRight className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Page 1 of 1
+                      </span>
+                    )}
                   </h2>
-              
+
               {isLoadingHistory ? (
                 <div className="text-center py-8">
                   <div className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
@@ -1688,7 +1781,7 @@ Create content that is original, well-researched, and engaging for the target au
                   </p>
                 </div>
               ) : contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                   {getPaginatedItems(contentHistory).map((item, index) => item && item.id ? (
                     <motion.div
                       key={item.id}
@@ -1723,81 +1816,16 @@ Create content that is original, well-researched, and engaging for the target au
                       </p>
                     </motion.div>
                   ) : null)}
-                  
-                  {/* Pagination Controls */}
-                  {getTotalPages() > 1 && (
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className={`p-2 rounded-md transition-colors ${
-                          currentPage === 1
-                            ? 'text-gray-400 cursor-not-allowed'
-                            : darkMode
-                            ? 'text-gray-300 hover:bg-gray-700'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        }`}
-                      >
-                        <FiChevronLeft className="w-5 h-5" />
-                      </button>
-                      
-                      <div className="flex items-center space-x-2">
-                        {Array.from({ length: getTotalPages() }, (_, i) => i + 1)
-                          .filter(page => 
-                            page === 1 || 
-                            page === getTotalPages() || 
-                            Math.abs(page - currentPage) <= 1
-                          )
-                          .map((page, index, array) => (
-                            <React.Fragment key={page}>
-                              {index > 0 && array[index - 1] !== page - 1 && (
-                                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                  ...
-                                </span>
-                              )}
-                              <button
-                                onClick={() => handlePageChange(page)}
-                                className={`w-8 h-8 rounded-md text-xs font-medium transition-colors ${
-                                  page === currentPage
-                                    ? 'bg-blue-500 text-white'
-                                    : darkMode
-                                    ? 'text-gray-300 hover:bg-gray-700'
-                                    : 'text-gray-600 hover:bg-gray-100'
-                                }`}
-                              >
-                                {page}
-                              </button>
-                            </React.Fragment>
-                          ))
-                        }
-                      </div>
-                      
-                      <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === getTotalPages()}
-                        className={`p-2 rounded-md transition-colors ${
-                          currentPage === getTotalPages()
-                            ? 'text-gray-400 cursor-not-allowed'
-                            : darkMode
-                            ? 'text-gray-300 hover:bg-gray-700'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        }`}
-                      >
-                        <FiChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                   <p className="text-gray-500 dark:text-gray-400">{t('contentWriter.noHistory')}</p>
                 </div>
               )}
-                </div>
-              )}
             </div>
-          </div>
+          )}
         </div>
+      </>
       )}
 
       {/* Humanizer Tab */}

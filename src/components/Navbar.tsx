@@ -16,7 +16,7 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import ChargeModal from './ChargeModal';
 import LanguageSelector from './LanguageSelector';
 import coinImage from '../assets/coin.png';
@@ -36,7 +36,7 @@ const Navbar: React.FC<NavbarProps> = () => {
   const { user, signOut } = useAuth();
   const { userData, refreshUserData } = useUser();
   const { isPro } = useUser();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [localCoins, setLocalCoins] = useState<number | undefined>(userData?.user_coins);
 
   // Set up real-time subscription to user coins

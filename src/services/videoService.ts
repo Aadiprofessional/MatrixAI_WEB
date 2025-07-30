@@ -40,7 +40,7 @@ interface VideoRemoveResponse {
   message: string;
 }
 
-const API_BASE_URL = 'http://localhost:3002';
+const API_BASE_URL = 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run';
 
 // Export the videoService object
 export const videoService = {

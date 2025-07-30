@@ -13,7 +13,7 @@ import { Layout } from '../components';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import * as paymentService from '../services/paymentService';
 
 // Configuration
@@ -49,7 +49,7 @@ const PaymentPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { refreshUserData } = useUser();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   
   // Extract plan info from location state
   const planData = location.state || {};

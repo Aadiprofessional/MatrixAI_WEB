@@ -18,7 +18,7 @@ import {
 } from 'react-icons/fi';
 import { ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
@@ -30,7 +30,7 @@ import '../styles/CommonStyles.css';
 
 const HumaniseTextPage: React.FC = () => {
   const { userData, isPro } = useUser();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { darkMode } = useTheme();
   const [text, setText] = useState('');
   const [humanisedText, setHumanisedText] = useState('');

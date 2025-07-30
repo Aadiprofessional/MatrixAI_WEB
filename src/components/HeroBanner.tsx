@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface HeroBannerProps {
   title: string;
@@ -14,6 +15,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { t } = useTranslation();
   
   const togglePlayPause = () => {
     if (videoRef.current) {
@@ -32,7 +34,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
         <div className="absolute inset-0 z-0">
           <img 
             src={backgroundImage} 
-            alt="Background" 
+            alt={t('background')} 
             className="w-full h-full object-cover opacity-40"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/90"></div>
@@ -65,7 +67,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
                 muted 
                 playsInline
               >
-                Your browser does not support the video tag.
+                {t('heroBanner.videoNotSupported', 'Your browser does not support the video tag')}
               </video>
               {/* Optional dark overlay */}
               <div className="absolute inset-0 bg-black/20"></div>
@@ -74,7 +76,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
               <button 
                 onClick={togglePlayPause}
                 className="absolute bottom-4 right-4 bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-full transition-all duration-300"
-                aria-label={isPlaying ? 'Pause video' : 'Play video'}
+                aria-label={isPlaying ? t('heroBanner.pauseVideo', 'Pause video') : t('heroBanner.playVideo', 'Play video')}
               >
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
