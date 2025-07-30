@@ -111,6 +111,36 @@ export const signOut = async () => {
   }
 };
 
+// Reset password
+export const resetPassword = async (email: string) => {
+  const redirectUrl = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000/reset-password'
+    : `${window.location.origin}/reset-password`;
+    
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: redirectUrl,
+  });
+  
+  if (error) {
+    throw error;
+  }
+  
+  return data;
+};
+
+// Update password (for reset password flow)
+export const updatePassword = async (newPassword: string) => {
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword
+  });
+  
+  if (error) {
+    throw error;
+  }
+  
+  return data;
+};
+
 // Check if a user is authenticated
 export const checkUser = async () => {
   const { data } = await supabase.auth.getUser();

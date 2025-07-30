@@ -1052,7 +1052,7 @@ const ImageGeneratorPage: React.FC = () => {
                         className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 p-3 md:p-4 rounded-lg border transition-all hover:shadow-md bg-gray-800/50 border-gray-700/50 hover:bg-gray-700/60 backdrop-blur-sm"
                       >
                         {/* Image Thumbnail */}
-                        <div className="flex-shrink-0 mx-auto sm:mx-0 flex justify-center items-center bg-gray-700/70 rounded-lg">
+                        <div className="relative flex-shrink-0 mx-auto sm:mx-0 flex justify-center items-center bg-gray-700/70 rounded-lg group">
                           <img 
                             src={image.image_url} 
                             alt={image.prompt_text || 'Generated image'} 
@@ -1063,6 +1063,17 @@ const ImageGeneratorPage: React.FC = () => {
                               setShowHistory(false);
                             }}
                           />
+                          {/* Cross button for removing image from history */}
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveImage(image.image_id);
+                            }}
+                            className="absolute -top-1 -right-1 p-1 rounded-full bg-red-600/80 text-white hover:bg-red-700/90 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+                            title="Remove image"
+                          >
+                            <FiX size={10} />
+                          </button>
                         </div>
                         
                         {/* Image Details */}
@@ -1216,37 +1227,50 @@ const ImageGeneratorPage: React.FC = () => {
                     </div>
                   )
                 ) : images.length > 0 ? (
-                  <div className={`grid ${images.length === 1 ? 'grid-cols-1' : images.length === 2 ? 'grid-cols-2' : images.length === 3 ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-2'} gap-3 md:gap-4 p-4 md:p-6 h-full`}>
-                    {images.map((imageUrl, index) => (
-                      <motion.div 
-                        key={index} 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="relative group overflow-hidden rounded-lg shadow-md bg-gray-800/70 border border-gray-700/30 aspect-square"
-                      >
-                        <img 
-                          src={imageUrl} 
-                          alt={t('imageGenerator.generatedImageAlt', { number: index + 1 })} 
-                          className="w-full h-full object-cover"
-                        />
-                        <div className={`absolute inset-0 flex flex-col justify-end p-2 md:p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/80 via-black/40 to-transparent`}>
-                          <div className="flex space-x-1 md:space-x-2">
-                            <button 
-                              onClick={() => handleDownload(imageUrl, message)}
-                              className="p-1.5 md:p-2 rounded-full bg-gray-800/80 text-white hover:bg-gray-700"
-                            >
-                              <FiDownload size={14} className="md:w-4 md:h-4" />
-                            </button>
-                            <button 
-                              onClick={() => handleShare(imageUrl)}
-                              className="p-1.5 md:p-2 rounded-full bg-gray-800/80 text-white hover:bg-gray-700"
-                            >
-                              <FiShare2 size={14} className="md:w-4 md:h-4" />
-                            </button>
+                  <div className="flex items-center justify-center h-full p-4 md:p-6">
+                    <div className={`grid ${images.length === 1 ? 'grid-cols-1' : images.length === 2 ? 'grid-cols-2' : images.length === 3 ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-2'} gap-3 md:gap-4 max-w-4xl`}>
+                      {images.map((imageUrl, index) => (
+                        <motion.div 
+                          key={index} 
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="relative group overflow-hidden rounded-lg shadow-md bg-gray-800/70 border border-gray-700/30 aspect-square"
+                        >
+                          <img 
+                            src={imageUrl} 
+                            alt={t('imageGenerator.generatedImageAlt', { number: index + 1 })} 
+                            className="w-full h-full object-cover"
+                          />
+                          {/* Cross button for removing image */}
+                          <button 
+                            onClick={() => {
+                              const updatedImages = images.filter((_, i) => i !== index);
+                              setImages(updatedImages);
+                            }}
+                            className="absolute top-2 right-2 p-1.5 rounded-full bg-red-600/80 text-white hover:bg-red-700/90 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+                            title="Remove image"
+                          >
+                            <FiX size={14} />
+                          </button>
+                          <div className={`absolute inset-0 flex flex-col justify-end p-2 md:p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/80 via-black/40 to-transparent`}>
+                            <div className="flex space-x-1 md:space-x-2">
+                              <button 
+                                onClick={() => handleDownload(imageUrl, message)}
+                                className="p-1.5 md:p-2 rounded-full bg-gray-800/80 text-white hover:bg-gray-700"
+                              >
+                                <FiDownload size={14} className="md:w-4 md:h-4" />
+                              </button>
+                              <button 
+                                onClick={() => handleShare(imageUrl)}
+                                className="p-1.5 md:p-2 rounded-full bg-gray-800/80 text-white hover:bg-gray-700"
+                              >
+                                <FiShare2 size={14} className="md:w-4 md:h-4" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      </motion.div>
-                    ))}
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center text-gray-400 h-[600px] flex flex-col items-center justify-center p-4 md:p-6 bg-gray-900/30 backdrop-blur-md overflow-hidden border border-gray-700/30">

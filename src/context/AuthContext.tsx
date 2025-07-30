@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, useRef, ReactNode } from 'react';
-import { supabase, checkUser, signIn, signUp, signOut, signInWithGoogle, signInWithApple } from '../supabaseClient';
+import { supabase, checkUser, signIn, signUp, signOut, signInWithGoogle, signInWithApple, resetPassword } from '../supabaseClient';
 
 // Define the shape of the auth context state
 interface AuthContextType {
@@ -11,6 +11,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
   signInWithApple: () => Promise<any>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<any>;
   error: string | null;
   setError: (error: string | null) => void;
 }
@@ -255,6 +256,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Reset password
+  const handleResetPassword = async (email: string) => {
+    try {
+      setError(null);
+      return await resetPassword(email);
+    } catch (error: any) {
+      setError(error.message || 'An error occurred while sending reset email');
+      throw error;
+    }
+  };
+
   // Define the value object
   const value = {
     user,
@@ -265,6 +277,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithGoogle: handleSignInWithGoogle,
     signInWithApple: handleSignInWithApple,
     signOut: handleSignOut,
+    resetPassword: handleResetPassword,
     error,
     setError,
   };

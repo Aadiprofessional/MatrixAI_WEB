@@ -6,6 +6,8 @@ import './styles/CommonStyles.css';
 import { 
   SignupPage,
   LoginPage, 
+  ForgotPasswordPage,
+
   DashboardPage, 
   ChatPage, 
   CallPage,
@@ -182,6 +184,8 @@ const App: React.FC = () => {
               {/* Auth routes */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          
               <Route path="/verify-email" element={<EmailVerificationPage />} />
               
               {/* AI feature routes */}

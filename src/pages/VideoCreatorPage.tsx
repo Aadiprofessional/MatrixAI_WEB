@@ -101,10 +101,10 @@ const VideoCreatorPage: React.FC = () => {
   const [showProAlert, setShowProAlert] = useState(false);
   const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(1);
   const [presetPrompts, setPresetPrompts] = useState([
-    t('video.preset.cityTimelapse', 'A timelapse of a bustling city from day to night'),
-    'A drone shot flying over majestic mountains with snow caps',
-    'An animation of a futuristic city with flying vehicles',
-    'A nature scene with animals in a forest'
+    t('videoCreator.preset.cityTimelapse'),
+    t('videoCreator.preset.droneShot'),
+    t('videoCreator.preset.futuristicCity'),
+    t('videoCreator.preset.natureScene')
   ]);
   
   // Video generation state
@@ -141,12 +141,12 @@ const VideoCreatorPage: React.FC = () => {
   
   // Template options for image-to-video
   const templateOptions = [
-    { id: 'flying', name: 'Flying' },
-    { id: 'zoom', name: 'Zoom In' },
-    { id: 'pan', name: 'Panning' },
-    { id: 'rotate', name: 'Rotation' },
-    { id: 'dolly', name: 'Dolly Zoom' },
-    { id: 'none', name: 'No Motion' },
+    { id: 'flying', name: t('videoCreator.template.flying') },
+    { id: 'zoom', name: t('videoCreator.template.zoomIn') },
+    { id: 'pan', name: t('videoCreator.template.panning') },
+    { id: 'rotate', name: t('videoCreator.template.rotation') },
+    { id: 'dolly', name: t('videoCreator.template.dollyZoom') },
+    { id: 'none', name: t('videoCreator.template.noMotion') },
   ];
   
   // Fetch template videos from Supabase storage
@@ -222,55 +222,29 @@ const VideoCreatorPage: React.FC = () => {
   // Transform API video data to match VideoHistoryItem interface
   // This is used for the regular API response
   const transformVideoData = useCallback((apiVideo: any): VideoHistoryItem => {
-    // Format date properly - handle different date formats from API
-    const formatDate = (dateStr: string) => {
-      if (!dateStr) return 'Unknown';
-      try {
-        // Handle different date formats
-        // ISO format: 2025-07-18T23:41:13.702
-        // Standard format: 2025-07-19 07:41:14.382
-        const date = new Date(dateStr);
-        
-        // Check if date is valid before formatting
-        if (isNaN(date.getTime())) {
-          return 'Unknown';
-        }
-        
-        // Get current time in client's system
-        const now = new Date();
-        
-        // Calculate time difference in milliseconds
-        // This uses the client's system time but maintains the same relative difference
-        const diffMs = now.getTime() - date.getTime();
-        const diffMins = Math.floor(diffMs / (1000 * 60));
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        
-        // For recently created videos, show more precise time
-        if (diffMins < 1) return 'Just now';
-        if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
-        if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
-        if (diffDays < 30) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
-        
-        // Fall back to date format using China timezone (UTC+8)
-        return date.toLocaleString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-          timeZone: 'Asia/Shanghai' // Explicitly use China timezone
-        }) + ' (China time)';
-      } catch (e) {
-        console.warn('Error parsing date:', dateStr, e);
-        return 'Unknown';
-      }
-    };
+    // Format date to show China timezone time only
+   const formatDate = (dateStr: string) => {
+  if (!dateStr) return 'Unknown';
+  try {
+    const date = new Date(dateStr);
+
+    if (isNaN(date.getTime())) return 'Unknown';
+
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch (e) {
+    console.warn('Error parsing date:', dateStr, e);
+    return 'Unknown';
+  }
+};
+
 
     // Format status for display
     const getStatusDisplay = (status: string) => {
-      if (!status) return 'Unknown';
+      if (!status) return t('videoCreator.unknown');
       
       // Normalize status to uppercase for consistent comparison
       const normalizedStatus = status.toUpperCase();
@@ -278,10 +252,10 @@ const VideoCreatorPage: React.FC = () => {
       switch(normalizedStatus) {
         case 'SUCCEEDED':
         case 'COMPLETED':
-          return 'Ready';
+          return t('videoCreator.ready');
         case 'RUNNING':
         case 'GENERATING':
-          return 'Processing';
+          return t('videoCreator.processing');
         case 'PENDING':
         case 'QUEUED':
           return 'Queued';
@@ -304,7 +278,7 @@ const VideoCreatorPage: React.FC = () => {
       hasVideo: !!(apiVideo.videoUrl || apiVideo.video_url),
       videoUrl: apiVideo.videoUrl || apiVideo.video_url || '',
       createdAt: apiVideo.createdAt || apiVideo.created_at,
-      ageDisplay: formatDate(apiVideo.createdAt || apiVideo.created_at),
+      ageDisplay: formatDate(apiVideo.submitTime || apiVideo.submit_time || apiVideo.createdAt || apiVideo.created_at),
       apiType: apiVideo.apiType || 'video',
       requestId: apiVideo.requestId || apiVideo.request_id || '',
       submitTime: apiVideo.submitTime || apiVideo.submit_time || apiVideo.createdAt || apiVideo.created_at,
@@ -366,7 +340,7 @@ const VideoCreatorPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error fetching video history:', err);
-      setHistoryError(err.message || 'Failed to fetch video history');
+      setHistoryError(err.message || t('videoCreator.failedToFetchHistory'));
       if (!append) {
         setVideoHistory([]);
       }
@@ -491,13 +465,13 @@ const VideoCreatorPage: React.FC = () => {
     }
     
     // Deduct coins - 70 for premium templates, 25 for regular
-    const coinCost = isPremiumTemplate ? 70 : 25;
+    const coinCost = isPremiumTemplate ? 55 : 30;
     try {
       await userService.subtractCoins(user.id, coinCost, 'video_generation');
       console.log(`Coins deducted successfully: ${coinCost}`);
     } catch (error) {
       console.error('Error deducting coins:', error);
-      setError('Failed to deduct coins. Please try again.');
+      setError(t('videoCreator.failedToDeductCoins'));
       setIsGenerating(false);
       setGenerateButtonClicked(false);
       return;
@@ -512,7 +486,7 @@ const VideoCreatorPage: React.FC = () => {
     setTaskStatus('');
     
     // Show alert about 2-minute wait time
-    showInfo('Video generation will take approximately 2 minutes. Please be patient.', 10000);
+    showInfo(t('videoCreator.videoGenerationWillTake'), 10000);
     
     // Start progress animation - calibrated to reach ~95% in exactly 2 minutes
     const startTime = Date.now();
@@ -579,8 +553,8 @@ const VideoCreatorPage: React.FC = () => {
             }
           } else {
             // We have a URL (from previous implementation) - this is a fallback
-            console.error('Using URL-based image upload is deprecated, please use direct file upload');
-            setError('Image upload method not supported. Please try uploading the image again.');
+            console.error(t('videoCreator.urlUploadDeprecated'));
+            setError(t('videoCreator.imageUploadNotSupported'));
             setIsGenerating(false);
             setGenerateButtonClicked(false);
             clearInterval(progressInterval);
@@ -591,7 +565,7 @@ const VideoCreatorPage: React.FC = () => {
           
           // Check for error in response
           if (response.error) {
-            setError(`Video generation failed: ${response.message || 'The server could not process your image. Please try a different image or prompt.'}`);
+            setError(`${t('videoCreator.videoGenerationFailed')}: ${response.message || t('videoCreator.serverCouldNotProcess')}`);
             setIsGenerating(false);
             setGenerateButtonClicked(false);
             clearInterval(progressInterval);
@@ -621,24 +595,24 @@ const VideoCreatorPage: React.FC = () => {
           
           // Handle different error status codes
           if (apiError.message && apiError.message.includes('Image download timeout')) {
-            setError('Image download issue: The server could not process your image. Please try again with a smaller image file or a different image.');
+            setError(t('videoCreator.imageDownloadIssue'));
             console.error('Image download timeout detected');
           } else if (apiError.message && apiError.message.includes('500')) {
-            setError('Server error (500): The video generation service is currently experiencing issues. This may be due to high demand or server maintenance. Please try again later.');
+            setError(t('videoCreator.serverError500'));
             console.error('500 error detected in message');
           } else if (apiError.message && apiError.message.includes('Failed to create video from image')) {
-            setError(`Video creation failed: ${apiError.message}. Please check that your image is valid and accessible.`);
+            setError(t('videoCreator.videoCreationFailed', { message: apiError.message }));
             console.error('Video creation failure detected');
           } else if (apiError.message && apiError.message.includes('DashScope API error')) {
-            setError('AI service error: The video generation AI service encountered an issue processing your image. Please try a different image or prompt.');
+            setError(t('videoCreator.aiServiceError'));
             console.error('DashScope API error detected');
           } else {
-            setError(apiError.message || 'Failed to connect to video generation service. Please check your internet connection and try again.');
+            setError(apiError.message || t('videoCreator.failedToConnect'));
             console.error('Other error type detected');
           }
           
           // Set API error for debugging
-          setApiError(apiError.message || 'Unknown API error');
+          setApiError(apiError.message || t('videoCreator.unknownApiError'));
           
           setIsGenerating(false);
           setGenerateButtonClicked(false);
@@ -695,11 +669,11 @@ const VideoCreatorPage: React.FC = () => {
       
       // Make error messages more user-friendly
       if (errorMessage.includes('API error')) {
-        errorMessage = 'Server error: Unable to process your request. Please try again later.';
+        errorMessage = t('videoCreator.serverErrorGeneral');
       } else if (errorMessage.includes('Failed to connect')) {
-        errorMessage = 'Connection error: Please check your internet connection and try again.';
+        errorMessage = t('videoCreator.connectionError');
       } else if (errorMessage.includes('Video generation failed')) {
-        errorMessage = 'Video generation failed. The server may be busy or your image may not be suitable.';
+        errorMessage = t('videoCreator.serverBusyOrImageNotSuitable');
       }
       
       setError(errorMessage);
@@ -715,11 +689,11 @@ const VideoCreatorPage: React.FC = () => {
     if (!user?.id) return;
     
     showConfirmation(
-      'Are you sure you want to remove this video? This action cannot be undone.',
+      t('videoCreator.confirmRemoveVideo'),
       async () => {
         try {
           // Show alert before removing
-          showInfo('Removing video...', 2000);
+          showInfo(t('videoCreator.removingVideo'), 2000);
           
           await videoService.removeVideo(user.id!, videoId);
           
@@ -727,16 +701,16 @@ const VideoCreatorPage: React.FC = () => {
           setVideoHistory(prev => prev.filter(video => video.videoId !== videoId));
           
           // Show success message
-          showSuccess('Video removed successfully');
+          showSuccess(t('videoCreator.videoRemovedSuccessfully'));
         } catch (error: any) {
           console.error('Error removing video:', error);
-          showError('Failed to remove the video. Please try again.');
+          showError(t('videoCreator.failedToRemoveVideo'));
         }
       },
       undefined,
       {
-        confirmText: 'Yes, Remove',
-        cancelText: 'Cancel',
+        confirmText: t('videoCreator.yesRemove'),
+        cancelText: t('videoCreator.cancel'),
         type: 'warning'
       }
     );
@@ -788,7 +762,7 @@ const VideoCreatorPage: React.FC = () => {
 
   const handleVideoError = () => {
     setIsBuffering(false);
-    setError('Error loading video. Please try again.');
+    setError(t('videoCreator.errorLoadingVideo'));
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -972,7 +946,7 @@ const VideoCreatorPage: React.FC = () => {
                 
                 // Set a timeout to handle cases where the image might take too long to load
                 const timeoutId = setTimeout(() => {
-                  console.log('Image dimension check timed out, proceeding anyway');
+                  console.log(t('videoCreator.imageDimensionTimeout'));
                   resolve(); // Resolve anyway to prevent blocking the user
                 }, 5000); // 5 second timeout
                 
@@ -980,9 +954,9 @@ const VideoCreatorPage: React.FC = () => {
                   clearTimeout(timeoutId);
                   // Check if image is too large in dimensions
                   if (img.width > 4000 || img.height > 4000) {
-                    reject(new Error('Image dimensions are too large. Please use an image smaller than 4000x4000 pixels to prevent timeout issues.'));
+                    reject(new Error(t('videoCreator.imageTooLarge')));
                   } else if (img.width < 256 || img.height < 256) {
-                    reject(new Error('Image dimensions are too small. Please use an image at least 256x256 pixels for best results.'));
+                    reject(new Error(t('videoCreator.imageTooSmall')));
                   } else {
                     resolve();
                   }
@@ -1010,7 +984,7 @@ const VideoCreatorPage: React.FC = () => {
             setError(null);
           } catch (conversionError: any) {
             console.error('Error converting HEIC image:', conversionError);
-            throw new Error('Failed to convert HEIC image. Please try another image format.');
+            throw new Error(t('videoCreator.failedToConvertHEIC'));
           }
         } else {
           // For non-HEIC images, check dimensions with timeout
@@ -1020,7 +994,7 @@ const VideoCreatorPage: React.FC = () => {
               
               // Set a timeout to handle cases where the image might take too long to load
               const timeoutId = setTimeout(() => {
-                console.log('Image dimension check timed out, proceeding anyway');
+                console.log(t('videoCreator.imageDimensionTimeout'));
                 resolve(); // Resolve anyway to prevent blocking the user
               }, 5000); // 5 second timeout
               
@@ -1028,9 +1002,9 @@ const VideoCreatorPage: React.FC = () => {
                 clearTimeout(timeoutId);
                 // Check if image is too large in dimensions
                 if (img.width > 4000 || img.height > 4000) {
-                  reject(new Error('Image dimensions are too large. Please use an image smaller than 4000x4000 pixels to prevent timeout issues.'));
+                  reject(new Error(t('videoCreator.imageTooLarge')));
                 } else if (img.width < 256 || img.height < 256) {
-                  reject(new Error('Image dimensions are too small. Please use an image at least 256x256 pixels for best results.'));
+                  reject(new Error(t('videoCreator.imageTooSmall')));
                 } else {
                   resolve();
                 }
@@ -1038,7 +1012,7 @@ const VideoCreatorPage: React.FC = () => {
               
               img.onerror = () => {
                 clearTimeout(timeoutId);
-                reject(new Error('Failed to load image for validation. Please try another image.'));
+                reject(new Error(t('videoCreator.failedToLoadImage')));
               };
               
               img.src = URL.createObjectURL(file);
@@ -1064,7 +1038,7 @@ const VideoCreatorPage: React.FC = () => {
         setIsUploadingImage(false);
       } catch (error: any) {
         console.error('Error processing image:', error);
-        setError(error.message || 'Failed to process image. Please try again.');
+        setError(error.message || t('videoCreator.failedToProcessImage'));
         setUploadedImage(null);
         setIsUploadingImage(false);
       }
@@ -1079,7 +1053,7 @@ const VideoCreatorPage: React.FC = () => {
       // Show loading state
       const loadingToast = document.createElement('div');
       loadingToast.className = `fixed top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all`;
-      loadingToast.textContent = 'Downloading video...';
+      loadingToast.textContent = t('videoCreator.downloadingVideo');
       document.body.appendChild(loadingToast);
 
       // Fetch the video as blob to handle CORS issues
@@ -1091,7 +1065,7 @@ const VideoCreatorPage: React.FC = () => {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to fetch video');
+        throw new Error(t('videoCreator.failedToFetchVideo'));
       }
       
       const blob = await response.blob();
@@ -1118,7 +1092,7 @@ const VideoCreatorPage: React.FC = () => {
       // Show success message
       const successToast = document.createElement('div');
       successToast.className = `fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all`;
-      successToast.textContent = 'Video downloaded successfully!';
+      successToast.textContent = t('videoCreator.videoDownloadedSuccessfully');
       document.body.appendChild(successToast);
       
       setTimeout(() => {
@@ -1141,7 +1115,7 @@ const VideoCreatorPage: React.FC = () => {
         // Show error message
         const errorToast = document.createElement('div');
         errorToast.className = `fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all`;
-        errorToast.textContent = 'Failed to download video. Please try right-click and save.';
+        errorToast.textContent = t('videoCreator.failedToDownloadVideo');
         document.body.appendChild(errorToast);
         
         setTimeout(() => {
@@ -1165,7 +1139,7 @@ const VideoCreatorPage: React.FC = () => {
     const getRemainingTimeText = () => {
       // If progress is over 95%, just say "almost done"
       if (processingProgress >= 95) {
-        return "(almost done)";
+        return `(${t('videoCreator.almostDone')})`;
       }
       
       // Fixed time of 40 seconds for text-to-video
@@ -1177,20 +1151,20 @@ const VideoCreatorPage: React.FC = () => {
       if (remainingTimeSeconds > 60) {
         const minutes = Math.floor(remainingTimeSeconds / 60);
         const seconds = remainingTimeSeconds % 60;
-        return `(about ${minutes}m ${seconds}s remaining)`;
+        return `(${t('videoCreator.aboutTimeRemaining', { minutes, seconds })})`;
       } else {
-        return `(about ${remainingTimeSeconds}s remaining)`;
+        return `(${t('videoCreator.aboutSecondsRemaining', { remainingTimeSeconds })})`;
       }
     };
     
     // Special case for image upload
     if (uploadedImageUrl && isGenerating) {
       if (taskStatus === 'PENDING' || taskStatus === 'pending') {
-        return `Preparing your image for animation... ${getRemainingTimeText()}`;
+        return `${t('videoCreator.preparingImage')} ${getRemainingTimeText()}`;
       } else if (taskStatus === 'RUNNING' || taskStatus === 'PROCESSING' || taskStatus === 'processing') {
-        return `Animating your image... ${getRemainingTimeText()}`;
+        return `${t('videoCreator.animatingImage')} ${getRemainingTimeText()}`;
       } else if (taskStatus === 'FAILED' || taskStatus === 'failed') {
-        return 'Animation failed. Please try a different image or prompt.';
+        return t('videoCreator.animationFailed');
       }
     }
     
@@ -1199,18 +1173,18 @@ const VideoCreatorPage: React.FC = () => {
     
     switch (normalizedStatus) {
       case 'pending':
-        return `Initializing video generation... ${getRemainingTimeText()}`;
+        return `${t('videoCreator.initializingGeneration')} ${getRemainingTimeText()}`;
       case 'running':
       case 'processing':
       case 'generating':
-        return `Generating video... ${getRemainingTimeText()}`;
+        return `${t('videoCreator.generatingVideo')} ${getRemainingTimeText()}`;
       case 'succeeded':
       case 'completed':
-        return 'Video generated successfully!';
+        return t('videoCreator.videoGeneratedSuccessfully');
       case 'failed':
-        return 'Video generation failed';
+        return t('videoCreator.videoGenerationFailed');
       default:
-        return `Generating video... ${getRemainingTimeText()}`;
+        return `${t('videoCreator.generatingVideo')} ${getRemainingTimeText()}`;
     }
   };
 
@@ -1262,7 +1236,7 @@ const VideoCreatorPage: React.FC = () => {
                 onClick={() => setShowProAlert(true)}
                 className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
               >
-                Upgrade to Pro
+                {t('videoCreator.upgradeToPro')}
               </button>
             )}
           </div>
@@ -1301,7 +1275,7 @@ const VideoCreatorPage: React.FC = () => {
                     className="px-3 py-1.5 rounded-lg bg-black/80 backdrop-blur-md text-white hover:bg-black/60 flex items-center shadow-lg transition-all duration-300"
                   >
                     <FiUpload className="mr-1.5" size={14} />
-                    Reupload
+                    {t('videoCreator.reupload')}
                   </button>
                 </div>
               </div>
@@ -1318,7 +1292,7 @@ const VideoCreatorPage: React.FC = () => {
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
                   <div className="flex items-center space-x-2 text-white">
                     <FiLoader className="animate-spin" size={24} />
-                    <span>Buffering...</span>
+                    <span>{t('videoCreator.buffering')}</span>
                   </div>
                 </div>
               )}
@@ -1395,7 +1369,7 @@ const VideoCreatorPage: React.FC = () => {
                     <button
                       onClick={() => handleDownload(videoUrl, prompt)}
                       className="text-white hover:text-blue-400 transition-colors"
-                      title="Download video"
+                      title={t('videoCreator.downloadVideo')}
                     >
                       <FiDownload size={18} />
                     </button>
@@ -1404,7 +1378,7 @@ const VideoCreatorPage: React.FC = () => {
                     <button
                       onClick={toggleFullscreen}
                       className="text-white hover:text-blue-400 transition-colors"
-                      title="Toggle fullscreen"
+                      title={t('videoCreator.toggleFullscreen')}
                     >
                       {isFullscreen ? <FiMinimize size={18} /> : <FiMaximize size={18} />}
                     </button>
@@ -1423,7 +1397,7 @@ const VideoCreatorPage: React.FC = () => {
                         // For non-HEIC images, show the actual image
                         <img 
                           src={URL.createObjectURL(uploadedImage)} 
-                          alt="Uploaded" 
+                          alt={t('videoCreator.uploadedImageAlt')} 
                           className="max-h-full max-w-full object-contain z-10 mx-auto"
                           onError={(e) => {
                             console.error('Local image failed to load');
@@ -1435,7 +1409,7 @@ const VideoCreatorPage: React.FC = () => {
                     ) : (
                       <img 
                         src={uploadedImageUrl} 
-                        alt="Uploaded" 
+                        alt={t('videoCreator.uploadedImageAlt')} 
                         className="max-h-full max-w-full object-contain z-10 mx-auto" 
                         onError={(e) => {
                           console.error('Image failed to load:', uploadedImageUrl);
@@ -1471,9 +1445,9 @@ const VideoCreatorPage: React.FC = () => {
               ) : (
                 <>
                   <FiVideo className="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No video generated yet</h3>
+                  <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">{t('videoCreator.noVideoGenerated')}</h3>
                   <p className="text-gray-500 dark:text-gray-400 max-w-md mb-4">
-                    Enter a prompt describing the video you want to create, upload an image to animate, or upload a video to enhance
+                    {t('videoCreator.enterPromptDescription')}
                   </p>
                 </>
               )}
@@ -1483,10 +1457,10 @@ const VideoCreatorPage: React.FC = () => {
                     <AuthRequiredButton
                       onClick={handleUploadImageClick}
                       className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90 flex items-center shadow-lg transform transition-transform hover:scale-105"
-                      title="Images larger than 5MB will be automatically compressed"
+                      title={t('videoCreator.imageSizeWarning')}
                     >
                       <FiImage className="mr-2" />
-                      Upload Image
+                      {t('videoCreator.uploadImage')}
                     </AuthRequiredButton>
                     <input
                       type="file"
@@ -1497,7 +1471,7 @@ const VideoCreatorPage: React.FC = () => {
                     />
                   </div>
                   <div className="text-xs text-gray-400 mt-2">
-                    Images larger than 5MB will be automatically compressed
+                    {t('videoCreator.imageSizeWarning')}
                   </div>
                 </div>
               )}
@@ -1513,18 +1487,18 @@ const VideoCreatorPage: React.FC = () => {
                       className="mt-4 px-4 py-2 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 flex items-center"
                     >
                       <FiTrash className="mr-2" />
-                      Remove Image
+                      {t('videoCreator.removeImage')}
                     </button>
                     <AuthRequiredButton
                       onClick={handleUploadImageClick}
                       className="mt-4 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90 flex items-center shadow-lg transform transition-transform hover:scale-105"
                     >
                       <FiUpload className="mr-2" />
-                      Reupload Image
+                      {t('videoCreator.reuploadImage')}
                     </AuthRequiredButton>
                   </div>
                   <div className="text-xs text-gray-400 mt-2">
-                    Images larger than 5MB are automatically compressed
+                    {t('videoCreator.imageSizeCompressed')}
                   </div>
                 </div>
               )}
@@ -1533,7 +1507,7 @@ const VideoCreatorPage: React.FC = () => {
 
           {/* Template Video Grid */}
             <div className="mt-8">
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">Available Templates</h3>
+              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">{t('videoCreator.availableTemplates')}</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {templateVideos.slice(0, 8).map((template) => (
                   <div
@@ -1575,7 +1549,7 @@ const VideoCreatorPage: React.FC = () => {
                         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                           <div className="text-white text-center">
                             <FiLock className="w-6 h-6 mx-auto mb-2" />
-                            <span className="text-xs font-medium">Premium</span>
+                            <span className="text-xs font-medium">{t('videoCreator.premium')}</span>
                           </div>
                         </div>
                       )}
@@ -1595,7 +1569,7 @@ const VideoCreatorPage: React.FC = () => {
                       </h3>
                       <div className="flex items-center justify-between mt-1">
                         <span className={`text-xs px-1.5 py-0.5 rounded-full ${template.category === 'basic' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'}`}>
-                          {template.category === 'basic' ? '25 coins' : '70 coins'}
+                          {template.category === 'basic' ? t('videoCreator.basicCoins') : t('videoCreator.premiumCoins')}
                         </span>
                       </div>
                     </div>
@@ -1609,7 +1583,7 @@ const VideoCreatorPage: React.FC = () => {
                   className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 flex items-center"
                 >
                   <FiVideo className="mr-1" size={14} />
-                  View All Templates
+                  {t('videoCreator.viewAllTemplates')}
                 </button>
               </div>
             </div>
@@ -1628,7 +1602,7 @@ const VideoCreatorPage: React.FC = () => {
       id="promptInput"
       value={prompt}
       onChange={(e) => setPrompt(e.target.value)}
-      placeholder="Describe the video you want to generate..."
+      placeholder={t('videoCreator.promptPlaceholder')}
       className="w-full p-4 pr-12 h-24 border-0 rounded-lg bg-transparent text-white placeholder:text-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       disabled={isGenerating}
     />
@@ -1657,7 +1631,7 @@ const VideoCreatorPage: React.FC = () => {
                   exit={{ opacity: 0, height: 0 }}
                   className="mt-4 p-4 border rounded-lg shadow-sm backdrop-blur-sm bg-white/20 dark:bg-gray-800/20 border-gray-200 dark:border-gray-700"
                 >
-                  <h3 className="text-md font-medium mb-3 text-gray-800 dark:text-gray-200">Video Generation Options</h3>
+                  <h3 className="text-md font-medium mb-3 text-gray-800 dark:text-gray-200">{t('videoCreator.videoGenerationOptions')}</h3>
                   
                   <div className="space-y-4">
                     {/* Option 1: Text-to-Video */}
@@ -1676,10 +1650,10 @@ const VideoCreatorPage: React.FC = () => {
                         <div className="h-4 w-4 rounded-full border border-gray-400 dark:border-gray-500 flex items-center justify-center mr-2">
                           {!template && <div className="h-2 w-2 rounded-full bg-blue-500"></div>}
                         </div>
-                        <h4 className="font-medium text-gray-800 dark:text-gray-200">Text-to-Video</h4>
+                        <h4 className="font-medium text-gray-800 dark:text-gray-200">{t('videoCreator.textToVideo')}</h4>
                       </div>
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-6">
-                        Generate video with your prompt
+                        {t('videoCreator.generateWithPrompt')}
                       </p>
                       {/* Hidden input for negative prompt - not shown to user */}
                       <input type="hidden" value="no blur" />
@@ -1708,10 +1682,10 @@ const VideoCreatorPage: React.FC = () => {
                         <div className="h-4 w-4 rounded-full border border-gray-400 dark:border-gray-500 flex items-center justify-center mr-2">
                           {template && <div className="h-2 w-2 rounded-full bg-blue-500"></div>}
                         </div>
-                        <h4 className="font-medium text-gray-800 dark:text-gray-200">Template-based Generation</h4>
+                        <h4 className="font-medium text-gray-800 dark:text-gray-200">{t('videoCreator.templateBasedGeneration')}</h4>
                       </div>
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-6">
-                        Apply a motion template to your image (no prompt needed)
+                        {t('videoCreator.applyMotionTemplate')}
                       </p>
                       
                       {/* Template selection - Always shown for this option */}
@@ -1719,14 +1693,14 @@ const VideoCreatorPage: React.FC = () => {
                         <div className="mt-2 ml-6 space-y-4">
                           <div>
                             <div className="flex items-center justify-between mb-2">
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Motion Template</label>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('videoCreator.motionTemplate')}</label>
                               <button
                                 onClick={() => setShowTemplateGrid(true)}
                                 className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 flex items-center"
                                 disabled={isGenerating}
                               >
                                 <FiVideo className="mr-1" size={14} />
-                                Browse Templates
+                                {t('videoCreator.browseTemplates')}
                               </button>
                             </div>
                             {selectedTemplate ? (
@@ -1775,8 +1749,8 @@ const VideoCreatorPage: React.FC = () => {
                                   className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                                   disabled={isGenerating}
                                 >
-                                  <option value="">Select a template...</option>
-                                  <optgroup label="Basic Templates">
+                                  <option value="">{t('videoCreator.selectTemplate')}</option>
+                                  <optgroup label={t('videoCreator.basicTemplates')}>
                                     {templateVideos
                                       .filter(t => t.category === 'basic')
                                       .map(template => (
@@ -1785,7 +1759,7 @@ const VideoCreatorPage: React.FC = () => {
                                         </option>
                                       ))}
                                   </optgroup>
-                                  <optgroup label="Premium Templates 🔒 (70 coins)">
+                                  <optgroup label={t('videoCreator.premiumTemplatesLocked')}>
                                     {templateVideos
                                       .filter(t => t.category === 'premium')
                                       .map(template => (
@@ -1838,16 +1812,16 @@ const VideoCreatorPage: React.FC = () => {
                 </p>
                 {(error?.includes('Video generation failed') || error?.includes('Task processing failed')) && (
                   <p className="mt-2 text-sm text-red-600 dark:text-red-400 pl-6">
-                    This may be due to server issues or the image not being suitable for animation. Try using a different image with a clear subject or try again later.
+                    {t('videoCreator.animationFailureMessage')}
                   </p>
                 )}
                 {(error?.includes('Converting HEIC image')) && (
                   <p className="mt-2 text-sm text-amber-600 dark:text-amber-400 pl-6">
-                    <strong>Please wait:</strong> HEIC is an Apple image format that is being converted to JPG for compatibility.
+                    <strong>{t('videoCreator.pleaseWait')}:</strong> {t('videoCreator.heicConversionMessage')}
                     <br/><br/>
-                    <strong>What's happening:</strong> Your HEIC image is being converted to JPG format right now.
+                    <strong>{t('videoCreator.whatsHappening')}:</strong> {t('videoCreator.heicConversionInProgress')}
                     <br/>
-                    <strong>No action needed:</strong> The image will be displayed once conversion is complete.
+                    <strong>{t('videoCreator.noActionNeeded')}:</strong> {t('videoCreator.imageWillDisplay')}
                   </p>
                 )}
               </div>
@@ -1871,7 +1845,7 @@ const VideoCreatorPage: React.FC = () => {
                       onClick={cancelGeneration}
                       className="text-sm text-red-500 hover:text-red-700 dark:text-red-400 flex items-center"
                     >
-                      <FiX className="mr-1" /> Cancel
+                      <FiX className="mr-1" /> {t('videoCreator.cancel')}
                     </button>
                   </div>
                 </div>
@@ -1888,15 +1862,15 @@ const VideoCreatorPage: React.FC = () => {
                   {isUploadingImage ? (
                     <>
                       <FiLoader className="animate-spin mr-2" />
-                      Uploading Image...
+                      {t('videoCreator.uploadingImage')}
                     </>
                   ) : (
                     <>
                       <FiVideo className="mr-2" />
-                      Generate Video
+                      {t('videoCreator.generateVideo')}
                       <div className="ml-2 flex items-center bg-black/20 px-2 py-0.5 rounded-full">
                         <span className="text-sm font-bold mr-1">
-                          {templateVideos.find(t => t.name === selectedTemplate)?.category === 'premium' ? '-70' : '-25'}
+                          {templateVideos.find(t => t.name === selectedTemplate)?.category === 'premium' ? '-55' : '-30'}
                         </span>
                         <img src={coinImage} alt="Coins" className="h-4 w-4" />
                       </div>
@@ -1913,7 +1887,7 @@ const VideoCreatorPage: React.FC = () => {
                 className="w-full py-2 px-4 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center"
               >
                 <FiList className="mr-2" />
-                {showHistory ? 'Hide History' : 'Show History'}
+                {showHistory ? t('common.hideHistory') : t('common.showHistory')}
               </AuthRequiredButton>
             </div>
             
@@ -1925,7 +1899,7 @@ const VideoCreatorPage: React.FC = () => {
                 exit={{ opacity: 0, height: 0 }}
                 className="border rounded-lg p-4 backdrop-blur-sm bg-white/20 dark:bg-gray-800/20 border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto shadow-lg"
               >
-                <h3 className="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300">Video History</h3>
+                <h3 className="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300">{t('videoCreator.videoHistory')}</h3>
                 
                 {isLoadingHistory ? (
                   <div className="space-y-3">
@@ -1946,20 +1920,20 @@ const VideoCreatorPage: React.FC = () => {
                   </div>
                 ) : historyError ? (
                   <div className="text-center py-8">
-                    <p className="text-red-500 dark:text-red-400 text-sm mb-2">Error loading history</p>
+                    <p className="text-red-500 dark:text-red-400 text-sm mb-2">{t('common.errorLoadingHistory')}</p>
                     <p className="text-red-500 dark:text-red-400 text-xs">{historyError}</p>
                     <button
                       onClick={() => fetchVideoHistory(1, false)}
                       className="mt-4 px-4 py-2 rounded-lg bg-blue-500 text-white hover-bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-sm"
                     >
-                      Retry
+                      {t('common.retry')}
                     </button>
                   </div>
                 ) : videoHistory.length === 0 ? (
                   <div className="text-center py-8">
                     <FiVideo className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-600" />
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">No videos generated yet</p>
-                    <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Generate your first video to see it here</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">{t('videoCreator.noVideosGenerated')}</p>
+                <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">{t('videoCreator.generateFirstVideo')}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -2025,14 +1999,14 @@ const VideoCreatorPage: React.FC = () => {
                               <button
                                 onClick={() => setVideoUrl(video.videoUrl || null)}
                                 className="text-blue-500 hover:text-blue-700 dark:text-blue-400"
-                                title="Load video"
+                                title={t('videoCreator.loadVideo')}
                               >
                                 <FiPlay size={16} />
                               </button>
                               <button
                                 onClick={() => handleDownload(video.videoUrl, video.promptText)}
                                 className="text-green-500 hover:text-green-700 dark:text-green-400"
-                                title="Download video"
+                                title={t('videoCreator.downloadVideo')}
                               >
                                 <FiDownload size={16} />
                               </button>
@@ -2041,7 +2015,7 @@ const VideoCreatorPage: React.FC = () => {
                           <button
                             onClick={() => handleRemoveVideo(video.videoId)}
                             className="text-red-500 hover:text-red-700 dark:text-red-400"
-                            title="Remove video"
+                            title={t('videoCreator.removeVideo')}
                           >
                             <FiTrash size={16} />
                           </button>
@@ -2053,7 +2027,7 @@ const VideoCreatorPage: React.FC = () => {
                     {isLoadingMoreHistory && (
                       <div className="flex items-center justify-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500 dark:border-blue-400 mr-2"></div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Loading more...</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{t('videoCreator.loadingMore')}</span>
                       </div>
                     )}
                     
@@ -2071,11 +2045,11 @@ const VideoCreatorPage: React.FC = () => {
                           disabled={historyPage <= 1}
                           className={`px-4 py-2 rounded-lg text-sm transition-colors duration-300 ${historyPage <= 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
                         >
-                          Previous
+                          {t('videoCreator.previous')}
                         </button>
                         
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Page {historyPage} of {totalPages}
+                          {t('videoCreator.pageOf', { current: historyPage, total: totalPages })}
                         </span>
                         
                         <button 
@@ -2089,7 +2063,7 @@ const VideoCreatorPage: React.FC = () => {
                           disabled={!hasMoreHistory}
                           className={`px-4 py-2 rounded-lg text-sm transition-colors duration-300 ${!hasMoreHistory ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
                         >
-                          Next
+                          {t('videoCreator.next')}
                         </button>
                       </div>
                     )}
@@ -2100,7 +2074,7 @@ const VideoCreatorPage: React.FC = () => {
             
             {/* Presets */}
             <div>
-              <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Try these ideas</h3>
+              <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('videoCreator.tryTheseIdeas')}</h3>
               <div className="grid grid-cols-1 gap-2">
                 {presetPrompts.map((presetPrompt, index) => (
                   <button
@@ -2121,26 +2095,26 @@ const VideoCreatorPage: React.FC = () => {
 
       {/* Examples and Suggestions */}
       <div className="mt-12 border-t border-gray-200 dark:border-gray-700 pt-8">
-        <h2 className="text-xl font-bold mb-6">What you can create</h2>
+        <h2 className="text-xl font-bold mb-6">{t('videoCreator.whatYouCanCreate')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="rounded-lg overflow-hidden border dark:border-gray-700">
             <div className="bg-blue-100 dark:bg-blue-900 p-4">
-              <h3 className="font-medium mb-1">Text to Video</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Create videos directly from textual descriptions</p>
+              <h3 className="font-medium mb-1">{t('videoCreator.textToVideoTitle')}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">{t('videoCreator.textToVideoDescription')}</p>
             </div>
             <div className="p-4 text-sm">
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <FiCheck className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                  Generate scenes based on detailed descriptions
+                  {t('videoCreator.generateScenesFeature')}
                 </li>
                 <li className="flex items-start">
                   <FiCheck className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                  Create animated sequences for presentations
+                  {t('videoCreator.createAnimatedSequencesFeature')}
                 </li>
                 <li className="flex items-start">
                   <FiCheck className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                  Visualize creative concepts and stories
+                  {t('videoCreator.visualizeConceptsFeature')}
                 </li>
               </ul>
             </div>
@@ -2148,22 +2122,22 @@ const VideoCreatorPage: React.FC = () => {
           
           <div className="rounded-lg overflow-hidden border dark:border-gray-700">
             <div className="bg-purple-100 dark:bg-purple-900 p-4">
-              <h3 className="font-medium mb-1">Video Enhancement</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Upgrade and transform existing videos</p>
+              <h3 className="font-medium mb-1">{t('videoCreator.videoEnhancementTitle')}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">{t('videoCreator.videoEnhancementDescription')}</p>
             </div>
             <div className="p-4 text-sm">
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <FiCheck className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                  Enhance video quality and resolution
+                  {t('videoCreator.enhanceQualityFeature')}
                 </li>
                 <li className="flex items-start">
                   <FiCheck className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                  Apply artistic styles to existing footage
+                  {t('videoCreator.applyArtisticStylesFeature')}
                 </li>
                 <li className="flex items-start">
                   <FiCheck className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                  Stabilize shaky videos and improve colors
+                  {t('videoCreator.stabilizeVideosFeature')}
                 </li>
               </ul>
             </div>
@@ -2171,22 +2145,22 @@ const VideoCreatorPage: React.FC = () => {
           
           <div className="rounded-lg overflow-hidden border dark:border-gray-700">
             <div className="bg-pink-100 dark:bg-pink-900 p-4">
-              <h3 className="font-medium mb-1">Motion Graphics</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Create dynamic visual animations</p>
+              <h3 className="font-medium mb-1">{t('videoCreator.motionGraphicsTitle')}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">{t('videoCreator.motionGraphicsDescription')}</p>
             </div>
             <div className="p-4 text-sm">
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <FiCheck className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                  Generate logo animations and branding elements
+                  {t('videoCreator.generateLogoAnimationsFeature')}
                 </li>
                 <li className="flex items-start">
                   <FiCheck className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                  Create animated infographics from data
+                  {t('videoCreator.createInfographicsFeature')}
                 </li>
                 <li className="flex items-start">
                   <FiCheck className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                  Design animated text and title sequences
+                  {t('videoCreator.designAnimatedTextFeature')}
                 </li>
               </ul>
             </div>
@@ -2203,9 +2177,9 @@ const VideoCreatorPage: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Choose a Template</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('videoCreator.chooseTemplate')}</h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Select from our collection of video templates
+                  {t('videoCreator.selectFromCollection')}
                 </p>
               </div>
               <button
@@ -2226,7 +2200,7 @@ const VideoCreatorPage: React.FC = () => {
                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                 }`}
               >
-                Basic Templates (12)
+                {t('videoCreator.basicTemplatesCount', { count: 12 })}
               </button>
               <button
                 onClick={() => setTemplateCategory('premium')}
@@ -2236,7 +2210,7 @@ const VideoCreatorPage: React.FC = () => {
                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                 }`}
               >
-                Premium Templates (7) {!canAccessPremium() && '🔒'}
+                {t('videoCreator.premiumTemplatesCount', { count: 7 })} {!canAccessPremium() && '🔒'}
               </button>
             </div>
             
@@ -2245,7 +2219,7 @@ const VideoCreatorPage: React.FC = () => {
               {isLoadingTemplates ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                  <span className="ml-3 text-gray-600 dark:text-gray-400">Loading templates...</span>
+                  <span className="ml-3 text-gray-600 dark:text-gray-400">{t('videoCreator.loadingTemplates')}</span>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -2263,7 +2237,7 @@ const VideoCreatorPage: React.FC = () => {
                       }`}
                       onClick={() => {
                         if (templateCategory === 'premium' && !canAccessPremium()) {
-                          alert('Premium templates require a subscription. Please upgrade your plan.');
+                          alert(t('videoCreator.premiumRequiredAlert'));
                           return;
                         }
                         handleTemplateSelect(template.name);
@@ -2294,7 +2268,7 @@ const VideoCreatorPage: React.FC = () => {
                           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                             <div className="text-white text-center">
                               <FiLock className="w-6 h-6 mx-auto mb-2" />
-                              <span className="text-xs font-medium">Premium</span>
+                              <span className="text-xs font-medium">{t('videoCreator.premium')}</span>
                             </div>
                           </div>
                         )}
@@ -2330,7 +2304,7 @@ const VideoCreatorPage: React.FC = () => {
                               ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                               : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
                           }`}>
-                            {template.category === 'basic' ? 'Basic' : 'Premium'}
+                            {template.category === 'basic' ? t('videoCreator.basic') : t('videoCreator.premium')}
                           </span>
                         </div>
                       </div>
@@ -2343,9 +2317,9 @@ const VideoCreatorPage: React.FC = () => {
               {!isLoadingTemplates && getFilteredTemplates().length === 0 && (
                 <div className="text-center py-12">
                   <FiVideo className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-600" />
-                  <p className="text-gray-500 dark:text-gray-400">No templates available</p>
+                  <p className="text-gray-500 dark:text-gray-400">{t('videoCreator.noTemplatesAvailable')}</p>
                   <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
-                    Templates will appear here once they're uploaded
+                    {t('videoCreator.templatesWillAppear')}
                   </p>
                 </div>
               )}
@@ -2356,9 +2330,9 @@ const VideoCreatorPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   {selectedTemplate ? (
-                    <span>Selected: <strong>{selectedTemplate}</strong></span>
+                    <span>{t('videoCreator.selected')}: <strong>{selectedTemplate}</strong></span>
                   ) : (
-                    <span>Select a template to continue</span>
+                    <span>{t('videoCreator.selectTemplateToContinue')}</span>
                   )}
                 </div>
                 <div className="flex space-x-3">
@@ -2366,14 +2340,14 @@ const VideoCreatorPage: React.FC = () => {
                     onClick={() => setShowTemplateGrid(false)}
                     className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
-                    Cancel
+                    {t('videoCreator.cancel')}
                   </button>
                   {selectedTemplate && (
                     <button
                       onClick={() => setShowTemplateGrid(false)}
                       className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-lg"
                     >
-                      Use Template
+                      {t('videoCreator.useTemplate')}
                     </button>
                   )}
                 </div>

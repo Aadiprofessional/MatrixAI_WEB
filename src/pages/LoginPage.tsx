@@ -5,6 +5,7 @@ import { FiMail, FiLock, FiEye, FiEyeOff, FiMoon, FiSun } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import LanguageSelector from '../components/LanguageSelector';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -84,6 +85,11 @@ const LoginPage: React.FC = () => {
         {darkMode ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
       </button>
 
+      {/* Language Selector */}
+      <div className="fixed top-6 right-20 z-50">
+        <LanguageSelector />
+      </div>
+
       {/* Left Side - Website Info */}
       <div className="hidden lg:flex lg:w-1/2 relative z-10 items-center justify-center p-12">
         <div className="max-w-xl">
@@ -104,7 +110,7 @@ const LoginPage: React.FC = () => {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="text-5xl font-bold mb-6 text-center text-white"
           >
-            Matrix AI Assistant
+            {t('login.heroTitle')}
           </motion.h1>
           
           <motion.p
@@ -113,7 +119,7 @@ const LoginPage: React.FC = () => {
             transition={{ delay: 0.3, duration: 0.5 }}
             className="text-xl text-center text-white/90 max-w-md mx-auto mb-12"
           >
-            Your intelligent companion for productivity and creativity
+            {t('login.heroSubtitle')}
           </motion.p>
           
           {/* Feature List */}
@@ -127,19 +133,19 @@ const LoginPage: React.FC = () => {
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/80 to-purple-600/80 flex items-center justify-center mr-4 shadow-md">
                 <span className="text-lg">✓</span>
               </div>
-              <p className="text-lg">Advanced AI-powered conversations</p>
+              <p className="text-lg">{t('login.feature1')}</p>
             </div>
             <div className="flex items-center transform transition-transform hover:translate-x-2 bg-white/10 backdrop-blur-sm p-4 rounded-xl">
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/80 to-purple-600/80 flex items-center justify-center mr-4 shadow-md">
                 <span className="text-lg">✓</span>
               </div>
-              <p className="text-lg">Professional content generation</p>
+              <p className="text-lg">{t('login.feature2')}</p>
             </div>
             <div className="flex items-center transform transition-transform hover:translate-x-2 bg-white/10 backdrop-blur-sm p-4 rounded-xl">
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/80 to-purple-600/80 flex items-center justify-center mr-4 shadow-md">
                 <span className="text-lg">✓</span>
               </div>
-              <p className="text-lg">Seamless file and image sharing</p>
+              <p className="text-lg">{t('login.feature3')}</p>
             </div>
           </motion.div>
           
@@ -227,7 +233,7 @@ const LoginPage: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
-                    placeholder="you@example.com"
+                    placeholder={t('login.emailPlaceholder')}
                   />
                 </div>
               </motion.div>
@@ -252,7 +258,7 @@ const LoginPage: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-10 pr-10 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
-                    placeholder="Enter your password"
+                    placeholder={t('login.passwordPlaceholder')}
                   />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                     <button

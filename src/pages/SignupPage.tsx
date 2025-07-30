@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { supabase, signInWithApple } from '../supabaseClient';
 import matrix from '../assets/matrix.png';
+import LanguageSelector from '../components/LanguageSelector';
 
 // Default language constant
 const DEFAULT_LANGUAGE = 'English';
@@ -256,6 +257,11 @@ const SignupPage: React.FC = () => {
         {darkMode ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
       </button>
 
+      {/* Language Selector */}
+      <div className="fixed top-6 right-20 z-50">
+        <LanguageSelector />
+      </div>
+
       {/* Left Side - Website Info */}
       <div className="hidden lg:flex lg:w-1/2 relative z-10 items-center justify-center p-12">
         <div className="max-w-xl">
@@ -276,7 +282,7 @@ const SignupPage: React.FC = () => {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="text-5xl font-bold mb-6 text-center text-white"
           >
-            Matrix AI Assistant
+            {t('login.heroTitle')}
           </motion.h1>
           
           <motion.p
@@ -285,7 +291,7 @@ const SignupPage: React.FC = () => {
             transition={{ delay: 0.3, duration: 0.5 }}
             className="text-xl text-center text-white/90 max-w-md mx-auto mb-12"
           >
-            Your intelligent companion for productivity and creativity
+            {t('login.heroSubtitle')}
           </motion.p>
           
           {/* Feature List */}
@@ -299,19 +305,19 @@ const SignupPage: React.FC = () => {
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/80 to-purple-600/80 flex items-center justify-center mr-4 shadow-md">
                 <span className="text-lg">✓</span>
               </div>
-              <p className="text-lg">Advanced AI-powered conversations</p>
+              <p className="text-lg">{t('login.feature1')}</p>
             </div>
             <div className="flex items-center transform transition-transform hover:translate-x-2 bg-white/10 backdrop-blur-sm p-4 rounded-xl">
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/80 to-purple-600/80 flex items-center justify-center mr-4 shadow-md">
                 <span className="text-lg">✓</span>
               </div>
-              <p className="text-lg">Professional content generation</p>
+              <p className="text-lg">{t('login.feature2')}</p>
             </div>
             <div className="flex items-center transform transition-transform hover:translate-x-2 bg-white/10 backdrop-blur-sm p-4 rounded-xl">
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/80 to-purple-600/80 flex items-center justify-center mr-4 shadow-md">
                 <span className="text-lg">✓</span>
               </div>
-              <p className="text-lg">Seamless file and image sharing</p>
+              <p className="text-lg">{t('login.feature3')}</p>
             </div>
           </motion.div>
           
@@ -377,7 +383,7 @@ const SignupPage: React.FC = () => {
             </motion.div>
           )}
           
-          <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto max-h-[60vh] pr-2 -mr-2">
+          <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto max-h-[60vh] m-1 px-2">
             {/* Full Name */}
             <motion.div
               initial={{ opacity: 0, x: -10 }}
@@ -398,7 +404,7 @@ const SignupPage: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full pl-10 pr-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
-                  placeholder="John Doe"
+                  placeholder={t('signup.namePlaceholder')}
                 />
               </div>
             </motion.div>
@@ -424,7 +430,7 @@ const SignupPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
-                  placeholder="you@example.com"
+                  placeholder={t('login.emailPlaceholder')}
                 />
               </div>
             </motion.div>
@@ -448,7 +454,7 @@ const SignupPage: React.FC = () => {
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
                   className="w-full px-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
-                  placeholder="25"
+                  placeholder={t('signup.agePlaceholder')}
                 />
               </motion.div>
 
@@ -495,7 +501,7 @@ const SignupPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-10 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
-                  placeholder="Create a strong password"
+                  placeholder={t('signup.passwordPlaceholder')}
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   <button
@@ -530,7 +536,7 @@ const SignupPage: React.FC = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full pl-10 pr-10 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
-                  placeholder="Confirm your password"
+                  placeholder={t('signup.confirmPasswordPlaceholder')}
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   <button
@@ -547,12 +553,12 @@ const SignupPage: React.FC = () => {
                   {password === confirmPassword ? (
                     <div className="flex items-center text-green-400 bg-green-900/30 px-3 py-1 rounded-lg border border-green-500/30 backdrop-blur-sm">
                       <FiCheck className="h-4 w-4 mr-1" />
-                      <span className="text-xs font-medium">Passwords match</span>
+                      <span className="text-xs font-medium">{t('signup.passwordsMatch')}</span>
                     </div>
                   ) : (
                     <div className="flex items-center text-red-300 bg-red-900/30 px-3 py-1 rounded-lg border border-red-500/30 backdrop-blur-sm">
                       <FiX className="h-4 w-4 mr-1" />
-                      <span className="text-xs font-medium">Passwords do not match</span>
+                      <span className="text-xs font-medium">{t('signup.passwordsDoNotMatch')}</span>
                     </div>
                   )}
                 </div>
@@ -566,7 +572,7 @@ const SignupPage: React.FC = () => {
               transition={{ delay: 0.9, duration: 0.5 }}
             >
               <label className="block text-sm font-medium mb-1 text-gray-200" htmlFor="referralCode">
-                {t('auth.referralCode')} <span className="text-xs text-gray-400 ml-1 px-2 py-0.5 rounded-full bg-white/10">(Optional)</span>
+                {t('auth.referralCode')} <span className="text-xs text-gray-400 ml-1 px-2 py-0.5 rounded-full bg-white/10">({t('signup.optional')})</span>
               </label>
               <div className="relative">
                 <input
@@ -576,7 +582,7 @@ const SignupPage: React.FC = () => {
                   value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
                   className="w-full px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
-                  placeholder="Enter referral code if you have one"
+                  placeholder={t('signup.referralCodePlaceholder')}
                 />
                 {referralCode && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">

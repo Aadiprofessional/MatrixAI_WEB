@@ -2,6 +2,8 @@
 export { default as DashboardPage } from './pages/DashboardPage';
 export { default as SignupPage } from './pages/SignupPage';
 export { default as LoginPage } from './pages/LoginPage';
+export { default as ForgotPasswordPage } from './pages/ForgotPasswordPage';
+
 export { default as EmailVerificationPage } from './pages/EmailVerificationPage';
 export { default as ChatPage } from './pages/ChatPage';
 export { default as CallPage } from './pages/CallPage';
