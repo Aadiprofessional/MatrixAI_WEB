@@ -5,6 +5,7 @@ import axios from 'axios';
 import OpenAI from 'openai';
 import { userService } from '../services/userService';
 import { supabase } from '../supabaseClient';
+import { useTranslation } from 'react-i18next';
 import { 
   FiPlay, FiPause, FiDownload, FiCopy, FiShare2, 
   FiChevronLeft, FiChevronRight, FiRefreshCw, FiLoader,
@@ -44,18 +45,12 @@ const azureEndpoint = 'https://api.cognitive.microsofttranslator.com';
 const azureKey = '21oYn4dps9k7VJUVttDmU3oigC93LUtyYB9EvQatENmWOufZa4xeJQQJ99ALACYeBjFXJ3w3AAAbACOG0HQP';
 const region = 'eastus';
 
-const languages = [
-  { label: 'Chinese (Simplified)', value: 'zh' },
-  { label: 'Chinese (Traditional)', value: 'zh-TW' },
-  { label: 'Spanish', value: 'es' },
-  { label: 'French', value: 'fr' },
-  { label: 'German', value: 'de' },
-  { label: 'Hindi', value: 'hi' },
-];
+// Languages will be defined inside component to use translation
 
 // Enhanced Code Block Component
 const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const match = /language-(\w+)/.exec(className || '');
   const language = match ? match[1] : '';
   const codeString = String(children).replace(/\n$/, '');
@@ -66,15 +61,15 @@ const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
         {/* Language label */}
         <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
-            {language || 'code'}
+            {language || t('transcription.code')}
           </span>
           <button
             onClick={() => navigator.clipboard.writeText(codeString)}
             className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            title="Copy code"
+            title={t('transcription.copyCode')}
           >
             <FiCopy size={12} />
-            Copy
+            {t('transcription.copy')}
           </button>
         </div>
         
@@ -321,6 +316,7 @@ const preprocessContent = (content: string): string => {
 };
 
 const TranscriptionPage: React.FC = () => {
+  const { t } = useTranslation();
   const { audioid } = useParams<{ audioid: string }>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -329,6 +325,16 @@ const TranscriptionPage: React.FC = () => {
   const { theme, getThemeColors } = useTheme();
   const uid = user?.id;
   const colors = getThemeColors();
+
+  // Languages array with internationalization
+  const languages = [
+    { label: t('transcription.languages.chineseSimplified'), value: 'zh' },
+    { label: t('transcription.languages.chineseTraditional'), value: 'zh-TW' },
+    { label: t('transcription.languages.spanish'), value: 'es' },
+    { label: t('transcription.languages.french'), value: 'fr' },
+    { label: t('transcription.languages.german'), value: 'de' },
+    { label: t('transcription.languages.hindi'), value: 'hi' },
+  ];
 
   // Initialize OpenAI with Deepseek configuration
   const openai = new OpenAI({
@@ -419,60 +425,13 @@ const TranscriptionPage: React.FC = () => {
       
       switch(action) {
         case 'keypoints':
-          prompt = `Please extract the key points from this transcription. Format your response with clear structure using markdown:
-
-# Key Points
-
-## Main Topics
-- Use bullet points for each key point
-- Group related points under appropriate subheadings
-- Highlight the most important insights
-
-## Key Insights
-- Provide deeper analysis of the main themes
-- Include any notable quotes or statements
-
-Transcription:
-${transcription}`;
+          prompt = t('transcription.prompts.keypoints', { transcription });
           break;
         case 'summary':
-          prompt = `Please provide a comprehensive summary of this transcription. Format your response with clear structure using markdown:
-
-# Summary
-
-## Overview
-Brief overview of the content
-
-## Main Topics Discussed
-- Key topics covered
-- Important themes
-
-## Key Insights
-- Main takeaways
-- Notable points
-
-## Conclusion
-Summary of the overall message
-
-Transcription:
-${transcription}`;
+          prompt = t('transcription.prompts.summary', { transcription });
           break;
         case 'translate':
-          prompt = `Please translate this transcription to ${translationLanguage}. Maintain the structure and meaning of the original text. Format your response with clear structure using markdown:
-
-# Translation to ${translationLanguage}
-
-## Original Content Summary
-Brief summary of what's being translated
-
-## Translated Content
-The full translation with proper formatting and structure
-
-## Translation Notes
-Any important notes about the translation or cultural context
-
-Transcription:
-${transcription}`;
+          prompt = t('transcription.prompts.translate', { translationLanguage, transcription });
           break;
       }
       
@@ -481,7 +440,7 @@ ${transcription}`;
       setChatResponses({...chatResponses, [action]: result});
     } catch (error) {
       console.error(`Error in ${action} quick action:`, error);
-      setChatResponses({...chatResponses, [action]: `Error: Could not process ${action} request.`});
+      setChatResponses({...chatResponses, [action]: t('transcription.errors.couldNotProcess', { action })});
     } finally {
       setIsChatProcessing({...isChatProcessing, [action]: false});
     }
@@ -498,20 +457,7 @@ ${transcription}`;
             content: [
               {
                 type: "text", 
-                text: `You are a helpful AI assistant specialized in analyzing and discussing audio transcriptions. 
-
-IMPORTANT FORMATTING INSTRUCTIONS:
-- Always format your responses using proper markdown structure
-- Use # for main headings and ## for subheadings  
-- Use ### for section headers and #### for subsections
-- Use **bold** for emphasis and *italic* for subtle emphasis
-- Use bullet points (•) and numbered lists for better organization
-- Use > for important quotes or key insights
-- Use code blocks with \`\`\` for any code or technical content
-- Structure your response with clear sections when appropriate
-- Add proper spacing between sections for better readability
-
-Always provide well-structured, comprehensive responses that are easy to read and understand. Make sure to use proper markdown formatting for all headings, lists, and emphasis.`
+                text: t('transcription.systemPrompt')
               }
             ]
           },
@@ -723,7 +669,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
         
         if (!response.success) {
           // Show warning if coin deduction failed
-          alert('Failed to deduct coins. Please try again.');
+          alert(t('transcription.errors.failedToDeductCoins'));
           return;
         }
         
@@ -765,7 +711,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
             setTranscription(parsed.transcription);
             setAudioUrl(parsed.audioUrl);
             setDuration(parsed.duration || 0);
-            setFileName(parsed.audio_name || 'Untitled');
+            setFileName(parsed.audio_name);
             
             // Set words_data if available
             if (parsed.words_data) {
@@ -813,7 +759,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
       if (response.ok && data.success) {
         // Set state with fetched data - using correct field names from server response
         setTranscription(data.transcription || '');
-        setFileName(data.audio_name || 'Untitled');
+        setFileName(data.audio_name);
         const audioDur = data.duration || 0;
         setDuration(audioDur);
         setAudioUrl(data.audioUrl || ''); // Note: server returns 'audioUrl' not 'audio_url'
@@ -845,7 +791,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
         localStorage.setItem(`audioData-${audioid}`, JSON.stringify({
           transcription: data.transcription || '',
           audioUrl: data.audioUrl || '',
-          audio_name: data.audio_name || 'Untitled',
+          audio_name: data.audio_name,
           duration: audioDur,
           paragraphs: paragraphs.length > 0 ? paragraphs : [],
           wordTimings: wordTimings.length > 0 ? wordTimings : [],
@@ -854,11 +800,11 @@ Always provide well-structured, comprehensive responses that are easy to read an
         }));
       } else {
         console.error('Error fetching audio metadata:', data.error || data.message);
-        alert('Failed to load audio data');
+        alert(t('transcription.errors.failedToLoadAudio'));
       }
     } catch (error) {
       console.error('Error in fetchAudioMetadata:', error);
-      alert('An unexpected error occurred while loading audio data');
+      alert(t('transcription.errors.unexpectedError'));
     } finally {
       setIsLoading(false);
     }
@@ -908,7 +854,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
   const copyTranscription = () => {
     navigator.clipboard.writeText(transcription);
     // Could show a toast notification here
-    alert('Transcription copied to clipboard!');
+    alert(t('transcription.success.transcriptionCopied'));
   };
 
   // Visualize audio data for waveform (placeholder)
@@ -956,7 +902,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
       }
     } catch (error) {
       console.error('Error deducting coins:', error);
-      alert('Failed to deduct coins. You may have insufficient balance.');
+      alert(t('transcription.errors.insufficientBalance'));
       return;
     }
     
@@ -1431,7 +1377,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
       setTranscription(locationState.transcription);
       setAudioUrl(locationState.audio_url);
       setDuration(locationState.duration || 0);
-      setFileName(locationState.audio_name || 'Untitled');
+      setFileName(locationState.audio_name );
       
       // Set words_data if available
       if (locationState.words_data) {
@@ -1504,7 +1450,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
               animate={{ opacity: 1, y: 0 }}
               className="text-2xl md:text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
             >
-              Transcription
+              {t('transcription.title')}
             </motion.h1>
             {fileName && (
               <motion.p 
@@ -1525,7 +1471,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
               onClick={() => navigate(-1)}
               className="px-3 md:px-4 py-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all flex items-center dark:text-gray-200 text-sm md:text-base"
             >
-              <FiChevronLeft className="mr-1" /> Back
+              <FiChevronLeft className="mr-1" /> {t('transcription.back')}
             </motion.button>
             
 
@@ -1549,7 +1495,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
                 }
               }}
               className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all text-gray-700 dark:text-gray-200"
-              title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+              title={isFullscreen ? t('transcription.exitFullscreen') : t('transcription.fullscreen')}
             >
               <FiMaximize />
             </motion.button>
@@ -1559,7 +1505,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowSettings(!showSettings)}
               className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all text-gray-700 dark:text-gray-200"
-              title="Settings"
+              title={t('transcription.settings')}
             >
               <FiSettings />
             </motion.button>
@@ -1576,7 +1522,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <span className="flex items-center"><FiFileText className="mr-2" /> Transcript</span>
+            <span className="flex items-center"><FiFileText className="mr-2" /> {t('transcription.transcript')}</span>
           </button>
           <button
             onClick={() => setActiveTab('mindmap')}
@@ -1586,7 +1532,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <span className="flex items-center"><FiBarChart2 className="mr-2" /> Mind Map</span>
+            <span className="flex items-center"><FiBarChart2 className="mr-2" /> {t('transcription.mindMap')}</span>
           </button>
           <button
             onClick={() => setActiveTab('chat')}
@@ -1596,7 +1542,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <span className="flex items-center"><FiMessageSquare className="mr-2" /> Chat</span>
+            <span className="flex items-center"><FiMessageSquare className="mr-2" /> {t('transcription.chat')}</span>
           </button>
           <button
             onClick={() => setActiveTab('wordsdata')}
@@ -1606,7 +1552,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <span className="flex items-center"><FiFileText className="mr-2" /> Words Data</span>
+            <span className="flex items-center"><FiFileText className="mr-2" /> {t('transcription.wordsData')}</span>
           </button>
         </div>
 
@@ -1614,7 +1560,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
           <div className="flex justify-center items-center h-64">
             <div className="flex flex-col items-center">
               <FiLoader className="animate-spin h-10 w-10 text-blue-500 mb-4" />
-              <span className="text-gray-600 dark:text-gray-400">Loading transcription...</span>
+              <span className="text-gray-600 dark:text-gray-400">{t('transcription.loadingTranscription')}</span>
             </div>
           </div>
         ) : (
@@ -1629,25 +1575,25 @@ Always provide well-structured, comprehensive responses that are easy to read an
                   className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
                 >
                   <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Audio Transcription</h2>
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.audioTranscription')}</h2>
                     <div className="flex space-x-2">
                       <button 
                         onClick={copyTranscription}
                         className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
-                        title="Copy transcription"
+                        title={t('transcription.copyTranscription')}
                       >
                         <FiCopy />
                       </button>
                       <button 
                         className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors" 
-                        title="Share"
+                        title={t('transcription.share')}
                       >
                         <FiShare2 />
                       </button>
                       <button 
                         onClick={downloadAudio}
                         className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors" 
-                        title="Download audio"
+                        title={t('transcription.downloadAudio')}
                       >
                         <FiDownload />
                       </button>
@@ -1673,7 +1619,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
                           ) : (
                             <FiToggleLeft className="w-5 h-5" />
                           )}
-                          <span>{isTranslationEnabled ? 'Translation On' : 'Enable Translation'}</span>
+                          <span>{isTranslationEnabled ? t('transcription.translationOn') : t('transcription.enableTranslation')}</span>
                         </button>
                         
                         <select
@@ -1693,7 +1639,7 @@ Always provide well-structured, comprehensive responses that are easy to read an
                       {translatingIndex !== -1 && (
                         <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
                           <FiLoader className="animate-spin w-4 h-4" />
-                          <span className="text-sm">Translating paragraph {translatingIndex + 1}...</span>
+                          <span className="text-sm">{t('transcription.translatingParagraph', { index: translatingIndex + 1 })}</span>
                         </div>
                       )}
                     </div>

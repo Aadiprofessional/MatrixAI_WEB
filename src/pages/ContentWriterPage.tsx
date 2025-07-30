@@ -78,7 +78,7 @@ const ContentWriterPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('content-writer');
   
   // Dynamic title and subtitle
-  const [pageTitle, setPageTitle] = useState(t('content.title', 'AI Content Writer'));
+  const [pageTitle, setPageTitle] = useState(t('content.title'));
   const [pageSubtitle, setPageSubtitle] = useState(t('contentWriter.subtitle'));
 
   // Update page title and subtitle when tab changes

@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiMoon, FiSun } from 'react-icons/fi';
@@ -6,6 +6,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from '../components/LanguageSelector';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +14,8 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const { signIn, signInWithGoogle, signInWithApple, error, setError, user } = useAuth();
@@ -47,6 +50,11 @@ const LoginPage: React.FC = () => {
       return;
     }
 
+    if (!recaptchaToken) {
+      setError('Please complete the reCAPTCHA verification');
+      return;
+    }
+
     try {
       setLoading(true);
       await signIn(email, password);
@@ -54,8 +62,20 @@ const LoginPage: React.FC = () => {
     } catch (err) {
       // Error is already set in the auth context
       console.error('Login error:', err);
+      // Reset reCAPTCHA on error
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+        setRecaptchaToken(null);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token);
+    if (error && token) {
+      setError('');
     }
   };
 
@@ -296,6 +316,21 @@ const LoginPage: React.FC = () => {
                     {t('auth.forgotPassword')}
                   </Link>
                 </div>
+              </motion.div>
+              
+              {/* reCAPTCHA */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.65, duration: 0.5 }}
+                className="mt-6 flex justify-center"
+              >
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || ''}
+                  onChange={handleRecaptchaChange}
+                  theme={darkMode ? 'dark' : 'light'}
+                />
               </motion.div>
               
               <motion.div

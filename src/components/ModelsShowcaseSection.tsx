@@ -65,14 +65,50 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`flex flex-col ${isReversed ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-12`}>
           {/* Text content */}
-          <div className="lg:w-1/2 space-y-6">
-            <div className="text-purple-500 font-medium uppercase tracking-wider">{modelName}</div>
-            <h2 className="text-4xl font-bold text-white">{title}</h2>
-            <p className="text-gray-300 text-lg leading-relaxed">{description}</p>
-          </div>
+          <motion.div 
+            className="lg:w-1/2 space-y-6"
+            initial={{ opacity: 0, x: isReversed ? 50 : -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            <motion.div 
+              className="text-purple-500 font-medium uppercase tracking-wider"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              {modelName}
+            </motion.div>
+            <motion.h2 
+              className="text-4xl font-bold text-white"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              {title}
+            </motion.h2>
+            <motion.p 
+              className="text-gray-300 text-lg leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              {description}
+            </motion.p>
+          </motion.div>
           
           {/* Media content */}
-          <div className="lg:w-1/2 relative">
+          <motion.div 
+            className="lg:w-1/2 relative"
+            initial={{ opacity: 0, x: isReversed ? -50 : 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            viewport={{ once: true, margin: "-100px" }}
+          >
             {/* Glass card effect */}
             <div className="relative rounded-xl overflow-hidden">
               {/* Outer layer - white opacity border with glow */}
@@ -92,7 +128,7 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
                   {/* Left side - Image */}
                   <div className="md:w-5/12 relative">
                     {imageSrc && (
-                      <img src={imageSrc} alt={imageAlt || title} className="rounded-lg w-full object-cover h-48 md:h-64" />
+                      <img src={imageSrc} alt={imageAlt || title} className="rounded-lg w-full object-cover h-96 md:h-128" />
                     )}
                   </div>
                   
@@ -108,7 +144,7 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
                         <video 
                           ref={videoRef}
                           src={videoSrc} 
-                          className="rounded-lg w-full object-cover h-48 md:h-64" 
+                          className="rounded-lg w-full object-cover h-96 md:h-128" 
                           loop 
                           muted={isMuted}
                           playsInline
@@ -154,13 +190,13 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
                         </div>
                       </div>
                     ) : imageSrc && (
-                      <img src={imageSrc} alt={imageAlt || title} className="rounded-lg w-full object-cover h-48 md:h-64" />
+                      <img src={imageSrc} alt={imageAlt || title} className="rounded-lg w-full object-cover h-96 md:h-128" />
                     )}
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
@@ -177,179 +213,13 @@ const ModelsShowcaseSection: React.FC = () => {
     backgroundAttachment: 'fixed'
   };
   
-  const models: ModelInfo[] = [
-    {
-      id: 'video-generation',
-      name: t('modelsShowcase.videoGeneration.name', 'Video Generation'),
-      description: t('modelsShowcase.videoGeneration.description', 'Transform static images into dynamic videos.'),
-      detailedDescription: t('modelsShowcase.videoGeneration.detailedDescription', 'Our video generation models turn any image into high-quality, lifelike video with natural motion and cinematic quality. Perfect for marketing, social media, and creative projects.'),
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l-3 3m0 0l-3-3m3 3V8M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V16" />
-        </svg>
-      )
-    },
-    {
-      id: 'image-generation',
-      name: t('modelsShowcase.imageGeneration.name', 'Image Generation'),
-      description: t('modelsShowcase.imageGeneration.description', 'Create stunning AI-generated images from text prompts.'),
-      detailedDescription: t('modelsShowcase.imageGeneration.detailedDescription', 'Generate high-quality, customized images from simple text descriptions. Perfect for creating unique visuals for marketing, design projects, or creative inspiration.'),
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      )
-    },
-    {
-      id: 'speech-to-text',
-      name: t('modelsShowcase.speechToText.name', 'Speech to Text'),
-      description: t('modelsShowcase.speechToText.description', 'Convert spoken words into accurate text transcriptions.'),
-      detailedDescription: t('modelsShowcase.speechToText.detailedDescription', 'Our advanced speech recognition technology converts audio recordings into precise text transcriptions with high accuracy. Perfect for meetings, interviews, content creation, and accessibility.'),
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-        </svg>
-      )
-    },
-    {
-      id: 'content-generation',
-      name: t('modelsShowcase.contentGeneration.name', 'Content Generation'),
-      description: t('modelsShowcase.contentGeneration.description', 'Create engaging written content for any purpose.'),
-      detailedDescription: t('modelsShowcase.contentGeneration.detailedDescription', 'Generate high-quality written content for blogs, social media, marketing materials, and more. Our AI understands context and can match your brand voice for consistent, engaging content.'),
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      )
-    },
-    {
-      id: 'ai-chat',
-      name: t('modelsShowcase.aiChat.name', 'AI Chat'),
-      description: t('modelsShowcase.aiChat.description', 'Engage with our lightning-fast AI assistant.'),
-      detailedDescription: t('modelsShowcase.aiChat.detailedDescription', 'Our advanced AI chat system provides instant responses to queries, creative assistance, and problem-solving support. Experience minimal latency and high-quality interactions for productivity and creative work.'),
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-        </svg>
-      )
-    },
-    {
-      id: 'creative-suite',
-      name: t('modelsShowcase.creativeSuite.name', 'Creative Suite'),
-      description: t('modelsShowcase.creativeSuite.description', 'All creative AI tools in one integrated platform.'),
-      detailedDescription: t('modelsShowcase.creativeSuite.detailedDescription', 'Access our complete suite of AI creative tools in one seamless platform. Combine video generation, image creation, speech-to-text, content writing, and AI chat for comprehensive creative projects with consistent quality.'),
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
-        </svg>
-      )
-    },
-  ];
-  
-  const currentModel = models.find(model => model.id === selectedModel);
+
+
   
   return (
-    <div style={sectionBgStyle}>
+    <div>
       {/* Main Models Showcase Section */}
-      <section className="min-h-screen flex items-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="text-4xl font-bold text-white text-center mb-4"
-          >
-            {t('modelsShowcase.title', 'All the leading AI models and features on one platform')}
-          </motion.h2>
-          
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            viewport={{ once: true }}
-            className="text-xl text-gray-300 text-center mb-16 max-w-3xl mx-auto"
-          >
-            {t('modelsShowcase.subtitle', 'With matrixai.asia, you always have the right tool—never just one option. Instantly access video generation, image creation, speech-to-text, content writing, and AI chat, all in one place.')}
-          </motion.p>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Left sidebar - Model selection */}
-            <div className="relative rounded-xl overflow-hidden">
-              {/* Outer layer - white opacity border with glow */}
-              <div className="absolute inset-0 border-2 border-white/40 rounded-xl shadow-lg shadow-blue-500/20"></div>
-              
-              {/* Middle layer - subtle glow effect */}
-              <div className="absolute inset-[3px] rounded-lg bg-gradient-to-br from-white/10 to-transparent"></div>
-              
-              {/* Inner layer - glass effect with backdrop blur */}
-              <div className="absolute inset-[6px] backdrop-blur-lg bg-black/30 rounded-lg border border-white/20 shadow-inner shadow-white/10"></div>
-              
-              {/* Content container with glass morphism */}
-              <div className="absolute inset-[6px] bg-gradient-to-br from-white/5 to-transparent opacity-80 rounded-lg"></div>
-              
-              <div className="relative z-10 p-4">
-                <div className="space-y-2">
-                  {models.map((model) => (
-                    <button
-                      key={model.id}
-                      onClick={() => setSelectedModel(model.id)}
-                      className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${selectedModel === model.id ? 'bg-blue-900/30 border border-blue-700/50' : 'hover:bg-gray-800/50'}`}
-                    >
-                      <div className={`text-gray-400 ${selectedModel === model.id ? 'text-blue-400' : ''}`}>
-                        {model.icon}
-                      </div>
-                      <span className={`text-sm font-medium ${selectedModel === model.id ? 'text-white' : 'text-gray-400'}`}>
-                        {model.name}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            {/* Right content - Model details */}
-            <div className="lg:col-span-3 relative rounded-xl overflow-hidden">
-              {/* Outer layer - white opacity border with glow */}
-              <div className="absolute inset-0 border-2 border-white/40 rounded-xl shadow-lg shadow-blue-500/20"></div>
-              
-              {/* Middle layer - subtle glow effect */}
-              <div className="absolute inset-[3px] rounded-lg bg-gradient-to-br from-white/10 to-transparent"></div>
-              
-              {/* Inner layer - glass effect with backdrop blur */}
-              <div className="absolute inset-[6px] backdrop-blur-lg bg-black/30 rounded-lg border border-white/20 shadow-inner shadow-white/10"></div>
-              
-              {/* Content container with glass morphism */}
-              <div className="absolute inset-[6px] bg-gradient-to-br from-white/5 to-transparent opacity-80 rounded-lg"></div>
-              
-              <div className="relative z-10 p-6">
-                {currentModel && (
-                  <div>
-                    <h3 className="text-2xl font-bold text-white mb-4">{currentModel.name}</h3>
-                    <p className="text-gray-300 mb-6">{currentModel.description}</p>
-                    
-                    {currentModel.detailedDescription && (
-                      <div className="bg-gray-800/30 backdrop-blur-sm rounded-lg p-5 mb-6 border border-gray-700/50">
-                        <pre className="text-gray-300 whitespace-pre-line">{currentModel.detailedDescription}</pre>
-                      </div>
-                    )}
-                    
-                    <div className="mt-8">
-                      <motion.button 
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg transition-colors shadow-lg shadow-indigo-500/20 font-medium"
-                      >
-                        {t('modelsShowcase.tryNow', 'Try now →')}
-                      </motion.button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+    
       
       {/* Feature Sections for different AI capabilities */}
       <FeatureSection 

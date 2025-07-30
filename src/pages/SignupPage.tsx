@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiCheck, FiX, FiMoon, FiSun } from 'react-icons/fi';
@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase, signInWithApple } from '../supabaseClient';
 import matrix from '../assets/matrix.png';
 import LanguageSelector from '../components/LanguageSelector';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 // Default language constant
 const DEFAULT_LANGUAGE = 'English';
@@ -26,6 +27,8 @@ const SignupPage: React.FC = () => {
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const { error, setError, user, signInWithGoogle, signInWithApple } = useAuth();
@@ -180,6 +183,11 @@ const SignupPage: React.FC = () => {
       setError('You must agree to the terms and conditions');
       return;
     }
+
+    if (!recaptchaToken) {
+      setError('Please complete the reCAPTCHA verification');
+      return;
+    }
     
     try {
       setLoading(true);
@@ -226,8 +234,20 @@ const SignupPage: React.FC = () => {
     } catch (err: any) {
       console.error('Signup error:', err);
       setError(err.message || 'An error occurred during signup');
+      // Reset reCAPTCHA on error
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+        setRecaptchaToken(null);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token);
+    if (error && token) {
+      setError('');
     }
   };
 
@@ -625,6 +645,21 @@ const SignupPage: React.FC = () => {
               </div>
             </motion.div>
 
+            {/* reCAPTCHA */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.05, duration: 0.5 }}
+              className="mt-6 flex justify-center"
+            >
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || ''}
+                onChange={handleRecaptchaChange}
+                theme={darkMode ? 'dark' : 'light'}
+              />
+            </motion.div>
+
             {/* Submit Button */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -634,9 +669,9 @@ const SignupPage: React.FC = () => {
             >
               <button
                 type="submit"
-                disabled={loading || !agreeToTerms}
+                disabled={loading || !agreeToTerms || !recaptchaToken}
                 className={`w-full flex justify-center py-3.5 px-4 border border-white/20 rounded-xl shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  loading || !agreeToTerms
+                  loading || !agreeToTerms || !recaptchaToken
                     ? 'bg-gradient-to-r from-purple-600/50 to-indigo-600/50 cursor-not-allowed'
                     : 'bg-gradient-to-r from-purple-600/90 to-indigo-600/90 hover:from-purple-700/90 hover:to-indigo-700/90 focus:ring-purple-500'
                 } backdrop-blur-md`}

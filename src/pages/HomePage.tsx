@@ -8,11 +8,11 @@ import {
   FeatureSection, 
   UseCasesSection,
   ComparisonSection,
-  ModelsShowcaseSection,
   HeroBanner,
   CallToAction,
   FAQSection,
-  AnimatedGridBanner
+  AnimatedGridBanner,
+  ModelsShowcaseSection
 } from '../components';
 
 
@@ -126,13 +126,12 @@ const HomePage: React.FC = () => {
       <UseCasesSection />
       
       {/* Call To Action - Second image */}
- 
       
       {/* Comparison Section */}
       <ComparisonSection />
       
-      {/* Models Showcase Section */}
       <ModelsShowcaseSection />
+
       
       {/* Hero Banner - First image */}
 

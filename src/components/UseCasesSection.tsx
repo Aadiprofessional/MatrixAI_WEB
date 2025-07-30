@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 interface UseCaseTabProps {
   id: string;
@@ -26,12 +27,12 @@ const UseCasesSection: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const useCases = [
-    { id: 'video-creation', label: t('useCasesSection.videoCreation', 'Video Creation') },
-    { id: 'image-generation', label: t('useCasesSection.imageGeneration', 'Image Generation') },
-    { id: 'speech-to-text', label: t('useCasesSection.speechToText', 'Speech to Text') },
-    { id: 'content-writing', label: t('useCasesSection.contentWriting', 'Content Writing') },
-    { id: 'ai-chat', label: t('useCasesSection.aiChat', 'AI Chat') },
-    { id: 'creative-projects', label: t('useCasesSection.creativeProjects', 'Creative Projects') },
+    { id: 'video-creation', label: t('useCasesSection.videoCreation', 'Video Creation'), route: '/tools/video-creator' },
+    { id: 'image-generation', label: t('useCasesSection.imageGeneration', 'Image Generation'), route: '/tools/image-generator' },
+    { id: 'speech-to-text', label: t('useCasesSection.speechToText', 'Speech to Text'), route: '/tools/speech-to-text' },
+    { id: 'content-writing', label: t('useCasesSection.contentWriting', 'Content Writing'), route: '/tools/content-writer' },
+    { id: 'ai-chat', label: t('useCasesSection.aiChat', 'AI Chat'), route: '/tools/chat' },
+    { id: 'creative-projects', label: t('useCasesSection.creativeProjects', 'Creative Projects'), route: '/dashboard' },
   ];
   
   // Video/image content for each tab
@@ -119,13 +120,29 @@ const UseCasesSection: React.FC = () => {
             
             <div className="flex flex-col space-y-4">
               {useCases.map((useCase) => (
-                <UseCaseTab
-                  key={useCase.id}
-                  id={useCase.id}
-                  label={useCase.label}
-                  isActive={activeTab === useCase.id}
-                  onClick={() => setActiveTab(useCase.id)}
-                />
+                <div key={useCase.id} className="flex items-center">
+                  <UseCaseTab
+                    id={useCase.id}
+                    label={useCase.label}
+                    isActive={activeTab === useCase.id}
+                    onClick={() => setActiveTab(useCase.id)}
+                  />
+                  {activeTab === useCase.id && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="ml-6"
+                    >
+                      <Link 
+                        to={useCase.route}
+                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg transition-all duration-300 shadow-lg shadow-indigo-500/20 font-medium inline-flex items-center gap-2 hover:scale-105 transform text-sm"
+                      >
+                        {t('useCasesSection.tryNow', 'Try now')} →
+                      </Link>
+                    </motion.div>
+                  )}
+                </div>
               ))}
             </div>
           </div>

@@ -107,23 +107,23 @@ const SpeechToTextPage: React.FC = () => {
   ]);
 
   const [languages] = useState([
-    { label: t('languages.bulgarian', 'Bulgarian'), value: 'bg' },
-    { label: 'Catalan', value: 'ca' },
-    { label: 'Chinese', value: 'zh' },
-    { label: 'Czech', value: 'cs' },
-    { label: 'Danish', value: 'da' },
-    { label: 'Dutch', value: 'nl' },
-    { label: 'English (US)', value: 'en-US' },
-    { label: 'English (UK)', value: 'en-GB' },
-    { label: 'French', value: 'fr' },
-    { label: 'German', value: 'de' },
-    { label: 'Hindi', value: 'hi' },
-    { label: 'Italian', value: 'it' },
-    { label: 'Japanese', value: 'ja' },
-    { label: 'Korean', value: 'ko' },
-    { label: 'Portuguese', value: 'pt' },
-    { label: 'Russian', value: 'ru' },
-    { label: 'Spanish', value: 'es' },
+    { label: t('speechToText.languages.bulgarian'), value: 'bg' },
+    { label: t('speechToText.languages.catalan'), value: 'ca' },
+    { label: t('speechToText.languages.chinese'), value: 'zh' },
+    { label: t('speechToText.languages.czech'), value: 'cs' },
+    { label: t('speechToText.languages.danish'), value: 'da' },
+    { label: t('speechToText.languages.dutch'), value: 'nl' },
+    { label: t('speechToText.languages.englishUS'), value: 'en-US' },
+    { label: t('speechToText.languages.englishUK'), value: 'en-GB' },
+    { label: t('speechToText.languages.french'), value: 'fr' },
+    { label: t('speechToText.languages.german'), value: 'de' },
+    { label: t('speechToText.languages.hindi'), value: 'hi' },
+    { label: t('speechToText.languages.italian'), value: 'it' },
+    { label: t('speechToText.languages.japanese'), value: 'ja' },
+    { label: t('speechToText.languages.korean'), value: 'ko' },
+    { label: t('speechToText.languages.portuguese'), value: 'pt' },
+    { label: t('speechToText.languages.russian'), value: 'ru' },
+    { label: t('speechToText.languages.spanish'), value: 'es' },
   ]);
 
   useEffect(() => {
@@ -377,7 +377,7 @@ const SpeechToTextPage: React.FC = () => {
     const fileExtension = getFileExtension(file.name);
     
     if (!isFormatSupported(file.type) && !['wav', 'mp3', 'm4a', 'aac', 'ogg', 'flac', 'mp4'].includes(fileExtension)) {
-      alert(`The file format ${fileExtension.toUpperCase()} is not supported. Please select a different audio file.`);
+      alert(t('speechToText.errors.unsupportedFormat', { format: fileExtension.toUpperCase() }));
       return;
     }
 
@@ -418,7 +418,7 @@ const SpeechToTextPage: React.FC = () => {
       const fileExtension = getFileExtension(file.name);
       
       if (!isFormatSupported(file.type) && !['wav', 'mp3', 'm4a', 'aac', 'ogg', 'flac', 'mp4'].includes(fileExtension)) {
-        alert(`The file format ${fileExtension.toUpperCase()} is not supported. Please select a different audio file.`);
+        alert(t('speechToText.errors.unsupportedFormat', { format: fileExtension.toUpperCase() }));
         return;
       }
       
@@ -462,7 +462,7 @@ const SpeechToTextPage: React.FC = () => {
 
   const downloadAudio = async (file: AudioFile) => {
     if (!file.audio_url) {
-      alert('Audio URL not available for download');
+      alert(t('speechToText.errors.audioUrlNotAvailable'));
       return;
     }
     
@@ -475,13 +475,13 @@ const SpeechToTextPage: React.FC = () => {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Download error:', error);
-      alert('Failed to download audio file');
+      alert(t('speechToText.errors.downloadFailed'));
     }
   };
 
   const deleteAudio = async (file: AudioFile) => {
     if (!user?.id || !file.audioid) {
-      alert('Cannot delete file: Missing user ID or audio ID');
+      alert(t('speechToText.errors.cannotDelete'));
       return;
     }
     
@@ -507,7 +507,7 @@ const SpeechToTextPage: React.FC = () => {
         const updatedFiles = files.filter(f => f.audioid !== file.audioid);
         setFiles(updatedFiles);
         saveFilesToLocalStorage(updatedFiles);
-        alert('Audio file deleted successfully');
+        alert(t('speechToText.success.audioDeleted'));
         
         // Also clear any polling for this audio ID
         const existingInterval = pollingIntervals.get(file.audioid);
@@ -527,12 +527,12 @@ const SpeechToTextPage: React.FC = () => {
           return newSet;
         });
       } else {
-        alert(`Failed to delete audio: ${result.error || result.message || 'Unknown error'}`);
+        alert(t('speechToText.errors.deleteFailed', { error: result.error || result.message || t('speechToText.errors.unknownError') }));
       }
     } catch (error) {
       console.error('Error deleting audio:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      alert(`An error occurred while deleting the audio file: ${errorMessage}`);
+      const errorMessage = error instanceof Error ? error.message : t('speechToText.errors.unknownErrorOccurred');
+      alert(t('speechToText.errors.deleteError', { error: errorMessage }));
     } finally {
       setIsLoading(false);
       setIsDeleteModalOpen(false);
@@ -543,7 +543,7 @@ const SpeechToTextPage: React.FC = () => {
   // Add function to edit audio name
   const editAudioName = async (file: AudioFile, newName: string) => {
     if (!user?.id || !file.audioid || !newName.trim()) {
-      alert('Cannot edit file: Missing required information');
+      alert(t('speechToText.errors.cannotEdit'));
       return;
     }
     
@@ -572,16 +572,16 @@ const SpeechToTextPage: React.FC = () => {
         );
         setFiles(updatedFiles);
         saveFilesToLocalStorage(updatedFiles);
-        alert('Audio name updated successfully');
+        alert(t('speechToText.success.nameUpdated'));
         setIsEditModalOpen(false);
         setSelectedFile(null);
         setEditingName('');
       } else {
-        alert(`Failed to update audio name: ${result.error || result.message || 'Unknown error'}`);
+        alert(t('speechToText.errors.updateNameFailed', { error: result.error || result.message || t('speechToText.errors.unknownError') }));
       }
     } catch (error) {
       console.error('Error editing audio name:', error);
-      alert('An error occurred while updating the audio name');
+      alert(t('speechToText.errors.updateNameError'));
     } finally {
       setIsEditingName(false);
     }
@@ -731,7 +731,7 @@ const SpeechToTextPage: React.FC = () => {
             )
           );
           
-          alert(`Transcription failed: ${data.error_message || 'Unknown error'}`);
+          alert(t('speechToText.errors.transcriptionFailed', { error: data.error_message || t('speechToText.errors.unknownError') }));
         }
       } catch (error) {
         console.error('Error polling status for', audioid, ':', error);
@@ -745,7 +745,7 @@ const SpeechToTextPage: React.FC = () => {
   // Updated handleUpload function to use correct API
   const handleUpload = async () => {
     if (!audioFile || !user?.id) {
-      alert('No file selected or user not logged in');
+      alert(t('speechToText.errors.noFileOrUser'));
       return;
     }
     
@@ -872,7 +872,7 @@ const SpeechToTextPage: React.FC = () => {
       
     } catch (error) {
       console.error('Upload error:', error);
-      alert(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
+      alert(t('speechToText.errors.uploadFailed', { error: error instanceof Error ? error.message : t('speechToText.errors.unknownError') }));
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -945,11 +945,11 @@ const SpeechToTextPage: React.FC = () => {
           startStatusPolling(item.audioid);
         }
       } else {
-        alert(`Failed to get audio file data: ${data.error || data.message || 'Unknown error'}`);
+        alert(t('speechToText.errors.getAudioDataFailed', { error: data.error || data.message || t('speechToText.errors.unknownError') }));
       }
     } catch (error) {
       console.error('Error fetching audio file:', error);
-      alert('Network error occurred. Please check your connection.');
+      alert(t('speechToText.errors.networkError'));
     }
   };
 
@@ -1011,7 +1011,7 @@ const SpeechToTextPage: React.FC = () => {
         {showProAlert && (
           <div className="mx-2">
             <ProFeatureAlert 
-              featureName="Unlimited Transcriptions"
+              featureName={t('speechToText.unlimitedTranscriptions')}
               onClose={() => setShowProAlert(false)}
             />
           </div>
@@ -1043,13 +1043,13 @@ const SpeechToTextPage: React.FC = () => {
               className="mt-3 flex items-center text-sm text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded-md max-w-fit"
             >
               <FiMic className="mr-1.5" />
-              <span>{freeTranscriptionsLeft} {freeTranscriptionsLeft === 1 ? t('transcription.freeLeft') || 'free transcription' : t('transcription.freeLeftPlural') || 'free transcriptions'} left today</span>
+              <span>{freeTranscriptionsLeft} {freeTranscriptionsLeft === 1 ? t('transcription.freeLeft') : t('transcription.freeLeftPlural')} {t('speechToText.leftToday')}</span>
               {freeTranscriptionsLeft === 0 && (
                 <button 
                   onClick={() => setShowProAlert(true)}
                   className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
                 >
-                                      {t('transcription.upgradeText') || 'Upgrade to Pro'}
+                  {t('transcription.upgradeText')}
                 </button>
               )}
             </motion.div>
@@ -1080,10 +1080,10 @@ const SpeechToTextPage: React.FC = () => {
                   <FiUpload className="h-10 w-10 text-blue-500 dark:text-blue-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Drag & drop your audio file here
+                  {t('speechToText.dragDropText')}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
-                  Supported formats: WAV, MP3, MP4, M4A, AAC, OGG, FLAC
+                  {t('speechToText.supportedFormats')}
                 </p>
                 <div>
                   <input
@@ -1103,7 +1103,7 @@ const SpeechToTextPage: React.FC = () => {
                     className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:opacity-90 cursor-pointer shadow-md hover:shadow-lg transition-all inline-flex items-center"
                   >
                     <FiUpload className="mr-2" />
-                    Browse Files
+                    {t('speechToText.browseFiles')}
                   </AuthRequiredButton>
                 </div>
               </div>
@@ -1117,7 +1117,7 @@ const SpeechToTextPage: React.FC = () => {
                     ></div>
                   </div>
                   <div className="flex justify-between mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    <span>Uploading...</span>
+                    <span>{t('speechToText.uploading')}</span>
                     <span>{Math.round(uploadProgress)}%</span>
                   </div>
                 </div>
@@ -1125,7 +1125,7 @@ const SpeechToTextPage: React.FC = () => {
                   {audioFile.name}
                 </p>
                 <p className="text-gray-500 dark:text-gray-500 animate-pulse">
-                  Please wait while we upload your file
+                  {t('speechToText.uploadWait')}
                 </p>
               </div>
             ) : (
@@ -1134,13 +1134,13 @@ const SpeechToTextPage: React.FC = () => {
                   <FiCheck className="h-8 w-8 text-green-500" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  File selected
+                  {t('speechToText.fileSelected')}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-1">
                   {audioFile.name}
                 </p>
                 <p className="text-gray-500 dark:text-gray-500 mb-4">
-                  {(audioFile.size / (1024 * 1024)).toFixed(2)} MB • Estimated duration: {formatDuration(duration)}
+                  {(audioFile.size / (1024 * 1024)).toFixed(2)} {t('speechToText.mb')} • {t('speechToText.estimatedDuration')}: {formatDuration(duration)}
                 </p>
                 
                 {audioPreview && (
@@ -1152,7 +1152,7 @@ const SpeechToTextPage: React.FC = () => {
                       {isAudioPlaying ? <FiPause className="text-gray-700 dark:text-gray-300" /> : <FiPlay className="text-gray-700 dark:text-gray-300" />}
                     </button>
                     <span className="text-gray-600 dark:text-gray-400 text-sm">
-                      {isAudioPlaying ? 'Pause preview' : 'Play preview'}
+                      {isAudioPlaying ? t('speechToText.pausePreview') : t('speechToText.playPreview')}
                     </span>
                     <audio 
                       ref={audioPreviewRef}
@@ -1175,7 +1175,7 @@ const SpeechToTextPage: React.FC = () => {
                     }}
                     className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                   >
-                    Cancel
+                    {t('speechToText.cancel')}
                   </button>
                 </div>
               </div>
@@ -1191,9 +1191,9 @@ const SpeechToTextPage: React.FC = () => {
                 exit={{ opacity: 0, y: -20 }}
                 className="mt-6 p-6 m-2 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:border dark:border-gray-700"
               >
-                <h3 className="text-lg font-medium mb-6 dark:text-gray-300 border-b pb-3 dark:border-gray-700">Transcription Options</h3>
+                <h3 className="text-lg font-medium mb-6 dark:text-gray-300 border-b pb-3 dark:border-gray-700">{t('speechToText.transcriptionOptions')}</h3>
                 <div>
-                  <label className="block text-sm font-medium mb-2 dark:text-gray-300">Language</label>
+                  <label className="block text-sm font-medium mb-2 dark:text-gray-300">{t('speechToText.language')}</label>
                   <div className="relative max-w-md">
                     <select 
                       value={selectedLanguage}
@@ -1211,7 +1211,7 @@ const SpeechToTextPage: React.FC = () => {
                     </div>
                   </div>
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Select the primary language spoken in your audio
+                    {t('speechToText.selectPrimaryLanguage')}
                   </p>
                 </div>
                 
@@ -1228,12 +1228,12 @@ const SpeechToTextPage: React.FC = () => {
                     {isUploading ? (
                       <>
                         <FiLoader className="animate-spin -ml-1 mr-2 h-5 w-5" />
-                        Uploading...
+                        {t('speechToText.uploading')}...
                       </>
                     ) : (
                       <>
                         <FiZap className="mr-2" />
-                        Convert to Text
+                        {t('speechToText.convertToText')}
                       </>
                     )}
                   </AuthRequiredButton>
@@ -1251,14 +1251,14 @@ const SpeechToTextPage: React.FC = () => {
           className="mt-10 mx-2"
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Recent Transcriptions</h2>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">{t('speechToText.recentTranscriptions')}</h2>
             
             <div className="flex items-center space-x-2 mt-3 sm:mt-0">
               <button
                 onClick={refreshFiles}
                 disabled={isRefreshing}
                 className={`p-2 text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 ${isRefreshing ? 'animate-spin' : ''}`}
-                title="Refresh"
+                title={t('speechToText.refresh')}
               >
                 <FiRefreshCw />
               </button>
@@ -1266,7 +1266,7 @@ const SpeechToTextPage: React.FC = () => {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search files..."
+                  placeholder={t('speechToText.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 pr-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto transition-colors"
@@ -1303,7 +1303,7 @@ const SpeechToTextPage: React.FC = () => {
             <div className="flex justify-center items-center h-40">
               <div className="flex flex-col items-center">
                 <FiLoader className="animate-spin h-8 w-8 text-blue-500 mb-4" />
-                <span className="text-gray-600 dark:text-gray-400">Loading transcriptions...</span>
+                <span className="text-gray-600 dark:text-gray-400">{t('transcription.loadingTranscription')}</span>
               </div>
             </div>
           ) : getFilteredAndSortedFiles().length > 0 ? (
@@ -1335,9 +1335,9 @@ const SpeechToTextPage: React.FC = () => {
               <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                 <FiFileText className="h-10 w-10 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">No transcriptions yet</h3>
+              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">{t('speechToText.noTranscriptionsYet')}</h3>
               <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                Upload an audio file to get started with your first transcription
+                {t('speechToText.startByUploading')}
               </p>
               <AuthRequiredButton
                 onClick={() => {
@@ -1348,7 +1348,7 @@ const SpeechToTextPage: React.FC = () => {
                 className="mt-6 px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg shadow-md hover:shadow-lg transition-all inline-flex items-center"
               >
                 <FiUpload className="mr-2" />
-                Upload Audio File
+                {t('speechToText.browseFiles')}
               </AuthRequiredButton>
             </div>
           )}
@@ -1374,11 +1374,11 @@ const SpeechToTextPage: React.FC = () => {
                 <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-500 mr-3">
                   <FiTrash />
                 </div>
-                <h3 className="text-lg font-medium dark:text-gray-200">Confirm Deletion</h3>
+                <h3 className="text-lg font-medium dark:text-gray-200">{t('speechToText.deleteConfirmation')}</h3>
               </div>
               
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Are you sure you want to delete <span className="font-medium">{getDisplayName(selectedFile)}</span>? This action cannot be undone.
+                {t('speechToText.deleteConfirmationMessage')}
               </p>
               
               <div className="flex justify-end space-x-3">
@@ -1389,13 +1389,13 @@ const SpeechToTextPage: React.FC = () => {
                   }}
                   className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors"
                 >
-                  Cancel
+                  {t('speechToText.cancel')}
                 </button>
                 <button
                   onClick={() => deleteAudio(selectedFile)}
                   className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
                 >
-                  Delete
+                  {t('speechToText.delete')}
                 </button>
               </div>
             </motion.div>
@@ -1422,19 +1422,19 @@ const SpeechToTextPage: React.FC = () => {
                 <div className="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-500 mr-3">
                   <FiEdit3 />
                 </div>
-                <h3 className="text-lg font-medium dark:text-gray-200">Edit Audio Name</h3>
+                <h3 className="text-lg font-medium dark:text-gray-200">{t('speechToText.editNameModalTitle')}</h3>
               </div>
               
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Audio Name
+                  {t('speechToText.editName')}
                 </label>
                 <input
                   type="text"
                   value={editingName}
                   onChange={(e) => setEditingName(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200"
-                  placeholder="Enter new name"
+                  placeholder={t('speechToText.enterNewName')}
                   disabled={isEditingName}
                 />
               </div>
@@ -1449,7 +1449,7 @@ const SpeechToTextPage: React.FC = () => {
                   disabled={isEditingName}
                   className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors disabled:opacity-50"
                 >
-                  Cancel
+                  {t('speechToText.cancel')}
                 </button>
                 <button
                   onClick={() => editAudioName(selectedFile, editingName)}
@@ -1459,10 +1459,10 @@ const SpeechToTextPage: React.FC = () => {
                   {isEditingName ? (
                     <>
                       <FiLoader className="animate-spin mr-2" />
-                      Saving...
+                      {t('speechToText.saving')}
                     </>
                   ) : (
-                    'Save Changes'
+                    t('speechToText.saveChanges')
                   )}
                 </button>
               </div>
