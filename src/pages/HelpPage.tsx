@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { ThemeContext } from '../context/ThemeContext';
 import { Layout } from '../components';
 import { 
@@ -82,69 +83,70 @@ const HelpCategory = ({ title, icon, description, linkText, linkUrl }: {
 };
 
 const HelpPage: React.FC = () => {
+  const { t } = useTranslation();
   const { darkMode } = useContext(ThemeContext);
   const [searchQuery, setSearchQuery] = useState('');
   
   // FAQ Data
-  const faqs = [
+  const faqData = [
     {
-      question: "What is MatrixAI?",
-      answer: "MatrixAI is a powerful platform that provides various AI tools for content creation, including image generation, video creation, document writing, and more. Our state-of-the-art AI models help you create high-quality content quickly and efficiently."
+      question: t('help.faq.whatIsMatrixAI.question'),
+      answer: t('help.faq.whatIsMatrixAI.answer')
     },
     {
-      question: "How do I get started with MatrixAI?",
-      answer: "Getting started is easy! Simply create an account, verify your email, and you'll have immediate access to our basic features. You can upgrade to our Pro plan anytime to unlock advanced capabilities and higher usage limits."
+      question: t('help.faq.howToGetStarted.question'),
+      answer: t('help.faq.howToGetStarted.answer')
     },
     {
-      question: "What are the subscription plans?",
-      answer: "We offer three main plans: Free, Pro, and Business. The Free plan gives you limited access to our tools. The Pro plan ($19.99/month) provides full access with higher quality outputs and usage limits. The Business plan offers custom solutions for teams and enterprises."
+      question: t('help.faq.pricingPlans.question'),
+      answer: t('help.faq.pricingPlans.answer')
     },
     {
-      question: "How accurate is MatrixAI?",
-      answer: "Our AI models are trained on vast datasets and continually improved. While they produce high-quality results, AI technology isn't perfect. We recommend reviewing and refining AI-generated content before using it in professional contexts."
+      question: t('help.faq.accuracy.question'),
+      answer: t('help.faq.accuracy.answer')
     },
     {
-      question: "Can I use generated content commercially?",
-      answer: "Yes, with the Pro and Business plans, you own all rights to the content you generate and can use it for commercial purposes. Please note that you should still verify the content doesn't infringe on existing copyrights or trademarks."
+      question: t('help.faq.commercialUse.question'),
+      answer: t('help.faq.commercialUse.answer')
     },
     {
-      question: "How do I cancel my subscription?",
-      answer: "You can cancel your subscription anytime from your account settings page. After cancellation, you'll continue to have access to your plan's features until the end of your current billing period."
+      question: t('help.faq.cancelSubscription.question'),
+      answer: t('help.faq.cancelSubscription.answer')
     },
     {
-      question: "Is my data secure?",
-      answer: "Yes, we take data security very seriously. All data is encrypted both in transit and at rest. We do not sell your personal information to third parties. You can read more about our data practices in our Privacy Policy."
+      question: t('help.faq.dataSecurity.question'),
+      answer: t('help.faq.dataSecurity.answer')
     }
   ];
   
   // Help categories
   const helpCategories = [
     {
-      title: "Documentation",
+      title: t('help.categories.documentation.title'),
       icon: <FiBookOpen className="h-5 w-5" />,
-      description: "Explore detailed guides and tutorials on how to use MatrixAI features and tools.",
-      linkText: "Browse documentation",
+      description: t('help.categories.documentation.description'),
+      linkText: t('help.categories.documentation.linkText'),
       linkUrl: "/documentation"
     },
     {
-      title: "Video Tutorials",
+      title: t('help.categories.videoTutorials.title'),
       icon: <FiExternalLink className="h-5 w-5" />,
-      description: "Watch step-by-step video guides to learn how to get the most out of our platform.",
-      linkText: "Watch tutorials",
+      description: t('help.categories.videoTutorials.description'),
+      linkText: t('help.categories.videoTutorials.linkText'),
       linkUrl: "/tutorials"
     },
     {
-      title: "Contact Support",
+      title: t('help.categories.contactSupport.title'),
       icon: <FiMail className="h-5 w-5" />,
-      description: "Need personalized help? Our support team is ready to assist you with any issues.",
-      linkText: "Contact us",
+      description: t('help.categories.contactSupport.description'),
+      linkText: t('help.categories.contactSupport.linkText'),
       linkUrl: "/contact"
     },
     {
-      title: "Community Forum",
+      title: t('help.categories.communityForum.title'),
       icon: <FiMessageSquare className="h-5 w-5" />,
-      description: "Join discussions with other users to share tips, get help, and learn new techniques.",
-      linkText: "Join the community",
+      description: t('help.categories.communityForum.description'),
+      linkText: t('help.categories.communityForum.linkText'),
       linkUrl: "/forum"
     }
   ];
@@ -167,10 +169,10 @@ const HelpPage: React.FC = () => {
             className="text-center mb-12"
           >
             <h1 className="text-3xl font-bold text-primary">
-              Help & Support
+              {t('help.title')}
             </h1>
             <p className="text-tertiary mt-2 max-w-2xl mx-auto">
-              Get assistance, learn more about our platform, and find answers to your questions
+              {t('help.subtitle')}
             </p>
           </motion.div>
 
@@ -190,12 +192,12 @@ const HelpPage: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="block w-full p-4 pl-10 text-sm rounded-lg bg-gray-800 border-gray-700 text-primary placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Search for help topics, guides, or questions..."
+                placeholder={t('help.searchPlaceholder')}
               />
               <button 
                 className="absolute right-2.5 bottom-2.5 px-4 py-2 rounded-lg text-white btn-primary"
               >
-                Search
+                {t('help.searchButton')}
               </button>
             </div>
           </motion.div>
@@ -208,7 +210,7 @@ const HelpPage: React.FC = () => {
             className="mb-16"
           >
             <h2 className="text-2xl font-bold mb-6 text-primary">
-              Resources
+              {t('help.resourcesTitle')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {helpCategories.map((category, index) => (
@@ -232,10 +234,10 @@ const HelpPage: React.FC = () => {
             className="mb-16"
           >
             <h2 className="text-2xl font-bold mb-6 text-primary">
-              Frequently Asked Questions
+              {t('help.faqTitle')}
             </h2>
             <div className="rounded-xl glass-effect border border-gray-700/50 p-6">
-              {faqs.map((faq, index) => (
+              {faqData.map((faq, index) => (
                 <FAQItem key={index} question={faq.question} answer={faq.answer} />
               ))}
             </div>
@@ -253,16 +255,16 @@ const HelpPage: React.FC = () => {
                 <FiCpu className="h-6 w-6" />
               </div>
               <h2 className="text-2xl font-bold mb-2 text-primary">
-                Need More Help?
+                {t('help.needMoreHelp.title')}
               </h2>
               <p className="mb-6 max-w-2xl mx-auto text-secondary">
-                Our AI assistant is available 24/7 to help answer your questions and guide you through any issues you might be experiencing.
+                {t('help.needMoreHelp.description')}
               </p>
               <button
                 className="px-6 py-3 rounded-lg btn-primary flex items-center mx-auto"
               >
                 <FiMessageSquare className="mr-2" />
-                Chat with Assistant
+                {t('help.needMoreHelp.chatButton')}
               </button>
             </div>
           </motion.div>
@@ -275,7 +277,7 @@ const HelpPage: React.FC = () => {
           >
             <div className="rounded-xl glass-effect border border-gray-700/50 p-6">
               <h2 className="text-2xl font-bold mb-6 text-primary">
-                Contact Information
+                {t('help.contact.title')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-start">
@@ -284,10 +286,10 @@ const HelpPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-medium text-primary">
-                      Email Support
+                      {t('help.contact.emailSupport')}
                     </h3>
                     <p className="text-secondary mt-1">
-                      Our team typically responds within 24 hours
+                      {t('help.contact.responseTime')}
                     </p>
                     <a 
                       href="mailto:support@matrixaiglobal.com"

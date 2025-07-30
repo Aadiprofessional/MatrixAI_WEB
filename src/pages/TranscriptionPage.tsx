@@ -529,10 +529,10 @@ const TranscriptionPage: React.FC = () => {
               if (xhr.status === 200) {
                 console.log('✅ AI API request completed successfully');
                 console.log('📊 Final content length:', fullContent.length);
-                resolve(fullContent.trim() || 'I apologize, but I could not generate a response. Please try again.');
+                resolve(fullContent.trim() || t('transcription.errors.noResponse'));
               } else {
                 console.error('❌ API request failed:', xhr.status, xhr.statusText);
-                reject(new Error(`API call failed: ${xhr.status} ${xhr.statusText}`));
+                reject(new Error(t('transcription.errors.apiCallFailed', { status: xhr.status, statusText: xhr.statusText })));
               }
             }
           }
@@ -540,12 +540,12 @@ const TranscriptionPage: React.FC = () => {
 
         xhr.onerror = function() {
           console.error('💥 XMLHttpRequest error');
-          reject(new Error('Failed to get response from AI. Please try again.'));
+          reject(new Error(t('transcription.errors.failedToGetResponse')));
         };
 
         xhr.ontimeout = function() {
           console.error('💥 XMLHttpRequest timeout');
-          reject(new Error('Request timed out. Please try again.'));
+          reject(new Error(t('transcription.errors.requestTimeout')));
         };
 
         xhr.timeout = 60000; // 60 second timeout
@@ -561,53 +561,53 @@ const TranscriptionPage: React.FC = () => {
 
       } catch (error) {
         console.error('💥 Error in sendMessageToAI:', error);
-        reject(new Error('Failed to get response from AI. Please try again.'));
+        reject(new Error(t('transcription.errors.failedToGetResponse')));
       }
     });
   };
 
   // Simple language detection function
   const detectLanguage = (text: string): string => {
-    if (!text) return 'English';
+    if (!text) return t('transcription.languages.english');
     
     // Simple language detection based on common patterns
     const lowerText = text.toLowerCase();
     
     // Chinese characters
-    if (/[\u4e00-\u9fff]/.test(text)) return 'Chinese';
+    if (/[\u4e00-\u9fff]/.test(text)) return t('transcription.languages.chinese');
     
     // Japanese characters
-    if (/[\u3040-\u309f\u30a0-\u30ff]/.test(text)) return 'Japanese';
+    if (/[\u3040-\u309f\u30a0-\u30ff]/.test(text)) return t('transcription.languages.japanese');
     
     // Korean characters
-    if (/[\uac00-\ud7af]/.test(text)) return 'Korean';
+    if (/[\uac00-\ud7af]/.test(text)) return t('transcription.languages.korean');
     
     // Spanish indicators
-    if (/\b(el|la|los|las|de|del|en|con|por|para|que|es|son|está|están|tiene|tienen|hacer|ser|estar)\b/.test(lowerText)) return 'Spanish';
+    if (/\b(el|la|los|las|de|del|en|con|por|para|que|es|son|está|están|tiene|tienen|hacer|ser|estar)\b/.test(lowerText)) return t('transcription.languages.spanish');
     
     // French indicators
-    if (/\b(le|la|les|de|du|des|en|avec|pour|que|est|sont|avoir|être|faire|aller)\b/.test(lowerText)) return 'French';
+    if (/\b(le|la|les|de|du|des|en|avec|pour|que|est|sont|avoir|être|faire|aller)\b/.test(lowerText)) return t('transcription.languages.french');
     
     // German indicators
-    if (/\b(der|die|das|den|dem|des|ein|eine|einen|einem|einer|und|oder|aber|ist|sind|haben|sein|werden)\b/.test(lowerText)) return 'German';
+    if (/\b(der|die|das|den|dem|des|ein|eine|einen|einem|einer|und|oder|aber|ist|sind|haben|sein|werden)\b/.test(lowerText)) return t('transcription.languages.german');
     
     // Italian indicators
-    if (/\b(il|la|lo|gli|le|di|da|in|con|per|che|è|sono|ha|hanno|essere|avere|fare|andare)\b/.test(lowerText)) return 'Italian';
+    if (/\b(il|la|lo|gli|le|di|da|in|con|per|che|è|sono|ha|hanno|essere|avere|fare|andare)\b/.test(lowerText)) return t('transcription.languages.italian');
     
     // Portuguese indicators
-    if (/\b(o|a|os|as|de|da|do|em|com|para|que|é|são|tem|têm|ser|estar|ter|fazer|ir)\b/.test(lowerText)) return 'Portuguese';
+    if (/\b(o|a|os|as|de|da|do|em|com|para|que|é|são|tem|têm|ser|estar|ter|fazer|ir)\b/.test(lowerText)) return t('transcription.languages.portuguese');
     
     // Russian indicators (Cyrillic)
-    if (/[а-яё]/i.test(text)) return 'Russian';
+    if (/[а-яё]/i.test(text)) return t('transcription.languages.russian');
     
     // Arabic indicators
-    if (/[\u0600-\u06ff]/.test(text)) return 'Arabic';
+    if (/[\u0600-\u06ff]/.test(text)) return t('transcription.languages.arabic');
     
     // Hindi indicators (Devanagari)
-    if (/[\u0900-\u097f]/.test(text)) return 'Hindi';
+    if (/[\u0900-\u097f]/.test(text)) return t('transcription.languages.hindi');
     
     // Default to English
-    return 'English';
+    return t('transcription.languages.english');
   };
 
   // Get state passed from the previous page
@@ -644,10 +644,10 @@ const TranscriptionPage: React.FC = () => {
           return updatedTranslations;
         });
       } else {
-        console.error('Translation data is not in the expected format:', data);
+        console.error(t('transcription.errors.translationDataFormat'), data);
       }
     } catch (error) {
-      console.error('Translation error:', error);
+      console.error(t('transcription.errors.translationError'), error);
     } finally {
       setTranslatingIndex(-1);
     }
@@ -684,10 +684,10 @@ const TranscriptionPage: React.FC = () => {
       } catch (error: any) {
         // Check if error is due to insufficient coins
         if (error.message && error.message.includes('insufficient')) {
-          alert('You don\'t have enough coins. Please purchase more coins to use this feature.');
+          alert(t('transcription.errors.insufficientCoins'));
         } else {
           console.error('Error during translation:', error);
-          alert('An error occurred during translation. Please try again.');
+          alert(t('transcription.errors.translationError'));
         }
       }
     } else {
@@ -711,7 +711,7 @@ const TranscriptionPage: React.FC = () => {
             setTranscription(parsed.transcription);
             setAudioUrl(parsed.audioUrl);
             setDuration(parsed.duration || 0);
-            setFileName(parsed.audio_name);
+          
             
             // Set words_data if available
             if (parsed.words_data) {
@@ -799,11 +799,11 @@ const TranscriptionPage: React.FC = () => {
           xmlData: data.xml_data || null,
         }));
       } else {
-        console.error('Error fetching audio metadata:', data.error || data.message);
+        console.error(t('transcription.errors.audioMetadata'), data.error || data.message);
         alert(t('transcription.errors.failedToLoadAudio'));
       }
     } catch (error) {
-      console.error('Error in fetchAudioMetadata:', error);
+      console.error(t('transcription.errors.fetchAudioMetadata'), error);
       alert(t('transcription.errors.unexpectedError'));
     } finally {
       setIsLoading(false);
@@ -897,7 +897,7 @@ const TranscriptionPage: React.FC = () => {
       const coinResponse = await userService.subtractCoins(uid, 1, 'transcription_chat');
       
       if (!coinResponse.success) {
-        alert('Failed to deduct coins. Please try again.');
+        alert(t('transcription.errors.failedToDeductCoins'));
         return;
       }
     } catch (error) {
@@ -994,7 +994,7 @@ const TranscriptionPage: React.FC = () => {
         const messagesWithoutStreaming = prev.filter(msg => msg.id !== streamingMessageId);
         return [...messagesWithoutStreaming, {
           role: 'assistant',
-          content: 'I apologize, but I encountered an error while processing your request. Please try again.',
+          content: t('transcription.errors.processingError'),
           timestamp: Date.now(),
           id: streamingMessageId
         }];
@@ -1115,7 +1115,7 @@ const TranscriptionPage: React.FC = () => {
   };
   
   const resetChat = () => {
-    if (chatMessages.length > 0 && window.confirm('Are you sure you want to clear the chat history?')) {
+    if (chatMessages.length > 0 && window.confirm(t('transcription.chat.confirmClearHistory'))) {
       setChatMessages([]);
     }
   };
@@ -1137,7 +1137,7 @@ const TranscriptionPage: React.FC = () => {
     setTimeout(() => {
       const assistantMessage: ChatMessage = {
         role: 'assistant',
-        content: 'I have received the transcription. What would you like to know or discuss about it?',
+        content: t('transcription.chat.receivedTranscription'),
         timestamp: Date.now()
       };
       
@@ -1542,7 +1542,7 @@ const TranscriptionPage: React.FC = () => {
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <span className="flex items-center"><FiMessageSquare className="mr-2" /> {t('transcription.chat')}</span>
+            <span className="flex items-center"><FiMessageSquare className="mr-2" /> {t('transcription.chat.title')}</span>
           </button>
           <button
             onClick={() => setActiveTab('wordsdata')}
@@ -1552,7 +1552,7 @@ const TranscriptionPage: React.FC = () => {
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <span className="flex items-center"><FiFileText className="mr-2" /> {t('transcription.wordsData')}</span>
+            <span className="flex items-center"><FiFileText className="mr-2" /> {t('transcription.wordsData.title')}</span>
           </button>
         </div>
 
@@ -1639,7 +1639,7 @@ const TranscriptionPage: React.FC = () => {
                       {translatingIndex !== -1 && (
                         <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
                           <FiLoader className="animate-spin w-4 h-4" />
-                          <span className="text-sm">{t('transcription.translatingParagraph', { index: translatingIndex + 1 })}</span>
+                          <span className="text-sm">{t('transcription.translating')}</span>
                         </div>
                       )}
                     </div>
@@ -1737,19 +1737,19 @@ const TranscriptionPage: React.FC = () => {
                 >
                   {/* Fixed Header */}
                   <div className="flex justify-between items-center p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-20 sticky top-0">
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Chat Assistant</h2>
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.chat.title')}</h2>
                     <div className="flex space-x-2">
                       <button 
                         onClick={resetChat} 
                         className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
-                        title="Clear chat"
+                        title={t('transcription.chat.clearChat')}
                       >
                         <FiRefreshCw />
                       </button>
                       <button 
                         onClick={() => setShowSidebar(!showSidebar)}
                         className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors" 
-                        title={showSidebar ? "Hide sidebar" : "Show sidebar"}
+                        title={showSidebar ? t('transcription.ui.hideSidebar') : t('transcription.ui.showSidebar')}
                       >
                         <FiLayout />
                       </button>
@@ -1758,7 +1758,7 @@ const TranscriptionPage: React.FC = () => {
 
                   {/* Quick Actions - Fixed below header */}
                   <div className="p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-10 sticky top-[67px]">
-                    <h3 className="text-lg font-medium mb-3 dark:text-gray-300">Quick Actions</h3>
+                    <h3 className="text-lg font-medium mb-3 dark:text-gray-300">{t('transcription.chat.quickActions')}</h3>
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => handleQuickAction('keypoints')}
@@ -1774,7 +1774,7 @@ const TranscriptionPage: React.FC = () => {
                         ) : (
                           <FiZap className="mr-2" />
                         )}
-                        Key Points
+                        {t('transcription.chat.keyPoints')}
                       </button>
                       
                       <button
@@ -1791,7 +1791,7 @@ const TranscriptionPage: React.FC = () => {
                         ) : (
                           <FiFileText className="mr-2" />
                         )}
-                        Quick Summary
+                        {t('transcription.chat.quickSummary')}
                       </button>
                       
                       <div className="flex items-center">
@@ -1809,7 +1809,7 @@ const TranscriptionPage: React.FC = () => {
                           ) : (
                             <FiBookmark className="mr-2" />
                           )}
-                          Translate
+                          {t('transcription.actions.translate')}
                         </button>
                         
                         <select
@@ -1817,12 +1817,12 @@ const TranscriptionPage: React.FC = () => {
                           onChange={(e) => setTranslationLanguage(e.target.value)}
                           className="ml-2 px-2 py-1 text-xs sm:text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
                         >
-                          <option value="Spanish">Spanish</option>
-                          <option value="French">French</option>
-                          <option value="German">German</option>
-                          <option value="Chinese">Chinese</option>
-                          <option value="Japanese">Japanese</option>
-                          <option value="Hindi">Hindi</option>
+                          <option value="Spanish">{t('transcription.languages.spanish')}</option>
+                          <option value="French">{t('transcription.languages.french')}</option>
+                          <option value="German">{t('transcription.languages.german')}</option>
+                          <option value="Chinese">{t('transcription.languages.chinese')}</option>
+                          <option value="Japanese">{t('transcription.languages.japanese')}</option>
+                          <option value="Hindi">{t('transcription.languages.hindi')}</option>
                         </select>
                       </div>
                       
@@ -1836,7 +1836,7 @@ const TranscriptionPage: React.FC = () => {
                         }`}
                       >
                         <FiFileText className="mr-2" />
-                        Use as Context
+                        {t('transcription.chat.useAsContext')}
                       </button>
                     </div>
                   </div>
@@ -2033,7 +2033,7 @@ const TranscriptionPage: React.FC = () => {
                                     <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '150ms' }}></div>
                                     <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '300ms' }}></div>
                                   </div>
-                                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">AI is thinking...</span>
+                                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">{t('transcription.chat.aiThinking')}</span>
                                 </div>
                               </div>
                             </div>
@@ -2046,8 +2046,8 @@ const TranscriptionPage: React.FC = () => {
                           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center mb-4">
                             <FiMessageSquare className="w-8 h-8 text-white" />
                           </div>
-                          <h3 className="text-lg font-semibold mb-2">Start a Conversation</h3>
-                          <p className="text-center max-w-md">Ask questions about the transcription or use the quick actions above to get started.</p>
+                          <h3 className="text-lg font-semibold mb-2">{t('transcription.chat.startConversation')}</h3>
+                          <p className="text-center max-w-md">{t('transcription.chat.startConversationDescription')}</p>
                         </div>
                       )
                     )}
@@ -2062,7 +2062,7 @@ const TranscriptionPage: React.FC = () => {
                         type="text"
                         value={chatInput}
                         onChange={(e) => setChatInput(e.target.value)}
-                        placeholder="Type your message..."
+                        placeholder={t('transcription.chat.typeMessage')}
                         className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200"
                         disabled={isAssistantTyping}
                       />
@@ -2078,7 +2078,7 @@ const TranscriptionPage: React.FC = () => {
                         {isAssistantTyping ? (
                           <FiLoader className="animate-spin" />
                         ) : (
-                          'Send'
+                          t('transcription.chat.send')
                         )}
                       </button>
                     </form>
@@ -2098,18 +2098,18 @@ const TranscriptionPage: React.FC = () => {
                       {/* Header with Format Tabs */}
                       <div className="border-b dark:border-gray-700">
                         <div className="flex justify-between items-center p-4">
-                          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Words Data</h2>
+                          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.wordsData.title')}</h2>
                           <div className="flex space-x-2">
                             <button 
                               onClick={() => {
                                 const srtContent = convertToSRT(wordsData);
                                 navigator.clipboard.writeText(srtContent);
-                                alert('SRT format copied to clipboard!');
+                                alert(t('transcription.wordsData.srtCopied'));
                               }}
                               className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                               title="Copy as SRT"
                             >
-                              Copy SRT
+                              {t('transcription.wordsData.copySrt')}
                             </button>
                             <button 
                               onClick={() => {
@@ -2125,12 +2125,12 @@ const TranscriptionPage: React.FC = () => {
                               className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                               title="Download SRT"
                             >
-                              Download SRT
+                              {t('transcription.wordsData.downloadSrt')}
                             </button>
                             <button 
                               onClick={() => {
                                 navigator.clipboard.writeText(JSON.stringify(wordsData, null, 2));
-                                alert('JSON data copied to clipboard!');
+                                alert(t('transcription.wordsData.jsonCopied'));
                               }}
                               className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
                               title="Copy JSON"
@@ -2150,7 +2150,7 @@ const TranscriptionPage: React.FC = () => {
                                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
                           >
-                            SRT Format
+                            {t('transcription.wordsData.srtFormat')}
                           </button>
                         </div>
                       </div>
@@ -2159,27 +2159,27 @@ const TranscriptionPage: React.FC = () => {
                       <div className="flex-1 overflow-auto p-4">
                         {/* Statistics */}
                         <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
-                          <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Statistics</h3>
+                          <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">{t('transcription.wordsData.statistics')}</h3>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <div className="text-center">
                               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{wordsData.length}</div>
-                              <div className="text-gray-600 dark:text-gray-400">Total Words</div>
+                              <div className="text-gray-600 dark:text-gray-400">{t('transcription.wordsData.totalWords')}</div>
                             </div>
                             <div className="text-center">
                               <div className="text-2xl font-bold text-green-600 dark:text-green-400">{formatTime(duration)}</div>
-                              <div className="text-gray-600 dark:text-gray-400">Duration</div>
+                              <div className="text-gray-600 dark:text-gray-400">{t('transcription.wordsData.duration')}</div>
                             </div>
                             <div className="text-center">
                               <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                                 {(wordsData.reduce((acc, word) => acc + word.word.length, 0) / wordsData.length).toFixed(1)}
                               </div>
-                              <div className="text-gray-600 dark:text-gray-400">Avg Chars/Word</div>
+                              <div className="text-gray-600 dark:text-gray-400">{t('transcription.wordsData.avgCharsPerWord')}</div>
                             </div>
                             <div className="text-center">
                               <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                                 {duration > 0 ? Math.round((wordsData.length / duration) * 60) : 0}
                               </div>
-                              <div className="text-gray-600 dark:text-gray-400">Words/Minute</div>
+                              <div className="text-gray-600 dark:text-gray-400">{t('transcription.wordsData.wordsPerMinute')}</div>
                             </div>
                           </div>
                         </div>
@@ -2187,7 +2187,7 @@ const TranscriptionPage: React.FC = () => {
                         {/* SRT Format Display */}
                         <div className="mb-6">
                           <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">
-                            SRT Subtitles (5 words per subtitle)
+                            {t('transcription.wordsData.srtSubtitles')}
                           </h3>
                           <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 font-mono text-sm max-h-96 overflow-auto">
                             <pre className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
@@ -2199,7 +2199,7 @@ const TranscriptionPage: React.FC = () => {
                         {/* Interactive Word Timeline */}
                         <div>
                           <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">
-                            Interactive Word Timeline
+                            {t('transcription.wordsData.interactiveTimeline')}
                           </h3>
                           <div className="grid gap-2 max-h-96 overflow-auto">
                             {wordsData.map((wordData, index) => (
@@ -2230,7 +2230,7 @@ const TranscriptionPage: React.FC = () => {
                                       </span>
                                       {wordData.confidence && (
                                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                                          Confidence: {(wordData.confidence * 100).toFixed(1)}%
+                                          {t('transcription.wordsData.confidence')}: {(wordData.confidence * 100).toFixed(1)}%
                                         </div>
                                       )}
                                     </div>
@@ -2253,16 +2253,15 @@ const TranscriptionPage: React.FC = () => {
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
                       <FiFileText size={64} className="mb-4 text-gray-300 dark:text-gray-600" />
-                      <h3 className="text-xl font-semibold mb-2">No Words Data Available</h3>
+                      <h3 className="text-xl font-semibold mb-2">{t('transcription.wordsData.noDataAvailable')}</h3>
                       <p className="text-sm text-center max-w-md">
-                        Detailed word timing data is not available for this transcription. 
-                        This feature is available for newer transcriptions with enhanced processing.
+                        {t('transcription.wordsData.noDataDescription')}
                       </p>
                       <button 
                         onClick={() => setActiveTab('transcript')}
                         className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                       >
-                        View Transcript Instead
+                        {t('transcription.wordsData.viewTranscript')}
                       </button>
                     </div>
                   )}
@@ -2279,7 +2278,7 @@ const TranscriptionPage: React.FC = () => {
               >
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
                   <div className="p-4 border-b dark:border-gray-700">
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Audio Controls</h2>
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.audio.controls')}</h2>
                   </div>
                   
                   {/* Waveform visualization */}
@@ -2354,7 +2353,7 @@ const TranscriptionPage: React.FC = () => {
                             }
                           }}
                           className="p-1 sm:p-2 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
-                          title="Back 5 seconds"
+                          title={t('transcription.audio.back5Seconds')}
                         >
                           <FiChevronLeft size={16} className="sm:h-5 sm:w-5" />
                         </button>
@@ -2374,7 +2373,7 @@ const TranscriptionPage: React.FC = () => {
                             }
                           }}
                           className="p-1 sm:p-2 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
-                          title="Forward 5 seconds"
+                          title={t('transcription.audio.forward5Seconds')}
                         >
                           <FiChevronRight size={16} className="sm:h-5 sm:w-5" />
                         </button>
@@ -2405,18 +2404,18 @@ const TranscriptionPage: React.FC = () => {
 
                     {/* Audio information */}
                     <div className="border-t dark:border-gray-700 pt-4 mt-4">
-                      <h3 className="text-lg font-medium mb-3 dark:text-gray-300">Audio Information</h3>
+                      <h3 className="text-lg font-medium mb-3 dark:text-gray-300">{t('transcription.audio.information')}</h3>
                       
                       <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="text-gray-600 dark:text-gray-400">Duration:</div>
+                        <div className="text-gray-600 dark:text-gray-400">{t('transcription.audio.duration')}:</div>
                         <div className="text-gray-800 dark:text-gray-200 font-medium">{formatTime(duration)}</div>
                         
-                        <div className="text-gray-600 dark:text-gray-400">Language:</div>
+                        <div className="text-gray-600 dark:text-gray-400">{t('transcription.audio.language')}:</div>
                         <div className="text-gray-800 dark:text-gray-200 font-medium">
-                          {locationState?.language || 'English'}
+                          {locationState?.language || t('transcription.languages.english')}
                         </div>
                         
-                        <div className="text-gray-600 dark:text-gray-400">Words:</div>
+                        <div className="text-gray-600 dark:text-gray-400">{t('transcription.audio.words')}:</div>
                         <div className="text-gray-800 dark:text-gray-200 font-medium">{wordTimings.length}</div>
                       </div>
 
@@ -2426,20 +2425,20 @@ const TranscriptionPage: React.FC = () => {
                           className="w-full flex items-center justify-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors"
                         >
                           <FiDownload className="mr-2" />
-                          Download Audio
+                          {t('transcription.audio.downloadAudio')}
                         </button>
                         
                         <button 
                           onClick={() => {
-                            if (window.confirm('Are you sure you want to regenerate the transcription? This may take a moment.')) {
+                            if (window.confirm(t('transcription.audio.confirmRegeneration'))) {
                               // Implementation for regeneration
-                              alert('Transcription regeneration initiated');
+                              alert(t('transcription.audio.regenerationInitiated'));
                             }
                           }}
                           className="w-full flex items-center justify-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors"
                         >
                           <FiRefreshCw className="mr-2" />
-                          Regenerate Transcription
+                          {t('transcription.audio.regenerateTranscription')}
                         </button>
                       </div>
                     </div>

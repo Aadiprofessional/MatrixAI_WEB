@@ -239,20 +239,20 @@ const SettingsPage: React.FC = () => {
   const handleResetPassword = () => {
     // In a real app, this would trigger a password reset flow
     setNotification({
-      show: true,
-      message: 'Password reset instructions sent to your email.',
-      type: 'success'
-    });
+        show: true,
+        message: t('settings.passwordResetInstructionsSent'),
+        type: 'success'
+      });
   };
   
   // Handle data export
   const handleDataExport = () => {
     // In a real app, this would trigger a data export process
     setNotification({
-      show: true,
-      message: 'Your data export has been initiated. You will be notified when it\'s ready.',
-      type: 'success'
-    });
+        show: true,
+        message: t('settings.dataExportInitiated'),
+        type: 'success'
+      });
   };
   
   // Handle save changes
@@ -260,29 +260,29 @@ const SettingsPage: React.FC = () => {
     // In a real app, this would save to a backend
     // Simulate API call with timeout
     setNotification({
-      show: true,
-      message: 'Saving your settings...',
-      type: 'warning'
-    });
+        show: true,
+        message: t('settings.savingSettings'),
+        type: 'warning'
+      });
     
     setTimeout(() => {
       setInitialSettings({...settings});
       setHasChanges(false);
       setNotification({
-        show: true,
-        message: 'Settings saved successfully!',
-        type: 'success'
-      });
+          show: true,
+          message: t('settings.settingsSavedSuccessfully'),
+          type: 'success'
+        });
     }, 1000);
   };
   
   // Handle delete account
   const handleDeleteAccount = () => {
-    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+    if (window.confirm(t('settings.deleteAccountConfirmation'))) {
       // In a real app, this would trigger account deletion
       setNotification({
         show: true,
-        message: 'Account deletion initiated. You will receive a confirmation email.',
+        message: t('settings.accountDeletionInitiated'),
         type: 'warning'
       });
     }
@@ -290,10 +290,10 @@ const SettingsPage: React.FC = () => {
 
   // Tab navigation options
   const tabOptions = [
-    { id: 'appearance', label: 'Appearance', icon: darkMode ? <FiSun /> : <FiMoon /> },
-    { id: 'notifications', label: 'Notifications', icon: <FiBell /> },
-    { id: 'privacy', label: 'Privacy & Security', icon: <FiShield /> },
-    { id: 'account', label: 'Account', icon: <FiGlobe /> }
+    { id: 'appearance', label: t('settings.appearance'), icon: darkMode ? <FiSun /> : <FiMoon /> },
+    { id: 'notifications', label: t('settings.notifications'), icon: <FiBell /> },
+    { id: 'privacy', label: t('settings.privacyAndSecurity'), icon: <FiShield /> },
+    { id: 'account', label: t('settings.account'), icon: <FiGlobe /> }
   ];
 
   return (
@@ -320,10 +320,10 @@ const SettingsPage: React.FC = () => {
             className="mb-8"
           >
             <h1 className="page-title">
-              Settings
+              {t('settings.settings')}
             </h1>
             <p className="text-tertiary mt-1">
-              Customize your experience with MatrixAI
+              {t('settings.customizeExperience')}
             </p>
           </motion.div>
 
@@ -385,7 +385,7 @@ const SettingsPage: React.FC = () => {
               {activeTab === 'appearance' && (
                 <div>
                   <h2 className="text-xl font-bold mb-6 text-primary">
-                    Appearance Settings
+                    {t('settings.appearanceSettings')}
                   </h2>
 
                   <div className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
@@ -401,25 +401,25 @@ const SettingsPage: React.FC = () => {
                     />
 
                     <ToggleSwitch
-                      label="Enable Animations"
-                      description="Smoother transitions and UI effects"
+                      label={t('settings.enableAnimations')}
+                      description={t('settings.enableAnimationsDescription')}
                       isEnabled={settings.animationsEnabled}
                       toggleFunction={() => toggleSetting('animationsEnabled')}
                     />
 
                     <ToggleSwitch
-                      label="High Contrast Mode"
-                      description="Increased contrast for better visibility"
+                      label={t('settings.highContrastMode')}
+                      description={t('settings.highContrastModeDescription')}
                       isEnabled={settings.contrastMode}
                       toggleFunction={() => toggleSetting('contrastMode')}
                     />
 
                     <SelectOption
-                      label="Font Size"
+                      label={t('settings.fontSize')}
                       options={[
-                        { value: 'small', label: 'Small' },
-                        { value: 'medium', label: 'Medium' },
-                        { value: 'large', label: 'Large' }
+                        { value: 'small', label: t('settings.fontSizeSmall') },
+                        { value: 'medium', label: t('settings.fontSizeMedium') },
+                        { value: 'large', label: t('settings.fontSizeLarge') }
                       ]}
                       selectedValue={settings.fontSize}
                       onChange={(value) => updateSetting('fontSize', value)}
@@ -432,20 +432,20 @@ const SettingsPage: React.FC = () => {
               {activeTab === 'notifications' && (
                 <div>
                   <h2 className="text-xl font-bold mb-6 text-primary">
-                    Notification Settings
+                    {t('settings.notificationSettings')}
                   </h2>
 
                   <div className="divide-y divide-gray-700">
                     <ToggleSwitch
-                      label="Email Notifications"
-                      description="Receive important updates via email"
+                      label={t('settings.emailNotifications')}
+                      description={t('settings.emailNotificationsDescription')}
                       isEnabled={settings.emailNotifications}
                       toggleFunction={() => toggleSetting('emailNotifications')}
                     />
 
                     <ToggleSwitch
-                      label="Push Notifications"
-                      description="Get notifications in your browser"
+                      label={t('settings.pushNotifications')}
+                      description={t('settings.pushNotificationsDescription')}
                       isEnabled={settings.pushNotifications}
                       toggleFunction={() => toggleSetting('pushNotifications')}
                     />
@@ -478,37 +478,37 @@ const SettingsPage: React.FC = () => {
               {activeTab === 'privacy' && (
                 <div>
                   <h2 className="text-xl font-bold mb-6 text-primary">
-                    Privacy & Security
+                    {t('settings.privacyAndSecurity')}
                   </h2>
 
                   <div className="divide-y divide-gray-700">
                     <ToggleSwitch
-                      label="Two-Factor Authentication"
-                      description="Add an extra layer of security to your account"
+                      label={t('settings.twoFactorAuthentication')}
+                      description={t('settings.twoFactorAuthenticationDescription')}
                       isEnabled={settings.twoFactorAuth}
                       toggleFunction={() => toggleSetting('twoFactorAuth')}
                     />
 
                     <ToggleSwitch
-                      label="Data Collection"
-                      description="Allow us to collect anonymous usage data to improve our service"
+                      label={t('settings.dataCollection')}
+                      description={t('settings.dataCollectionDescription')}
                       isEnabled={settings.dataCollection}
                       toggleFunction={() => toggleSetting('dataCollection')}
                     />
 
                     <ToggleSwitch
-                      label="Share Usage Statistics"
-                      description="Help us improve by sharing how you use the platform"
+                      label={t('settings.shareUsageStatistics')}
+                      description={t('settings.shareUsageStatisticsDescription')}
                       isEnabled={settings.shareUsageStats}
                       toggleFunction={() => toggleSetting('shareUsageStats')}
                     />
 
                     <SelectOption
-                      label="Cookie Preferences"
+                      label={t('settings.cookiePreferences')}
                       options={[
-                        { value: 'essential', label: 'Essential Only' },
-                        { value: 'functional', label: 'Functional (Recommended)' },
-                        { value: 'all', label: 'All Cookies' }
+                        { value: 'essential', label: t('settings.cookieEssentialOnly') },
+                        { value: 'functional', label: t('settings.cookieFunctional') },
+                        { value: 'all', label: t('settings.cookieAll') }
                       ]}
                       selectedValue={settings.cookiePreference}
                       onChange={(value) => updateSetting('cookiePreference', value)}
@@ -520,10 +520,10 @@ const SettingsPage: React.FC = () => {
                         className={`px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors flex items-center`}
                       >
                         <FiLock className="mr-2" />
-                        Reset Password
+                        {t('settings.resetPassword')}
                       </button>
                       <p className="mt-2 text-sm text-tertiary">
-                        Change your account password for security
+                        {t('settings.resetPasswordDescription')}
                       </p>
                     </div>
 
@@ -532,10 +532,10 @@ const SettingsPage: React.FC = () => {
                         onClick={handleDataExport}
                         className="px-4 py-2 rounded-lg bg-gray-700 text-blue-400 hover:bg-gray-600 transition-colors"
                       >
-                        Request Data Export
+                        {t('settings.requestDataExport')}
                       </button>
                       <p className="mt-2 text-sm text-tertiary">
-                        Download all your data in a portable format
+                        {t('settings.requestDataExportDescription')}
                       </p>
                     </div>
                   </div>
@@ -546,70 +546,70 @@ const SettingsPage: React.FC = () => {
               {activeTab === 'account' && (
                 <div>
                   <h2 className="text-xl font-bold mb-6 text-primary">
-                    Account Settings
+                    {t('settings.accountSettings')}
                   </h2>
 
                   <div className="divide-y divide-gray-700">
                     <SelectOption
-                      label="Language"
+                      label={t('settings.language')}
                       options={[
-                        { value: 'english', label: 'English' },
-                        { value: 'spanish', label: 'Spanish' },
-                        { value: 'french', label: 'French' },
-                        { value: 'german', label: 'German' },
-                        { value: 'japanese', label: 'Japanese' },
-                        { value: 'chinese', label: 'Chinese' }
+                        { value: 'english', label: t('settings.languageEnglish') },
+                        { value: 'spanish', label: t('settings.languageSpanish') },
+                        { value: 'french', label: t('settings.languageFrench') },
+                        { value: 'german', label: t('settings.languageGerman') },
+                        { value: 'japanese', label: t('settings.languageJapanese') },
+                        { value: 'chinese', label: t('settings.languageChinese') }
                       ]}
                       selectedValue={settings.language}
                       onChange={(value) => updateSetting('language', value)}
                     />
 
                     <SelectOption
-                      label="Timezone"
+                      label={t('settings.timezone')}
                       options={[
-                        { value: 'UTC', label: 'UTC (Coordinated Universal Time)' },
-                        { value: 'EST', label: 'EST (Eastern Standard Time)' },
-                        { value: 'CST', label: 'CST (Central Standard Time)' },
-                        { value: 'MST', label: 'MST (Mountain Standard Time)' },
-                        { value: 'PST', label: 'PST (Pacific Standard Time)' },
-                        { value: 'IST', label: 'IST (Indian Standard Time)' }
+                        { value: 'UTC', label: t('settings.timezoneUTC') },
+                        { value: 'EST', label: t('settings.timezoneEST') },
+                        { value: 'CST', label: t('settings.timezoneCST') },
+                        { value: 'MST', label: t('settings.timezoneMST') },
+                        { value: 'PST', label: t('settings.timezonePST') },
+                        { value: 'IST', label: t('settings.timezoneIST') }
                       ]}
                       selectedValue={settings.timezone}
                       onChange={(value) => updateSetting('timezone', value)}
                     />
 
                     <ToggleSwitch
-                      label="Auto-Save"
-                      description="Automatically save your work in progress"
+                      label={t('settings.autoSave')}
+                      description={t('settings.autoSaveDescription')}
                       isEnabled={settings.autoSave}
                       toggleFunction={() => toggleSetting('autoSave')}
                     />
 
                     <div className="py-4">
                       <h3 className="font-medium text-primary mb-2">
-                        Subscription Plan
+                        {t('settings.subscriptionPlan')}
                       </h3>
                       <div className="p-4 rounded-lg glass-effect-light">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                              Pro Plan
+                              {t('settings.proPlan')}
                             </p>
                             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                              Renews on November 15, 2023
+                              {t('settings.renewsOn', { date: 'November 15, 2023' })}
                             </p>
                           </div>
                           <button 
                             onClick={() => {
                               setNotification({
                                 show: true,
-                                message: 'Redirecting to subscription management...',
+                                message: t('settings.redirectingToSubscriptionManagement'),
                                 type: 'success'
                               });
                             }}
                             className="px-4 py-2 rounded-lg btn-primary"
                           >
-                            Manage
+                            {t('settings.manage')}
                           </button>
                         </div>
                       </div>
@@ -620,10 +620,10 @@ const SettingsPage: React.FC = () => {
                         onClick={handleDeleteAccount}
                         className="px-4 py-2 rounded-lg bg-gray-700 text-red-400 hover:bg-gray-600 transition-colors"
                       >
-                        Delete Account
+                        {t('settings.deleteAccount')}
                       </button>
                       <p className="mt-2 text-sm text-tertiary">
-                        Permanently delete your account and all your data
+                        {t('settings.deleteAccountDescription')}
                       </p>
                     </div>
                   </div>

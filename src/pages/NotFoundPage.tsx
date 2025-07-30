@@ -1,9 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import '../styles/CommonStyles.css';
 
 const NotFoundPage: React.FC = () => {
+  const { t } = useTranslation();
+  
   return (
     <div className="min-h-[calc(100vh-16rem)] flex items-center justify-center px-4 py-12 page-background dark">
       {/* Background gradient effects */}
@@ -34,12 +37,11 @@ const NotFoundPage: React.FC = () => {
             transition={{ delay: 0.3, duration: 0.5 }}
           >
             <h2 className="text-3xl md:text-4xl font-display font-bold text-primary mb-6 section-title">
-              Page Not Found
+              {t('notFound.title')}
             </h2>
             
             <p className="text-lg text-secondary mb-8">
-              Oops! It looks like the AI couldn't find the page you're looking for. 
-              The neural pathways may have led to a dead end.
+              {t('notFound.description')}
             </p>
             
             <div className="space-y-4">
@@ -47,12 +49,12 @@ const NotFoundPage: React.FC = () => {
                 to="/" 
                 className="btn btn-primary px-8 py-3 inline-block"
               >
-                Return Home
+                {t('notFound.returnHome')}
               </Link>
               
               <div className="pt-4">
                 <span className="text-tertiary">
-                  Need help? <Link to="/contact" className="text-primary-600 hover:text-primary-700 underline">Contact Us</Link>
+                  {t('notFound.needHelp')} <Link to="/contact" className="text-primary-600 hover:text-primary-700 underline">{t('notFound.contactUs')}</Link>
                 </span>
               </div>
             </div>

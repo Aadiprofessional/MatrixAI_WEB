@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { Layout } from '../components';
 import '../styles/CommonStyles.css';
 import { userService } from '../services/userService';
+import { useTranslation } from 'react-i18next';
 import { 
   FiEdit2, 
   FiUser, 
@@ -103,6 +104,7 @@ const ActivityItem: React.FC<{ item: { type: string, text: string, time: string 
 
 // Transaction item component
 const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }) => {
+  const { t } = useTranslation();
   const { darkMode } = useContext(ThemeContext);
   
   const getTransactionIcon = (transactionName: string) => {
@@ -238,7 +240,7 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
                 transaction.transaction_name.split('_').map(word => 
                   word.charAt(0).toUpperCase() + word.slice(1)
                 ).join(' ') : 
-                'Transaction'
+                t('profile.transaction')
               }
             </h4>
             <p className="text-sm text-tertiary">
@@ -250,7 +252,7 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
         <div className="flex items-center space-x-3">
           <div className="text-right">
             <div className="font-semibold text-primary flex items-center">
-              {safeAmount.toFixed(0)} Coins
+              {safeAmount.toFixed(0)} {t('profile.coins')}
             </div>
             <div className="flex items-center space-x-1">
               {getStatusIcon(transaction.status)}
@@ -266,6 +268,7 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
 };
 
 const ProfilePage: React.FC = () => {
+  const { t } = useTranslation();
   const { darkMode } = useContext(ThemeContext);
   const { userData, loading, refreshUserData } = useUser();
   const { user } = useAuth();
@@ -371,13 +374,13 @@ const ProfilePage: React.FC = () => {
       if (Object.keys(updateData).length > 0) {
         await updateUserProfile(userData.uid, updateData);
         await refreshUserData();
-        toast.success('Profile updated successfully');
+        toast.success(t('profile.profileUpdatedSuccessfully'));
       }
       
       setIsEditing(false);
     } catch (error: any) {
       console.error('Error updating profile:', error);
-      toast.error(error.message || 'Failed to update profile');
+      toast.error(error.message || t('profile.failedToUpdateProfile'));
     } finally {
       setIsSubmitting(false);
     }
@@ -388,7 +391,7 @@ const ProfilePage: React.FC = () => {
       <Layout>
         <div className="page-background dark py-8 px-4 lg:px-8 min-h-screen">
           <div className="max-w-7xl mx-auto flex items-center justify-center">
-            <p className="text-xl text-primary">Loading profile...</p>
+            <p className="text-xl text-primary">{t('profile.loadingProfile')}</p>
           </div>
         </div>
       </Layout>
@@ -411,10 +414,10 @@ const ProfilePage: React.FC = () => {
             className="mb-8"
           >
             <h1 className="page-title">
-              Your Profile
+              {t('profile.yourProfile')}
             </h1>
             <p className="text-tertiary mt-1">
-              Manage your account settings and preferences
+              {t('profile.manageAccountSettings')}
             </p>
           </motion.div>
 
@@ -461,7 +464,7 @@ const ProfilePage: React.FC = () => {
                   <div className="flex items-center justify-center">
                     <div className="px-3 py-2 rounded-lg flex items-center badge-secondary">
                       <FiCode className="w-4 h-4 mr-2" />
-                      <span>Referral Code: {userData?.referral_code}</span>
+                      <span>{t('profile.referralCode')}: {userData?.referral_code}</span>
                     </div>
                   </div>
                 </div>
@@ -470,7 +473,7 @@ const ProfilePage: React.FC = () => {
               {/* User Stats */}
               <div className="mt-6">
                 <h3 className="text-md font-semibold mb-3 text-primary">
-                  Your Credits
+                  {t('profile.yourCredits')}
                 </h3>
                 <div className="p-4 rounded-lg glass-effect-light flex items-center justify-between">
                   <div className="flex items-center">
@@ -478,14 +481,14 @@ const ProfilePage: React.FC = () => {
                       <FiClock className="w-5 h-5" />
                     </div>
                     <div className="ml-3">
-                      <p className="text-sm text-secondary">Available Coins</p>
+                      <p className="text-sm text-secondary">{t('profile.availableCoins')}</p>
                       <p className="text-lg font-bold text-primary">
                         {userData?.user_coins || 0}
                       </p>
                     </div>
                   </div>
                   <div className="px-2 py-1 rounded text-xs badge-neutral">
-                    Expires: {userData?.coins_expiry ? new Date(userData.coins_expiry).toLocaleDateString() : 'N/A'}
+                    {t('profile.expires')}: {userData?.coins_expiry ? new Date(userData.coins_expiry).toLocaleDateString() : 'N/A'}
                   </div>
                 </div>
               </div>
@@ -500,7 +503,7 @@ const ProfilePage: React.FC = () => {
             >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-primary">
-                  Account Settings
+                  {t('profile.accountSettings')}
                 </h2>
                 <button
                   onClick={() => isEditing ? handleSubmit : setIsEditing(true)}
@@ -510,12 +513,12 @@ const ProfilePage: React.FC = () => {
                   {isEditing ? (
                     <>
                       <FiSave className="mr-2" />
-                      <span>{isSubmitting ? 'Saving...' : 'Save'}</span>
+                      <span>{isSubmitting ? t('profile.saving') : t('profile.save')}</span>
                     </>
                   ) : (
                     <>
                       <FiEdit2 className="mr-2" />
-                      <span>Edit Profile</span>
+                      <span>{t('profile.editProfile')}</span>
                     </>
                   )}
                 </button>
@@ -528,7 +531,7 @@ const ProfilePage: React.FC = () => {
                       htmlFor="name" 
                       className="block text-sm font-medium mb-1 text-secondary"
                     >
-                      Full Name
+                      {t('profile.fullName')}
                     </label>
                     <div className="flex items-center">
                       <span className="p-2 input-icon-wrapper rounded-l-lg">
@@ -551,7 +554,7 @@ const ProfilePage: React.FC = () => {
                       htmlFor="email" 
                       className="block text-sm font-medium mb-1 text-secondary"
                     >
-                      Email Address
+                      {t('profile.emailAddress')}
                     </label>
                     <div className="flex items-center">
                       <span className="p-2 input-icon-wrapper rounded-l-lg">
@@ -574,7 +577,7 @@ const ProfilePage: React.FC = () => {
                         htmlFor="gender" 
                         className="block text-sm font-medium mb-1 text-secondary"
                       >
-                        Gender
+                        {t('profile.gender')}
                       </label>
                       <div className="flex items-center">
                         <span className="p-2 input-icon-wrapper rounded-l-lg">
@@ -597,7 +600,7 @@ const ProfilePage: React.FC = () => {
                         htmlFor="age" 
                         className="block text-sm font-medium mb-1 text-secondary"
                       >
-                        Age
+                        {t('profile.age')}
                       </label>
                       <div className="flex items-center">
                         <span className="p-2 input-icon-wrapper rounded-l-lg">
@@ -622,7 +625,7 @@ const ProfilePage: React.FC = () => {
                         htmlFor="preferred_language" 
                         className="block text-sm font-medium mb-1 text-secondary"
                       >
-                        Preferred Language
+                        {t('profile.preferredLanguage')}
                       </label>
                       <div className="flex items-center">
                         <span className="p-2 input-icon-wrapper rounded-l-lg">
@@ -645,7 +648,7 @@ const ProfilePage: React.FC = () => {
                         htmlFor="phone" 
                         className="block text-sm font-medium mb-1 text-secondary"
                       >
-                        Phone (Optional)
+                        {t('profile.phoneOptional')}
                       </label>
                       <div className="flex items-center">
                         <span className="p-2 input-icon-wrapper rounded-l-lg">
@@ -671,14 +674,14 @@ const ProfilePage: React.FC = () => {
                         onClick={() => setIsEditing(false)}
                         className="px-4 py-2 rounded-lg mr-3 btn-secondary"
                       >
-                        Cancel
+                        {t('profile.cancel')}
                       </button>
                       <button
                         type="submit"
                         disabled={isSubmitting}
                         className={`px-4 py-2 rounded-lg btn-primary ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                       >
-                        {isSubmitting ? 'Saving...' : 'Save Changes'}
+                        {isSubmitting ? t('profile.saving') : t('profile.saveChanges')}
                       </button>
                     </div>
                   )}
@@ -697,14 +700,14 @@ const ProfilePage: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <FiActivity className="w-5 h-5" />
                   <h2 className="text-xl font-bold section-title">
-                    Recent Transactions
+                    {t('profile.recentTransactions')}
                   </h2>
                 </div>
                 <button
                   onClick={handleRefreshTransactions}
                   disabled={refreshing}
                   className={`p-2 rounded-lg transition-colors btn-icon ${refreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  title="Refresh transactions"
+                  title={t('profile.refreshTransactions')}
                 >
                   <FiRefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                 </button>
@@ -716,7 +719,7 @@ const ProfilePage: React.FC = () => {
                     <div className="flex flex-col items-center space-y-3">
                       <FiLoader className="w-8 h-8 animate-spin text-primary" />
                       <p className="text-sm text-secondary">
-                        Loading transactions...
+                        {t('profile.loadingTransactions')}
                       </p>
                     </div>
                   </div>
@@ -728,14 +731,14 @@ const ProfilePage: React.FC = () => {
                     {transactions.length > 10 && (
                       <div className="p-4 text-center border-t border-gray-200 dark:border-gray-700">
                         <p className="text-sm text-secondary">
-                          Showing 10 of {transactions.length} transactions
+                          {t('profile.showingTransactions', { count: 10, total: transactions.length })}
                         </p>
                         <Link 
                           to="/transactions"
                           className="mt-2 inline-flex items-center gap-1 px-4 py-2 rounded-lg btn-primary transition-colors"
                         >
                           <FiList className="w-4 h-4" />
-                          View all transactions
+                          {t('profile.viewAllTransactions')}
                         </Link>
                       </div>
                     )}
@@ -746,10 +749,10 @@ const ProfilePage: React.FC = () => {
                       <FiDollarSign className="w-8 h-8 text-gray-400" />
                     </div>
                     <h3 className="text-lg font-medium text-primary mb-2">
-                      No transactions yet
+                      {t('profile.noTransactionsYet')}
                     </h3>
                     <p className="text-sm text-tertiary text-center max-w-sm">
-                      Your transaction history will appear here once you start using our services.
+                      {t('profile.transactionHistoryMessage')}
                     </p>
                   </div>
                 )}

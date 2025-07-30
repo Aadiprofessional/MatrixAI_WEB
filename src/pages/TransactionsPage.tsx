@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { Layout } from '../components';
@@ -36,14 +37,15 @@ interface Transaction {
 }
 
 // Mock transactions data for development or when API is unavailable
-const mockTransactions: Transaction[] = [
+// Mock transactions will use translation keys for descriptions
+const getMockTransactions = (t: any): Transaction[] => [
   {
     id: 1,
     uid: '',
     transaction_name: 'Credit',
     coin_amount: 500,
     remaining_coins: 500,
-    description: 'Welcome bonus',
+    description: t('transactions.mockData.welcomeBonus'),
     created_at: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
     status: 'Completed'
   },
@@ -53,7 +55,7 @@ const mockTransactions: Transaction[] = [
     transaction_name: 'Content generation',
     coin_amount: -50,
     remaining_coins: 450,
-    description: 'Content generation',
+    description: t('transactions.mockData.contentGeneration'),
     created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
     status: 'Completed'
   },
@@ -63,7 +65,7 @@ const mockTransactions: Transaction[] = [
     transaction_name: 'Credit',
     coin_amount: 100,
     remaining_coins: 550,
-    description: 'Referral reward',
+    description: t('transactions.mockData.referralReward'),
     created_at: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
     status: 'Completed'
   },
@@ -73,7 +75,7 @@ const mockTransactions: Transaction[] = [
     transaction_name: 'Subscription',
     coin_amount: -200,
     remaining_coins: 350,
-    description: 'Monthly subscription',
+    description: t('transactions.mockData.monthlySubscription'),
     created_at: new Date(Date.now() - 86400000 * 15).toISOString(), // 15 days ago
     status: 'Completed'
   },
@@ -83,15 +85,16 @@ const mockTransactions: Transaction[] = [
     transaction_name: 'Refund',
     coin_amount: 75,
     remaining_coins: 425,
-    description: 'Service credit',
+    description: t('transactions.mockData.serviceCredit'),
     created_at: new Date(Date.now() - 86400000 * 3).toISOString(), // 3 days ago
     status: 'Completed'
   }
 ];
 
 const TransactionsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
-  const { userData } = useUser();
+  const { userData, refreshUserData } = useUser();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -123,10 +126,10 @@ const TransactionsPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error fetching transactions:', error);
-      setError('Could not connect to the server. Showing sample data instead.');
+      setError(t('transactions.errors.connectionError'));
       
       // Use mock data if API call fails
-      setTransactions(mockTransactions);
+      setTransactions(getMockTransactions(t));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -146,7 +149,7 @@ const TransactionsPage: React.FC = () => {
 
   // Format date string
   const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return t('transactions.dateNotAvailable');
     
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -293,10 +296,10 @@ const TransactionsPage: React.FC = () => {
           >
             <div>
               <h1 className="text-3xl font-bold text-primary">
-                Transactions
+                {t('transactions.title')}
               </h1>
               <p className="text-tertiary mt-1">
-                View your coin transactions history
+                {t('transactions.subtitle')}
               </p>
             </div>
 
@@ -307,14 +310,14 @@ const TransactionsPage: React.FC = () => {
                 className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 transition-colors border border-gray-700"
               >
                 <FiRefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+                <span>{refreshing ? t('transactions.refreshing') : t('transactions.refresh')}</span>
               </button>
               
               <button 
                 className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 transition-colors border border-gray-700"
               >
                 <FiDownload className="h-4 w-4 mr-2" />
-                <span>Export</span>
+                <span>{t('transactions.export')}</span>
               </button>
             </div>
           </motion.div>
@@ -343,36 +346,36 @@ const TransactionsPage: React.FC = () => {
                   <FiCreditCard className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-tertiary">Current Balance</div>
+                  <div className="text-sm font-medium text-tertiary">{t('transactions.currentBalance')}</div>
                   <div className="text-2xl font-bold text-primary">
-                    {userData?.user_coins || 0} Coins
+                    {userData?.user_coins || 0} {t('transactions.coins')}
                   </div>
                 </div>
               </div>
               
               <div className="flex flex-wrap gap-4">
                 <div className="flex flex-col">
-                  <div className="text-sm font-medium text-tertiary">Next Expiry</div>
+                  <div className="text-sm font-medium text-tertiary">{t('transactions.nextExpiry')}</div>
                   <div className="text-sm font-bold text-primary">
                     {userData?.coins_expiry 
                       ? new Date(userData.coins_expiry).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})
-                      : 'N/A'}
+                      : t('transactions.notAvailable')}
                   </div>
                 </div>
                 
                 <div className="flex flex-col">
-                  <div className="text-sm font-medium text-tertiary">Last Update</div>
+                  <div className="text-sm font-medium text-tertiary">{t('transactions.lastUpdate')}</div>
                   <div className="text-sm font-bold text-primary">
                     {userData?.last_coin_addition 
                       ? new Date(userData.last_coin_addition).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})
-                      : 'N/A'}
+                      : t('transactions.notAvailable')}
                   </div>
                 </div>
                 
                 <div className="flex flex-col">
-                  <div className="text-sm font-medium text-tertiary">Subscription Plan</div>
+                  <div className="text-sm font-medium text-tertiary">{t('transactions.subscriptionPlan')}</div>
                   <div className="text-sm font-bold text-primary">
-                    {userData?.user_plan || 'Free'}
+                    {userData?.user_plan || t('transactions.freePlan')}
                   </div>
                 </div>
               </div>
@@ -395,7 +398,7 @@ const TransactionsPage: React.FC = () => {
               </div>
             ) : filteredTransactions.length === 0 ? (
               <div className="p-8 text-center text-tertiary">
-                No transactions found
+                {t('transactions.noTransactionsFound')}
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -403,19 +406,19 @@ const TransactionsPage: React.FC = () => {
                   <thead className="bg-gray-700/50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Type
+                        {t('transactions.table.type')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Description
+                        {t('transactions.table.description')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Amount
+                        {t('transactions.table.amount')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Date
+                        {t('transactions.table.date')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Status
+                        {t('transactions.table.status')}
                       </th>
                     </tr>
                   </thead>
@@ -424,7 +427,7 @@ const TransactionsPage: React.FC = () => {
                       // Default status to 'completed' if not provided
                       const status = transaction.status || 'completed';
                       const statusInfo = getStatusInfo(status);
-                      const transactionType = transaction.coin_amount > 0 ? 'Credit' : 'Debit';
+                      const transactionType = transaction.coin_amount > 0 ? t('transactions.types.credit') : t('transactions.types.debit');
                       
                       return (
                         <tr 
@@ -438,16 +441,18 @@ const TransactionsPage: React.FC = () => {
                               </div>
                               <div className="text-sm font-medium text-primary">
                                 {transaction.transaction_name ? 
-                                  transaction.transaction_name.split('_').map(word => 
-                                    word.charAt(0).toUpperCase() + word.slice(1)
-                                  ).join(' ') : 
+                                  t(`transactions.types.${transaction.transaction_name.toLowerCase().replace(/\s+/g, '_')}`, {
+                                    defaultValue: transaction.transaction_name.split('_').map(word => 
+                                      word.charAt(0).toUpperCase() + word.slice(1)
+                                    ).join(' ')
+                                  }) : 
                                   transactionType
                                 }
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
-                            {transaction.description || transaction.transaction_name || 'Transaction'}
+                            {transaction.description || transaction.transaction_name || t('transactions.defaultTransactionName')}
                           </td>
                           <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
                             transaction.coin_amount > 0
@@ -457,7 +462,7 @@ const TransactionsPage: React.FC = () => {
                             {transaction.coin_amount > 0
                               ? `+${transaction.coin_amount}`
                               : transaction.coin_amount
-                            } Coins
+                            } {t('transactions.coins')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
                             {formatDate(transaction.created_at || transaction.time)}
@@ -465,7 +470,7 @@ const TransactionsPage: React.FC = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <span className={`px-2 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-gray-800 ${statusInfo.color}`}>
                               {statusInfo.icon}
-                              <span className="ml-1.5">{status}</span>
+                              <span className="ml-1.5">{t(`transactions.status.${status.toLowerCase()}`, { defaultValue: status })}</span>
                             </span>
                           </td>
                         </tr>

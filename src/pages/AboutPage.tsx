@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiMessageCircle, FiUsers, FiGlobe, FiStar } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import '../styles/CommonStyles.css';
 
 const AboutPage: React.FC = () => {
+  const { t } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   
   // Add scroll event listener to create a scrolled effect
@@ -96,7 +98,7 @@ const AboutPage: React.FC = () => {
             transition={{ duration: 0.7 }}
             className="page-title text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl"
           >
-            About Us
+            {t('about.title')}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: -20 }}
@@ -104,8 +106,7 @@ const AboutPage: React.FC = () => {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="mt-6 text-xl text-gray-300 max-w-3xl"
           >
-            We're on a mission to make AI assistants more helpful, harmless, and honest. 
-            Founded in 2021, we're building the next generation of AI tools that augment human capabilities.
+            {t('about.description')}
           </motion.p>
         </div>
       </div>
@@ -122,16 +123,16 @@ const AboutPage: React.FC = () => {
             transition={{ duration: 0.7 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-extrabold text-white">Our Story</h2>
+            <h2 className="text-3xl font-extrabold text-white">{t('about.ourStory.title')}</h2>
             <div className="mt-6 space-y-6 text-lg text-gray-300">
               <p>
-                Our journey began when our founders, Alex and Sarah, met at a machine learning conference in 2019. They shared a vision for AI assistants that could be genuinely helpful without being manipulative or intrusive.
+                {t('about.ourStory.paragraph1')}
               </p>
               <p>
-                After experiencing firsthand the limitations of existing AI products, they decided to build something better—a truly intelligent assistant that could understand natural language, learn from feedback, and adapt to users' specific needs.
+                {t('about.ourStory.paragraph2')}
               </p>
               <p>
-                In 2021, they assembled a team of experts in machine learning, product design, and human-computer interaction. Together, they've built an AI platform that's now used by thousands of businesses and individuals worldwide.
+                {t('about.ourStory.paragraph3')}
               </p>
             </div>
           </motion.div>
@@ -165,9 +166,9 @@ const AboutPage: React.FC = () => {
             viewport={{ once: true }}
             className="text-center"
           >
-            <h2 className="section-title text-3xl font-extrabold">Our Values</h2>
+            <h2 className="section-title text-3xl font-extrabold">{t('about.values.title')}</h2>
             <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-300">
-              The principles that guide our work and company culture
+              {t('about.values.description')}
             </p>
           </motion.div>
           
@@ -206,9 +207,9 @@ const AboutPage: React.FC = () => {
             viewport={{ once: true }}
             className="text-center"
           >
-            <h2 className="section-title text-3xl font-extrabold">Meet Our Team</h2>
+            <h2 className="section-title text-3xl font-extrabold">{t('about.team.title')}</h2>
             <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-300">
-              A diverse group of experts passionate about building better AI
+              {t('about.team.description')}
             </p>
           </motion.div>
           

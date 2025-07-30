@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { Layout } from '../components';
 import { userService } from '../services/userService';
+import { useTranslation } from 'react-i18next';
 import { 
   FiShoppingBag, 
   FiCalendar, 
@@ -34,6 +35,7 @@ interface Order {
 }
 
 const OrderHistoryPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { userData } = useUser();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -63,7 +65,7 @@ const OrderHistoryPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error fetching orders:', error);
-      setError('Could not connect to the server.');
+      setError(t('orderHistory.errors.connectionError'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -178,10 +180,10 @@ const OrderHistoryPage: React.FC = () => {
           >
             <div>
               <h1 className="text-3xl font-bold text-primary">
-                Order History
+                {t('orderHistory.title')}
               </h1>
               <p className="text-tertiary mt-1">
-                View your subscription and coin package purchase history
+                {t('orderHistory.subtitle')}
               </p>
             </div>
 
@@ -192,14 +194,14 @@ const OrderHistoryPage: React.FC = () => {
                 className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 transition-colors border border-gray-700"
               >
                 <FiRefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+                <span>{refreshing ? t('orderHistory.refreshing') : t('orderHistory.refresh')}</span>
               </button>
               
               <button 
                 className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 transition-colors border border-gray-700"
               >
                 <FiDownload className="h-4 w-4 mr-2" />
-                <span>Export</span>
+                <span>{t('orderHistory.export')}</span>
               </button>
             </div>
           </motion.div>
@@ -229,7 +231,7 @@ const OrderHistoryPage: React.FC = () => {
                   <FiShoppingBag className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-tertiary">Total Orders</div>
+                  <div className="text-sm font-medium text-tertiary">{t('orderHistory.totalOrders')}</div>
                   <div className="text-2xl font-bold text-primary">
                     {orders.length}
                   </div>
@@ -244,7 +246,7 @@ const OrderHistoryPage: React.FC = () => {
                   <FiDollarSign className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-tertiary">Total Spending</div>
+                  <div className="text-sm font-medium text-tertiary">{t('orderHistory.totalSpending')}</div>
                   <div className="text-2xl font-bold text-primary">
                     ${totalSpending.toFixed(2)}
                   </div>
@@ -259,7 +261,7 @@ const OrderHistoryPage: React.FC = () => {
                   <FiPackage className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-tertiary">Total Coins Added</div>
+                  <div className="text-sm font-medium text-tertiary">{t('orderHistory.totalCoinsAdded')}</div>
                   <div className="text-2xl font-bold text-primary">
                     {totalCoinsAdded}
                   </div>
@@ -276,7 +278,7 @@ const OrderHistoryPage: React.FC = () => {
             {/* View Mode Toggle */}
             <div className="flex items-center space-x-2">
               <div className="text-sm font-medium text-secondary">
-                View:
+                {t('orderHistory.view')}:
               </div>
               <div className="flex rounded-lg overflow-hidden border border-gray-700">
                 <button
@@ -316,8 +318,8 @@ const OrderHistoryPage: React.FC = () => {
             ) : filteredOrders.length === 0 ? (
               <div className="rounded-xl p-12 text-center glass-effect border border-gray-700/50 text-tertiary">
                 <FiShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2 text-secondary">No orders found</h3>
-                <p>You haven't made any purchases yet.</p>
+                <h3 className="text-lg font-medium mb-2 text-secondary">{t('orderHistory.noOrdersFound')}</h3>
+                <p>{t('orderHistory.noPurchasesYet')}</p>
               </div>
             ) : viewMode === 'list' ? (
               // List View
@@ -327,25 +329,25 @@ const OrderHistoryPage: React.FC = () => {
                     <thead className="bg-gray-700/50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Order ID
+                          {t('orderHistory.table.orderId')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Plan
+                          {t('orderHistory.table.plan')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Date
+                          {t('orderHistory.table.date')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Amount
+                          {t('orderHistory.table.amount')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Coins
+                          {t('orderHistory.table.coins')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Valid Till
+                          {t('orderHistory.table.validTill')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Status
+                          {t('orderHistory.table.status')}
                         </th>
                       </tr>
                     </thead>
@@ -414,7 +416,7 @@ const OrderHistoryPage: React.FC = () => {
                           </span>
                         </div>
                         <div className="text-sm mt-1 text-tertiary">
-                          Order #{order.id}
+                          {t('orderHistory.orderNumber', { id: order.id })}
                         </div>
                       </div>
                       
@@ -422,7 +424,7 @@ const OrderHistoryPage: React.FC = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <div className="text-xs font-medium text-tertiary">
-                              Purchase Date
+                              {t('orderHistory.purchaseDate')}
                             </div>
                             <div className="mt-1 text-sm text-secondary">
                               {formatDate(order.created_at)}
@@ -431,7 +433,7 @@ const OrderHistoryPage: React.FC = () => {
                           
                           <div>
                             <div className="text-xs font-medium text-tertiary">
-                              Valid Until
+                              {t('orderHistory.validUntil')}
                             </div>
                             <div className="mt-1 text-sm text-secondary">
                               {formatDate(order.plan_valid_till)}
@@ -440,7 +442,7 @@ const OrderHistoryPage: React.FC = () => {
                           
                           <div>
                             <div className="text-xs font-medium text-tertiary">
-                              Amount
+                              {t('orderHistory.amount')}
                             </div>
                             <div className="mt-1 text-sm font-medium text-amber-400">
                               ${order.total_price.toFixed(2)}
@@ -449,7 +451,7 @@ const OrderHistoryPage: React.FC = () => {
                           
                           <div>
                             <div className="text-xs font-medium text-tertiary">
-                              Coins Added
+                              {t('orderHistory.coinsAdded')}
                             </div>
                             <div className="mt-1 text-sm font-medium text-secondary">
                               +{order.coins_added}
@@ -467,7 +469,11 @@ const OrderHistoryPage: React.FC = () => {
             {filteredOrders.length > 0 && (
               <div className="mt-6 flex justify-between items-center">
                 <div className="text-sm text-tertiary">
-                  Showing {(page - 1) * ordersPerPage + 1} to {Math.min(page * ordersPerPage, filteredOrders.length)} of {filteredOrders.length} orders
+                  {t('orderHistory.pagination.showing', {
+                    start: (page - 1) * ordersPerPage + 1,
+                    end: Math.min(page * ordersPerPage, filteredOrders.length),
+                    total: filteredOrders.length
+                  })}
                 </div>
                 
                 <div className="flex space-x-2">

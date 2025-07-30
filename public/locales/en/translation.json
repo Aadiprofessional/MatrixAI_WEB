@@ -94,85 +94,85 @@
       "description": "Create beautiful, unique images from text descriptions. Perfect for marketing materials, social media, illustrations, and creative projects."
     },
     "speechToText": {
-    "dragDropText": "Drag and drop your audio file here, or click to browse",
-    "supportedFormats": "Supports MP3, WAV, M4A, AAC, OGG, FLAC and more audio formats",
-    "browseFiles": "Browse Files",
-    "uploading": "Uploading",
-    "uploadWait": "Please wait while we process your audio file...",
-    "fileSelected": "File Selected",
-    "pausePreview": "Pause Preview",
-    "playPreview": "Play Preview",
-    "cancel": "Cancel",
-    "transcriptionOptions": "Transcription Options",
-    "language": "Language",
-    "selectPrimaryLanguage": "Select the primary language spoken in your audio",
-    "recentTranscriptions": "Recent Transcriptions",
-    "refresh": "Refresh",
-    "searchPlaceholder": "Search transcriptions...",
-    "enterNewName": "Enter new name",
-    "saving": "Saving...",
-    "saveChanges": "Save Changes",
-     "convertToText": "Convert to Text",
-     "processing": "Processing...",
-     "noTranscriptionsYet": "No transcriptions yet",
-     "startByUploading": "Start by uploading your first audio file above",
-     "deleteConfirmation": "Delete Confirmation",
-     "deleteConfirmationMessage": "Are you sure you want to delete this audio file? This action cannot be undone.",
-     "delete": "Delete",
-     "editName": "Edit Name",
-     "editNameModalTitle": "Edit Audio Name",
-     "close": "Close",
-     "leftToday": "left today",
-     "unlimitedTranscriptions": "Unlimited Transcriptions",
-     "mb": "MB",
-     "estimatedDuration": "Estimated duration",
-    "languages": {
-      "bulgarian": "Bulgarian",
-      "catalan": "Catalan",
-      "chinese": "Chinese",
-      "czech": "Czech",
-      "danish": "Danish",
-      "dutch": "Dutch",
-      "englishUS": "English (US)",
-      "englishUK": "English (UK)",
-      "french": "French",
-      "german": "German",
-      "hindi": "Hindi",
-      "italian": "Italian",
-      "japanese": "Japanese",
-      "korean": "Korean",
-      "portuguese": "Portuguese",
-      "russian": "Russian",
-      "spanish": "Spanish"
-    },
-    "errors": {
-      "unsupportedFormat": "Unsupported format: {{format}}. Please use a supported audio format.",
-      "noFileOrUser": "Please select a file and make sure you're logged in",
-      "audioUrlNotAvailable": "Audio URL not available",
-      "downloadFailed": "Failed to download audio file",
-      "cannotDelete": "Cannot delete this audio file",
-      "deleteFailed": "Failed to delete audio: {{error}}",
-      "unknownError": "Unknown error",
-      "unknownErrorOccurred": "An unknown error occurred",
-      "deleteError": "Error deleting audio: {{error}}",
-      "cannotEdit": "Cannot edit this audio file",
-      "updateNameFailed": "Failed to update name: {{error}}",
-      "updateNameError": "Error updating audio name",
-      "transcriptionFailed": "Transcription failed: {{error}}",
-      "uploadFailed": "Upload failed: {{error}}",
-      "getAudioDataFailed": "Failed to get audio data: {{error}}",
-      "networkError": "Network error occurred",
-     "fileProcessingError": "Error processing file",
-     "transcriptionInProgress": "Transcription in progress...",
-     "checkingStatus": "Checking transcription status...",
-     "transcriptionComplete": "Transcription completed successfully",
-     "audioName": "Audio Name"
-    },
-    "success": {
-       "audioDeleted": "Audio file deleted successfully",
-       "nameUpdated": "Audio name updated successfully"
-     },
-        "title": "Speech to Text & Content Writing",
+      "dragDropText": "Drag and drop your audio file here, or click to browse",
+      "supportedFormats": "Supports MP3, WAV, M4A, AAC, OGG, FLAC and more audio formats",
+      "browseFiles": "Browse Files",
+      "uploading": "Uploading",
+      "uploadWait": "Please wait while we process your audio file...",
+      "fileSelected": "File Selected",
+      "pausePreview": "Pause Preview",
+      "playPreview": "Play Preview",
+      "cancel": "Cancel",
+      "transcriptionOptions": "Transcription Options",
+      "language": "Language",
+      "selectPrimaryLanguage": "Select the primary language spoken in your audio",
+      "recentTranscriptions": "Recent Transcriptions",
+      "refresh": "Refresh",
+      "searchPlaceholder": "Search transcriptions...",
+      "enterNewName": "Enter new name",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "convertToText": "Convert to Text",
+      "processing": "Processing...",
+      "noTranscriptionsYet": "No transcriptions yet",
+      "startByUploading": "Start by uploading your first audio file above",
+      "deleteConfirmation": "Delete Confirmation",
+      "deleteConfirmationMessage": "Are you sure you want to delete this audio file? This action cannot be undone.",
+      "delete": "Delete",
+      "editName": "Edit Name",
+      "editNameModalTitle": "Edit Audio Name",
+      "close": "Close",
+      "leftToday": "left today",
+      "unlimitedTranscriptions": "Unlimited Transcriptions",
+      "mb": "MB",
+      "estimatedDuration": "Estimated duration",
+      "languages": {
+        "bulgarian": "Bulgarian",
+        "catalan": "Catalan",
+        "chinese": "Chinese",
+        "czech": "Czech",
+        "danish": "Danish",
+        "dutch": "Dutch",
+        "englishUS": "English (US)",
+        "englishUK": "English (UK)",
+        "french": "French",
+        "german": "German",
+        "hindi": "Hindi",
+        "italian": "Italian",
+        "japanese": "Japanese",
+        "korean": "Korean",
+        "portuguese": "Portuguese",
+        "russian": "Russian",
+        "spanish": "Spanish"
+      },
+      "errors": {
+        "unsupportedFormat": "Unsupported format: {{format}}. Please use a supported audio format.",
+        "noFileOrUser": "Please select a file and make sure you're logged in",
+        "audioUrlNotAvailable": "Audio URL not available",
+        "downloadFailed": "Failed to download audio file",
+        "cannotDelete": "Cannot delete this audio file",
+        "deleteFailed": "Failed to delete audio: {{error}}",
+        "unknownError": "Unknown error",
+        "unknownErrorOccurred": "An unknown error occurred",
+        "deleteError": "Error deleting audio: {{error}}",
+        "cannotEdit": "Cannot edit this audio file",
+        "updateNameFailed": "Failed to update name: {{error}}",
+        "updateNameError": "Error updating audio name",
+        "transcriptionFailed": "Transcription failed: {{error}}",
+        "uploadFailed": "Upload failed: {{error}}",
+        "getAudioDataFailed": "Failed to get audio data: {{error}}",
+        "networkError": "Network error occurred",
+        "fileProcessingError": "Error processing file",
+        "transcriptionInProgress": "Transcription in progress...",
+        "checkingStatus": "Checking transcription status...",
+        "transcriptionComplete": "Transcription completed successfully",
+        "audioName": "Audio Name"
+      },
+      "success": {
+        "audioDeleted": "Audio file deleted successfully",
+        "nameUpdated": "Audio name updated successfully"
+      },
+      "title": "Speech to Text & Content Writing",
       "description": "Transcribe audio with 95%+ accuracy and generate compelling content for blogs, marketing, and more—all powered by advanced AI models."
     },
     "aiChat": {
@@ -721,12 +721,12 @@
   "of": "of",
   "next": "Next",
   "transcription": {
-    "title": "Speech to Text",
+    "title": "Transcription",
     "subtitle": "Convert your audio files to accurate text transcriptions with advanced AI",
     "freeLeft": "free transcription",
     "freeLeftPlural": "free transcriptions",
     "upgradeText": "Upgrade to Pro",
-      "loadingTranscription": "Loading transcription...",
+    "loadingTranscription": "Loading transcription...",
     "audioTranscription": "Audio Transcription",
     "copyTranscription": "Copy transcription",
     "share": "Share",
@@ -734,9 +734,50 @@
     "translationOn": "Translation On",
     "enableTranslation": "Enable Translation",
     "translatingParagraph": "Translating paragraph {{translatingIndex}}...",
+    "translating": "Translating...",
     "code": "code",
     "copyCode": "Copy code",
     "copy": "Copy",
+    "back": "Back",
+    "exitFullscreen": "Exit Fullscreen",
+    "fullscreen": "Fullscreen",
+    "settings": "Settings",
+    "transcript": "Transcript",
+    "mindMap": "Mind Map",
+    "chat": {
+      "title": "Chat",
+      "clearChat": "Clear Chat",
+      "confirmClearHistory": "Are you sure you want to clear the chat history?",
+      "receivedTranscription": "I've received the transcription. How can I help you analyze it?",
+      "quickActions": "Quick Actions",
+      "keyPoints": "Key Points",
+      "quickSummary": "Quick Summary",
+      "useAsContext": "Use as Context",
+      "aiThinking": "AI is thinking...",
+      "startConversation": "Start a conversation",
+      "startConversationDescription": "Ask questions about the transcription or request analysis",
+      "typeMessage": "Type your message...",
+      "send": "Send"
+    },
+    "wordsData": {
+      "title": "Words Data",
+      "srtCopied": "SRT copied to clipboard!",
+      "copySrt": "Copy SRT",
+      "downloadSrt": "Download SRT",
+      "jsonCopied": "JSON copied to clipboard!",
+      "srtFormat": "SRT Format",
+      "statistics": "Statistics",
+      "totalWords": "Total Words",
+      "duration": "Duration",
+      "avgCharsPerWord": "Avg Chars/Word",
+      "wordsPerMinute": "Words/Minute",
+      "srtSubtitles": "SRT Subtitles",
+      "interactiveTimeline": "Interactive Timeline",
+      "confidence": "Confidence",
+      "noDataAvailable": "No data available",
+      "noDataDescription": "No word timing data is available for this transcription",
+      "viewTranscript": "View Transcript"
+    },
     "systemPrompt": "You are a helpful AI assistant specialized in analyzing and discussing audio transcriptions. \n\nIMPORTANT FORMATTING INSTRUCTIONS:\n- Always format your responses using proper markdown structure\n- Use # for main headings and ## for subheadings  \n- Use ### for section headers and #### for subsections\n- Use **bold** for emphasis and *italic* for subtle emphasis\n- Use bullet points (•) and numbered lists for better organization\n- Use > for important quotes or key insights\n- Use code blocks with ``` for any code or technical content\n- Structure your response with clear sections when appropriate\n- Add proper spacing between sections for better readability\n\nAlways provide well-structured, comprehensive responses that are easy to read and understand. Make sure to use proper markdown formatting for all headings, lists, and emphasis.",
     "prompts": {
       "keypoints": "Please extract the key points from this transcription and format them as a well-structured markdown document:\n\n**Transcription:**\n{{transcription}}\n\nPlease organize the key points using proper markdown formatting with headings, bullet points, and emphasis where appropriate.",
@@ -744,6 +785,8 @@
       "translate": "Please translate this transcription to {{translationLanguage}} and format it as a well-structured markdown document:\n\n**Original Transcription:**\n{{transcription}}\n\nPlease provide an accurate translation while maintaining proper markdown formatting with headings, sections, and emphasis where appropriate."
     },
     "languages": {
+      "english": "English",
+      "chinese": "Chinese",
       "chinese_simplified": "Chinese Simplified",
       "chineseSimplified": "Chinese Simplified",
       "chineseTraditional": "Chinese Traditional",
@@ -803,14 +846,43 @@
       "xhosa": "Xhosa"
     },
     "errors": {
+      "couldNotProcess": "Error: Could not process {{action}} request.",
+      "noResponse": "No response received from the server",
+      "apiCallFailed": "API call failed",
+      "requestTimeout": "Request timeout",
+      "failedToGetResponse": "Failed to get response",
+      "translationDataFormat": "Translation data format error",
+      "translationError": "Translation error occurred",
+      "failedToDeductCoins": "Failed to deduct coins. Please try again.",
+      "insufficientCoins": "Insufficient coins",
+      "audioMetadata": "Audio metadata error",
       "failedToLoadAudio": "Failed to load audio data",
       "unexpectedError": "An unexpected error occurred while loading audio data",
-      "failedToDeductCoins": "Failed to deduct coins. Please try again.",
       "insufficientBalance": "Failed to deduct coins. You may have insufficient balance.",
-      "couldNotProcess": "Error: Could not process {{action}} request."
+      "processingError": "Processing error occurred"
     },
     "success": {
       "transcriptionCopied": "Transcription copied to clipboard!"
+    },
+    "ui": {
+      "hideSidebar": "Hide Sidebar",
+      "showSidebar": "Show Sidebar"
+    },
+    "actions": {
+      "translate": "Translate"
+    },
+    "audio": {
+      "controls": "Audio Controls",
+      "back5Seconds": "Back 5 seconds",
+      "forward5Seconds": "Forward 5 seconds",
+      "information": "Audio Information",
+      "duration": "Duration",
+      "language": "Language",
+      "words": "Words",
+      "downloadAudio": "Download Audio",
+      "confirmRegeneration": "Are you sure you want to regenerate the transcription? This will overwrite the current transcription.",
+      "regenerationInitiated": "Transcription regeneration has been initiated",
+      "regenerateTranscription": "Regenerate Transcription"
     }
   },
   "coin": "Coin",
@@ -1216,12 +1288,110 @@
     "success": "Password Updated!",
     "successMessage": "Your password has been successfully updated. You will be redirected to the login page shortly."
   },
+  "profile": {
+    "coins": "Coins",
+    "transaction": "Transaction",
+    "loadingProfile": "Loading profile...",
+    "profileUpdatedSuccessfully": "Profile updated successfully",
+    "failedToUpdateProfile": "Failed to update profile",
+    "yourProfile": "Your Profile",
+    "manageAccountSettings": "Manage your account settings and preferences",
+    "referralCode": "Referral Code",
+    "yourCredits": "Your Credits",
+    "availableCoins": "Available Coins",
+    "expires": "Expires",
+    "accountSettings": "Account Settings",
+    "fullName": "Full Name",
+    "emailAddress": "Email Address",
+    "gender": "Gender",
+    "selectGender": "Select Gender",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "age": "Age",
+    "preferredLanguage": "Preferred Language",
+    "phoneOptional": "Phone (Optional)",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "editProfile": "Edit Profile",
+    "recentTransactions": "Recent Transactions",
+    "refreshTransactions": "Refresh transactions",
+    "loadingTransactions": "Loading transactions...",
+    "showingTransactions": "Showing {{count}} of {{total}} transactions",
+    "viewAllTransactions": "View all transactions",
+    "noTransactionsYet": "No transactions yet",
+    "transactionHistoryMessage": "Your transaction history will appear here once you start using our services."
+  },
   "settings": {
+    "settings": "Settings",
+    "customizeExperience": "Customize your experience with MatrixAI",
+    "appearance": "Appearance",
+    "notifications": "Notifications",
+    "privacyAndSecurity": "Privacy & Security",
+    "account": "Account",
+    "appearanceSettings": "Appearance Settings",
+    "enableAnimations": "Enable Animations",
+    "enableAnimationsDescription": "Smoother transitions and UI effects",
+    "highContrastMode": "High Contrast Mode",
+    "highContrastModeDescription": "Increased contrast for better visibility",
+    "fontSize": "Font Size",
+    "fontSizeSmall": "Small",
+    "fontSizeMedium": "Medium",
+    "fontSizeLarge": "Large",
+    "notificationSettings": "Notification Settings",
+    "emailNotifications": "Email Notifications",
+    "emailNotificationsDescription": "Receive important updates via email",
+    "pushNotifications": "Push Notifications",
+    "pushNotificationsDescription": "Get notifications in your browser",
+    "twoFactorAuthentication": "Two-Factor Authentication",
+    "twoFactorAuthenticationDescription": "Add an extra layer of security to your account",
+    "dataCollection": "Data Collection",
+    "dataCollectionDescription": "Allow us to collect anonymous usage data to improve our service",
+    "shareUsageStatistics": "Share Usage Statistics",
+    "shareUsageStatisticsDescription": "Help us improve by sharing how you use the platform",
+    "cookiePreferences": "Cookie Preferences",
+    "cookieEssentialOnly": "Essential Only",
+    "cookieFunctional": "Functional (Recommended)",
+    "cookieAll": "All Cookies",
+    "resetPassword": "Reset Password",
+    "resetPasswordDescription": "Change your account password for security",
+    "requestDataExport": "Request Data Export",
+    "requestDataExportDescription": "Download all your data in a portable format",
+    "accountSettings": "Account Settings",
+    "language": "Language",
+    "languageEnglish": "English",
+    "languageSpanish": "Spanish",
+    "languageFrench": "French",
+    "languageGerman": "German",
+    "languageJapanese": "Japanese",
+    "languageChinese": "Chinese",
+    "timezone": "Timezone",
+    "timezoneUTC": "UTC (Coordinated Universal Time)",
+    "timezoneEST": "EST (Eastern Standard Time)",
+    "timezoneCST": "CST (Central Standard Time)",
+    "timezoneMST": "MST (Mountain Standard Time)",
+    "timezonePST": "PST (Pacific Standard Time)",
+    "timezoneIST": "IST (Indian Standard Time)",
+    "autoSave": "Auto-Save",
+    "autoSaveDescription": "Automatically save your work in progress",
+    "subscriptionPlan": "Subscription Plan",
+    "proPlan": "Pro Plan",
+    "renewsOn": "Renews on {{date}}",
+    "manage": "Manage",
+    "redirectingToSubscriptionManagement": "Redirecting to subscription management...",
+    "deleteAccount": "Delete Account",
+    "deleteAccountDescription": "Permanently delete your account and all your data",
+    "passwordResetInstructionsSent": "Password reset instructions sent to your email.",
+    "dataExportInitiated": "Your data export has been initiated. You will be notified when it's ready.",
+    "savingSettings": "Saving your settings...",
+    "settingsSavedSuccessfully": "Settings saved successfully!",
+    "deleteAccountConfirmation": "Are you sure you want to delete your account? This action cannot be undone.",
+    "accountDeletionInitiated": "Account deletion initiated. You will receive a confirmation email.",
     "title": "Settings",
     "profile": "Profile",
-    "notifications": "Notifications",
     "privacy": "Privacy",
-    "language": "Language",
     "theme": "Theme",
     "save": "Save Changes",
     "marketingEmails": "Marketing Emails",
@@ -1309,5 +1479,205 @@
     "selectPrimaryLanguage": "Select the primary language spoken in your audio",
     "saving": "Saving...",
     "saveChanges": "Save Changes"
+  },
+  "help": {
+    "title": "Help & Support",
+    "subtitle": "Get assistance, learn more about our platform, and find answers to your questions",
+    "searchPlaceholder": "Search for help topics, guides, or questions...",
+    "searchButton": "Search",
+    "resourcesTitle": "Resources",
+    "faqTitle": "Frequently Asked Questions",
+    "faq": {
+      "whatIsMatrixAI": {
+        "question": "What is MatrixAI and how does it work?",
+        "answer": "MatrixAI is an advanced AI platform that provides intelligent solutions for content generation, data analysis, and automation. Our platform uses cutting-edge machine learning algorithms to understand your needs and deliver personalized results."
+      },
+      "howToGetStarted": {
+        "question": "How do I get started with MatrixAI?",
+        "answer": "Getting started is easy! Simply sign up for an account, choose your plan, and you'll have immediate access to our AI tools. Our intuitive interface guides you through each feature, and our documentation provides detailed instructions."
+      },
+      "pricingPlans": {
+        "question": "What are the different pricing plans available?",
+        "answer": "We offer flexible pricing plans to suit different needs: Free tier with basic features, Pro plan for advanced users, and Enterprise solutions for large organizations. Each plan includes different levels of AI access, storage, and support."
+      },
+      "accuracy": {
+        "question": "How accurate are the AI-generated results?",
+        "answer": "Our AI models are trained on vast datasets and continuously improved. While accuracy varies by use case, we typically achieve 90%+ accuracy for most tasks. We recommend reviewing and refining AI outputs for critical applications."
+      },
+      "commercialUse": {
+        "question": "Can I use MatrixAI for commercial purposes?",
+        "answer": "Yes! Our Pro and Enterprise plans include commercial usage rights. The free tier is for personal and educational use only. Please review our terms of service for specific usage guidelines and restrictions."
+      },
+      "cancelSubscription": {
+        "question": "How do I cancel my subscription?",
+        "answer": "You can cancel your subscription anytime from your account settings. Go to Billing > Manage Subscription > Cancel. Your access will continue until the end of your current billing period."
+      },
+      "dataSecurity": {
+        "question": "Is my data secure with MatrixAI?",
+        "answer": "Absolutely. We use enterprise-grade encryption, secure data centers, and follow strict privacy protocols. Your data is never shared with third parties, and you maintain full ownership of your content and information."
+      }
+    },
+    "categories": {
+      "documentation": {
+        "title": "Documentation",
+        "description": "Comprehensive guides and API documentation",
+        "linkText": "View Documentation"
+      },
+      "videoTutorials": {
+        "title": "Video Tutorials",
+        "description": "Step-by-step video guides for all features",
+        "linkText": "Watch Tutorials"
+      },
+      "contactSupport": {
+        "title": "Contact Support",
+        "description": "Get help from our expert support team",
+        "linkText": "Contact Us"
+      },
+      "communityForum": {
+        "title": "Community Forum",
+        "description": "Connect with other users and share knowledge",
+        "linkText": "Join Community"
+      }
+    },
+    "needMoreHelp": {
+      "title": "Need More Help?",
+      "description": "Our AI assistant is available 24/7 to help answer your questions and guide you through any issues you might be experiencing.",
+      "chatButton": "Chat with Assistant"
+    },
+    "contact": {
+      "title": "Contact Information",
+      "emailSupport": "Email Support",
+      "responseTime": "Our team typically responds within 24 hours",
+      "email": "support@matrixaiglobal.com"
+    }
+  },
+  "transactions": {
+    "title": "Transactions",
+    "subtitle": "View your coin transactions history",
+    "refreshing": "Refreshing...",
+    "refresh": "Refresh",
+    "export": "Export",
+    "currentBalance": "Current Balance",
+    "coins": "Coins",
+    "nextExpiry": "Next Expiry",
+    "lastUpdate": "Last Update",
+    "subscriptionPlan": "Subscription Plan",
+    "freePlan": "Free",
+    "notAvailable": "N/A",
+    "dateNotAvailable": "N/A",
+    "noTransactionsFound": "No transactions found",
+    "defaultTransactionName": "Transaction",
+    "errors": {
+      "connectionError": "Could not connect to the server. Showing sample data instead."
+    },
+    "mockData": {
+      "welcomeBonus": "Welcome bonus",
+      "contentGeneration": "Content generation",
+      "referralReward": "Referral reward",
+      "monthlySubscription": "Monthly subscription",
+      "serviceCredit": "Service credit"
+    },
+    "types": {
+      "credit": "Credit",
+      "debit": "Debit",
+      "content_generation": "Content Generation",
+      "subscription": "Subscription",
+      "refund": "Refund"
+    },
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "failed": "Failed",
+      "processing": "Processing"
+    },
+    "table": {
+      "type": "Type",
+      "description": "Description",
+      "amount": "Amount",
+      "date": "Date",
+      "status": "Status"
+    }
+  },
+  "orderHistory": {
+    "title": "Order History",
+    "subtitle": "View your subscription and coin package purchase history",
+    "refreshing": "Refreshing...",
+    "refresh": "Refresh",
+    "export": "Export",
+    "totalOrders": "Total Orders",
+    "totalSpending": "Total Spending",
+    "totalCoinsAdded": "Total Coins Added",
+    "view": "View:",
+    "noOrdersFound": "No orders found",
+    "noPurchasesYet": "You haven't made any purchases yet.",
+    "orderNumber": "Order #{{id}}",
+    "purchaseDate": "Purchase Date",
+    "validUntil": "Valid Until",
+    "amount": "Amount",
+    "coinsAdded": "Coins Added",
+    "errors": {
+      "connectionError": "Could not connect to the server."
+    },
+    "table": {
+      "orderId": "Order ID",
+      "plan": "Plan",
+      "date": "Date",
+      "amount": "Amount",
+      "coins": "Coins",
+      "validTill": "Valid Till",
+      "status": "Status"
+    },
+    "pagination": {
+      "showing": "Showing {{start}} to {{end}} of {{total}} orders"
+    }
+  },
+  "referral": {
+    "title": "Refer Friends & Earn Rewards",
+    "subtitle": "Invite friends to join AI and earn bonus coins for every referral",
+    "linkCopied": "Referral link copied to clipboard!",
+    "shareText": "Join me on MatrixAI - Use my referral code {{referralCode}} to get started!",
+    "invitationSent": "Invitation sent to {{email}}",
+    "invitationFailed": "Failed to send invitation",
+    "rewards": {
+      "title": "Referral Rewards",
+      "friendJoins": {
+        "title": "For Each Friend Who Joins",
+        "description": "You get 100 coins when they sign up using your code"
+      },
+      "subscription": {
+        "title": "When They Subscribe",
+        "description": "You get 500 additional coins when they purchase a subscription"
+      }
+    },
+    "stats": {
+      "title": "Your Referral Stats",
+      "totalInvited": "Total Invited",
+      "coinsEarned": "Coins Earned"
+    },
+    "share": {
+      "title": "Share Your Referral Link"
+    },
+    "code": {
+      "title": "Your Referral Code"
+    },
+    "link": {
+      "title": "Referral Link"
+    },
+    "shareViaSocialMedia": "Share via Social Media",
+    "email": {
+      "title": "Invite via Email",
+      "placeholder": "Enter your friend's email",
+      "sending": "Sending...",
+      "sendInvite": "Send Invite"
+    },
+    "history": {
+      "title": "Invitation History",
+      "noInvitations": "No invitations sent yet",
+      "table": {
+        "email": "Email",
+        "dateInvited": "Date Invited",
+        "status": "Status"
+      }
+    }
   }
 }

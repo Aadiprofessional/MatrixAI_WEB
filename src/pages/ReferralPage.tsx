@@ -29,7 +29,7 @@ const ReferralPage: React.FC = () => {
   const [inviteHistory, setInviteHistory] = useState<{email: string, date: string, status: string}[]>([]);
 
   const referralCode = userData?.referral_code || 'LOADING';
-  const referralUrl = `https://matrixai.app/signup?ref=${referralCode}`;
+  const referralUrl = `https://matrixai.asia/signup?ref=${referralCode}`;
   
   // Get invited members
   useEffect(() => {
@@ -45,7 +45,7 @@ const ReferralPage: React.FC = () => {
   const copyToClipboard = () => {
     navigator.clipboard.writeText(referralUrl);
     setCopied(true);
-    toast.success('Referral link copied to clipboard!');
+    toast.success(t('referral.linkCopied'));
     
     setTimeout(() => {
       setCopied(false);
@@ -55,7 +55,7 @@ const ReferralPage: React.FC = () => {
   // Share via social media
   const shareVia = (platform: string) => {
     let url = '';
-    const text = `Join me on MatrixAI - Use my referral code ${referralCode} to get started!`;
+    const text = t('referral.shareText', { referralCode });
     
     switch (platform) {
       case 'twitter':
@@ -90,14 +90,14 @@ const ReferralPage: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Success
-      toast.success(`Invitation sent to ${emailInput}`);
+      toast.success(t('referral.invitationSent', { email: emailInput }));
       setEmailInput('');
       setInviteHistory(prev => [
         { email: emailInput, date: new Date().toISOString().split('T')[0], status: 'Pending' },
         ...prev
       ]);
     } catch (error) {
-      toast.error('Failed to send invitation');
+      toast.error(t('referral.invitationFailed'));
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -120,10 +120,10 @@ const ReferralPage: React.FC = () => {
             className="mb-8"
           >
             <h1 className="page-title">
-              Refer Friends & Earn Rewards
+              {t('referral.title')}
             </h1>
             <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
-              Invite friends to join AI and earn bonus coins for every referral
+              {t('referral.subtitle')}
             </p>
           </motion.div>
 
@@ -143,7 +143,7 @@ const ReferralPage: React.FC = () => {
                 </div>
                 <div>
                   <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Referral Rewards
+                    {t('referral.rewards.title')}
                   </h2>
                 </div>
               </div>
@@ -159,10 +159,10 @@ const ReferralPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      For Each Friend Who Joins
+                      {t('referral.rewards.friendJoins.title')}
                     </h3>
                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
-                      You get 100 coins when they sign up using your code
+                      {t('referral.rewards.friendJoins.description')}
                     </p>
                   </div>
                 </div>
@@ -175,10 +175,10 @@ const ReferralPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      When They Subscribe
+                      {t('referral.rewards.subscription.title')}
                     </h3>
                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
-                      You get 500 additional coins when they purchase a subscription
+                      {t('referral.rewards.subscription.description')}
                     </p>
                   </div>
                 </div>
@@ -188,12 +188,12 @@ const ReferralPage: React.FC = () => {
                 darkMode ? 'bg-blue-900/20 border border-blue-800/30' : 'bg-blue-50 border border-blue-100'
               }`}>
                 <div className={`text-lg font-bold mb-1 ${darkMode ? 'text-blue-300' : 'text-blue-600'}`}>
-                  Your Referral Stats
+                  {t('referral.stats.title')}
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-3">
                   <div className={`p-3 rounded-lg ${darkMode ? 'bg-gray-700/50' : 'bg-white'}`}>
                     <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      Total Invited
+                      {t('referral.stats.totalInvited')}
                     </div>
                     <div className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                       {userData?.invited_members?.length || 0}
@@ -201,7 +201,7 @@ const ReferralPage: React.FC = () => {
                   </div>
                   <div className={`p-3 rounded-lg ${darkMode ? 'bg-gray-700/50' : 'bg-white'}`}>
                     <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      Coins Earned
+                      {t('referral.stats.coinsEarned')}
                     </div>
                     <div className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                       1,200
@@ -226,7 +226,7 @@ const ReferralPage: React.FC = () => {
                 </div>
                 <div>
                   <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Share Your Referral Link
+                    {t('referral.share.title')}
                   </h2>
                 </div>
               </div>
@@ -234,7 +234,7 @@ const ReferralPage: React.FC = () => {
               {/* Referral Code Display */}
               <div className="mb-6">
                 <div className={`text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Your Referral Code
+                  {t('referral.code.title')}
                 </div>
                 <div className={`flex items-center p-4 rounded-lg ${
                   darkMode ? 'bg-gray-700/50 border border-gray-600/50' : 'bg-gray-50 border border-gray-200'
@@ -261,7 +261,7 @@ const ReferralPage: React.FC = () => {
               {/* Referral Link */}
               <div className="mb-6">
                 <div className={`text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Referral Link
+                  {t('referral.link.title')}
                 </div>
                 <div className={`flex items-center p-4 rounded-lg ${
                   darkMode ? 'bg-gray-700/50 border border-gray-600/50' : 'bg-gray-50 border border-gray-200'
@@ -311,7 +311,7 @@ const ReferralPage: React.FC = () => {
               {/* Email Invite Form */}
               <div>
                 <div className={`text-sm font-medium mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Invite via Email
+                  {t('referral.email.title')}
                 </div>
                 <form onSubmit={sendInvite} className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-1 relative">
@@ -322,7 +322,7 @@ const ReferralPage: React.FC = () => {
                       type="email"
                       value={emailInput}
                       onChange={(e) => setEmailInput(e.target.value)}
-                      placeholder="Enter your friend's email"
+                      placeholder={t('referral.email.placeholder')}
                       className={`block w-full pl-10 pr-3 py-2 rounded-lg ${
                         darkMode 
                           ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500' 
@@ -341,7 +341,7 @@ const ReferralPage: React.FC = () => {
                     } ${(isSubmitting || !emailInput.trim()) ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
                     <FiMessageSquare className="h-4 w-4 mr-2" />
-                    <span>{isSubmitting ? 'Sending...' : 'Send Invite'}</span>
+                    <span>{isSubmitting ? t('referral.email.sending') : t('referral.email.sendInvite')}</span>
                   </button>
                 </form>
               </div>
@@ -356,12 +356,12 @@ const ReferralPage: React.FC = () => {
             className="rounded-xl glass-effect p-6"
           >
             <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Invitation History
+              {t('referral.history.title')}
             </h2>
             
             {inviteHistory.length === 0 ? (
               <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                No invitations sent yet
+                {t('referral.history.noInvitations')}
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -371,17 +371,17 @@ const ReferralPage: React.FC = () => {
                       <th className={`px-6 py-3 text-left text-xs font-medium ${
                         darkMode ? 'text-gray-300' : 'text-gray-700'
                       } uppercase tracking-wider`}>
-                        Email
+                        {t('referral.history.table.email')}
                       </th>
                       <th className={`px-6 py-3 text-left text-xs font-medium ${
                         darkMode ? 'text-gray-300' : 'text-gray-700'
                       } uppercase tracking-wider`}>
-                        Date Invited
+                        {t('referral.history.table.dateInvited')}
                       </th>
                       <th className={`px-6 py-3 text-left text-xs font-medium ${
                         darkMode ? 'text-gray-300' : 'text-gray-700'
                       } uppercase tracking-wider`}>
-                        Status
+                        {t('referral.history.table.status')}
                       </th>
                     </tr>
                   </thead>
