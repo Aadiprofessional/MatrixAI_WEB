@@ -190,8 +190,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
           <div className="flex-shrink-0 px-3 py-4">
             <div className="flex items-center justify-between mb-8 px-2">
               <Link to="/dashboard" className="flex items-center">
-                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-white">
-                  <img src={matrix} alt="MatrixAI Logo" className="h-9 w-15" />
+                <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-white -p-5">
+                  <img src={matrix} alt="MatrixAI Logo" className="h-12 w-48" />
                 </div>
                 {!collapsed ? (
                   <div className="flex items-center">

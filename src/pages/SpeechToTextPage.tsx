@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   FiUpload, FiMic, FiFileText, FiClock, FiCheck, FiLoader, 
   FiX, FiGlobe, FiZap, FiSettings, FiVolume2, FiDownload,
-  FiTrash, FiRefreshCw, FiPlay, FiPause, FiInfo, FiSearch, FiChevronLeft, FiGrid, FiList, FiEdit3
+  FiTrash, FiRefreshCw, FiPlay, FiPause, FiInfo, FiSearch, FiChevronLeft, FiChevronRight, FiGrid, FiList, FiEdit3
 } from 'react-icons/fi';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -97,6 +97,10 @@ const SpeechToTextPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingName, setEditingName] = useState('');
   const [isEditingName, setIsEditingName] = useState(false);
+
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [filesPerPage] = useState(6);
 
   // Add polling intervals state
   const [pollingIntervals, setPollingIntervals] = useState<Map<string, NodeJS.Timeout>>(new Map());
@@ -636,6 +640,30 @@ const SpeechToTextPage: React.FC = () => {
     return filteredFiles;
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(getFilteredAndSortedFiles().length / filesPerPage);
+  const paginatedFiles = getFilteredAndSortedFiles().slice(
+    (page - 1) * filesPerPage,
+    page * filesPerPage
+  );
+
+  const nextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, filterLanguage, sortBy, sortDirection]);
+
   // Clean up polling intervals on unmount
   useEffect(() => {
     return () => {
@@ -1024,7 +1052,7 @@ const SpeechToTextPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 animate-gradient-x"
           >
-            {t('transcription.title')}
+            {t('speechToText.title')}
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: -10 }}
@@ -1032,7 +1060,7 @@ const SpeechToTextPage: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="text-gray-500 dark:text-gray-400 text-lg max-w-2xl"
           >
-            {t('transcription.subtitle')}
+            {t('speechToText.subtitle')}
           </motion.p>
           
           {!isPro && (
@@ -1043,13 +1071,13 @@ const SpeechToTextPage: React.FC = () => {
               className="mt-3 flex items-center text-sm text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded-md max-w-fit"
             >
               <FiMic className="mr-1.5" />
-              <span>{freeTranscriptionsLeft} {freeTranscriptionsLeft === 1 ? t('transcription.freeLeft') : t('transcription.freeLeftPlural')} {t('speechToText.leftToday')}</span>
+              <span>{freeTranscriptionsLeft} {freeTranscriptionsLeft === 1 ? t('speechToText.freeLeft') : t('speechToText.freeLeftPlural')} {t('speechToText.leftToday')}</span>
               {freeTranscriptionsLeft === 0 && (
                 <button 
                   onClick={() => setShowProAlert(true)}
                   className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
                 >
-                  {t('transcription.upgradeText')}
+                  {t('speechToText.upgradeText')}
                 </button>
               )}
             </motion.div>
@@ -1303,33 +1331,70 @@ const SpeechToTextPage: React.FC = () => {
             <div className="flex justify-center items-center h-40">
               <div className="flex flex-col items-center">
                 <FiLoader className="animate-spin h-8 w-8 text-blue-500 mb-4" />
-                <span className="text-gray-600 dark:text-gray-400">{t('transcription.loadingTranscription')}</span>
+                <span className="text-gray-600 dark:text-gray-400">{t('speechToText.loadingTranscription')}</span>
               </div>
             </div>
           ) : getFilteredAndSortedFiles().length > 0 ? (
-            <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5' : 'space-y-4'}`}>
-              {getFilteredAndSortedFiles().map((file, index) => (
-                <Suspense key={file.audioid} fallback={
-                  <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl shadow-md h-32 animate-pulse m-2"></div>
-                }>
-                  <TranscriptionFileItem
-                    file={file}
-                    index={index}
-                    viewMode={viewMode}
-                    loadingAudioIds={loadingAudioIds}
-                    getDisplayName={getDisplayName}
-                    formatDate={formatDate}
-                    formatDuration={formatDuration}
-                    handleFileClick={handleFileClick}
-                    downloadAudio={downloadAudio}
-                    openEditModal={openEditModal}
-                    setSelectedFile={setSelectedFile}
-                    setIsDeleteModalOpen={setIsDeleteModalOpen}
-                    languages={languages}
-                  />
-                </Suspense>
-              ))}
-            </div>
+            <>
+              <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5' : 'space-y-4'}`}>
+                {paginatedFiles.map((file, index) => (
+                  <Suspense key={file.audioid} fallback={
+                    <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl shadow-md h-32 animate-pulse m-2"></div>
+                  }>
+                    <TranscriptionFileItem
+                      file={file}
+                      index={index}
+                      viewMode={viewMode}
+                      loadingAudioIds={loadingAudioIds}
+                      getDisplayName={getDisplayName}
+                      formatDate={formatDate}
+                      formatDuration={formatDuration}
+                      handleFileClick={handleFileClick}
+                      downloadAudio={downloadAudio}
+                      openEditModal={openEditModal}
+                      setSelectedFile={setSelectedFile}
+                      setIsDeleteModalOpen={setIsDeleteModalOpen}
+                      languages={languages}
+                    />
+                  </Suspense>
+                ))}
+              </div>
+              
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center mt-8 space-x-4">
+                  <button
+                    onClick={prevPage}
+                    disabled={page === 1}
+                    className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                      page === 1
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <FiChevronLeft className="mr-1" />
+                    {t('speechToText.previous')}
+                  </button>
+                  
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {t('speechToText.pageInfo', { current: page, total: totalPages })}
+                  </span>
+                  
+                  <button
+                    onClick={nextPage}
+                    disabled={page === totalPages}
+                    className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                      page === totalPages
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {t('speechToText.next')}
+                    <FiChevronRight className="ml-1" />
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="p-10 bg-white dark:bg-gray-800 border border-dashed rounded-xl text-center dark:border-gray-700 shadow-sm">
               <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">

@@ -21,7 +21,11 @@ import {
   FiVideo,
   FiFileText,
   FiImage,
-  FiMic
+  FiMic,
+  FiList,
+  FiGrid,
+  FiChevronLeft,
+  FiChevronRight
 } from 'react-icons/fi';
 
 interface Transaction {
@@ -99,7 +103,10 @@ const TransactionsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const transactionsPerPage = 6;
 
   // Fetch transactions from API
   const fetchTransactions = async () => {
@@ -184,6 +191,26 @@ const TransactionsPage: React.FC = () => {
   };
 
   const filteredTransactions = getFilteredTransactions();
+  
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+  const paginatedTransactions = filteredTransactions.slice(
+    (page - 1) * transactionsPerPage,
+    page * transactionsPerPage
+  );
+  
+  // Handle pagination
+  const nextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+    }
+  };
+  
+  const prevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
 
   // Get transaction icon based on transaction name and amount
   const getTransactionIcon = (transaction: Transaction) => {
@@ -382,98 +409,261 @@ const TransactionsPage: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Filter Controls Removed */}
-          <div className="mb-6"></div>
+          {/* Controls */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            {/* Filter Controls Removed */}
+            <div></div>
 
-          {/* Transactions Table */}
+            {/* View Mode Toggle */}
+            <div className="flex items-center space-x-2">
+              <div className="text-sm font-medium text-secondary">
+                {t('transactions.view')}:
+              </div>
+              <div className="flex rounded-lg overflow-hidden border border-gray-700">
+                <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 ${
+                      viewMode === 'list'
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    }`}
+                >
+                  <FiList className="h-4 w-4" />
+                </button>
+                <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 ${
+                      viewMode === 'grid'
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    }`}
+                >
+                  <FiGrid className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Transactions Display */}
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="rounded-xl overflow-hidden glass-effect border border-gray-700/50"
           >
             {loading ? (
-              <div className="p-8 flex justify-center">
+              <div className="rounded-xl p-20 flex justify-center items-center glass-effect border border-gray-700/50">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
               </div>
             ) : filteredTransactions.length === 0 ? (
-              <div className="p-8 text-center text-tertiary">
-                {t('transactions.noTransactionsFound')}
+              <div className="rounded-xl p-12 text-center glass-effect border border-gray-700/50 text-tertiary">
+                <FiCreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <h3 className="text-lg font-medium mb-2 text-secondary">{t('transactions.noTransactionsFound')}</h3>
+                <p>{t('transactions.noTransactionsYet')}</p>
+              </div>
+            ) : viewMode === 'list' ? (
+              // List View
+              <div className="rounded-xl overflow-hidden glass-effect border border-gray-700/50">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-700/50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          {t('transactions.table.type')}
+                        </th>
+                      
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          {t('transactions.table.amount')}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          {t('transactions.table.date')}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          {t('transactions.table.status')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-700">
+                      {paginatedTransactions.map((transaction, index) => {
+                        // Default status to 'completed' if not provided
+                        const status = transaction.status || 'completed';
+                        const statusInfo = getStatusInfo(status);
+                        const transactionType = transaction.coin_amount > 0 ? t('transactions.types.credit') : t('transactions.types.debit');
+                        
+                        return (
+                          <tr 
+                            key={transaction.id || index}
+                            className="hover:bg-gray-700/50"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className={`p-2 rounded-lg mr-3 ${getTransactionColor(transaction)}`}>
+                                  {getTransactionIcon(transaction)}
+                                </div>
+                                <div className="text-sm font-medium text-primary">
+                                  {transaction.transaction_name ? 
+                                    t(`transactions.types.${transaction.transaction_name.toLowerCase().replace(/\s+/g, '_')}`, {
+                                      defaultValue: transaction.transaction_name.split('_').map(word => 
+                                        word.charAt(0).toUpperCase() + word.slice(1)
+                                      ).join(' ')
+                                    }) : 
+                                    transactionType
+                                  }
+                                </div>
+                              </div>
+                            </td>
+                           
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                              transaction.coin_amount > 0
+                                ? 'text-green-400'
+                                : 'text-red-400'
+                            }`}>
+                              {transaction.coin_amount > 0
+                                ? `+${transaction.coin_amount}`
+                                : transaction.coin_amount
+                              } {t('transactions.coins')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+                              {formatDate(transaction.created_at || transaction.time)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <span className={`px-2 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-gray-800 ${statusInfo.color}`}>
+                                {statusInfo.icon}
+                                <span className="ml-1.5">{t(`transactions.status.${status.toLowerCase()}`, { defaultValue: status })}</span>
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-700/50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        {t('transactions.table.type')}
-                      </th>
-                    
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        {t('transactions.table.amount')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        {t('transactions.table.date')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        {t('transactions.table.status')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700">
-                    {filteredTransactions.map((transaction, index) => {
-                      // Default status to 'completed' if not provided
-                      const status = transaction.status || 'completed';
-                      const statusInfo = getStatusInfo(status);
-                      const transactionType = transaction.coin_amount > 0 ? t('transactions.types.credit') : t('transactions.types.debit');
-                      
-                      return (
-                        <tr 
-                          key={transaction.id || index}
-                          className="hover:bg-gray-700/50"
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className={`p-2 rounded-lg mr-3 ${getTransactionColor(transaction)}`}>
-                                {getTransactionIcon(transaction)}
-                              </div>
-                              <div className="text-sm font-medium text-primary">
-                                {transaction.transaction_name ? 
-                                  t(`transactions.types.${transaction.transaction_name.toLowerCase().replace(/\s+/g, '_')}`, {
-                                    defaultValue: transaction.transaction_name.split('_').map(word => 
-                                      word.charAt(0).toUpperCase() + word.slice(1)
-                                    ).join(' ')
-                                  }) : 
-                                  transactionType
-                                }
-                              </div>
+              // Grid View
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {paginatedTransactions.map((transaction, index) => {
+                  const status = transaction.status || 'completed';
+                  const statusInfo = getStatusInfo(status);
+                  const transactionType = transaction.coin_amount > 0 ? t('transactions.types.credit') : t('transactions.types.debit');
+                  
+                  return (
+                    <motion.div
+                      key={transaction.id || index}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="rounded-xl overflow-hidden bg-gray-800/50 border border-gray-700/50 hover:border-indigo-700/50 transition-all duration-300 hover:shadow-lg"
+                    >
+                      <div className="p-5 border-b border-gray-700/50">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <div className={`p-2 rounded-lg mr-3 ${getTransactionColor(transaction)}`}>
+                              {getTransactionIcon(transaction)}
                             </div>
-                          </td>
-                         
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                            transaction.coin_amount > 0
-                              ? 'text-green-400'
-                              : 'text-red-400'
-                          }`}>
-                            {transaction.coin_amount > 0
-                              ? `-${transaction.coin_amount}`
-                              : transaction.coin_amount
-                            } {t('transactions.coins')}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
-                            {formatDate(transaction.created_at || transaction.time)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span className={`px-2 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-gray-800 ${statusInfo.color}`}>
-                              {statusInfo.icon}
-                              <span className="ml-1.5">{t(`transactions.status.${status.toLowerCase()}`, { defaultValue: status })}</span>
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                            <h3 className="text-lg font-medium text-primary">
+                              {transaction.transaction_name ? 
+                                t(`transactions.types.${transaction.transaction_name.toLowerCase().replace(/\s+/g, '_')}`, {
+                                  defaultValue: transaction.transaction_name.split('_').map(word => 
+                                    word.charAt(0).toUpperCase() + word.slice(1)
+                                  ).join(' ')
+                                }) : 
+                                transactionType
+                              }
+                            </h3>
+                          </div>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color} bg-gray-800`}>
+                            {statusInfo.icon}
+                            <span className="ml-1.5">{t(`transactions.status.${status.toLowerCase()}`, { defaultValue: status })}</span>
+                          </span>
+                        </div>
+                        <div className="text-sm mt-1 text-tertiary">
+                          {t('transactions.transactionId', { id: transaction.id || index + 1 })}
+                        </div>
+                      </div>
+                      
+                      <div className="p-5">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <div className="text-xs font-medium text-tertiary">
+                              {t('transactions.amount')}
+                            </div>
+                            <div className={`mt-1 text-lg font-medium ${
+                              transaction.coin_amount > 0
+                                ? 'text-green-400'
+                                : 'text-red-400'
+                            }`}>
+                              {transaction.coin_amount > 0
+                                ? `+${transaction.coin_amount}`
+                                : transaction.coin_amount
+                              } {t('transactions.coins')}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="text-xs font-medium text-tertiary">
+                              {t('transactions.remainingBalance')}
+                            </div>
+                            <div className="mt-1 text-lg font-medium text-secondary">
+                              {transaction.remaining_coins} {t('transactions.coins')}
+                            </div>
+                          </div>
+                          
+                          <div className="col-span-2">
+                            <div className="text-xs font-medium text-tertiary">
+                              {t('transactions.date')}
+                            </div>
+                            <div className="mt-1 text-sm text-secondary">
+                              {formatDate(transaction.created_at || transaction.time)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {filteredTransactions.length > 0 && (
+              <div className="mt-6 flex justify-between items-center">
+                <div className="text-sm text-tertiary">
+                  {t('transactions.pagination.showing', {
+                    start: (page - 1) * transactionsPerPage + 1,
+                    end: Math.min(page * transactionsPerPage, filteredTransactions.length),
+                    total: filteredTransactions.length
+                  })}
+                </div>
+                
+                <div className="flex space-x-2">
+                  <button
+                    onClick={prevPage}
+                    disabled={page === 1}
+                    className={`p-2 rounded-lg ${
+                      page === 1
+                        ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                        : 'bg-gray-800 text-gray-200 hover:bg-gray-700'
+                    } border border-gray-700`}
+                  >
+                    <FiChevronLeft className="h-5 w-5" />
+                  </button>
+                  
+                  <div className="px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-700">
+                    {page} / {totalPages}
+                  </div>
+                  
+                  <button
+                    onClick={nextPage}
+                    disabled={page === totalPages}
+                    className={`p-2 rounded-lg ${
+                      page === totalPages
+                        ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                        : 'bg-gray-800 text-gray-200 hover:bg-gray-700'
+                    } border border-gray-700`}
+                  >
+                    <FiChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
             )}
           </motion.div>

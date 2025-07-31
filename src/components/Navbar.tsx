@@ -134,7 +134,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                   ? 'bg-black/30 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500' 
                   : 'bg-white/30 border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500'
               }`}
-              placeholder="Search..."
+              placeholder={t('navbar.search')}
             />
           </div>
         </div>
@@ -160,7 +160,7 @@ const Navbar: React.FC<NavbarProps> = () => {
               className="flex items-center px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-gradient-to-r from-purple-500 to-blue-600 text-white hover:opacity-90 transition-opacity"
             >
               <FiStar className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
-              <span className="font-medium">Upgrade</span>
+              <span className="font-medium">{t('navbar.upgrade')}</span>
             </button>
           )}
           
@@ -173,7 +173,7 @@ const Navbar: React.FC<NavbarProps> = () => {
               className="flex items-center px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:opacity-90 transition-opacity"
             >
               <FiPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
-              <span className="font-medium">Buy Coins</span>
+              <span className="font-medium">{t('navbar.buyCoins')}</span>
             </button>
           )}
 
@@ -189,7 +189,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                   ? 'bg-amber-900/30 text-amber-300 hover:bg-amber-900/40' 
                   : 'bg-amber-100 text-amber-600 hover:bg-amber-200'
               }`}
-              title="Click to buy more coins"
+              title={t('navbar.clickToBuyCoins')}
             >
               <img src={coinImage} alt="Coin" className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
               <span className="font-medium">{localCoins !== undefined ? localCoins : (userData?.user_coins || 0)}</span>
@@ -204,7 +204,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                 ? 'text-yellow-300 hover:bg-gray-700' 
                 : 'text-gray-500 hover:bg-gray-100'
             }`}
-            aria-label="Toggle dark mode"
+            aria-label={t('navbar.toggleDarkMode')}
           >
             {darkMode ? <FiSun className="w-4 h-4 sm:w-5 sm:h-5" /> : <FiMoon className="w-4 h-4 sm:w-5 sm:h-5" />}
           </button>
@@ -229,11 +229,11 @@ const Navbar: React.FC<NavbarProps> = () => {
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center"
             >
-              <span className="sr-only">Open user menu</span>
+              <span className="sr-only">{t('navbar.openUserMenu')}</span>
               {userData?.dp_url ? (
                 <img 
                   src={userData.dp_url} 
-                  alt={userData.name || 'User'} 
+                  alt={userData.name || t('navbar.user')} 
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border-2 border-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
                 />
               ) : (
@@ -259,7 +259,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                     <div className={`mt-1 px-2 py-0.5 text-xs rounded-full inline-block ${
                       darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-600'
                     }`}>
-                      {userData.user_plan} Plan
+                      {userData.user_plan} {t('navbar.plan')}
                     </div>
                   )}
                 </div>
@@ -267,27 +267,27 @@ const Navbar: React.FC<NavbarProps> = () => {
                   <li>
                     <Link to="/profile" className={`block py-2 px-4 ${
                       darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                    }`}>Profile</Link>
+                    }`}>{t('navbar.profile')}</Link>
                   </li>
                   <li>
                     <Link to="/transactions" className={`block py-2 px-4 ${
                       darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                    }`}>Transactions</Link>
+                    }`}>{t('navbar.transactions')}</Link>
                   </li>
                   <li>
                     <Link to="/order-history" className={`block py-2 px-4 ${
                       darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                    }`}>Order History</Link>
+                    }`}>{t('navbar.orderHistory')}</Link>
                   </li>
                   <li>
                     <Link to="/referral" className={`block py-2 px-4 ${
                       darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                    }`}>Refer & Earn</Link>
+                    }`}>{t('navbar.referEarn')}</Link>
                   </li>
                   <li>
                     <Link to="/settings" className={`block py-2 px-4 ${
                       darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                    }`}>Settings</Link>
+                    }`}>{t('navbar.settings')}</Link>
                   </li>
                 </ul>
                 <div className={`py-1 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
@@ -297,7 +297,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                       darkMode ? 'text-red-400 hover:bg-gray-700' : 'text-red-600 hover:bg-gray-100'
                     }`}
                   >
-                    <FiLogOut className="mr-2 h-4 w-4" /> Sign out
+                    <FiLogOut className="mr-2 h-4 w-4" /> {t('navbar.signOut')}
                   </button>
                 </div>
               </div>
@@ -322,7 +322,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                   ? 'bg-black/30 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500' 
                   : 'bg-white/30 border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500'
               }`}
-              placeholder="Search..."
+              placeholder={t('navbar.search')}
               autoFocus
             />
           </div>
