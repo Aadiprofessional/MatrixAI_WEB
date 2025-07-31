@@ -1441,14 +1441,14 @@ const TranscriptionPage: React.FC = () => {
         ? 'from-gray-900 via-gray-800 to-gray-900' 
         : 'from-gray-50 via-blue-50 to-gray-50'
     }`}>
-      <div className="container mx-auto max-w-7xl px-4 md:px-6 py-6 pb-0">
+      <div className="container mx-auto max-w-7xl px-2 sm:px-4 md:px-6 py-3 sm:py-6 pb-0">
         {/* Header with title and controls */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 sm:mb-6">
           <div>
             <motion.h1 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-2xl md:text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+              className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
             >
               {t('transcription.title')}
             </motion.h1>
@@ -1457,24 +1457,24 @@ const TranscriptionPage: React.FC = () => {
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-gray-500 dark:text-gray-400"
+                className="text-sm sm:text-base text-gray-500 dark:text-gray-400 truncate max-w-xs sm:max-w-none"
               >
                 {fileName}
               </motion.p>
             )}
           </div>
           
-          <div className="flex flex-wrap gap-2 mt-3 md:mt-0">
+          <div className="flex flex-wrap gap-1 sm:gap-2 mt-3 md:mt-0">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(-1)}
-              className="px-3 md:px-4 py-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all flex items-center dark:text-gray-200 text-sm md:text-base"
+              className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all flex items-center dark:text-gray-200 text-xs sm:text-sm md:text-base"
             >
-              <FiChevronLeft className="mr-1" /> {t('transcription.back')}
+              <FiChevronLeft className="mr-1 text-sm sm:text-base" /> 
+              <span className="hidden sm:inline">{t('transcription.back')}</span>
+              <span className="sm:hidden">Back</span>
             </motion.button>
-            
-
             
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -1494,67 +1494,223 @@ const TranscriptionPage: React.FC = () => {
                   });
                 }
               }}
-              className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all text-gray-700 dark:text-gray-200"
+              className="p-1.5 sm:p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all text-gray-700 dark:text-gray-200"
               title={isFullscreen ? t('transcription.exitFullscreen') : t('transcription.fullscreen')}
             >
-              <FiMaximize />
+              <FiMaximize className="text-sm sm:text-base" />
             </motion.button>
             
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowSettings(!showSettings)}
-              className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all text-gray-700 dark:text-gray-200"
+              className="p-1.5 sm:p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all text-gray-700 dark:text-gray-200"
               title={t('transcription.settings')}
             >
-              <FiSettings />
+              <FiSettings className="text-sm sm:text-base" />
             </motion.button>
           </div>
         </div>
 
         {/* Main tabs */}
-        <div className="mb-6 flex items-center border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <div className="mb-4 sm:mb-6 flex items-center border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
           <button
             onClick={() => setActiveTab('transcript')}
-            className={`py-3 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
+            className={`py-2 sm:py-3 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
               activeTab === 'transcript' 
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <span className="flex items-center"><FiFileText className="mr-2" /> {t('transcription.transcript')}</span>
+            <span className="flex items-center">
+              <FiFileText className="mr-1 sm:mr-2 text-sm" /> 
+              <span className="hidden sm:inline">{t('transcription.transcript')}</span>
+              <span className="sm:hidden">Text</span>
+            </span>
           </button>
           <button
             onClick={() => setActiveTab('mindmap')}
-            className={`py-3 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
+            className={`py-2 sm:py-3 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
               activeTab === 'mindmap' 
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <span className="flex items-center"><FiBarChart2 className="mr-2" /> {t('transcription.mindMap')}</span>
+            <span className="flex items-center">
+              <FiBarChart2 className="mr-1 sm:mr-2 text-sm" /> 
+              <span className="hidden sm:inline">{t('transcription.mindMap')}</span>
+              <span className="sm:hidden">Map</span>
+            </span>
           </button>
           <button
             onClick={() => setActiveTab('chat')}
-            className={`py-3 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
+            className={`py-2 sm:py-3 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
               activeTab === 'chat' 
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <span className="flex items-center"><FiMessageSquare className="mr-2" /> {t('transcription.chat.title')}</span>
+            <span className="flex items-center">
+              <FiMessageSquare className="mr-1 sm:mr-2 text-sm" /> 
+              <span className="hidden sm:inline">{t('transcription.chat.title')}</span>
+              <span className="sm:hidden">Chat</span>
+            </span>
           </button>
           <button
             onClick={() => setActiveTab('wordsdata')}
-            className={`py-3 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
+            className={`py-2 sm:py-3 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
               activeTab === 'wordsdata' 
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            <span className="flex items-center"><FiFileText className="mr-2" /> {t('transcription.wordsData.title')}</span>
+            <span className="flex items-center">
+              <FiFileText className="mr-1 sm:mr-2 text-sm" /> 
+              <span className="hidden sm:inline">{t('transcription.wordsData.title')}</span>
+              <span className="sm:hidden">Data</span>
+            </span>
           </button>
         </div>
+
+        {/* Mobile Audio Controls - Always visible on mobile */}
+        {!isLoading && (
+          <div className="lg:hidden mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+              <div className="p-3 border-b dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('transcription.audio.controls')}</h2>
+              </div>
+              
+              {/* Compact waveform for mobile */}
+              <div className="relative h-12 m-3 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                <div 
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-400/60 to-purple-400/60 dark:from-blue-500/40 dark:to-purple-500/40 pointer-events-none"
+                  style={{ width: `${(currentTime / duration) * 100}%` }}
+                ></div>
+                <div className="flex items-end justify-between h-full px-1">
+                  {waveformData.map((height, i) => (
+                    <div
+                      key={i}
+                      className="w-0.5 mx-0.5 bg-gradient-to-t from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400"
+                      style={{ 
+                        height: `${height * 100}%`,
+                        opacity: currentTime / duration > i / waveformData.length ? 1 : 0.4
+                      }}
+                    ></div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Mobile audio controls */}
+              <div className="px-3 pb-3">
+                <div className="flex items-center mb-2">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 w-8">
+                    {formatTime(currentTime)}
+                  </span>
+                  <input
+                    type="range"
+                    min="0"
+                    max={duration}
+                    value={currentTime}
+                    onChange={(e) => {
+                      if (audioRef.current) {
+                        audioRef.current.currentTime = parseFloat(e.target.value);
+                      }
+                    }}
+                    step="0.1"
+                    className="flex-1 mx-2 accent-blue-500 h-1.5 rounded-lg appearance-none cursor-pointer bg-gray-200 dark:bg-gray-700"
+                  />
+                  <span className="text-xs text-gray-500 dark:text-gray-400 w-8 text-right">
+                    {formatTime(duration)}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex space-x-1">
+                    <button 
+                      onClick={() => {
+                        if (audioRef.current) {
+                          audioRef.current.currentTime = Math.max(0, currentTime - 5);
+                        }
+                      }}
+                      className="p-1.5 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
+                      title={t('transcription.audio.back5Seconds')}
+                    >
+                      <FiChevronLeft size={14} />
+                    </button>
+                    <button 
+                      onClick={togglePlayPause}
+                      className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full focus:outline-none shadow-md hover:shadow-lg transition-all"
+                    >
+                      {isPlaying ? 
+                        <FiPause size={16} /> : 
+                        <FiPlay size={16} className="ml-0.5" />
+                      }
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (audioRef.current) {
+                          audioRef.current.currentTime = Math.min(duration, currentTime + 5);
+                        }
+                      }}
+                      className="p-1.5 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
+                      title={t('transcription.audio.forward5Seconds')}
+                    >
+                      <FiChevronRight size={14} />
+                    </button>
+                  </div>
+
+                  {/* Compact playback rate controls and download for mobile */}
+                  <div className="flex items-center space-x-1">
+                    {[0.5, 1, 1.5, 2].map(rate => (
+                      <button 
+                        key={rate}
+                        onClick={() => {
+                          if (audioRef.current) {
+                            audioRef.current.playbackRate = rate;
+                            setPlaybackRate(rate);
+                          }
+                        }}
+                        className={`px-1.5 py-0.5 text-xs rounded-full font-medium transition-colors ${
+                          playbackRate === rate 
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm' 
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {rate}x
+                      </button>
+                    ))}
+                    <button 
+                      onClick={downloadAudio}
+                      className="p-1.5 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
+                      title={t('transcription.audio.downloadAudio')}
+                    >
+                      <FiDownload size={14} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Audio element (hidden) */}
+        <audio 
+          ref={audioRef}
+          src={audioUrl}
+          onTimeUpdate={() => {
+            if (audioRef.current) {
+              setCurrentTime(audioRef.current.currentTime);
+            }
+          }}
+          onDurationChange={() => {
+            if (audioRef.current) {
+              setDuration(audioRef.current.duration);
+            }
+          }}
+          onEnded={() => setIsPlaying(false)}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+        />
 
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
@@ -1601,31 +1757,32 @@ const TranscriptionPage: React.FC = () => {
                   </div>
 
                   {/* Translation Controls */}
-                  <div className="p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-                    <div className="flex items-center justify-between flex-wrap gap-3">
-                      <div className="flex items-center space-x-3">
+                  <div className="p-2 sm:p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
                         <button
                           onClick={toggleTranslation}
-                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
+                          className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all text-xs sm:text-sm ${
                             isTranslationEnabled
                               ? 'bg-green-500 hover:bg-green-600 text-white'
                               : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200'
                           }`}
                           disabled={translatingIndex !== -1}
                         >
-                          <FiGlobe className="w-4 h-4" />
+                          <FiGlobe className="w-3 h-3 sm:w-4 sm:h-4" />
                           {isTranslationEnabled ? (
-                            <FiToggleRight className="w-5 h-5" />
+                            <FiToggleRight className="w-4 h-4 sm:w-5 sm:h-5" />
                           ) : (
-                            <FiToggleLeft className="w-5 h-5" />
+                            <FiToggleLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                           )}
-                          <span>{isTranslationEnabled ? t('transcription.translationOn') : t('transcription.enableTranslation')}</span>
+                          <span className="hidden sm:inline">{isTranslationEnabled ? t('transcription.translationOn') : t('transcription.enableTranslation')}</span>
+                          <span className="sm:hidden">{isTranslationEnabled ? 'ON' : 'OFF'}</span>
                         </button>
                         
                         <select
                           value={selectedLanguage}
                           onChange={(e) => setSelectedLanguage(e.target.value)}
-                          className="px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm w-full sm:w-auto"
                           disabled={translatingIndex !== -1}
                         >
                           {languages.map((lang) => (
@@ -1637,24 +1794,24 @@ const TranscriptionPage: React.FC = () => {
                       </div>
                       
                       {translatingIndex !== -1 && (
-                        <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
-                          <FiLoader className="animate-spin w-4 h-4" />
-                          <span className="text-sm">{t('transcription.translating')}</span>
+                        <div className="flex items-center space-x-1 sm:space-x-2 text-blue-600 dark:text-blue-400">
+                          <FiLoader className="animate-spin w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="text-xs sm:text-sm">{t('transcription.translating')}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Transcription text with word highlighting and translations */}
-                  <div className="overflow-auto h-[calc(100vh-400px)] p-4 font-medium leading-relaxed text-gray-700 dark:text-gray-300">
+                  <div className="overflow-auto h-[calc(200vh-300px)] sm:h-[calc(100vh-400px)] p-3 sm:p-4 font-medium leading-relaxed text-gray-700 dark:text-gray-300 text-sm sm:text-base">
                     {paragraphs.map((paragraph, paraIndex) => (
-                      <div key={paraIndex} className="mb-6">
-                        {/* Paragraph timestamp - above paragraph on left side */}
-                        <div className="flex items-center mb-2">
-                          <div className="flex flex-col items-start">
-                            <span className="text-xs font-mono text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md shadow-sm">
-                              {formatTime(paragraph.startTime)}
-                            </span>
+                        <div key={paraIndex} className="mb-4 sm:mb-6">
+                          {/* Paragraph timestamp - above paragraph on left side */}
+                          <div className="flex items-center mb-2">
+                            <div className="flex flex-col items-start">
+                              <span className="text-xs font-mono text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md shadow-sm">
+                                {formatTime(paragraph.startTime)}
+                              </span>
                             {/* Current time indicator - only show if current time is within this paragraph */}
                             {currentTime >= paragraph.startTime && currentTime <= paragraph.endTime && (
                               <span className="text-xs font-mono text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md shadow-sm mt-1 animate-pulse">
@@ -1701,14 +1858,14 @@ const TranscriptionPage: React.FC = () => {
                         
                         {/* Translated paragraph */}
                         {isTranslationEnabled && translations[paraIndex] && (
-                          <div className="ml-4 pl-4 border-l-4 border-green-400 dark:border-green-500">
+                          <div className="ml-2 sm:ml-4 pl-2 sm:pl-4 border-l-4 border-green-400 dark:border-green-500">
                             <div className="flex items-center mb-2">
                               <FiGlobe className="w-4 h-4 text-green-600 dark:text-green-400 mr-2" />
-                              <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                              <span className="text-xs sm:text-sm font-medium text-green-600 dark:text-green-400">
                                 {languages.find(lang => lang.value === selectedLanguage)?.label}
                               </span>
                             </div>
-                            <p className="text-gray-600 dark:text-gray-400 italic leading-relaxed">
+                            <p className="text-gray-600 dark:text-gray-400 italic leading-relaxed text-sm sm:text-base">
                               {translations[paraIndex]}
                             </p>
                           </div>
@@ -1747,11 +1904,11 @@ const TranscriptionPage: React.FC = () => {
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-200px)]"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(200vh-200px)] sm:h-[calc(100vh-200px)] lg:h-[calc(100vh-200px)]"
                 >
                   {/* Fixed Header */}
-                  <div className="flex justify-between items-center p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-20 sticky top-0">
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.chat.title')}</h2>
+                  <div className="flex justify-between items-center p-3 sm:p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-20 sticky top-0">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.chat.title')}</h2>
                     <div className="flex space-x-2">
                       <button 
                         onClick={resetChat} 
@@ -2070,27 +2227,27 @@ const TranscriptionPage: React.FC = () => {
                   </div>
                   
                   {/* Chat input area - Fixed at the bottom */}
-                  <div className="border-t dark:border-gray-700 p-4 bg-white dark:bg-gray-800 z-10 sticky bottom-0 shadow-md">
+                  <div className="border-t dark:border-gray-700 p-3 sm:p-4 bg-white dark:bg-gray-800 z-10 sticky bottom-0 shadow-md">
                     <form onSubmit={handleChatSubmit} className="flex space-x-2">
                       <input
                         type="text"
                         value={chatInput}
                         onChange={(e) => setChatInput(e.target.value)}
                         placeholder={t('transcription.chat.typeMessage')}
-                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200"
+                        className="flex-1 px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 text-sm sm:text-base"
                         disabled={isAssistantTyping}
                       />
                       <button
                         type="submit"
                         disabled={!chatInput.trim() || isAssistantTyping}
-                        className={`px-4 py-2 rounded-lg transition-colors ${
+                        className={`px-3 sm:px-4 py-2 rounded-lg transition-colors ${
                           !chatInput.trim() || isAssistantTyping
                             ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
                             : 'bg-blue-500 hover:bg-blue-600 text-white'
                         }`}
                       >
                         {isAssistantTyping ? (
-                          <FiLoader className="animate-spin" />
+                          <FiLoader className="animate-spin w-4 h-4 sm:w-5 sm:h-5" />
                         ) : (
                           t('transcription.chat.send')
                         )}
@@ -2283,12 +2440,12 @@ const TranscriptionPage: React.FC = () => {
               )}
             </div>
 
-            {/* Sidebar / Audio player panel */}
+            {/* Sidebar / Audio player panel - Hidden on mobile */}
             {showSidebar && (
               <motion.div 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="lg:col-span-1"
+                className="hidden lg:block lg:col-span-1"
               >
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
                   <div className="p-4 border-b dark:border-gray-700">

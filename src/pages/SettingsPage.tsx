@@ -30,35 +30,35 @@ const ToggleSwitch = ({ isEnabled, toggleFunction, label, description }: {
   const { darkMode } = useContext(ThemeContext);
   
   return (
-    <div className="flex justify-between items-center py-4">
-      <div>
-        <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-3 sm:py-4 space-y-2 sm:space-y-0">
+      <div className="flex-1 pr-0 sm:pr-4">
+        <p className={`font-medium text-sm sm:text-base ${darkMode ? 'text-white' : 'text-gray-900'}`}>
           {label}
         </p>
         {description && (
-          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>
+          <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>
             {description}
           </p>
         )}
       </div>
       <button 
         onClick={toggleFunction}
-        className="flex-shrink-0 group"
+        className="flex-shrink-0 group self-start sm:self-center"
         aria-checked={isEnabled}
         role="switch"
       >
-        <span className={`flex items-center h-7 w-14 rounded-full transition-colors ${
+        <span className={`flex items-center h-6 w-12 sm:h-7 sm:w-14 rounded-full transition-colors ${
           isEnabled 
             ? (darkMode ? 'bg-blue-600' : 'bg-blue-600') 
             : (darkMode ? 'bg-gray-700' : 'bg-gray-300')
         }`}>
-          <span className={`flex items-center justify-center w-5 h-5 transform transition-transform mx-1 rounded-full ${
-            isEnabled ? 'translate-x-7 bg-white' : 'translate-x-0 bg-white'
+          <span className={`flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 transform transition-transform mx-1 rounded-full ${
+            isEnabled ? 'translate-x-6 sm:translate-x-7 bg-white' : 'translate-x-0 bg-white'
           }`}>
             {isEnabled ? (
-              <FiCheck className="h-3 w-3 text-blue-600" />
+              <FiCheck className="h-2 w-2 sm:h-3 sm:w-3 text-blue-600" />
             ) : (
-              <FiX className="h-3 w-3 text-gray-400" />
+              <FiX className="h-2 w-2 sm:h-3 sm:w-3 text-gray-400" />
             )}
           </span>
         </span>
@@ -82,14 +82,14 @@ const SelectOption = ({
   const { darkMode } = useContext(ThemeContext);
   
   return (
-    <div className="py-4">
-      <label className={`block font-medium mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+    <div className="py-3 sm:py-4">
+      <label className={`block font-medium mb-1.5 sm:mb-2 text-sm sm:text-base ${darkMode ? 'text-white' : 'text-gray-900'}`}>
         {label}
       </label>
       <select 
         value={selectedValue}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full p-2.5 rounded-lg border ${
+        className={`w-full p-2 sm:p-2.5 text-sm sm:text-base rounded-lg border ${
           darkMode 
             ? 'bg-gray-700 border-gray-600 text-white' 
             : 'bg-white border-gray-300 text-gray-900'
@@ -306,7 +306,7 @@ const SettingsPage: React.FC = () => {
         />
       )}
       
-      <div className="page-background dark py-8 px-4 lg:px-8">
+      <div className="page-background dark py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-8">
         {/* Background gradient effects */}
         <div className="gradient-blob-1"></div>
         <div className="gradient-blob-2"></div>
@@ -317,17 +317,17 @@ const SettingsPage: React.FC = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-8"
+            className="mb-4 sm:mb-6 lg:mb-8"
           >
-            <h1 className="page-title">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-1 sm:mb-2">
               {t('settings.settings')}
             </h1>
-            <p className="text-tertiary mt-1">
+            <p className="text-sm sm:text-base text-tertiary">
               {t('settings.customizeExperience')}
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {/* Tab Navigation */}
             <motion.div 
               initial={{ opacity: 0, x: -10 }}
@@ -335,13 +335,13 @@ const SettingsPage: React.FC = () => {
               transition={{ duration: 0.4 }}
               className="lg:col-span-1"
             >
-              <div className="rounded-xl glass-effect p-4 sticky top-24">
+              <div className="rounded-xl glass-effect p-3 sm:p-4 lg:sticky lg:top-24">
                 <nav className="space-y-1">
                   {tabOptions.map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors ${
+                      className={`w-full flex items-center px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg transition-colors text-sm sm:text-base ${
                         activeTab === tab.id
                           ? (darkMode 
                               ? 'bg-gradient-to-r from-blue-800/50 to-purple-800/50 text-white' 
@@ -351,23 +351,23 @@ const SettingsPage: React.FC = () => {
                               : 'text-gray-600 hover:bg-gray-50')
                       }`}
                     >
-                      <span className="mr-3">{tab.icon}</span>
+                      <span className="mr-2 sm:mr-3 text-sm sm:text-base">{tab.icon}</span>
                       <span className="font-medium">{tab.label}</span>
                     </button>
                   ))}
                 </nav>
 
-                <div className="mt-6 pt-6 border-t border-gray-700">
+                <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-700">
                   <button
                     onClick={handleSaveChanges}
                     disabled={!hasChanges}
-                    className={`w-full py-2.5 rounded-lg ${
+                    className={`w-full py-2 sm:py-2.5 rounded-lg text-sm sm:text-base ${
                       hasChanges 
                         ? 'btn-primary'
                         : 'bg-gray-700 text-gray-400 cursor-not-allowed'
                     } flex items-center justify-center transition-all`}
                   >
-                    <FiSave className="mr-2" />
+                    <FiSave className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
                     Save Changes
                   </button>
                 </div>
@@ -379,12 +379,12 @@ const SettingsPage: React.FC = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="rounded-xl glass-effect p-6 lg:col-span-3"
+              className="rounded-xl glass-effect p-4 sm:p-5 lg:p-6 lg:col-span-3"
             >
               {/* Appearance Settings */}
               {activeTab === 'appearance' && (
                 <div>
-                  <h2 className="text-xl font-bold mb-6 text-primary">
+                  <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6 text-primary">
                     {t('settings.appearanceSettings')}
                   </h2>
 

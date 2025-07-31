@@ -317,7 +317,8 @@
     "readyToGenerate": "准备生成内容",
     "shareContent": "共享内容",
     "shareDescription": "与他人分享您生成的内容",
-    "quickPrompts": "快速提示"
+    "quickPrompts": "快速提示",
+    "content": "内容"
   },
   "customizeWithContent": "自定义内容",
   "dashboard": {
@@ -745,7 +746,8 @@
   "select-language": "选择语言",
   "selectTemplate": "选择模板",
   "sidebar": {
-    "quickSpeechToText": "简短的文字讲话"
+    "quickSpeechToText": "简短的文字讲话",
+    "logout": "注销"
   },
   "slide": "滑动",
   "slideTitle": "幻灯片标题",

@@ -385,7 +385,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpe
               } w-full`}
             >
               <FiLogOut className="w-5 h-5" />
-              {(!collapsed || isMobile) && <span className="ml-3">Logout</span>}
+              {(!collapsed || isMobile) && <span className="ml-3">{t('sidebar.logout')}</span>}
             </button>
             
             {(!collapsed || isMobile) && (

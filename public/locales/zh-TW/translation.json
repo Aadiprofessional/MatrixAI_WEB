@@ -317,7 +317,8 @@
     "readyToGenerate": "準備生成內容",
     "shareContent": "共享內容",
     "shareDescription": "與他人分享您生成的內容",
-    "quickPrompts": "快速提示"
+    "quickPrompts": "快速提示",
+    "content": "內容"
   },
   "customizeWithContent": "自定義內容",
   "dashboard": {
@@ -372,7 +373,11 @@
     "referEarn": "參考",
     "search": "搜尋...",
     "settings": "設定",
-    "signOut": "登出"
+    "signOut": "登出",
+    "toggleDarkMode": "切換暗模式",
+    "transactions": "交易",
+    "upgrade": "升級",
+    "user": "用戶"
   },
   "describePresentationTopic": "描述您的演示主題",
   "detectAI": {
@@ -741,7 +746,8 @@
   "select-language": "選擇語言",
   "selectTemplate": "選擇模板",
   "sidebar": {
-    "quickSpeechToText": "簡短的文字講話"
+    "quickSpeechToText": "簡短的文字講話",
+    "logout": "註銷"
   },
   "slide": "滑動",
   "slideTitle": "幻燈片標題",

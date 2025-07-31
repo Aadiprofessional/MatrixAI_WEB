@@ -857,7 +857,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
         </div>
       </div>
 
-      <div className="overflow-auto h-[calc(100vh-300px)] p-4">
+      <div className="overflow-auto h-[calc(200vh-300px)] sm:h-[calc(100vh-300px)] lg:h-[calc(100vh-300px)] p-4">
         <div className="p-4 min-h-[500px]">
           <iframe 
             ref={webViewRef}

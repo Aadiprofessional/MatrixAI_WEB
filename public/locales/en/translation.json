@@ -262,7 +262,8 @@
     "help": "Help"
   },
   "sidebar": {
-    "quickSpeechToText": "Quick Speech to Text"
+    "quickSpeechToText": "Quick Speech to Text",
+    "logout": "Logout"
   },
   "payment": {
     "addon_pack": "Addon Pack",
