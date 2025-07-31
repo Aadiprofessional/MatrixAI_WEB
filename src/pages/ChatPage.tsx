@@ -377,6 +377,7 @@ const ChatPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const historyDropdownRef = useRef<HTMLDivElement>(null);
 
   // Fetch user chats from database
   const fetchUserChats = async () => {
@@ -791,6 +792,23 @@ const ChatPage: React.FC = () => {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Handle click outside to close history dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (historyDropdownRef.current && !historyDropdownRef.current.contains(event.target as Node)) {
+        setShowHistoryDropdown(false);
+      }
+    };
+
+    if (showHistoryDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showHistoryDropdown]);
 
   // Fetch chats on component mount and handle default navigation
   useEffect(() => {
@@ -2213,8 +2231,8 @@ const ChatPage: React.FC = () => {
         </div>
       )}
       
-      {/* Main content area - Add proper top spacing for navbar */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden pt-16">
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Main content area */}
         <div className={`flex-1 flex flex-col overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
           <div className="flex-1 overflow-hidden relative">
@@ -2294,6 +2312,144 @@ const ChatPage: React.FC = () => {
                       >
                         <FiMessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
                       </AuthRequiredButton>
+                      
+                      {/* Desktop chat history button */}
+                      <div className="hidden md:block relative" ref={historyDropdownRef}>
+                        <AuthRequiredButton 
+                          onClick={() => setShowHistoryDropdown(!showHistoryDropdown)}
+                          className={`p-1.5 sm:p-2 rounded-lg ${
+                            showHistoryDropdown
+                              ? (darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-700') 
+                              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                          }`}
+                          title={t('chat.toggleChatHistory')}
+                        >
+                          <FiClock className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </AuthRequiredButton>
+                        
+                        {/* History dropdown */}
+                        {showHistoryDropdown && (
+                          <div className={`absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-lg shadow-lg border z-50 ${
+                            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                          }`}>
+                            <div className="p-3">
+                              <h3 className={`text-sm font-medium mb-3 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                {t('chat.chatHistory')}
+                              </h3>
+                              
+                              {/* Today */}
+                              {groupedChatHistory.today.length > 0 && (
+                                <div className="mb-4">
+                                  <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                                    {t('chat.today')}
+                                  </h4>
+                                  {groupedChatHistory.today.map(chat => (
+                                    <button
+                                      key={chat.id}
+                                      onClick={() => selectChat(chat.id)}
+                                      className={`w-full text-left p-2 rounded-md mb-1 transition-colors ${
+                                        chat.id === chatId
+                                          ? (darkMode ? 'bg-blue-900/50 text-blue-200' : 'bg-blue-100 text-blue-800')
+                                          : (darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-700')
+                                      }`}
+                                    >
+                                      <div className="text-sm truncate">{chat.title}</div>
+                                      {chat.roleName && (
+                                        <div className="text-xs text-gray-500 mt-1">{chat.roleName}</div>
+                                      )}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {/* Yesterday */}
+                              {groupedChatHistory.yesterday.length > 0 && (
+                                <div className="mb-4">
+                                  <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                                    {t('chat.yesterday')}
+                                  </h4>
+                                  {groupedChatHistory.yesterday.map(chat => (
+                                    <button
+                                      key={chat.id}
+                                      onClick={() => selectChat(chat.id)}
+                                      className={`w-full text-left p-2 rounded-md mb-1 transition-colors ${
+                                        chat.id === chatId
+                                          ? (darkMode ? 'bg-blue-900/50 text-blue-200' : 'bg-blue-100 text-blue-800')
+                                          : (darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-700')
+                                      }`}
+                                    >
+                                      <div className="text-sm truncate">{chat.title}</div>
+                                      {chat.roleName && (
+                                        <div className="text-xs text-gray-500 mt-1">{chat.roleName}</div>
+                                      )}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {/* Last Week */}
+                              {groupedChatHistory.lastWeek.length > 0 && (
+                                <div className="mb-4">
+                                  <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                                    {t('chat.lastWeek')}
+                                  </h4>
+                                  {groupedChatHistory.lastWeek.map(chat => (
+                                    <button
+                                      key={chat.id}
+                                      onClick={() => selectChat(chat.id)}
+                                      className={`w-full text-left p-2 rounded-md mb-1 transition-colors ${
+                                        chat.id === chatId
+                                          ? (darkMode ? 'bg-blue-900/50 text-blue-200' : 'bg-blue-100 text-blue-800')
+                                          : (darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-700')
+                                      }`}
+                                    >
+                                      <div className="text-sm truncate">{chat.title}</div>
+                                      {chat.roleName && (
+                                        <div className="text-xs text-gray-500 mt-1">{chat.roleName}</div>
+                                      )}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {/* Last Month */}
+                              {groupedChatHistory.lastMonth.length > 0 && (
+                                <div>
+                                  <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                                    {t('chat.lastMonth')}
+                                  </h4>
+                                  {groupedChatHistory.lastMonth.map(chat => (
+                                    <button
+                                      key={chat.id}
+                                      onClick={() => selectChat(chat.id)}
+                                      className={`w-full text-left p-2 rounded-md mb-1 transition-colors ${
+                                        chat.id === chatId
+                                          ? (darkMode ? 'bg-blue-900/50 text-blue-200' : 'bg-blue-100 text-blue-800')
+                                          : (darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-700')
+                                      }`}
+                                    >
+                                      <div className="text-sm truncate">{chat.title}</div>
+                                      {chat.roleName && (
+                                        <div className="text-xs text-gray-500 mt-1">{chat.roleName}</div>
+                                      )}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {/* Empty state */}
+                              {groupedChatHistory.today.length === 0 && 
+                               groupedChatHistory.yesterday.length === 0 && 
+                               groupedChatHistory.lastWeek.length === 0 && 
+                               groupedChatHistory.lastMonth.length === 0 && (
+                                <div className={`text-center py-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  {t('chat.noHistory') || 'No chat history'}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       
                       <AuthRequiredButton 
                         onClick={handleStartNewChat}

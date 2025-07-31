@@ -1,15 +1,16 @@
 /* Page layout styles - scoped to ChatPage only */
 .ChatPage {
   overflow: hidden;
-  height: 100%;
+  height: calc(100vh - 64px); /* Account for navbar height */
   margin: 0;
   padding: 0;
+  position: relative;
 }
 
 /* Make the main container non-scrollable while maintaining responsiveness with sidebar */
 .ChatPage .flex.h-screen.overflow-hidden {
   overflow: hidden;
-  height: 100vh;
+  height: calc(100vh - 64px); /* Subtract navbar height */
   position: relative;
 }
 
@@ -17,7 +18,7 @@
 .ChatPage .flex-1.flex.flex-col.h-screen.overflow-hidden {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100vh - 64px); /* Match parent container height */
   overflow: hidden;
 }
 
@@ -48,8 +49,7 @@
 /* Fix the chat header at the top with space for navbar */
 .ChatPage .px-6.py-3.flex.justify-between.items-center.border-b {
   position: sticky;
-  top: 0;
-  padding-top: 64px; /* Increased padding to push content further below navbar */
+  top: 64px; /* Position below navbar instead of using padding */
   background-color: inherit;
   z-index: 10;
 }
