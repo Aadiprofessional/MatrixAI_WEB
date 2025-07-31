@@ -1244,8 +1244,8 @@ const VideoCreatorPage: React.FC = () => {
       </div>
 
       {/* Video Preview */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
-        <div className="lg:col-span-3">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8 mb-8">
+        <div className="lg:col-span-3 order-1">
           {videoUrl ? (
             <div 
               className="relative rounded-lg overflow-hidden bg-black aspect-video shadow-lg group"
@@ -1505,8 +1505,8 @@ const VideoCreatorPage: React.FC = () => {
             </div>
           )}
 
-          {/* Template Video Grid */}
-            <div className="mt-8">
+          {/* Template Video Grid - Hidden on mobile, shown on desktop */}
+            <div className="mt-8 hidden lg:block">
               <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">{t('videoCreator.availableTemplates')}</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {templateVideos.slice(0, 8).map((template) => (
@@ -1589,8 +1589,8 @@ const VideoCreatorPage: React.FC = () => {
             </div>
           </div>
         
-        <div className="lg:col-span-2">
-          <div className="space-y-6">
+        <div className="lg:col-span-2 order-2 lg:order-2">
+          <div className="space-y-4 lg:space-y-6">
             {/* Prompt Input */}
             <div>
               <div className="relative">
@@ -2089,6 +2089,89 @@ const VideoCreatorPage: React.FC = () => {
                 ))}
               </div>
             </div>
+            
+            {/* Mobile Template Video Grid - Only shown on mobile */}
+            <div className="lg:hidden">
+              <h3 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">{t('videoCreator.availableTemplates')}</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {templateVideos.slice(0, 6).map((template) => (
+                  <div
+                    key={template.id}
+                    className={`relative group cursor-pointer rounded-lg overflow-hidden border transition-all duration-200 ${
+                      selectedTemplate === template.name
+                        ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    } ${template.category === 'premium' && !canAccessPremium() ? 'opacity-60' : ''}`}
+                    onClick={() => {
+                      if (template.category === 'premium' && !canAccessPremium()) {
+                        setShowProAlert(true);
+                        return;
+                      }
+                      handleTemplateSelect(template.name);
+                    }}
+                  >
+                    {/* Video Preview */}
+                    <div className="aspect-video bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
+                      <video
+                        src={template.videoUrl}
+                        className="w-full h-full object-cover"
+                        muted
+                        loop
+                        preload="metadata"
+                        onMouseEnter={(e) => {
+                          if (template.category === 'basic' || canAccessPremium()) {
+                            e.currentTarget.play();
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.pause();
+                          e.currentTarget.currentTime = 0;
+                        }}
+                      />
+                      
+                      {/* Premium Lock Overlay */}
+                      {template.category === 'premium' && !canAccessPremium() && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                          <div className="text-white text-center">
+                            <FiLock className="w-4 h-4 mx-auto mb-1" />
+                            <span className="text-xs font-medium">{t('videoCreator.premium')}</span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Selected Indicator */}
+                      {selectedTemplate === template.name && (
+                        <div className="absolute top-1 right-1 bg-blue-500 text-white rounded-full p-1">
+                          <FiCheck size={12} />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Template Info */}
+                    <div className="p-2">
+                      <h3 className="font-medium text-xs text-gray-900 dark:text-white truncate">
+                        {template.name}
+                      </h3>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${template.category === 'basic' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'}`}>
+                          {template.category === 'basic' ? t('videoCreator.basicCoins') : t('videoCreator.premiumCoins')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-3 flex justify-center">
+                <button
+                  onClick={() => setShowTemplateGrid(true)}
+                  className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 flex items-center"
+                >
+                  <FiVideo className="mr-1" size={14} />
+                  {t('videoCreator.viewAllTemplates')}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -2173,20 +2256,20 @@ const VideoCreatorPage: React.FC = () => {
 
       {/* Template Grid Modal */}
       {showTemplateGrid && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-6xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('videoCreator.chooseTemplate')}</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">{t('videoCreator.chooseTemplate')}</h2>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {t('videoCreator.selectFromCollection')}
                 </p>
               </div>
               <button
                 onClick={() => setShowTemplateGrid(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1"
               >
-                <FiX size={24} />
+                <FiX size={20} className="sm:w-6 sm:h-6" />
               </button>
             </div>
             
@@ -2194,7 +2277,7 @@ const VideoCreatorPage: React.FC = () => {
             <div className="flex border-b border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setTemplateCategory('basic')}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-3 sm:px-6 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors flex-1 ${
                   templateCategory === 'basic'
                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
@@ -2204,7 +2287,7 @@ const VideoCreatorPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setTemplateCategory('premium')}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-3 sm:px-6 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors flex-1 ${
                   templateCategory === 'premium'
                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
@@ -2215,14 +2298,14 @@ const VideoCreatorPage: React.FC = () => {
             </div>
             
             {/* Template Grid */}
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
+            <div className="p-3 sm:p-6 overflow-y-auto max-h-[65vh] sm:max-h-[60vh]">
               {isLoadingTemplates ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                  <span className="ml-3 text-gray-600 dark:text-gray-400">{t('videoCreator.loadingTemplates')}</span>
+                <div className="flex items-center justify-center py-8 sm:py-12">
+                  <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-500"></div>
+                  <span className="ml-2 sm:ml-3 text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('videoCreator.loadingTemplates')}</span>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
                   {getFilteredTemplates().map((template) => (
                     <div
                       key={template.id}

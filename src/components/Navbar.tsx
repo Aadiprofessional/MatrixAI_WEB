@@ -11,7 +11,8 @@ import {
   FiCreditCard,
   FiMic,
   FiPlus,
-  FiStar
+  FiStar,
+  FiMenu
 } from 'react-icons/fi';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -22,9 +23,12 @@ import LanguageSelector from './LanguageSelector';
 import coinImage from '../assets/coin.png';
 import { supabase } from '../supabaseClient';
 
-interface NavbarProps {}
+interface NavbarProps {
+  onMobileSidebarToggle?: () => void;
+  isMobileSidebarOpen?: boolean;
+}
 
-const Navbar: React.FC<NavbarProps> = () => {
+const Navbar: React.FC<NavbarProps> = ({ onMobileSidebarToggle, isMobileSidebarOpen }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const [showSearchBar, setShowSearchBar] = useState(false);
@@ -115,6 +119,21 @@ const Navbar: React.FC<NavbarProps> = () => {
     } border-b sticky top-0 z-30 w-full flex-none h-16`}>
       <div className="max-w-screen-2xl mx-auto w-full h-full flex items-center justify-between px-4">
         <div className="flex items-center flex-grow-0 flex-shrink-0">
+          {/* Mobile sidebar toggle button */}
+          {!isMobileSidebarOpen && (
+            <button 
+              onClick={onMobileSidebarToggle}
+              className={`md:hidden p-2 rounded-lg mr-2 ${
+                darkMode 
+                  ? 'text-gray-300 hover:bg-gray-700' 
+                  : 'text-gray-500 hover:bg-gray-100'
+              }`}
+              aria-label="Toggle mobile menu"
+            >
+              <FiMenu className="w-5 h-5" />
+            </button>
+          )}
+          
           {/* Brand Logo without visible AI and PRO logo in navbar */}
           <Link to="/dashboard" className="flex items-center mr-4">
             {/* Removed AI logo and PRO badge from navbar */}

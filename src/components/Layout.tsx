@@ -72,22 +72,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         className="flex flex-col min-h-screen transition-all duration-300"
         style={{ marginLeft: isDesktop ? `${sidebarWidth}px` : '0' }}
       >
-        {/* Mobile sidebar toggle button - positioned within navbar space, hidden when sidebar is open */}
-        {!isMobileSidebarOpen && (
-          <button 
-            onClick={toggleMobileSidebar}
-            className={`md:hidden fixed top-3 left-3 z-[60] p-2 rounded-lg ${
-              darkMode 
-                ? 'bg-gray-800 text-white hover:bg-gray-700' 
-                : 'bg-white text-gray-800 hover:bg-gray-100'
-            } shadow-md`}
-            aria-label="Toggle mobile menu"
-          >
-            <FiMenu className="w-5 h-5" />
-          </button>
-        )}
-        
-        <Navbar />
+        <Navbar 
+          onMobileSidebarToggle={toggleMobileSidebar}
+          isMobileSidebarOpen={isMobileSidebarOpen}
+        />
         
         <main className="flex-1 flex flex-col">
           <div className="flex-1">
