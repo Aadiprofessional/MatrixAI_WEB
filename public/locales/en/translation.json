@@ -1702,6 +1702,7 @@
   },
   "contact": {
     "title": "Get in Touch",
+    "description": "Ready to transform your business with AI? Let's discuss your needs.",
     "subtitle": "Have questions or need help? We're here for you. Reach out to our team and we'll get back to you shortly.",
     "generalInquiries": "General Inquiries",
     "generalInquiriesDesc": "Questions about our products or services",
@@ -1727,7 +1728,14 @@
     "successMessage": "Your message has been sent successfully. We'll get back to you as soon as possible.",
     "sendAnother": "Send another message",
     "ourOffices": "Our Offices",
-    "visitOffices": "Visit us at one of our global offices"
+    "visitOffices": "Visit us at one of our global offices",
+    "form": {
+      "namePlaceholder": "Your Name",
+      "emailPlaceholder": "Your Email",
+      "phonePlaceholder": "Your Phone (Optional)",
+      "messagePlaceholder": "Tell us about your project...",
+      "sendButton": "Send Message"
+    }
   },
   "pricing": {
     "title": "Simple, Transparent Pricing",

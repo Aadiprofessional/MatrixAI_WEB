@@ -12,7 +12,8 @@ import {
   CallToAction,
   FAQSection,
   AnimatedGridBanner,
-  ModelsShowcaseSection
+  ModelsShowcaseSection,
+  CubeComponent
 } from '../components';
 
 
@@ -120,9 +121,8 @@ const HomePage: React.FC = () => {
       {/* White line separator */}
       <div className="w-full h-px bg-white opacity-20"></div>
       
-      {/* White line separator */}
-      <div className="w-full h-px bg-white opacity-20"></div>
-
+      {/* AI Innovation Showcase Section */}
+    
       {/* Feature Section */}
       <FeatureSection />
       
@@ -145,6 +145,8 @@ const HomePage: React.FC = () => {
         description={t('homePage.heroBannerDescription', "Skip the frustration of complicated tools and clunky software. With MatrixAI, you\'ll create stunning videos from images, generate beautiful artwork, transcribe speech to text with high accuracy, write compelling content, and get instant answers from our AI chat—all in one platform. No training, no fiddling, no roadblocks. Our advanced AI takes care of the hard work, delivering professional-quality results every time. Just describe what you want, and watch the magic happen.")}
      
       />
+       <CubeComponent />
+
 
            <AnimatedGridBanner 
         title={t('homePage.gridBannerTitle', "Don\'t settle for outdated and slow tools.")}

@@ -392,6 +392,37 @@ const VideoCreatorPage: React.FC = () => {
       setNegativePrompt("no blur");
     }
   }, [negativePrompt]);
+
+  // Reset video timeline when a new video is loaded
+  useEffect(() => {
+    if (videoUrl && videoRef.current) {
+      const video = videoRef.current;
+      
+      const resetVideoTimeline = () => {
+        video.currentTime = 0;
+        setCurrentTime(0);
+        setVideoProgress(0);
+        setIsPlaying(false);
+      };
+      
+      // If video is already loaded, reset immediately
+      if (video.readyState >= 1) {
+        resetVideoTimeline();
+      } else {
+        // Wait for video to load metadata before resetting
+        const handleLoadedMetadata = () => {
+          resetVideoTimeline();
+          video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        };
+        video.addEventListener('loadedmetadata', handleLoadedMetadata);
+        
+        // Cleanup function
+        return () => {
+          video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        };
+      }
+    }
+  }, [videoUrl]);
   
   // Handle template selection
   const handleTemplateSelect = (templateName: string) => {
@@ -1997,7 +2028,13 @@ const VideoCreatorPage: React.FC = () => {
                           {video.videoUrl && (video.isReady || video.statusDisplay === 'Ready') && (
                             <>
                               <button
-                                onClick={() => setVideoUrl(video.videoUrl || null)}
+                                onClick={() => {
+                                  setVideoUrl(video.videoUrl || null);
+                                  // Reset video timeline to start when selecting a new video
+                                  setCurrentTime(0);
+                                  setVideoProgress(0);
+                                  setIsPlaying(false);
+                                }}
                                 className="text-blue-500 hover:text-blue-700 dark:text-blue-400"
                                 title={t('videoCreator.loadVideo')}
                               >

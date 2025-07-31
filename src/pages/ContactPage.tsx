@@ -5,29 +5,22 @@ import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const offices = [
+ 
   {
-    city: 'San Francisco',
-    country: 'United States',
-    address: '100 Market Street, Suite 300, San Francisco, CA 94105',
-    phone: '+1 (415) 555-1234',
-    email: 'sf@aiassistant.com',
-    image: 'https://images.unsplash.com/photo-1449034446853-66c86144b0ad?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80',
+    city: 'Hong Kong',
+    country: 'Hong Kong SAR',
+    address: '18/F, Tower 1, Admiralty Centre, 18 Harcourt Road, Admiralty, Hong Kong',
+    phone: '+852 2123 4567',
+    email: 'hongkong@aiassistant.com',
+    image: 'https://images.unsplash.com/photo-1536599018102-9f803c140fc1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80',
   },
   {
-    city: 'London',
-    country: 'United Kingdom',
-    address: '10 Primrose Street, London, EC2A 2EW',
-    phone: '+44 20 7123 4567',
-    email: 'london@aiassistant.com',
-    image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80',
-  },
-  {
-    city: 'Singapore',
-    country: 'Singapore',
-    address: '1 Raffles Place, #20-61 Tower 2, Singapore 048616',
-    phone: '+65 6123 4567',
-    email: 'singapore@aiassistant.com',
-    image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2829&q=80',
+    city: 'Shanghai',
+    country: 'China',
+    address: '28/F, Shanghai World Financial Center, 100 Century Avenue, Pudong, Shanghai 200120',
+    phone: '+86 21 6123 4567',
+    email: 'shanghai@aiassistant.com',
+    image: 'https://images.unsplash.com/photo-1474181487882-5abf3f0ba6c2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80',
   },
 ];
 

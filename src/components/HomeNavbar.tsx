@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiArrowRight, FiChevronDown, FiImage, FiVideo, FiMaximize, FiCrop, FiLayers, FiZoomIn, FiCode, FiFileText, FiUsers, FiHelpCircle, FiMessageSquare, FiEdit3, FiMic, FiDownload } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import SimpleLanguageSelector from './SimpleLanguageSelector';
+import matrixLogo from '../assets/matrix.png';
 
 interface HomeNavbarProps {}
 
@@ -23,7 +24,10 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
         <div className="backdrop-blur-md bg-black/20 rounded-lg shadow-lg px-4 py-4 border border-gray-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <Link to="/" className="font-bold text-xl">matrixai<span className="text-red-500">.</span>asia</Link>
+              <Link to="/" className="flex items-center space-x-2">
+                <img src={matrixLogo} alt="Matrix AI" className="w-8 h-8" />
+                <span className="font-bold text-xl">matrixai<span className="text-red-500">.</span>asia</span>
+              </Link>
             </div>
             
             <div className="hidden md:flex items-center space-x-6">

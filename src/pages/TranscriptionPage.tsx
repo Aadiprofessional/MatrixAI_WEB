@@ -1809,7 +1809,7 @@ const TranscriptionPage: React.FC = () => {
                           {/* Paragraph timestamp - above paragraph on left side */}
                           <div className="flex items-center mb-2">
                             <div className="flex flex-col items-start">
-                              <span className="text-xs font-mono text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md shadow-sm">
+                              <span className="text-xs font-mono text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text font-semibold">
                                 {formatTime(paragraph.startTime)}
                               </span>
                             {/* Current time indicator - only show if current time is within this paragraph */}

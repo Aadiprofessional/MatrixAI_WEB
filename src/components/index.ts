@@ -22,3 +22,4 @@ export { default as FAQSection } from './FAQSection';
 export { default as FooterLinks } from './FooterLinks';
 export { default as AnimatedGridBanner } from './AnimatedGridBanner';
 export { default as AuthRequiredButton } from './AuthRequiredButton';
+export { default as CubeComponent } from './CubeComponent';
