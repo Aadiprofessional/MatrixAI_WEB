@@ -2213,8 +2213,8 @@ const ChatPage: React.FC = () => {
         </div>
       )}
       
-      {/* Main content area - Remove navbar and sidebar spacing */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+      {/* Main content area - Add proper top spacing for navbar */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden pt-16">
         {/* Main content area */}
         <div className={`flex-1 flex flex-col overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
           <div className="flex-1 overflow-hidden relative">
@@ -2228,30 +2228,17 @@ const ChatPage: React.FC = () => {
               )}
             </AnimatePresence>
             
-            {/* Mobile menu button for chat history */}
-            <AuthRequiredButton 
-              onClick={() => setShowChatHistory(!showChatHistory)}
-              className={`md:hidden fixed top-20 left-4 z-[60] p-2 rounded-lg ${
-                darkMode 
-                  ? 'bg-gray-800 text-white hover:bg-gray-700' 
-                  : 'bg-white text-gray-800 hover:bg-gray-100'
-              } shadow-md`}
-              aria-label={t('chat.toggleChatHistory')}
-            >
-              <FiMessageSquare className="w-5 h-5" />
-            </AuthRequiredButton>
-            
             {/* Main chat container */}
-            <div className="h-full max-w-6xl mx-auto px-4 pt-4 pb-0 flex flex-col">
-              <div className="bg-opacity-80 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden flex-1 flex flex-col">
+            <div className="h-full w-full sm:max-w-6xl sm:mx-auto px-0 sm:px-4 pt-2 sm:pt-4 pb-0 flex flex-col">
+              <div className="bg-opacity-80 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-xl overflow-hidden flex-1 flex flex-col">
                 {/* Chat interface */}
                 <div ref={chatContainerRef} className="flex flex-col h-full">
                   {/* Chat header with role selector */}
-                  <div className={`px-6 py-3 flex justify-between items-center border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                  <div className={`px-3 sm:px-6 py-2 sm:py-3 flex flex-row justify-between items-center border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                     <div className="relative">
                       <AuthRequiredButton 
                         onClick={() => setShowRoleSelector(!showRoleSelector)} 
-                        className={`flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium border ${
+                        className={`flex items-center space-x-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium border ${
                           darkMode ? 'text-gray-200 hover:bg-gray-700 border-gray-600' : 'text-gray-700 hover:bg-gray-50 border-gray-300'
                         }`}
                       >
@@ -2262,7 +2249,7 @@ const ChatPage: React.FC = () => {
                       
                       {/* Role Selector Dropdown */}
                       {showRoleSelector && (
-                        <div className={`absolute top-full left-0 mt-1 w-64 rounded-md shadow-lg z-10 ${
+                        <div className={`absolute top-full left-0 mt-1 w-56 sm:w-64 rounded-md shadow-lg z-10 ${
                           darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
                         }`}>
                           <div className="py-1">
@@ -2287,111 +2274,48 @@ const ChatPage: React.FC = () => {
                       )}
                     </div>
                     
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1 sm:space-x-2">
                       {!isPro && (
-                        <div className="hidden md:flex items-center text-sm text-yellow-600 dark:text-yellow-400 mr-2">
-                          <FiMessageSquare className="mr-1 h-4 w-4" />
+                        <div className="hidden lg:flex items-center text-xs sm:text-sm text-yellow-600 dark:text-yellow-400 mr-1 sm:mr-2">
+                          <FiMessageSquare className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
                           <span>{t('chat.messagesLeft', { count: remainingMessages })}</span>
                         </div>
                       )}
+                      
+                      {/* Mobile chat history button */}
                       <AuthRequiredButton 
-                        onClick={handleStartNewChat}
-                        className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                        title={t('chat.newChat')}
+                        onClick={() => setShowChatHistory(!showChatHistory)}
+                        className={`md:hidden p-1.5 sm:p-2 rounded-lg ${
+                          showChatHistory
+                            ? (darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-700') 
+                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                        }`}
+                        title={t('chat.toggleChatHistory')}
                       >
-                        <FiPlus className="w-5 h-5" />
+                        <FiMessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
                       </AuthRequiredButton>
                       
-                      {/* History dropdown button */}
-                      <div className="relative">
-                        <AuthRequiredButton 
-                          onClick={() => setShowHistoryDropdown(!showHistoryDropdown)}
-                          className={`p-2 rounded-full ${
-                            showHistoryDropdown
-                              ? (darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-700') 
-                              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                          }`}
-                          title={t('chat.chatHistory')}
-                        >
-                          <FiClock className="w-5 h-5" />
-                        </AuthRequiredButton>
-                        
-                        {/* History Dropdown */}
-                        {showHistoryDropdown && (
-                          <div 
-                            className={`absolute top-full right-0 mt-2 w-72 rounded-lg shadow-xl z-20 overflow-hidden ${
-                              darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-                            }`}
-                          >
-                            <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                              <h3 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{t('chat.recentConversations')}</h3>
-                              <AuthRequiredButton 
-                                onClick={() => setShowHistoryDropdown(false)}
-                                className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-                              >
-                                <FiX className="w-4 h-4" />
-                              </AuthRequiredButton>
-                            </div>
-                            
-                            <div className="max-h-96 overflow-y-auto py-2">
-                              {/* Today's chats */}
-                              {groupedChatHistory.today.length > 0 && (
-                                <div className="mb-3">
-                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.today')}</h4>
-                                  {groupedChatHistory.today.map(chat => renderChatHistoryItem(chat, 'Today'))}
-                                </div>
-                              )}
-                              
-                              {/* Yesterday's chats */}
-                              {groupedChatHistory.yesterday.length > 0 && (
-                                <div className="mb-3">
-                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.yesterday')}</h4>
-                                  {groupedChatHistory.yesterday.map(chat => renderChatHistoryItem(chat, 'Yesterday'))}
-                                </div>
-                              )}
+                      <AuthRequiredButton 
+                        onClick={handleStartNewChat}
+                        className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                        title={t('chat.newChat')}
+                      >
+                        <FiPlus className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </AuthRequiredButton>
+                      
 
-                              {/* Last week chats */}
-                              {groupedChatHistory.lastWeek.length > 0 && (
-                                <div className="mb-3">
-                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.lastWeek')}</h4>
-                                  {groupedChatHistory.lastWeek.map(chat => renderChatHistoryItem(chat, 'Last week'))}
-                                </div>
-                              )}
-                              
-                              {/* Last month chats */}
-                              {groupedChatHistory.lastMonth.length > 0 && (
-                                <div>
-                                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.lastMonth')}</h4>
-                                  {groupedChatHistory.lastMonth.map(chat => renderChatHistoryItem(chat, 'Last month'))}
-                                </div>
-                              )}
-                            </div>
-                            
-                            <div className={`p-2 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                              <AuthRequiredButton 
-                                className={`w-full text-center py-2 rounded-md text-sm font-medium ${
-                                  darkMode 
-                                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                }`}
-                              >
-{t('chat.viewAllHistory')}
-                              </AuthRequiredButton>
-                            </div>
-                          </div>
-                        )}
-                      </div>
                       
                       {/* Auto-speak toggle */}
                       <AuthRequiredButton 
                         onClick={toggleAutoSpeak}
-                        className={`p-2 rounded ${autoSpeak
-                          ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-600')
-                          : (darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700')
+                        className={`p-1.5 sm:p-2 rounded ${
+                          autoSpeak
+                            ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-600')
+                            : (darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700')
                         }`}
                         title={autoSpeak ? t('chat.autoSpeakOn') : t('chat.autoSpeakOff')}
                       >
-                        {autoSpeak ? <FiVolume2 className="w-5 h-5" /> : <FiVolume className="w-5 h-5" />}
+                        {autoSpeak ? <FiVolume2 className="w-4 h-4 sm:w-5 sm:h-5" /> : <FiVolume className="w-4 h-4 sm:w-5 sm:h-5" />}
                       </AuthRequiredButton>
                       
                       {/* Call button */}
@@ -2400,8 +2324,8 @@ const ChatPage: React.FC = () => {
                   </div>
                   
                   {/* Messages container with improved markdown */}
-                  <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-4">
-                    <div className="max-w-3xl mx-auto space-y-6">
+                  <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-2 sm:px-4 py-2 sm:py-4">
+                    <div className="max-w-3xl mx-auto space-y-3 sm:space-y-6">
                       {messages.map((message) => (
                         <motion.div
                           key={message.id}
@@ -2410,9 +2334,9 @@ const ChatPage: React.FC = () => {
                           transition={{ duration: 0.3 }}
                           className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
-                          <div className={`max-w-[85%] flex ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                          <div className={`max-w-[90%] sm:max-w-[85%] flex ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                             {/* Avatar */}
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user' ? 'ml-3' : 'mr-3'} ${
+                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user' ? 'ml-2 sm:ml-3' : 'mr-2 sm:mr-3'} ${
                               message.role === 'user'
                                 ? (darkMode ? 'bg-blue-600' : 'bg-blue-500 text-white')
                                 : (darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white')
@@ -2420,7 +2344,7 @@ const ChatPage: React.FC = () => {
                               {message.role === 'user' ? <FiUser /> : <FiCpu />}
                             </div>
                             
-                            <div className={`rounded-2xl px-6 py-4 ${
+                            <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4 ${
                               message.role === 'user'
                                 ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
                                 : (darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm')
@@ -2433,9 +2357,9 @@ const ChatPage: React.FC = () => {
                                     message.fileName.toLowerCase().endsWith('.doc') || 
                                     message.fileName.toLowerCase().endsWith('.docx')
                                   ) ? (
-                                    <div className={`p-3 rounded-lg flex items-center space-x-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                      <FiFile className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
-                                      <span className="text-sm truncate flex-1">
+                                    <div className={`p-2 sm:p-3 rounded-lg flex items-center space-x-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                      <FiFile className={`text-base sm:text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                                      <span className="text-xs sm:text-sm truncate flex-1">
                                         {message.fileName}
                                         {message.fileName.toLowerCase().endsWith('.pdf') && ` (${t('chat.fileTypes.pdf')})`}
                                         {message.fileName.toLowerCase().endsWith('.doc') && ` (${t('chat.fileTypes.doc')})`}
@@ -2475,13 +2399,13 @@ const ChatPage: React.FC = () => {
                               
                               {/* Coin usage display for AI messages */}
                               {message.role === 'assistant' && uid && coinsUsed[message.id] && (
-                                <div className={`mt-3 pt-2 border-t ${
+                                <div className={`mt-2 sm:mt-3 pt-2 border-t ${
                                   darkMode ? 'border-gray-700' : 'border-gray-200'
-                                } flex items-center space-x-2`}>
+                                } flex items-center space-x-1 sm:space-x-2`}>
                                   <img 
                                     src={coinImage} 
                                     alt="Coin" 
-                                    className="w-4 h-4"
+                                    className="w-3 h-3 sm:w-4 sm:h-4"
                                   />
                                   <span className={`text-xs ${
                                     darkMode ? 'text-gray-400' : 'text-gray-500'
@@ -2497,16 +2421,16 @@ const ChatPage: React.FC = () => {
                                   ? (darkMode ? 'text-gray-500' : 'text-gray-500') 
                                   : 'text-blue-200'
                               }`}>
-                                <span>{formatTimestamp(message.timestamp)}</span>
+                                <span className="text-xs">{formatTimestamp(message.timestamp)}</span>
                                 
-                                <div className="flex space-x-2">
+                                <div className="flex space-x-1 sm:space-x-2">
                                   {/* Add message actions here */}
                                   <button 
                                     onClick={() => copyToClipboard(message.content)}
                                     className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
                                     aria-label={t('chat.copyToClipboard')}
                                   >
-                                    <FiCopy size={14} />
+                                    <FiCopy size={12} className="sm:w-3.5 sm:h-3.5" />
                                   </button>
                                   {message.role === 'assistant' && (
                                     <>
@@ -2520,8 +2444,8 @@ const ChatPage: React.FC = () => {
                                         aria-label={speakingMessageId === message.id ? t('chat.stopSpeaking') : t('chat.speakMessage')}
                                       >
                                         {speakingMessageId === message.id ? 
-                                          <FiSquare size={14} /> : 
-                                          <FiVolume2 size={14} />
+                                          <FiSquare size={12} className="sm:w-3.5 sm:h-3.5" /> : 
+                                          <FiVolume2 size={12} className="sm:w-3.5 sm:h-3.5" />
                                         }
                                       </button>
                                       <button 
@@ -2529,7 +2453,7 @@ const ChatPage: React.FC = () => {
                                         className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
                                         aria-label={t('chat.shareMessage')}
                                       >
-                                        <FiShare2 size={14} />
+                                        <FiShare2 size={12} className="sm:w-3.5 sm:h-3.5" />
                                       </button>
                                     </>
                                   )}
@@ -2543,11 +2467,11 @@ const ChatPage: React.FC = () => {
                       {/* Loading indicator */}
                       {isLoading && (
                         <div className="flex justify-start">
-                          <div className="max-w-[85%] flex flex-row">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-3 ${darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'}`}>
+                          <div className="max-w-[90%] sm:max-w-[85%] flex flex-row">
+                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-2 sm:mr-3 ${darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'}`}>
                               <FiCpu />
                             </div>
-                            <div className={`rounded-2xl px-6 py-4 ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                            <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4 ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm'}`}>
                               <div className="flex space-x-2">
                                 <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '0ms' }}></div>
                                 <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '150ms' }}></div>
@@ -2563,20 +2487,20 @@ const ChatPage: React.FC = () => {
                   </div>
                   
                   {/* Input area */}
-                  <div className={`p-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                  <div className={`p-2 sm:p-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                     {selectedFile && (
                       <div className={`mb-2 p-2 rounded-lg flex items-center space-x-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                        <FiFile className={darkMode ? 'text-gray-300' : 'text-gray-600'} />
-                        <span className="text-sm truncate flex-1">{selectedFile.name}</span>
+                        <FiFile className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} w-4 h-4`} />
+                        <span className="text-xs sm:text-sm truncate flex-1">{selectedFile.name}</span>
                         <AuthRequiredButton 
                           onClick={() => setSelectedFile(null)}
                           className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-600 text-gray-400' : 'hover:bg-gray-200 text-gray-500'}`}
                         >
-                          <FiX size={16} />
+                          <FiX size={14} className="sm:w-4 sm:h-4" />
                         </AuthRequiredButton>
                       </div>
                     )}
-                    <div className={`flex items-end rounded-xl ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border border-gray-300'} focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500`}>
+                    <div className={`flex items-end rounded-lg sm:rounded-xl ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border border-gray-300'} focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500`}>
                       <textarea
                         ref={textareaRef}
                         value={inputMessage}
@@ -2584,9 +2508,9 @@ const ChatPage: React.FC = () => {
                         onKeyDown={handleKeyDown}
                         placeholder={t('chat.placeholder')}
                         rows={1}
-                        className={`flex-1 py-3 px-4 bg-transparent focus:outline-none resize-none max-h-32 ${darkMode ? 'text-white placeholder-gray-400' : 'text-gray-700 placeholder-gray-400'}`}
+                        className={`flex-1 py-2 sm:py-3 px-3 sm:px-4 bg-transparent focus:outline-none resize-none max-h-32 text-sm sm:text-base ${darkMode ? 'text-white placeholder-gray-400' : 'text-gray-700 placeholder-gray-400'}`}
                       />
-                      <div className="flex items-center space-x-1 p-2">
+                      <div className="flex items-center space-x-1 p-1.5 sm:p-2">
                         <input 
                           type="file"
                           ref={fileInputRef}
@@ -2596,22 +2520,22 @@ const ChatPage: React.FC = () => {
                         />
                         <AuthRequiredButton 
                           onClick={handleFileUpload}
-                          className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
+                          className={`p-1.5 sm:p-2 rounded-full ${darkMode ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
                           aria-label={t('chat.uploadFile')}
                         >
-                          <FiFile />
+                          <FiFile className="w-4 h-4 sm:w-5 sm:h-5" />
                         </AuthRequiredButton>
                         <AuthRequiredButton
                           onClick={handleSendMessage}
                           disabled={!inputMessage.trim() && !selectedFile}
-                          className={`p-2 rounded-full ${
+                          className={`p-1.5 sm:p-2 rounded-full ${
                             !inputMessage.trim() && !selectedFile 
                               ? (darkMode ? 'text-gray-500 bg-gray-800' : 'text-gray-400 bg-gray-100') 
                               : (darkMode ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600')
                           }`}
                           aria-label={t('chat.sendMessage')}
                         >
-                          <FiSend />
+                          <FiSend className="w-4 h-4 sm:w-5 sm:h-5" />
                         </AuthRequiredButton>
                       </div>
                     </div>

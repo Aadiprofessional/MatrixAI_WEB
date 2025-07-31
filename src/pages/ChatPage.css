@@ -10,27 +10,7 @@
 .ChatPage .flex.h-screen.overflow-hidden {
   overflow: hidden;
   height: 100vh;
-  position: fixed;
-  width: 100%;
-  top: 0;
-  left: 0;
-  transition: margin-left 0.3s ease;
-}
-
-/* Ensure the chat container adapts to sidebar state */
-@media (min-width: 768px) {
-  .ChatPage .flex.h-screen.overflow-hidden {
-    width: calc(100% - var(--sidebar-width, 256px));
-    left: var(--sidebar-width, 256px);
-  }
-}
-
-/* Handle collapsed sidebar */
-@media (min-width: 768px) {
-  .sidebar-collapsed .ChatPage .flex.h-screen.overflow-hidden {
-    width: calc(100% - var(--collapsed-sidebar-width, 64px));
-    left: var(--collapsed-sidebar-width, 64px);
-  }
+  position: relative;
 }
 
 /* Ensure the main content area fills available space */
@@ -84,20 +64,14 @@
 
 /* Mobile sidebar toggle button positioning */
 @media (max-width: 767px) {
-  /* Adjust chat container to account for mobile sidebar toggle */
-  .ChatPage .flex.h-screen.overflow-hidden {
-    padding-left: 40px; /* Space for the toggle button */
-  }
-  
-  /* Ensure the mobile toggle button is visible above the fixed chat container */
+  /* Ensure the mobile toggle button is visible above the chat container */
   .ChatPage button[aria-label="Toggle mobile menu"] {
     z-index: 70;
   }
   
-  /* Position the chat history toggle button properly with fixed UI */
+  /* Position the chat history toggle button properly */
   .ChatPage button[aria-label="Toggle chat history"] {
     z-index: 70;
-    position: fixed;
     top: 20px;
     left: 50px;
   }
