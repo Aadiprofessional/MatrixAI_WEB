@@ -160,6 +160,7 @@ const ContentWriterPage: React.FC = () => {
 
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const contentDisplayRef = useRef<HTMLDivElement>(null);
+  const historyRef = useRef<HTMLDivElement>(null);
   
   // Fetch content history when component mounts
   // Function to fetch content history from the API
@@ -1233,11 +1234,11 @@ Create content that is original, well-researched, and engaging for the target au
       )}
 
       {/* Header */}
-      <div className="mb-4 mt-5 ml-8">
+      <div className="mb-3 sm:mb-4 mt-4 sm:mt-5 mx-4 sm:ml-8">
         <motion.h1 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 animate-gradient-x"
+          className="text-2xl sm:text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 animate-gradient-x"
         >
           {pageTitle}
         </motion.h1>
@@ -1245,46 +1246,49 @@ Create content that is original, well-researched, and engaging for the target au
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-gray-500 dark:text-gray-400"
+          className="text-sm sm:text-base text-gray-500 dark:text-gray-400"
         >
           {pageSubtitle}
         </motion.p>
       </div>
       
       {/* Tab Navigation */}
-      <div className="mx-8 mb-6">
-        <div className="flex space-x-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="mx-4 sm:mx-8 mb-4 sm:mb-6">
+        <div className="flex space-x-1 sm:space-x-2 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
           <button
             onClick={() => setActiveTab('content-writer')}
-            className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors ${activeTab === 'content-writer' 
+            className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm rounded-t-lg transition-colors whitespace-nowrap ${activeTab === 'content-writer' 
               ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-b-2 border-blue-500' 
               : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400'}`}
           >
             <div className="flex items-center">
-              <FiFileText className="mr-2" />
-              {t('contentWriter.title')}
+              <FiFileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{t('contentWriter.title')}</span>
+              <span className="sm:hidden">Writer</span>
             </div>
           </button>
           <button
             onClick={() => setActiveTab('humanizer')}
-            className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors ${activeTab === 'humanizer' 
+            className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm rounded-t-lg transition-colors whitespace-nowrap ${activeTab === 'humanizer' 
               ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 border-b-2 border-green-500' 
               : 'text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400'}`}
           >
             <div className="flex items-center">
-              <FiUser className="mr-2" />
-              {t('humanizeText.title')}
+              <FiUser className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{t('humanizeText.title')}</span>
+              <span className="sm:hidden">Humanizer</span>
             </div>
           </button>
           <button
             onClick={() => setActiveTab('ai-detector')}
-            className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors ${activeTab === 'ai-detector' 
+            className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm rounded-t-lg transition-colors whitespace-nowrap ${activeTab === 'ai-detector' 
               ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-b-2 border-purple-500' 
               : 'text-gray-600 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-400'}`}
           >
             <div className="flex items-center">
-              <FiShield className="mr-2" />
-              {t('detectAI.title')}
+              <FiShield className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{t('detectAI.title')}</span>
+              <span className="sm:hidden">Detector</span>
             </div>
           </button>
         </div>
@@ -1293,20 +1297,20 @@ Create content that is original, well-researched, and engaging for the target au
       {/* Content based on active tab */}
       {activeTab === 'content-writer' && (
       <>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 px-4 py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8 px-1 sm:px-2 py-2 sm:py-4">
           {/* Left Panel - Controls */}
-          <div className="lg:col-span-2 order-2 lg:order-1">
-            <div className="sticky top-6 space-y-6">
+          <div className="lg:col-span-2 order-1 lg:order-1">
+            <div className="sticky top-2 lg:top-6 space-y-4 lg:space-y-6">
             {/* Content Generation Form */}
-            <div className="glass-effect rounded-lg shadow-sm p-6 m-2 hover:shadow-md transition-shadow">
-              <h2 className="text-xl font-medium mb-4 flex items-center">
-                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1.5 rounded-md mr-2">
-                  <FiEdit className="w-5 h-5" />
+            <div className="glass-effect rounded-lg shadow-sm p-3 sm:p-6 m-1 sm:m-2 hover:shadow-md transition-shadow">
+              <h2 className="text-lg sm:text-xl font-medium mb-3 sm:mb-4 flex items-center">
+                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1 sm:p-1.5 rounded-md mr-2">
+                  <FiEdit className="w-4 h-4 sm:w-5 sm:h-5" />
                 </span>
                 {t('common.create')} Content
               </h2>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('contentWriter.prompt')}</label>
                   <div className="relative">
@@ -1314,7 +1318,7 @@ Create content that is original, well-researched, and engaging for the target au
                       value={prompt}
                       onChange={(e) => handlePromptChange(e.target.value)}
                       placeholder={t('contentWriter.promptPlaceholder')}
-                      className="w-full p-3 border rounded-lg shadow-sm h-32 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2 sm:p-3 border rounded-lg shadow-sm h-24 sm:h-32 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                       disabled={isGenerating}
                     />
                     <div className="absolute bottom-2 right-2 text-xs text-gray-500 dark:text-gray-400">
@@ -1330,11 +1334,11 @@ Create content that is original, well-researched, and engaging for the target au
 
                 {/* Quick Questions */}
                 <div>
-                  <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300 flex items-center">
+                  <label className="block text-sm font-medium mb-2 sm:mb-3 text-gray-700 dark:text-gray-300 flex items-center">
                     <FiZap className="w-4 h-4 mr-1" />
                     {t('contentWriter.quickPrompts')}
                   </label>
-                  <div className="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto pr-1">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3 max-h-48 sm:max-h-60 overflow-y-auto pr-1">
                     {quickQuestions.map((question) => (
                       <motion.div
                         key={question.id}
@@ -1350,23 +1354,23 @@ Create content that is original, well-researched, and engaging for the target au
                           className="w-full h-full"
                         >
                           <div className={`absolute inset-0 opacity-10 ${darkMode ? 'bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500' : 'bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400'}`}></div>
-                          <div className={`relative p-3.5 text-left ${darkMode ? 'bg-gray-800/80' : 'bg-white/90'} h-full`}>
+                          <div className={`relative p-2.5 sm:p-3.5 text-left ${darkMode ? 'bg-gray-800/80' : 'bg-white/90'} h-full`}>
                             <div className="flex items-start">
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center mb-1.5">
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mr-2 ${darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600'}`}>
+                                <div className="flex items-center mb-1 sm:mb-1.5">
+                                  <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium mr-2 ${darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600'}`}>
                                     {question.category}
                                   </span>
                                 </div>
-                                <p className={`text-sm font-medium line-clamp-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                <p className={`text-xs sm:text-sm font-medium line-clamp-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                                   {question.text}
                                 </p>
-                                <p className={`text-xs mt-1.5 line-clamp-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                <p className={`text-xs mt-1 sm:mt-1.5 line-clamp-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                   {question.description}
                                 </p>
                               </div>
-                              <div className={`ml-3 flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                <FiPlus className={`w-4 h-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                              <div className={`ml-2 sm:ml-3 flex-shrink-0 flex items-center justify-center h-6 w-6 sm:h-8 sm:w-8 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                <FiPlus className={`w-3 h-3 sm:w-4 sm:h-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                               </div>
                             </div>
                           </div>
@@ -1377,13 +1381,13 @@ Create content that is original, well-researched, and engaging for the target au
                 </div>
 
                 {/* Settings panel */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('contentWriter.contentType')}</label>
                     <select 
                       value={contentType}
                       onChange={(e) => setContentType(e.target.value)}
-                      className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                       disabled={isGenerating}
                     >
                       {contentTypeOptions.map(option => (
@@ -1397,7 +1401,7 @@ Create content that is original, well-researched, and engaging for the target au
                     <select 
                       value={tone}
                       onChange={(e) => setTone(e.target.value)}
-                      className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                       disabled={isGenerating}
                     >
                       {toneOptions.map(option => (
@@ -1412,7 +1416,7 @@ Create content that is original, well-researched, and engaging for the target au
                   <select 
                     value={targetWordCount}
                     onChange={(e) => setTargetWordCount(Number(e.target.value))}
-                    className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                     disabled={isGenerating}
                   >
                     <option value={250}>{t('contentWriter.wordCounts.250')}</option>
@@ -1426,7 +1430,7 @@ Create content that is original, well-researched, and engaging for the target au
                 <AuthRequiredButton
                   onClick={handleGenerateContent}
                   disabled={!prompt.trim() || isGenerating}
-                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all ${
+                  className={`w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium transition-all text-sm sm:text-base ${
                     !prompt.trim() || isGenerating
                       ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                       : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]'
@@ -1434,16 +1438,16 @@ Create content that is original, well-researched, and engaging for the target au
                 >
                   {isGenerating ? (
                     <div className="flex items-center justify-center">
-                      <FiRotateCw className="w-4 h-4 mr-2 animate-spin" />
-                      {getStatusText()}
+                      <FiRotateCw className="w-3 h-3 sm:w-4 sm:h-4 mr-2 animate-spin" />
+                      <span className="text-xs sm:text-sm">{getStatusText()}</span>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center">
-                      <FiZap className="w-4 h-4 mr-2" />
-                      {t('contentWriter.generateContent')}
+                      <FiZap className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                      <span>{t('contentWriter.generateContent')}</span>
                       <div className="flex items-center ml-2 text-yellow-300">
-                        <span className="text-sm">-3</span>
-                        <img src={coinImage} alt="coin" className="w-4 h-4 ml-1" />
+                        <span className="text-xs sm:text-sm">-3</span>
+                        <img src={coinImage} alt="coin" className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
                       </div>
                     </div>
                   )}
@@ -1461,8 +1465,16 @@ Create content that is original, well-researched, and engaging for the target au
 
                 {/* View History Button */}
                 <AuthRequiredButton
-                  onClick={() => setShowHistory(!showHistory)}
-                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all mt-4 ${
+                  onClick={() => {
+                    setShowHistory(!showHistory);
+                    if (!showHistory) {
+                      // Auto-scroll to history section when showing history
+                      setTimeout(() => {
+                        historyRef.current?.scrollIntoView({ behavior: 'smooth' });
+                      }, 100);
+                    }
+                  }}
+                  className={`w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium transition-all mt-3 sm:mt-4 text-sm sm:text-base ${
                     darkMode
                       ? 'bg-purple-900/30 text-purple-400 hover:bg-purple-900/50'
                       : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
@@ -1479,43 +1491,44 @@ Create content that is original, well-researched, and engaging for the target au
         </div>
 
         {/* Right Panel - Content Display */}
-        <div className="lg:col-span-3 order-1 lg:order-2">
-          <div className="glass-effect rounded-lg shadow-sm overflow-hidden m-2">
+        <div className="lg:col-span-3 order-2 lg:order-2">
+          <div className="glass-effect rounded-lg shadow-sm overflow-hidden m-1 sm:m-2">
             {/* Header */}
-            <div className="border-b border-gray-200 dark:border-gray-700 p-4">
+            <div className="border-b border-gray-200 dark:border-gray-700 p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
-                  <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1.5 rounded-md mr-2">
-                    <FiFileText className="w-5 h-5" />
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
+                  <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1 sm:p-1.5 rounded-md mr-2">
+                    <FiFileText className="w-4 h-4 sm:w-5 sm:h-5" />
                   </span>
-                  {t('contentWriter.generatedContent')}
+                  <span className="hidden sm:inline">{t('contentWriter.generatedContent')}</span>
+                  <span className="sm:hidden">{t('contentWriter.content')}</span>
                 </h3>
                 {editedContent && (
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-1 sm:space-x-2">
                     <AuthRequiredButton
                       onClick={handleCopyContent}
-                      className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm"
+                      className="px-2 sm:px-3 py-1 sm:py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-xs sm:text-sm"
                     >
-                      <FiCopy className="w-4 h-4 mr-1" />
-                      {t('common.copy')}
+                      <FiCopy className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">{t('common.copy')}</span>
                     </AuthRequiredButton>
                     
                     <AuthRequiredButton
                       onClick={() => setIsEditing(!isEditing)}
-                      className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm"
+                      className="px-2 sm:px-3 py-1 sm:py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-xs sm:text-sm"
                     >
-                      <FiEdit className="w-4 h-4 mr-1" />
-                      {isEditing ? t('common.view') : t('common.edit')}
+                      <FiEdit className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">{isEditing ? t('common.view') : t('common.edit')}</span>
                     </AuthRequiredButton>
                     
                     {/* Download Dropdown */}
                     <div className="relative group">
                       <AuthRequiredButton
                         disabled={isDownloading}
-                        className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center text-sm disabled:opacity-50"
+                        className="px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center text-xs sm:text-sm disabled:opacity-50"
                       >
-                        <FiDownload className="w-4 h-4 mr-1" />
-                        {isDownloading ? t('common.downloading') : t('common.download')}
+                        <FiDownload className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                        <span className="hidden sm:inline">{isDownloading ? t('common.downloading') : t('common.download')}</span>
                       </AuthRequiredButton>
                       
                       <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
@@ -1560,7 +1573,7 @@ Create content that is original, well-researched, and engaging for the target au
             
             <div className="p-6 m-2" ref={contentDisplayRef}>
               {editedContent || isStreaming ? (
-                <div className="w-full h-[600px] overflow-y-auto" data-content-container="true">
+                <div className={`w-full ${showHistory ? 'h-[400px]' : 'h-[600px]'} overflow-y-auto`} data-content-container="true">
                   {isStreaming ? (
                     <div className="prose prose-sm max-w-none dark:prose-invert mb-4 markdown-content streaming-content">
                       <ReactMarkdown
@@ -1578,24 +1591,24 @@ Create content that is original, well-researched, and engaging for the target au
                         ref={editorRef}
                         value={editedContent}
                         onChange={(e) => setEditedContent(e.target.value)}
-                        className="w-full min-h-[600px] p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-200 font-mono text-sm resize-none"
+                        className="w-full min-h-[400px] sm:min-h-[600px] p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-200 font-mono text-xs sm:text-sm resize-none"
                         spellCheck="false"
                         placeholder="Edit your generated content here..."
                       />
-                      <div className="mt-4 flex justify-end">
+                      <div className="mt-3 sm:mt-4 flex justify-end space-x-2">
                         <button
                           onClick={clearContent}
-                          className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-sm mr-2"
+                          className="px-2 sm:px-3 py-1 sm:py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center text-xs sm:text-sm"
                         >
-                          <FiTrash className="w-4 h-4 mr-1" />
-                          {t('common.clear')}
+                          <FiTrash className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                          <span className="hidden sm:inline">{t('common.clear')}</span>
                         </button>
                         <button
                           onClick={() => setIsEditing(false)}
-                          className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center text-sm"
+                          className="px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center text-xs sm:text-sm"
                         >
-                          <FiCheck className="w-4 h-4 mr-1" />
-                          {t('common.done')}
+                          <FiCheck className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                          <span className="hidden sm:inline">{t('common.done')}</span>
                         </button>
                       </div>
                     </div>
@@ -1615,18 +1628,18 @@ Create content that is original, well-researched, and engaging for the target au
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex flex-col items-center justify-center text-center py-16"
+                  className="flex flex-col items-center justify-center text-center py-8 sm:py-16 px-4"
                 >
-                  <div className="h-20 w-20 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-opacity-10 flex items-center justify-center mb-4">
-                    <FiFileText className="h-10 w-10 text-blue-500 dark:text-blue-400" />
+                  <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-opacity-10 flex items-center justify-center mb-3 sm:mb-4">
+                    <FiFileText className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500 dark:text-blue-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t('contentWriter.noContentGenerated')}</h3>
-                  <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t('contentWriter.noContentGenerated')}</h3>
+                  <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-md mb-4 sm:mb-6">
                     {t('contentWriter.subtitle')}
                   </p>
                   
                   {/* Featured Quick Questions for Empty State */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-8 w-full max-w-2xl">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3 mt-6 sm:mt-8 w-full max-w-2xl">
                     {quickQuestions.slice(0, 4).map((question) => (
                       <motion.div
                         key={question.id}
@@ -1634,7 +1647,7 @@ Create content that is original, well-researched, and engaging for the target au
                         animate={{ opacity: 1, y: 0 }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className={`p-4 text-left rounded-lg border transition-all ${
+                        className={`p-3 sm:p-4 text-left rounded-lg border transition-all ${
                           darkMode
                             ? 'border-gray-600 bg-gray-700/30 hover:bg-gray-700/50 hover:border-blue-500'
                             : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-blue-300'
@@ -1675,12 +1688,12 @@ Create content that is original, well-researched, and engaging for the target au
         </div>
 
         {/* History Button - Moved outside the grid to span full width */}
-        <div className="mt-8 ml-8 lg:col-span-5 order-3">
+        <div className="mt-8 lg:col-span-5 order-3">
         
           
           {/* Content History Section - Conditionally rendered with full page width */}
           {showHistory && (
-            <div className="w-full px-4">
+            <div className="w-full px-4" ref={historyRef}>
               {contentHistory && Array.isArray(contentHistory) && contentHistory.length > 0 ? (
                 <div>
                   {/* View Mode Toggle */}

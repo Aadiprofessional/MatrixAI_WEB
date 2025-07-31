@@ -57,6 +57,7 @@ const HumaniseTextPage: React.FC = () => {
   const itemsPerPage = 6;
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
+  const historyRef = useRef<HTMLDivElement>(null);
 
   // Tone options
   const toneOptions = [
@@ -294,7 +295,7 @@ const HumaniseTextPage: React.FC = () => {
       <div className="gradient-blob-1"></div>
       <div className="gradient-blob-2"></div>
     
-      <div className="container mx-auto max-w-6xl flex-1 p-4 md:p-6 relative z-10">
+      <div className="container mx-auto max-w-6xl flex-1 md:p-6 relative z-10">
       {showProAlert && (
         <ProFeatureAlert 
           featureName={t('humanizeText.title')}
@@ -304,9 +305,9 @@ const HumaniseTextPage: React.FC = () => {
       
     
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8sm:px-2 py-2 sm:py-4">
         {/* Text Input Form */}
-        <div className="lg:col-span-2 order-2 lg:order-1">
+        <div className="lg:col-span-2 order-1 lg:order-1">
           <div className="sticky top-6 space-y-6">
             {/* Text Input */}
             <div className="rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow glass-effect">
@@ -374,7 +375,14 @@ const HumaniseTextPage: React.FC = () => {
                 </button>
 
                    <AuthRequiredButton
-                  onClick={() => setShowHistory(!showHistory)}
+                  onClick={() => {
+                    setShowHistory(!showHistory);
+                    if (!showHistory) {
+                      setTimeout(() => {
+                        historyRef.current?.scrollIntoView({ behavior: 'smooth' });
+                      }, 100);
+                    }
+                  }}
                   className={`w-full py-3 px-4 rounded-lg font-medium transition-all mt-4 ${
                     darkMode
                       ? 'bg-purple-900/30 text-purple-400 hover:bg-purple-900/50'
@@ -459,7 +467,7 @@ const HumaniseTextPage: React.FC = () => {
         </div>
 
         {/* Output Section */}
-        <div className="lg:col-span-3 order-1 lg:order-2">
+        <div className="lg:col-span-3 order-2 lg:order-2">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden glass-effect">
             {/* Header */}
             <div className="border-b border-gray-200 dark:border-gray-700 p-4">
@@ -500,7 +508,7 @@ const HumaniseTextPage: React.FC = () => {
             
             <div className="p-6">
               {humanisedText ? (
-                <div className="w-full min-h-[600px]">
+                <div className={`w-full ${showHistory ? 'min-h-[400px]' : 'min-h-[600px]'}`}>
                   <div className="prose prose-sm max-w-none dark:prose-invert mb-4 markdown-content">
                     <ReactMarkdown>
                       {humanisedText}
@@ -510,7 +518,7 @@ const HumaniseTextPage: React.FC = () => {
                     ref={contentRef}
                     value={humanisedText}
                     onChange={handleContentChange}
-                    className="w-full min-h-[600px] p-0 border-0 focus:ring-0 dark:bg-gray-800 dark:text-gray-200 font-mono text-sm resize-none hidden"
+                    className={`w-full ${showHistory ? 'min-h-[400px]' : 'min-h-[600px]'} p-0 border-0 focus:ring-0 dark:bg-gray-800 dark:text-gray-200 font-mono text-sm resize-none hidden`}
                     spellCheck="false"
                   />
                 </div>
@@ -576,9 +584,9 @@ const HumaniseTextPage: React.FC = () => {
       )}
       
       {/* History Button and History from API */}
-      <div className="mt-8">
+      <div ref={historyRef} className="mt-8">
         {showHistory && (
-          <div>
+          <div className="w-full px-4">
             {history.length > 0 ? (
               <div>
                 {/* View Mode Toggle */}
@@ -612,7 +620,7 @@ const HumaniseTextPage: React.FC = () => {
 
                 {/* Grid View */}
                 {viewMode === 'grid' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {history.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => (
                       <motion.div
                         key={item.id}

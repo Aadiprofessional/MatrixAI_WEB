@@ -1035,7 +1035,7 @@ const SpeechToTextPage: React.FC = () => {
       
       <div className="flex-1 flex flex-col relative z-10">
         <div className="flex-1 p-0">
-          <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="max-w-7xl mx-auto px-1 sm:px-2 py-2 sm:py-4">
         {showProAlert && (
           <div className="mx-2">
             <ProFeatureAlert 
@@ -1046,11 +1046,11 @@ const SpeechToTextPage: React.FC = () => {
         )}
         
         {/* Header section */}
-        <div className="mb-8 mx-2">
+        <div className="mb-6 sm:mb-8 mx-1 sm:mx-2">
           <motion.h1 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 animate-gradient-x"
+            className="text-2xl sm:text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500 animate-gradient-x"
           >
             {t('speechToText.title')}
           </motion.h1>
@@ -1058,7 +1058,7 @@ const SpeechToTextPage: React.FC = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-gray-500 dark:text-gray-400 text-lg max-w-2xl"
+            className="text-gray-500 dark:text-gray-400 text-base sm:text-lg max-w-2xl"
           >
             {t('speechToText.subtitle')}
           </motion.p>
@@ -1089,10 +1089,10 @@ const SpeechToTextPage: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
           <div 
-            className={`border-2 border-dashed rounded-xl p-8 m-2 transition-all ${
+            className={`border-2 border-dashed rounded-xl p-4 sm:p-8 m-1 sm:m-2 transition-all ${
               audioFile 
                 ? 'border-green-500 bg-green-50 dark:bg-green-900/10' 
                 : 'border-gray-300 hover:border-blue-500 dark:border-gray-700 dark:hover:border-blue-500'
@@ -1276,53 +1276,55 @@ const SpeechToTextPage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-10 mx-2"
+          className="mt-6 sm:mt-10 mx-1 sm:mx-2"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">{t('speechToText.recentTranscriptions')}</h2>
+          <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-6">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200">{t('speechToText.recentTranscriptions')}</h2>
             
-            <div className="flex items-center space-x-2 mt-3 sm:mt-0">
-              <button
-                onClick={refreshFiles}
-                disabled={isRefreshing}
-                className={`p-2 text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 ${isRefreshing ? 'animate-spin' : ''}`}
-                title={t('speechToText.refresh')}
-              >
-                <FiRefreshCw />
-              </button>
-              
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder={t('speechToText.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto transition-colors"
-                />
-                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              </div>
-              
-              <div className="flex">
+            <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:space-x-2">
+              <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-l-lg border ${
-                    viewMode === 'grid'
-                      ? 'bg-blue-50 border-blue-500 text-blue-500 dark:bg-blue-900/30 dark:border-blue-500'
-                      : 'border-gray-300 text-gray-500 dark:border-gray-600 dark:text-gray-400'
-                  }`}
+                  onClick={refreshFiles}
+                  disabled={isRefreshing}
+                  className={`p-2 text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 ${isRefreshing ? 'animate-spin' : ''}`}
+                  title={t('speechToText.refresh')}
                 >
-                  <FiGrid />
+                  <FiRefreshCw />
                 </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-r-lg border-t border-b border-r ${
-                    viewMode === 'list'
-                      ? 'bg-blue-50 border-blue-500 text-blue-500 dark:bg-blue-900/30 dark:border-blue-500'
-                      : 'border-gray-300 text-gray-500 dark:border-gray-600 dark:text-gray-400'
-                  }`}
-                >
-                  <FiList />
-                </button>
+                
+                <div className="relative flex-1 sm:flex-none">
+                  <input
+                    type="text"
+                    placeholder={t('speechToText.searchPlaceholder')}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto transition-colors"
+                  />
+                  <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+                
+                <div className="flex">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded-l-lg border ${
+                      viewMode === 'grid'
+                        ? 'bg-blue-50 border-blue-500 text-blue-500 dark:bg-blue-900/30 dark:border-blue-500'
+                        : 'border-gray-300 text-gray-500 dark:border-gray-600 dark:text-gray-400'
+                    }`}
+                  >
+                    <FiGrid />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded-r-lg border-t border-b border-r ${
+                      viewMode === 'list'
+                        ? 'bg-blue-50 border-blue-500 text-blue-500 dark:bg-blue-900/30 dark:border-blue-500'
+                        : 'border-gray-300 text-gray-500 dark:border-gray-600 dark:text-gray-400'
+                    }`}
+                  >
+                    <FiList />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1336,7 +1338,7 @@ const SpeechToTextPage: React.FC = () => {
             </div>
           ) : getFilteredAndSortedFiles().length > 0 ? (
             <>
-              <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5' : 'space-y-4'}`}>
+              <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5' : 'space-y-4'}`}>
                 {paginatedFiles.map((file, index) => (
                   <Suspense key={file.audioid} fallback={
                     <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl shadow-md h-32 animate-pulse m-2"></div>
@@ -1362,34 +1364,36 @@ const SpeechToTextPage: React.FC = () => {
               
               {/* Pagination Controls */}
               {totalPages > 1 && (
-                <div className="flex justify-center items-center mt-8 space-x-4">
+                <div className="flex justify-center items-center mt-6 sm:mt-8 space-x-2 sm:space-x-4">
                   <button
                     onClick={prevPage}
                     disabled={page === 1}
-                    className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                    className={`flex items-center px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
                       page === 1
                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
                         : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
                     }`}
                   >
                     <FiChevronLeft className="mr-1" />
-                    {t('speechToText.previous')}
+                    <span className="hidden sm:inline">{t('speechToText.previous')}</span>
+                    <span className="sm:hidden">Prev</span>
                   </button>
                   
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {t('speechToText.pageInfo', { current: page, total: totalPages })}
+                  <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base px-2">
+                    {page}/{totalPages}
                   </span>
                   
                   <button
                     onClick={nextPage}
                     disabled={page === totalPages}
-                    className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                    className={`flex items-center px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
                       page === totalPages
                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
                         : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
                     }`}
                   >
-                    {t('speechToText.next')}
+                    <span className="hidden sm:inline">{t('speechToText.next')}</span>
+                    <span className="sm:hidden">Next</span>
                     <FiChevronRight className="ml-1" />
                   </button>
                 </div>

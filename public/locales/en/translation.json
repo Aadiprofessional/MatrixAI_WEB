@@ -328,6 +328,7 @@
     "title": "AI Content Writer",
     "subtitle": "Enter a prompt, choose from quick content ideas, and configure your settings to generate high-quality content with AI.",
     "insufficientCoins": "Insufficient Coins",
+    "content":"Content",
     "needMoreCoins": "You need more coins to generate content",
     "buyCoins": "Buy Coins",
     "prompt": "Prompt",

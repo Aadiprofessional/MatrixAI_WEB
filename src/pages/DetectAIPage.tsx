@@ -104,6 +104,8 @@ const DetectAIPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const itemsPerPage = 10;
   
+  const historyRef = useRef<HTMLDivElement>(null);
+  
   // Fetch user's detection history
   const fetchUserDetections = async (page: number = currentPage) => {
     if (!userData?.uid) return;
@@ -608,7 +610,7 @@ ${text}
   return (
     <div className="min-h-screen relative overflow-hidden">
      
-      <div className="container mx-auto max-w-6xl flex-1 p-4 md:p-6 relative z-10">
+      <div className="container mx-auto max-w-6xl flex-1 md:p-6 relative z-10">
       {showProAlert && (
         <ProFeatureAlert 
           featureName={t('detectAI.title')}
@@ -618,9 +620,9 @@ ${text}
       
    
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8  sm:px-2 py-2 sm:py-4">
         {/* Text Input Form */}
-        <div className="lg:col-span-2 order-2 lg:order-1">
+        <div className="lg:col-span-2 order-1 lg:order-1">
           <div className="sticky top-6 space-y-6">
             {/* Text Input */}
             <div className="glass-effect bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
@@ -738,18 +740,25 @@ ${text}
                 </AuthRequiredButton>
                 
                 <AuthRequiredButton
-                  onClick={() => setShowHistory(!showHistory)}
-                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all mt-4 ${
-                    darkMode
-                      ? 'bg-purple-900/30 text-purple-400 hover:bg-purple-900/50'
-                      : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-center">
-                    <FiFileText className="w-4 h-4 mr-2" />
-                    {showHistory ? t('common.hideHistory') || 'Hide History' : t('contentWriter.history')}
-                  </div>
-                </AuthRequiredButton>
+                    onClick={() => {
+                      setShowHistory(!showHistory);
+                      if (!showHistory) {
+                        setTimeout(() => {
+                          historyRef.current?.scrollIntoView({ behavior: 'smooth' });
+                        }, 100);
+                      }
+                    }}
+                    className={`w-full py-3 px-4 rounded-lg font-medium transition-all mt-4 ${
+                      darkMode
+                        ? 'bg-purple-900/30 text-purple-400 hover:bg-purple-900/50'
+                        : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center">
+                      <FiFileText className="w-4 h-4 mr-2" />
+                      {showHistory ? t('common.hideHistory') || 'Hide History' : t('detectAI.historyTitle') || 'Detection History'}
+                    </div>
+                  </AuthRequiredButton>
               </div>
             </div>
             
@@ -757,8 +766,8 @@ ${text}
           </div>
         </div>
         
-        {/* Output */}
-        <div className="lg:col-span-3 order-1 lg:order-2">
+        {/* Output Section */}
+        <div className="lg:col-span-3 order-2 lg:order-2">
           <div className="glass-effect bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
             {/* Content Header */}
             <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-b border-indigo-100 dark:border-indigo-800/50 p-4 flex justify-between items-center">
@@ -826,7 +835,7 @@ ${text}
             )}
             
             {/* Content Area */}
-            <div className="p-6">
+            <div className={`p-6 ${showHistory ? 'min-h-[400px]' : 'min-h-[600px]'}`}>
               {detectionResult ? (
                 renderDetectionResult()
               ) : (
@@ -843,7 +852,7 @@ ${text}
                     {t('detectAI.emptyDesc')}
                   </p>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl">
+                  <div className="grid grid-cols-2 gap-3 max-w-xl">
                     <motion.div 
                       whileHover={{ scale: 1.02 }}
                       onClick={() => setText(t('detectAI.quickPrompts.generalAnalysis'))}
@@ -900,9 +909,9 @@ ${text}
       </div>
 
       {/* Detection History */}
-      <div className="mt-10">
-        {showHistory && (
-          <div className="p-6">
+       <div ref={historyRef} className="mt-10">
+         {showHistory && (
+           <div className="w-full px-4">
             {/* History Header with View Toggle */}
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -946,7 +955,7 @@ ${text}
               <>
                 {/* Grid View */}
                 {viewMode === 'grid' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {savedContents.map((saved) => (
                       <motion.div 
                         key={saved.id}
