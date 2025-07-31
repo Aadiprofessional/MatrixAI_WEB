@@ -134,7 +134,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                   ? 'bg-black/30 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500' 
                   : 'bg-white/30 border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500'
               }`}
-              placeholder={t('navbar.search')}
+              placeholder={t('dashboard.search')}
             />
           </div>
         </div>
@@ -160,7 +160,7 @@ const Navbar: React.FC<NavbarProps> = () => {
               className="flex items-center px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-gradient-to-r from-purple-500 to-blue-600 text-white hover:opacity-90 transition-opacity"
             >
               <FiStar className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
-              <span className="font-medium">{t('navbar.upgrade')}</span>
+              <span className="font-medium">{t('dashboard.upgrade')}</span>
             </button>
           )}
           
@@ -173,7 +173,7 @@ const Navbar: React.FC<NavbarProps> = () => {
               className="flex items-center px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:opacity-90 transition-opacity"
             >
               <FiPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
-              <span className="font-medium">{t('navbar.buyCoins')}</span>
+              <span className="font-medium">{t('dashboard.buyCoins')}</span>
             </button>
           )}
 
@@ -189,7 +189,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                   ? 'bg-amber-900/30 text-amber-300 hover:bg-amber-900/40' 
                   : 'bg-amber-100 text-amber-600 hover:bg-amber-200'
               }`}
-              title={t('navbar.clickToBuyCoins')}
+              title={t('dashboard.clickToBuyCoins')}
             >
               <img src={coinImage} alt="Coin" className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
               <span className="font-medium">{localCoins !== undefined ? localCoins : (userData?.user_coins || 0)}</span>
@@ -204,7 +204,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                 ? 'text-yellow-300 hover:bg-gray-700' 
                 : 'text-gray-500 hover:bg-gray-100'
             }`}
-            aria-label={t('navbar.toggleDarkMode')}
+            aria-label={t('dashboard.toggleDarkMode')}
           >
             {darkMode ? <FiSun className="w-4 h-4 sm:w-5 sm:h-5" /> : <FiMoon className="w-4 h-4 sm:w-5 sm:h-5" />}
           </button>
@@ -229,11 +229,11 @@ const Navbar: React.FC<NavbarProps> = () => {
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center"
             >
-              <span className="sr-only">{t('navbar.openUserMenu')}</span>
+              <span className="sr-only">{t('dashboard.openUserMenu')}</span>
               {userData?.dp_url ? (
                 <img 
                   src={userData.dp_url} 
-                  alt={userData.name || t('navbar.user')} 
+                  alt={userData.name || t('dashboard.user')} 
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border-2 border-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
                 />
               ) : (
@@ -259,7 +259,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                     <div className={`mt-1 px-2 py-0.5 text-xs rounded-full inline-block ${
                       darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-600'
                     }`}>
-                      {userData.user_plan} {t('navbar.plan')}
+                      {userData.user_plan} {t('dashboard.plan')}
                     </div>
                   )}
                 </div>
@@ -267,27 +267,27 @@ const Navbar: React.FC<NavbarProps> = () => {
                   <li>
                     <Link to="/profile" className={`block py-2 px-4 ${
                       darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                    }`}>{t('navbar.profile')}</Link>
+                    }`}>{t('dashboard.profile')}</Link>
                   </li>
                   <li>
                     <Link to="/transactions" className={`block py-2 px-4 ${
                       darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                    }`}>{t('navbar.transactions')}</Link>
+                    }`}>{t('dashboard.transactions')}</Link>
                   </li>
                   <li>
                     <Link to="/order-history" className={`block py-2 px-4 ${
                       darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                    }`}>{t('navbar.orderHistory')}</Link>
+                    }`}>{t('dashboard.orderHistory')}</Link>
                   </li>
                   <li>
                     <Link to="/referral" className={`block py-2 px-4 ${
                       darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                    }`}>{t('navbar.referEarn')}</Link>
+                    }`}>{t('dashboard.referEarn')}</Link>
                   </li>
                   <li>
                     <Link to="/settings" className={`block py-2 px-4 ${
                       darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                    }`}>{t('navbar.settings')}</Link>
+                    }`}>{t('dashboard.settings')}</Link>
                   </li>
                 </ul>
                 <div className={`py-1 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
@@ -297,7 +297,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                       darkMode ? 'text-red-400 hover:bg-gray-700' : 'text-red-600 hover:bg-gray-100'
                     }`}
                   >
-                    <FiLogOut className="mr-2 h-4 w-4" /> {t('navbar.signOut')}
+                    <FiLogOut className="mr-2 h-4 w-4" /> {t('dashboard.signOut')}
                   </button>
                 </div>
               </div>
@@ -322,7 +322,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                   ? 'bg-black/30 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500' 
                   : 'bg-white/30 border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500'
               }`}
-              placeholder={t('navbar.search')}
+              placeholder={t('dashboard.search')}
               autoFocus
             />
           </div>

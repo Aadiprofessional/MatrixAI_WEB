@@ -34,16 +34,35 @@ import matrix from '../assets/matrix.png';
 interface SidebarProps {
   onToggle?: (collapsed: boolean) => void;
   activeLink?: string;
+  isMobileMenuOpen?: boolean;
+  onMobileMenuToggle?: (isOpen: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpen = false, onMobileMenuToggle }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { darkMode } = useContext(ThemeContext);
   const { userData, isPro } = useUser();
   const { signOut } = useAuth();
   const { t } = useTranslation();
-  const [collapsed, setCollapsed] = useState(false);
+  // Initialize collapsed state from localStorage to persist across navigation
+  const [collapsed, setCollapsed] = useState(() => {
+    const savedState = localStorage.getItem('sidebar-collapsed');
+    return savedState ? JSON.parse(savedState) : false;
+  });
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Speech to text state
   const [showSpeechToTextModal, setShowSpeechToTextModal] = useState(false);
@@ -63,19 +82,29 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
   };
 
   const toggleSidebar = () => {
-    const newCollapsedState = !collapsed;
-    setCollapsed(newCollapsedState);
-    if (onToggle) {
-      onToggle(newCollapsedState);
+    if (isMobile) {
+      // On mobile, toggle the mobile menu
+      const newMobileMenuState = !isMobileMenuOpen;
+      if (onMobileMenuToggle) {
+        onMobileMenuToggle(newMobileMenuState);
+      }
+    } else {
+      // On desktop, toggle collapsed state and save to localStorage
+      const newCollapsedState = !collapsed;
+      setCollapsed(newCollapsedState);
+      localStorage.setItem('sidebar-collapsed', JSON.stringify(newCollapsedState));
+      if (onToggle) {
+        onToggle(newCollapsedState);
+      }
     }
   };
 
-  // Call onToggle on initial render with the current state
+  // Call onToggle only when collapsed state actually changes, not on every render
   useEffect(() => {
     if (onToggle) {
       onToggle(collapsed);
     }
-  }, [collapsed, onToggle]);
+  }, [collapsed]); // Removed onToggle from dependencies to prevent unnecessary calls
 
   const isActive = (path: string) => {
     if (activeLink) {
@@ -174,50 +203,88 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
 
   return (
     <>
+      {/* Mobile Overlay */}
+      {isMobile && isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          onClick={() => onMobileMenuToggle && onMobileMenuToggle(false)}
+        />
+      )}
+      
       {/* Sidebar Container */}
       <aside
-        className={`fixed h-screen transition-all duration-300 ${
-          collapsed ? 'w-16' : 'w-64'
+        className={`fixed h-screen transition-all duration-300 z-40 overflow-hidden ${
+          isMobile 
+            ? `w-64 transform ${
+                isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+              } md:translate-x-0`
+            : collapsed ? 'w-16' : 'w-64'
         } ${
           darkMode 
-            ? 'backdrop-blur-md bg-black/20 border-gray-700' 
-            : 'backdrop-blur-md bg-white/20 border-gray-200'
-        } border-r left-0 top-0 z-40 overflow-hidden`}
+            ? 'backdrop-blur-md bg-black/90 md:bg-black/20 border-gray-700' 
+            : 'backdrop-blur-md bg-white/90 md:bg-white/20 border-gray-200'
+        } border-r left-0 top-0`}
         style={{ position: 'fixed' }}
       >
         <div className="flex flex-col h-full">
           {/* Logo and Toggle Section */}
           <div className="flex-shrink-0 px-3 py-4">
-            <div className="flex items-center justify-between mb-8 px-2">
-              <Link to="/dashboard" className="flex items-center">
-                <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-white -p-5">
-                  <img src={matrix} alt="MatrixAI Logo" className="h-12 w-48" />
-                </div>
-                {!collapsed ? (
-                  <div className="flex items-center">
-                    <span className="ml-2 text-lg font-bold">matrixai</span>
-                    {isPro && (
-                      <span className="ml-1 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5">
-                        PRO
-                      </span>
-                    )}
+            {collapsed && !isMobile ? (
+              /* Collapsed desktop layout - logo centered, button below */
+              <div className="flex flex-col items-center mb-8">
+                <Link to="/dashboard" className="flex justify-center mb-4">
+                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-white">
+                    <img src={matrix} alt="MatrixAI Logo" className="h-12 w-12 object-contain" />
                   </div>
-                ) : null}
-              </Link>
-              <button 
-                onClick={toggleSidebar}
-                className={`p-2 rounded-lg ${
-                  darkMode 
-                    ? 'text-gray-400 hover:bg-gray-700' 
-                    : 'text-gray-500 hover:bg-gray-100'
-                } ${collapsed ? 'mx-auto' : ''}`}
-              >
-                <FiChevronLeft className={`w-5 h-5 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} />
-              </button>
-            </div>
+                </Link>
+                <button 
+                  onClick={toggleSidebar}
+                  className={`p-2 rounded-lg ${
+                    darkMode 
+                      ? 'text-gray-400 hover:bg-gray-700' 
+                      : 'text-gray-500 hover:bg-gray-100'
+                  }`}
+                >
+                  <FiChevronLeft className="w-5 h-5 transition-transform duration-300 rotate-180" />
+                </button>
+              </div>
+            ) : (
+              /* Expanded layout - logo and button side by side */
+              <div className="flex items-center justify-between mb-8 px-2">
+                <Link to="/dashboard" className="flex items-center">
+                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-white">
+                    <img src={matrix} alt="MatrixAI Logo" className="h-12 w-48" />
+                  </div>
+                  {(!collapsed || isMobile) ? (
+                    <div className="flex items-center">
+                      <span className="ml-2 text-lg font-bold">matrixai</span>
+                      {isPro && (
+                        <span className="ml-1 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5">
+                          PRO
+                        </span>
+                      )}
+                    </div>
+                  ) : null}
+                </Link>
+                <button 
+                  onClick={toggleSidebar}
+                  className={`p-2 rounded-lg ${
+                    darkMode 
+                      ? 'text-gray-400 hover:bg-gray-700' 
+                      : 'text-gray-500 hover:bg-gray-100'
+                  }`}
+                >
+                  {isMobile ? (
+                    <FiX className="w-5 h-5" />
+                  ) : (
+                    <FiChevronLeft className="w-5 h-5 transition-transform duration-300" />
+                  )}
+                </button>
+              </div>
+            )}
             
-            {/* Upgrade to Pro prompt - only show when not collapsed and not pro */}
-            {!collapsed && !isPro && (
+            {/* Upgrade to Pro prompt - only show when not collapsed (or on mobile) and not pro */}
+            {(!collapsed || isMobile) && !isPro && (
               <div className={`mx-2 mb-4 p-3 rounded-lg border-2 border-dashed ${
                 darkMode 
                   ? 'border-yellow-600 bg-yellow-900/20' 
@@ -258,7 +325,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
                   <Link
                     to={item.path}
                     className={`flex items-center ${
-                      collapsed ? 'justify-center' : 'justify-start'
+                      collapsed && !isMobile ? 'justify-center' : 'justify-start'
                     } p-2 text-base font-normal rounded-lg ${
                       isActive(item.path)
                         ? darkMode 
@@ -268,9 +335,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
                           ? 'text-gray-300 hover:bg-gray-700' 
                           : 'text-gray-700 hover:bg-gray-100'
                     }`}
+                    onClick={() => {
+                      // Close mobile menu when navigating
+                      if (isMobile && onMobileMenuToggle) {
+                        onMobileMenuToggle(false);
+                      }
+                    }}
                   >
                     <span className="flex-shrink-0">{item.icon}</span>
-                    {!collapsed && (
+                    {(!collapsed || isMobile) && (
                       <span className="ml-3">{item.label}</span>
                     )}
                   </Link>
@@ -283,7 +356,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
               <button
                 onClick={openSpeechToTextModal}
                 className={`p-3 rounded-full ${
-                  collapsed ? 'mx-auto' : 'w-full'
+                  collapsed && !isMobile ? 'mx-auto' : 'w-full'
                 } ${
                   darkMode 
                     ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90' 
@@ -291,9 +364,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
                 }`}
                 title={t('sidebar.quickSpeechToText')}
               >
-                <div className={`flex items-center ${collapsed ? 'justify-center' : ''}`}>
+                <div className={`flex items-center ${collapsed && !isMobile ? 'justify-center' : ''}`}>
                   <FiMic className="w-5 h-5" />
-                  {!collapsed && <span className="ml-2">{t('sidebar.quickSpeechToText')}</span>}
+                  {(!collapsed || isMobile) && <span className="ml-2">{t('sidebar.quickSpeechToText')}</span>}
                 </div>
               </button>
             </div>
@@ -304,7 +377,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
             <button
               onClick={handleLogout}
               className={`flex items-center ${
-                collapsed ? 'justify-center' : 'justify-start'
+                collapsed && !isMobile ? 'justify-center' : 'justify-start'
               } p-2 text-base font-normal rounded-lg ${
                 darkMode
                   ? 'text-red-400 hover:bg-gray-700'
@@ -312,10 +385,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink }) => {
               } w-full`}
             >
               <FiLogOut className="w-5 h-5" />
-              {!collapsed && <span className="ml-3">Logout</span>}
+              {(!collapsed || isMobile) && <span className="ml-3">Logout</span>}
             </button>
             
-            {!collapsed && (
+            {(!collapsed || isMobile) && (
               <div className={`px-2 py-3 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 <p>MatrixAI v1.0</p>
                 <p>© {new Date().getFullYear()}</p>

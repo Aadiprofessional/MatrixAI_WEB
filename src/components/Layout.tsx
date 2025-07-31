@@ -60,39 +60,32 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark text-white' : 'text-gray-900'} ${isDesktop && sidebarWidth === 64 ? 'sidebar-collapsed' : ''}`}>
-      {/* Mobile sidebar overlay */}
-      {isMobileSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
-          onClick={() => setIsMobileSidebarOpen(false)}
-        />
-      )}
-      
-      {/* Sidebar - always fixed on desktop, hidden on mobile when closed */}
-      <div className={`md:block ${isMobileSidebarOpen ? 'block' : 'hidden'}`}>
-        <Sidebar onToggle={handleSidebarCollapse} />
-      </div>
+      {/* Sidebar - always visible, handles its own mobile state */}
+      <Sidebar 
+        onToggle={handleSidebarCollapse} 
+        isMobileMenuOpen={isMobileSidebarOpen}
+        onMobileMenuToggle={setIsMobileSidebarOpen}
+      />
       
       {/* Main content area */}
       <div 
         className="flex flex-col min-h-screen transition-all duration-300"
-        style={{ marginLeft: isDesktop || isMobileSidebarOpen ? `${sidebarWidth}px` : '0' }}
+        style={{ marginLeft: isDesktop ? `${sidebarWidth}px` : '0' }}
       >
-        {/* Mobile sidebar toggle button - positioned within navbar space */}
-        <button 
-          onClick={toggleMobileSidebar}
-          className={`md:hidden fixed top-3 left-3 z-[60] p-2 rounded-lg ${
-            darkMode 
-              ? 'bg-gray-800 text-white hover:bg-gray-700' 
-              : 'bg-white text-gray-800 hover:bg-gray-100'
-          } shadow-md`}
-          aria-label="Toggle mobile menu"
-        >
-          {isMobileSidebarOpen ? 
-            <FiX className="w-5 h-5" /> : 
+        {/* Mobile sidebar toggle button - positioned within navbar space, hidden when sidebar is open */}
+        {!isMobileSidebarOpen && (
+          <button 
+            onClick={toggleMobileSidebar}
+            className={`md:hidden fixed top-3 left-3 z-[60] p-2 rounded-lg ${
+              darkMode 
+                ? 'bg-gray-800 text-white hover:bg-gray-700' 
+                : 'bg-white text-gray-800 hover:bg-gray-100'
+            } shadow-md`}
+            aria-label="Toggle mobile menu"
+          >
             <FiMenu className="w-5 h-5" />
-          }
-        </button>
+          </button>
+        )}
         
         <Navbar />
         
