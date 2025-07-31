@@ -152,19 +152,19 @@ const NotificationToast = ({ message, type, onClose }: {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg flex items-center ${getBgColor()}`}
+      className={`fixed top-2 sm:top-4 right-2 sm:right-4 left-2 sm:left-auto z-50 p-3 sm:p-4 rounded-lg shadow-lg flex items-center ${getBgColor()}`}
     >
-      <div className={getTextColor()}>
-        {type === 'success' && <FiCheck className="mr-2 inline" />}
-        {type === 'error' && <FiAlertCircle className="mr-2 inline" />}
-        {type === 'warning' && <FiAlertCircle className="mr-2 inline" />}
-        <span>{message}</span>
+      <div className={`${getTextColor()} flex-1`}>
+        {type === 'success' && <FiCheck className="mr-1.5 sm:mr-2 inline text-sm sm:text-base" />}
+        {type === 'error' && <FiAlertCircle className="mr-1.5 sm:mr-2 inline text-sm sm:text-base" />}
+        {type === 'warning' && <FiAlertCircle className="mr-1.5 sm:mr-2 inline text-sm sm:text-base" />}
+        <span className="text-sm sm:text-base">{message}</span>
       </div>
       <button 
         onClick={onClose} 
-        className={`ml-4 text-gray-500 hover:text-gray-700`}
+        className={`ml-2 sm:ml-4 text-gray-500 hover:text-gray-700 flex-shrink-0`}
       >
-        <FiX />
+        <FiX className="text-sm sm:text-base" />
       </button>
     </motion.div>
   );
@@ -514,27 +514,27 @@ const SettingsPage: React.FC = () => {
                       onChange={(value) => updateSetting('cookiePreference', value)}
                     />
 
-                    <div className="py-4">
+                    <div className="py-3 sm:py-4">
                       <button 
                         onClick={handleResetPassword}
-                        className={`px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors flex items-center`}
+                        className={`px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors flex items-center w-full sm:w-auto`}
                       >
-                        <FiLock className="mr-2" />
+                        <FiLock className="mr-1.5 sm:mr-2 text-sm sm:text-base" />
                         {t('settings.resetPassword')}
                       </button>
-                      <p className="mt-2 text-sm text-tertiary">
+                      <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-tertiary">
                         {t('settings.resetPasswordDescription')}
                       </p>
                     </div>
 
-                    <div className="py-4">
+                    <div className="py-3 sm:py-4">
                       <button 
                         onClick={handleDataExport}
-                        className="px-4 py-2 rounded-lg bg-gray-700 text-blue-400 hover:bg-gray-600 transition-colors"
+                        className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg bg-gray-700 text-blue-400 hover:bg-gray-600 transition-colors w-full sm:w-auto"
                       >
                         {t('settings.requestDataExport')}
                       </button>
-                      <p className="mt-2 text-sm text-tertiary">
+                      <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-tertiary">
                         {t('settings.requestDataExportDescription')}
                       </p>
                     </div>
@@ -585,17 +585,17 @@ const SettingsPage: React.FC = () => {
                       toggleFunction={() => toggleSetting('autoSave')}
                     />
 
-                    <div className="py-4">
-                      <h3 className="font-medium text-primary mb-2">
+                    <div className="py-3 sm:py-4">
+                      <h3 className="font-medium text-primary mb-1.5 sm:mb-2 text-sm sm:text-base">
                         {t('settings.subscriptionPlan')}
                       </h3>
-                      <div className="p-4 rounded-lg glass-effect-light">
-                        <div className="flex items-center justify-between">
+                      <div className="p-3 sm:p-4 rounded-lg glass-effect-light">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                           <div>
-                            <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            <p className={`font-medium text-sm sm:text-base ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                               {t('settings.proPlan')}
                             </p>
-                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                               {t('settings.renewsOn', { date: 'November 15, 2023' })}
                             </p>
                           </div>
@@ -607,7 +607,7 @@ const SettingsPage: React.FC = () => {
                                 type: 'success'
                               });
                             }}
-                            className="px-4 py-2 rounded-lg btn-primary"
+                            className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg btn-primary w-full sm:w-auto"
                           >
                             {t('settings.manage')}
                           </button>
@@ -615,14 +615,14 @@ const SettingsPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="py-4">
+                    <div className="py-3 sm:py-4">
                       <button 
                         onClick={handleDeleteAccount}
-                        className="px-4 py-2 rounded-lg bg-gray-700 text-red-400 hover:bg-gray-600 transition-colors"
+                        className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg bg-gray-700 text-red-400 hover:bg-gray-600 transition-colors w-full sm:w-auto"
                       >
                         {t('settings.deleteAccount')}
                       </button>
-                      <p className="mt-2 text-sm text-tertiary">
+                      <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-tertiary">
                         {t('settings.deleteAccountDescription')}
                       </p>
                     </div>
