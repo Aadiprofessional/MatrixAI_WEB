@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiArrowRight, FiInstagram, FiTwitter, FiYoutube, FiGithub, FiLinkedin } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
+import { ThemeContext } from '../context/ThemeContext';
 import { 
   HomeNavbar, 
   FeatureSection, 
@@ -20,6 +21,7 @@ import {
 
 const HomePage: React.FC = () => {
   const { t } = useTranslation();
+  const { darkMode } = useContext(ThemeContext);
   
   // FAQ data
   const faqData = [
@@ -52,7 +54,7 @@ const HomePage: React.FC = () => {
   // Footer categories and social links data removed as they're now directly used in PublicResourceLayout
 
   return (
-    <div className="min-h-screen overflow-hidden bg-black">
+    <div className={`min-h-screen overflow-hidden ${darkMode ? 'bg-black' : 'bg-white'}`}>
       {/* Home Navbar */}
       <HomeNavbar />
          <section className="relative min-h-screen w-full overflow-hidden flex items-center justify-center">
@@ -70,8 +72,8 @@ const HomePage: React.FC = () => {
             preload="auto"
           ></video>
           
-          {/* Dark Overlay */}
-          <div className="absolute inset-0 bg-black/50"></div>
+          {/* Overlay */}
+          <div className={`absolute inset-0 ${darkMode ? 'bg-black/50' : 'bg-black/30'}`}></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 text-center">
@@ -118,8 +120,8 @@ const HomePage: React.FC = () => {
         </div>
       </section>
       
-      {/* White line separator */}
-      <div className="w-full h-px bg-white opacity-20"></div>
+      {/* Line separator */}
+      <div className={`w-full h-px ${darkMode ? 'bg-white opacity-20' : 'bg-gray-300 opacity-40'}`}></div>
       
       {/* AI Innovation Showcase Section */}
     

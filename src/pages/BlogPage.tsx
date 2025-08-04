@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ThemeContext } from '../context/ThemeContext';
 import { 
   FiCalendar, 
   FiUser, 
@@ -27,6 +28,7 @@ const formatDate = (dateString: string) => {
 
 const BlogPage: React.FC = () => {
   const { t } = useTranslation();
+  const { darkMode } = useContext(ThemeContext);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isScrolled, setIsScrolled] = useState(false);
@@ -150,7 +152,9 @@ const BlogPage: React.FC = () => {
   // The original formatDate function is already defined at the top of the component
 
   return (
-    <div className="min-h-screen page-background dark text-white">
+    <div className={`min-h-screen page-background ${
+      darkMode ? 'text-white' : 'text-gray-900'
+    }`}>
       {/* Background gradient effects */}
       <div className="gradient-blob-1"></div>
       <div className="gradient-blob-2"></div>
@@ -174,7 +178,11 @@ const BlogPage: React.FC = () => {
                 placeholder={t('blog.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-black/50 backdrop-blur-sm text-white placeholder-gray-400"
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm ${
+                  darkMode 
+                    ? 'border-gray-600 bg-black/50 text-white placeholder-gray-400' 
+                    : 'border-gray-300 bg-white/50 text-gray-900 placeholder-gray-500'
+                }`}
               />
             </div>
 
@@ -184,10 +192,12 @@ const BlogPage: React.FC = () => {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 backdrop-blur-sm ${
                     selectedCategory === category
-                      ? 'bg-purple-600/80 text-white backdrop-blur-sm'
-                      : 'bg-gray-800/50 text-gray-200 hover:bg-gray-700/70 backdrop-blur-sm'
+                      ? 'bg-purple-600/80 text-white'
+                      : darkMode 
+                        ? 'bg-gray-800/50 text-gray-200 hover:bg-gray-700/70' 
+                        : 'bg-gray-200/50 text-gray-700 hover:bg-gray-300/70'
                   }`}
                 >
                   {category}
@@ -203,7 +213,11 @@ const BlogPage: React.FC = () => {
         
         {/* Animated grid background similar to HomePage */}
         <div className="absolute inset-0 z-0 opacity-30">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+          <div className={`absolute inset-0 bg-[size:24px_24px] ${
+            darkMode 
+              ? 'bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)]'
+              : 'bg-[linear-gradient(to_right,#00000012_1px,transparent_1px),linear-gradient(to_bottom,#00000012_1px,transparent_1px)]'
+          }`}></div>
         </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -216,7 +230,9 @@ const BlogPage: React.FC = () => {
             <h1 className="page-title text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
               {t('blog.pageTitle')}
             </h1>
-            <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-300 sm:mt-4">
+            <p className={`mt-3 max-w-2xl mx-auto text-xl sm:mt-4 ${
+              darkMode ? 'text-gray-300' : 'text-gray-600'
+            }`}>
               {t('blog.pageDescription')}
             </p>
           </motion.div>
@@ -227,7 +243,9 @@ const BlogPage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="col-span-1 glass-effect rounded-xl overflow-hidden hover:shadow-lg hover:shadow-purple-900/10 transition-all duration-300"
+              className={`col-span-1 glass-effect rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 ${
+                darkMode ? 'hover:shadow-purple-900/10' : 'hover:shadow-purple-200/20'
+              }`}
             >
               <div className="relative h-48 overflow-hidden">
                 <img
@@ -235,7 +253,9 @@ const BlogPage: React.FC = () => {
                   alt={featuredPost.title}
                   className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                <div className={`absolute inset-0 bg-gradient-to-t to-transparent ${
+                  darkMode ? 'from-black/70' : 'from-white/70'
+                }`}></div>
               </div>
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-3">
@@ -259,7 +279,9 @@ const BlogPage: React.FC = () => {
                       alt={featuredPost.author}
                       className="w-8 h-8 rounded-full object-cover ring-1 ring-purple-500/30"
                     />
-                    <span className="text-sm text-gray-300">{featuredPost.author}</span>
+                    <span className={`text-sm ${
+                      darkMode ? 'text-gray-300' : 'text-gray-600'
+                    }`}>{featuredPost.author}</span>
                   </div>
                 </div>
                 
@@ -281,7 +303,9 @@ const BlogPage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="col-span-1 glass-effect rounded-xl overflow-hidden hover:shadow-lg hover:shadow-purple-900/10 transition-all duration-300"
+              className={`col-span-1 glass-effect rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 ${
+                darkMode ? 'hover:shadow-purple-900/10' : 'hover:shadow-purple-200/20'
+              }`}
             >
               <div className="relative h-48 overflow-hidden">
                 <img
@@ -289,7 +313,9 @@ const BlogPage: React.FC = () => {
                   alt={blogPosts[0].title}
                   className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                <div className={`absolute inset-0 bg-gradient-to-t to-transparent ${
+                  darkMode ? 'from-black/70' : 'from-white/70'
+                }`}></div>
               </div>
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-3">
@@ -298,11 +324,15 @@ const BlogPage: React.FC = () => {
                   </span>
                 </div>
                 
-                <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 hover:text-purple-400 transition-colors duration-200">
+                <h3 className={`text-lg font-bold mb-2 line-clamp-2 hover:text-purple-400 transition-colors duration-200 ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                   {blogPosts[0].title}
                 </h3>
                 
-                <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                <p className={`text-sm mb-4 line-clamp-2 ${
+                  darkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>
                   {blogPosts[0].excerpt}
                 </p>
                 
@@ -313,11 +343,15 @@ const BlogPage: React.FC = () => {
                       alt={blogPosts[0].author}
                       className="w-8 h-8 rounded-full object-cover ring-1 ring-purple-500/30"
                     />
-                    <span className="text-sm text-gray-300">{blogPosts[0].author}</span>
+                    <span className={`text-sm ${
+                      darkMode ? 'text-gray-300' : 'text-gray-600'
+                    }`}>{blogPosts[0].author}</span>
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between text-xs text-gray-400">
+                <div className={`flex items-center justify-between text-xs ${
+                  darkMode ? 'text-gray-400' : 'text-gray-500'
+                }`}>
                   <span className="flex items-center gap-1">
                     <FiCalendar className="h-3 w-3" />
                     {formatDate(blogPosts[0].publishedAt)}
@@ -335,7 +369,9 @@ const BlogPage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="col-span-1 glass-effect rounded-xl overflow-hidden hover:shadow-lg hover:shadow-purple-900/10 transition-all duration-300"
+              className={`col-span-1 glass-effect rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 ${
+                darkMode ? 'hover:shadow-purple-900/10' : 'hover:shadow-purple-200/20'
+              }`}
             >
               <div className="relative h-48 overflow-hidden">
                 <img
@@ -343,7 +379,9 @@ const BlogPage: React.FC = () => {
                   alt={blogPosts[1].title}
                   className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                <div className={`absolute inset-0 bg-gradient-to-t to-transparent ${
+                  darkMode ? 'from-black/70' : 'from-white/70'
+                }`}></div>
               </div>
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-3">
@@ -352,11 +390,15 @@ const BlogPage: React.FC = () => {
                   </span>
                 </div>
                 
-                <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 hover:text-purple-400 transition-colors duration-200">
+                <h3 className={`text-lg font-bold mb-2 line-clamp-2 hover:text-purple-400 transition-colors duration-200 ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                   {blogPosts[1].title}
                 </h3>
                 
-                <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                <p className={`text-sm mb-4 line-clamp-2 ${
+                  darkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>
                   {blogPosts[1].excerpt}
                 </p>
                 
@@ -371,7 +413,9 @@ const BlogPage: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between text-xs text-gray-400">
+                <div className={`flex items-center justify-between text-xs ${
+                  darkMode ? 'text-gray-400' : 'text-gray-500'
+                }`}>
                   <span className="flex items-center gap-1">
                     <FiCalendar className="h-3 w-3" />
                     {formatDate(blogPosts[1].publishedAt)}
@@ -403,7 +447,9 @@ const BlogPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="col-span-1 glass-effect rounded-xl overflow-hidden hover:shadow-lg hover:shadow-purple-900/10 transition-all duration-300"
+                className={`col-span-1 glass-effect rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 ${
+                  darkMode ? 'hover:shadow-purple-900/10' : 'hover:shadow-purple-200/20'
+                }`}
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
@@ -411,7 +457,9 @@ const BlogPage: React.FC = () => {
                     alt={post.title}
                     className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                  <div className={`absolute inset-0 bg-gradient-to-t to-transparent ${
+                    darkMode ? 'from-black/70' : 'from-white/70'
+                  }`}></div>
                 </div>
                 <div className="p-5">
                   <div className="flex items-center gap-2 mb-3">
@@ -496,7 +544,9 @@ const BlogPage: React.FC = () => {
                     alt={post.title}
                     className="w-full h-48 object-cover transition-transform duration-700 hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-60"></div>
+                  <div className={`absolute inset-0 bg-gradient-to-t to-transparent opacity-60 ${
+                    darkMode ? 'from-black/70' : 'from-white/70'
+                  }`}></div>
                   <div className="absolute top-4 left-4">
                     <span className="badge-primary px-3 py-1 rounded-full text-sm font-medium">
                       {post.category}

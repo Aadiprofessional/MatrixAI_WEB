@@ -124,26 +124,26 @@ const NotificationToast = ({ message, type, onClose }: {
   const getBgColor = () => {
     switch(type) {
       case 'success':
-        return 'bg-green-900/70';
+        return darkMode ? 'bg-green-900/70' : 'bg-green-100';
       case 'error':
-        return 'bg-red-900/70';
+        return darkMode ? 'bg-red-900/70' : 'bg-red-100';
       case 'warning':
-        return 'bg-yellow-900/70';
+        return darkMode ? 'bg-yellow-900/70' : 'bg-yellow-100';
       default:
-        return 'bg-gray-800';
+        return darkMode ? 'bg-gray-800' : 'bg-white';
     }
   };
   
   const getTextColor = () => {
     switch(type) {
       case 'success':
-        return 'text-green-300';
+        return darkMode ? 'text-green-300' : 'text-green-800';
       case 'error':
-        return 'text-red-300';
+        return darkMode ? 'text-red-300' : 'text-red-800';
       case 'warning':
-        return 'text-yellow-300';
+        return darkMode ? 'text-yellow-300' : 'text-yellow-800';
       default:
-        return 'text-gray-300';
+        return darkMode ? 'text-gray-300' : 'text-gray-800';
     }
   };
   
@@ -162,7 +162,7 @@ const NotificationToast = ({ message, type, onClose }: {
       </div>
       <button 
         onClick={onClose} 
-        className={`ml-2 sm:ml-4 text-gray-500 hover:text-gray-700 flex-shrink-0`}
+        className={`ml-2 sm:ml-4 ${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'} flex-shrink-0`}
       >
         <FiX className="text-sm sm:text-base" />
       </button>
@@ -306,7 +306,7 @@ const SettingsPage: React.FC = () => {
         />
       )}
       
-      <div className="page-background dark py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-8">
+      <div className={`page-background ${darkMode ? 'dark' : ''} py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-8`}>
         {/* Background gradient effects */}
         <div className="gradient-blob-1"></div>
         <div className="gradient-blob-2"></div>
@@ -357,14 +357,14 @@ const SettingsPage: React.FC = () => {
                   ))}
                 </nav>
 
-                <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-700">
+                <div className={`mt-4 sm:mt-6 pt-4 sm:pt-6 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <button
                     onClick={handleSaveChanges}
                     disabled={!hasChanges}
                     className={`w-full py-2 sm:py-2.5 rounded-lg text-sm sm:text-base ${
                       hasChanges 
                         ? 'btn-primary'
-                        : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                        : (darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-300 text-gray-500') + ' cursor-not-allowed'
                     } flex items-center justify-center transition-all`}
                   >
                     <FiSave className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />

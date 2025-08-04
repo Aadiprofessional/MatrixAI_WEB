@@ -24,6 +24,9 @@ gradientAnimationStyle.innerHTML = `
   .animate-gradient-x {
     background-size: 200% 200%;
     animation: gradient-x 3s ease infinite;
+    background-image: linear-gradient(to right, #059669, #2563eb, #7c3aed);
+  }
+  .dark .animate-gradient-x {
     background-image: linear-gradient(to right, #ec4899, #eab308, #a855f7);
   }
 `;
@@ -1233,11 +1236,11 @@ const VideoCreatorPage: React.FC = () => {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Enhanced background gradient effect */}
-      <div className="absolute inset-0 bg-black z-0"></div>
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-transparent to-purple-900/30 z-0"></div>
+      <div className="absolute inset-0 bg-white dark:bg-black z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/30 via-transparent to-purple-100/30 dark:from-indigo-900/30 dark:via-transparent dark:to-purple-900/30 z-0"></div>
       
-      {/* Subtle gradient from bottom to create a fade to black effect */}
-      <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent z-0"></div>
+      {/* Subtle gradient from bottom to create a fade effect */}
+      <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-black dark:via-black/80 dark:to-transparent z-0"></div>
       
       {/* Subtle grid lines with animation */}
       <div className="absolute inset-0 opacity-10 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] animate-gridMove"></div>
@@ -1264,7 +1267,7 @@ const VideoCreatorPage: React.FC = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-gray-500 dark:text-gray-400"
+          className="text-gray-700 dark:text-gray-400"
         >
           {t('video.subtitle')}
         </motion.p>
@@ -1638,14 +1641,14 @@ const VideoCreatorPage: React.FC = () => {
               <div className="relative">
                 {/* Animated gradient border wrapper */}
             <div className="relative p-[2px] rounded-lg overflow-hidden bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient-x">
-  {/* Inner glass container with transparent black glass effect */}
-  <div className="rounded-lg bg-black/80 backdrop-blur-md bg-clip-padding">
+  {/* Inner glass container with transparent glass effect */}
+  <div className="rounded-lg bg-white/90 dark:bg-black/80 backdrop-blur-md bg-clip-padding">
     <textarea
       id="promptInput"
       value={prompt}
       onChange={(e) => setPrompt(e.target.value)}
       placeholder={t('videoCreator.promptPlaceholder')}
-      className="w-full p-4 pr-12 h-24 border-0 rounded-lg bg-transparent text-white placeholder:text-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      className="w-full p-4 pr-12 h-24 border-0 rounded-lg bg-transparent text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       disabled={isGenerating}
     />
   </div>

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { motion } from 'framer-motion';
 import { FiMail, FiMapPin, FiPhone, FiHelpCircle, FiMessageSquare, FiUsers } from 'react-icons/fi';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ThemeContext } from '../context/ThemeContext';
 
 const offices = [
  
@@ -26,6 +27,7 @@ const offices = [
 
 const ContactPage: React.FC = () => {
   const { t } = useTranslation();
+  const { darkMode } = useContext(ThemeContext);
   
   const contactOptions = [
     {
@@ -86,11 +88,15 @@ const ContactPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-black min-h-screen">
+    <div className={`min-h-screen ${
+      darkMode ? 'bg-black' : 'bg-white'
+    }`}>
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
         {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-black z-0"></div>
+        <div className={`absolute inset-0 bg-gradient-to-b z-0 ${
+          darkMode ? 'from-purple-900/20 to-black' : 'from-purple-100/30 to-white'
+        }`}></div>
         
         {/* Animated grid background */}
         <div className="absolute inset-0 z-0 opacity-30">
@@ -104,10 +110,14 @@ const ContactPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
             >
-              <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
+              <h1 className={`text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>
                 {t('contact.title')}
               </h1>
-              <p className="mt-6 text-xl text-gray-300 max-w-3xl mx-auto">
+              <p className={`mt-6 text-xl max-w-3xl mx-auto ${
+                darkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>
                 {t('contact.subtitle')}
               </p>
             </motion.div>
@@ -122,7 +132,9 @@ const ContactPage: React.FC = () => {
       {/* Contact Options */}
       <section className="py-12 relative">
         {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black to-black/80 z-0"></div>
+        <div className={`absolute inset-0 bg-gradient-to-b z-0 ${
+          darkMode ? 'from-black to-black/80' : 'from-white to-gray-50/80'
+        }`}></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -133,7 +145,11 @@ const ContactPage: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className={`backdrop-blur-md bg-black/30 rounded-xl p-8 border border-gray-700 cursor-pointer hover:shadow-lg hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300 ${
+                className={`backdrop-blur-md rounded-xl p-8 border cursor-pointer hover:shadow-lg transition-all duration-300 ${
+                  darkMode 
+                    ? 'bg-black/30 border-gray-700 hover:shadow-purple-900/20 hover:border-purple-700/50' 
+                    : 'bg-white/30 border-gray-300 hover:shadow-purple-200/20 hover:border-purple-300/50'
+                } ${
                   contactReason === option.name ? 'ring-2 ring-purple-500' : ''
                 }`}
                 onClick={() => setContactReason(option.name)}
@@ -141,8 +157,12 @@ const ContactPage: React.FC = () => {
                 <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${option.iconClass} bg-opacity-20`}>
                   <option.icon className="h-6 w-6" />
                 </div>
-                <h3 className="mt-4 text-lg font-semibold text-white">{option.name}</h3>
-                <p className="mt-2 text-sm text-gray-300">{option.description}</p>
+                <h3 className={`mt-4 text-lg font-semibold ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>{option.name}</h3>
+                <p className={`mt-2 text-sm ${
+                  darkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>{option.description}</p>
                 <div className="mt-4">
                   <input
                     type="radio"
@@ -155,13 +175,15 @@ const ContactPage: React.FC = () => {
                   <label
                     htmlFor={`option-${option.name}`}
                     className={`inline-flex items-center text-sm font-medium ${
-                      contactReason === option.name ? 'text-purple-400' : 'text-gray-400'
+                      contactReason === option.name 
+                        ? 'text-purple-400' 
+                        : darkMode ? 'text-gray-400' : 'text-gray-500'
                     }`}
                   >
                     <span className={`w-4 h-4 mr-2 rounded-full border ${
                       contactReason === option.name
                         ? 'bg-purple-500 border-purple-500'
-                        : 'border-gray-600'
+                        : darkMode ? 'border-gray-600' : 'border-gray-400'
                     }`}>
                       {contactReason === option.name && (
                         <span className="absolute w-2 h-2 mx-1 my-1 rounded-full bg-white" />
@@ -179,11 +201,17 @@ const ContactPage: React.FC = () => {
       {/* Contact Form */}
       <section className="py-12 relative">
         {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black z-0"></div>
+        <div className={`absolute inset-0 bg-gradient-to-b z-0 ${
+          darkMode ? 'from-black/80 to-black' : 'from-gray-50/80 to-white'
+        }`}></div>
         
         {/* Animated grid background */}
         <div className="absolute inset-0 z-0 opacity-20">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+          <div className={`absolute inset-0 bg-[size:24px_24px] ${
+            darkMode 
+              ? 'bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)]'
+              : 'bg-[linear-gradient(to_right,#00000012_1px,transparent_1px),linear-gradient(to_bottom,#00000012_1px,transparent_1px)]'
+          }`}></div>
         </div>
         
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -192,14 +220,22 @@ const ContactPage: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="backdrop-blur-md bg-black/30 rounded-2xl shadow-lg border border-gray-700 overflow-hidden"
+            className={`backdrop-blur-md rounded-2xl shadow-lg border overflow-hidden ${
+              darkMode 
+                ? 'bg-black/30 border-gray-700' 
+                : 'bg-white/30 border-gray-300'
+            }`}
           >
             <div className="px-6 py-8 md:p-10">
               {!submitted ? (
                 <>
                   <div className="text-center mb-10">
-                    <h2 className="text-3xl font-bold text-white">{t('contact.sendMessage')}</h2>
-                    <p className="mt-4 text-lg text-gray-300">
+                    <h2 className={`text-3xl font-bold ${
+                      darkMode ? 'text-white' : 'text-gray-900'
+                    }`}>{t('contact.sendMessage')}</h2>
+                    <p className={`mt-4 text-lg ${
+                      darkMode ? 'text-gray-300' : 'text-gray-600'
+                    }`}>
                       {contactReason
                         ? t('contact.selectedReason', { reason: contactReason })
                         : t('contact.selectReason')}
@@ -209,7 +245,9 @@ const ContactPage: React.FC = () => {
                   <form className="space-y-6" onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
                       <div>
-                        <label htmlFor="first-name" className="block text-sm font-medium text-gray-300">
+                        <label htmlFor="first-name" className={`block text-sm font-medium ${
+                          darkMode ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
                           {t('contact.firstName')}
                         </label>
                         <div className="mt-1">
@@ -219,12 +257,18 @@ const ContactPage: React.FC = () => {
                             id="first-name"
                             autoComplete="given-name"
                             required
-                            className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
+                            className={`py-3 px-4 block w-full border focus:ring-purple-500 focus:border-purple-500 rounded-md ${
+                              darkMode 
+                                ? 'bg-black/50 border-gray-700 text-white placeholder-gray-500' 
+                                : 'bg-white/50 border-gray-300 text-gray-900 placeholder-gray-400'
+                            }`}
                           />
                         </div>
                       </div>
                       <div>
-                        <label htmlFor="last-name" className="block text-sm font-medium text-gray-300">
+                        <label htmlFor="last-name" className={`block text-sm font-medium ${
+                          darkMode ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
                           {t('contact.lastName')}
                         </label>
                         <div className="mt-1">
@@ -234,7 +278,11 @@ const ContactPage: React.FC = () => {
                             id="last-name"
                             autoComplete="family-name"
                             required
-                            className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
+                            className={`py-3 px-4 block w-full border focus:ring-purple-500 focus:border-purple-500 rounded-md ${
+                              darkMode 
+                                ? 'bg-black/50 border-gray-700 text-white placeholder-gray-500' 
+                                : 'bg-white/50 border-gray-300 text-gray-900 placeholder-gray-400'
+                            }`}
                           />
                         </div>
                       </div>
@@ -242,7 +290,9 @@ const ContactPage: React.FC = () => {
                     
                     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
                       <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+                        <label htmlFor="email" className={`block text-sm font-medium ${
+                          darkMode ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
                           {t('contact.email')}
                         </label>
                         <div className="mt-1">
@@ -252,12 +302,18 @@ const ContactPage: React.FC = () => {
                             type="email"
                             autoComplete="email"
                             required
-                            className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
+                            className={`py-3 px-4 block w-full border focus:ring-purple-500 focus:border-purple-500 rounded-md ${
+                              darkMode 
+                                ? 'bg-black/50 border-gray-700 text-white placeholder-gray-500' 
+                                : 'bg-white/50 border-gray-300 text-gray-900 placeholder-gray-400'
+                            }`}
                           />
                         </div>
                       </div>
                       <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-gray-300">
+                        <label htmlFor="phone" className={`block text-sm font-medium ${
+                          darkMode ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
                           {t('contact.phone')}
                         </label>
                         <div className="mt-1">
@@ -266,14 +322,20 @@ const ContactPage: React.FC = () => {
                             name="phone"
                             id="phone"
                             autoComplete="tel"
-                            className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
+                            className={`py-3 px-4 block w-full border focus:ring-purple-500 focus:border-purple-500 rounded-md ${
+                              darkMode 
+                                ? 'bg-black/50 border-gray-700 text-white placeholder-gray-500' 
+                                : 'bg-white/50 border-gray-300 text-gray-900 placeholder-gray-400'
+                            }`}
                           />
                         </div>
                       </div>
                     </div>
                     
                     <div>
-                      <label htmlFor="company" className="block text-sm font-medium text-gray-300">
+                      <label htmlFor="company" className={`block text-sm font-medium ${
+                        darkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         {t('contact.company')}
                       </label>
                       <div className="mt-1">
@@ -282,13 +344,19 @@ const ContactPage: React.FC = () => {
                           name="company"
                           id="company"
                           autoComplete="organization"
-                          className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
+                          className={`py-3 px-4 block w-full border focus:ring-purple-500 focus:border-purple-500 rounded-md ${
+                            darkMode 
+                              ? 'bg-black/50 border-gray-700 text-white placeholder-gray-500' 
+                              : 'bg-white/50 border-gray-300 text-gray-900 placeholder-gray-400'
+                          }`}
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <label htmlFor="subject" className="block text-sm font-medium text-gray-300">
+                      <label htmlFor="subject" className={`block text-sm font-medium ${
+                        darkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         {t('contact.subject')}
                       </label>
                       <div className="mt-1">
@@ -297,13 +365,19 @@ const ContactPage: React.FC = () => {
                           name="subject"
                           id="subject"
                           required
-                          className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
+                          className={`py-3 px-4 block w-full border focus:ring-purple-500 focus:border-purple-500 rounded-md ${
+                            darkMode 
+                              ? 'bg-black/50 border-gray-700 text-white placeholder-gray-500' 
+                              : 'bg-white/50 border-gray-300 text-gray-900 placeholder-gray-400'
+                          }`}
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-300">
+                      <label htmlFor="message" className={`block text-sm font-medium ${
+                        darkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         {t('contact.message')}
                       </label>
                       <div className="mt-1">
@@ -312,7 +386,11 @@ const ContactPage: React.FC = () => {
                           name="message"
                           rows={6}
                           required
-                          className="py-3 px-4 block w-full bg-black/50 border-gray-700 focus:ring-purple-500 focus:border-purple-500 rounded-md text-white placeholder-gray-500"
+                          className={`py-3 px-4 block w-full border focus:ring-purple-500 focus:border-purple-500 rounded-md ${
+                            darkMode 
+                              ? 'bg-black/50 border-gray-700 text-white placeholder-gray-500' 
+                              : 'bg-white/50 border-gray-300 text-gray-900 placeholder-gray-400'
+                          }`}
                           placeholder={t('contact.messagePlaceholder')}
                         />
                       </div>
@@ -324,9 +402,13 @@ const ContactPage: React.FC = () => {
                         name="agree-terms"
                         type="checkbox"
                         required
-                        className="h-4 w-4 text-purple-600 focus:ring-purple-500 bg-black/50 border-gray-700 rounded"
+                        className={`h-4 w-4 text-purple-600 focus:ring-purple-500 rounded ${
+                          darkMode ? 'bg-black/50 border-gray-700' : 'bg-white border-gray-300'
+                        }`}
                       />
-                      <label htmlFor="agree-terms" className="ml-2 block text-sm text-gray-300">
+                      <label htmlFor="agree-terms" className={`ml-2 block text-sm ${
+                        darkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         {t('contact.agreeTerms')}
                       </label>
                     </div>
@@ -334,7 +416,9 @@ const ContactPage: React.FC = () => {
                     <div className="text-center">
                       <button
                         type="submit"
-                        className="inline-flex justify-center py-3 px-6 border border-transparent shadow-lg text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300"
+                        className={`inline-flex justify-center py-3 px-6 border border-transparent shadow-lg text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300 ${
+                          darkMode ? 'focus:ring-offset-black' : 'focus:ring-offset-white'
+                        }`}
                       >
                         {t('contact.sendButton')}
                       </button>
@@ -350,12 +434,18 @@ const ContactPage: React.FC = () => {
                   <svg className="w-16 h-16 text-purple-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <h2 className="mt-6 text-3xl font-bold text-white">{t('contact.thankYou')}</h2>
-                  <p className="mt-2 text-lg text-gray-300">
+                  <h2 className={`mt-6 text-3xl font-bold ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>{t('contact.thankYou')}</h2>
+                  <p className={`mt-2 text-lg ${
+                    darkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}>
                     {t('contact.successMessage')}
                   </p>
                   <button
-                    className="mt-8 inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300"
+                    className={`mt-8 inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300 ${
+                      darkMode ? 'focus:ring-offset-black' : 'focus:ring-offset-white'
+                    }`}
                     onClick={() => setSubmitted(false)}
                   >
                     {t('contact.sendAnother')}
@@ -370,7 +460,9 @@ const ContactPage: React.FC = () => {
       {/* Offices */}
       <section className="py-20 relative">
         {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black to-black/90 z-0"></div>
+        <div className={`absolute inset-0 bg-gradient-to-b z-0 ${
+          darkMode ? 'from-black to-black/90' : 'from-gray-50 to-white'
+        }`}></div>
         
         {/* Animated grid background */}
         <div className="absolute inset-0 z-0 opacity-20">
@@ -385,8 +477,12 @@ const ContactPage: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.7 }}
             >
-              <h2 className="text-3xl font-bold text-white">{t('contact.ourOffices')}</h2>
-              <p className="mt-4 text-xl text-gray-300">
+              <h2 className={`text-3xl font-bold ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>{t('contact.ourOffices')}</h2>
+              <p className={`mt-4 text-xl ${
+                darkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>
                 {t('contact.visitOffices')}
               </p>
             </motion.div>
@@ -400,7 +496,11 @@ const ContactPage: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="backdrop-blur-md bg-black/30 rounded-xl shadow-lg border border-gray-700 overflow-hidden hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
+                className={`backdrop-blur-md rounded-xl shadow-lg border overflow-hidden transition-all duration-300 ${
+                  darkMode 
+                    ? 'bg-black/30 border-gray-700 hover:shadow-purple-900/20 hover:border-purple-700/50' 
+                    : 'bg-white/30 border-gray-300 hover:shadow-purple-200/20 hover:border-purple-300/50'
+                }`}
               >
                 <div className="h-48 relative overflow-hidden">
                   <img
@@ -410,15 +510,21 @@ const ContactPage: React.FC = () => {
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-white">{office.city}, {office.country}</h3>
+                  <h3 className={`text-xl font-semibold ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>{office.city}, {office.country}</h3>
                   <div className="mt-4 space-y-3">
                     <div className="flex">
                       <FiMapPin className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                      <span className="ml-3 text-gray-300">{office.address}</span>
+                      <span className={`ml-3 ${
+                        darkMode ? 'text-gray-300' : 'text-gray-600'
+                      }`}>{office.address}</span>
                     </div>
                     <div className="flex">
                       <FiPhone className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                      <span className="ml-3 text-gray-300">{office.phone}</span>
+                      <span className={`ml-3 ${
+                        darkMode ? 'text-gray-300' : 'text-gray-600'
+                      }`}>{office.phone}</span>
                     </div>
                     <div className="flex">
                       <FiMail className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />

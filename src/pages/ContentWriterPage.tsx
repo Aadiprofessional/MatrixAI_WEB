@@ -40,6 +40,9 @@ gradientAnimationStyle.textContent = `
   .animate-gradient-x {
     background-size: 200% 200%;
     animation: gradient-x 3s ease infinite;
+    background-image: linear-gradient(to right, #059669, #2563eb, #7c3aed);
+  }
+  .dark .animate-gradient-x {
     background-image: linear-gradient(to right, #ec4899, #eab308, #a855f7);
   }
 `;
@@ -1177,11 +1180,11 @@ Create content that is original, well-researched, and engaging for the target au
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Enhanced background gradient effect */}
-      <div className="absolute inset-0 bg-black z-0"></div>
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-transparent to-purple-900/30 z-0"></div>
+      <div className="absolute inset-0 bg-white dark:bg-black z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/30 via-transparent to-purple-100/30 dark:from-indigo-900/30 dark:via-transparent dark:to-purple-900/30 z-0"></div>
       
-      {/* Subtle gradient from bottom to create a fade to black effect */}
-      <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent z-0"></div>
+      {/* Subtle gradient from bottom to create a fade effect */}
+      <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-black dark:via-black/80 dark:to-transparent z-0"></div>
       
       {/* Subtle grid lines with animation */}
       <div className="absolute inset-0 opacity-10 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] animate-gridMove"></div>

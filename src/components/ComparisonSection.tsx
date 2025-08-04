@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 
 interface ComparisonItemProps {
   icon: React.ReactNode;
@@ -9,28 +10,39 @@ interface ComparisonItemProps {
 }
 
 const ComparisonItem: React.FC<ComparisonItemProps> = ({ icon, text, isPositive = true }) => {
+  const { darkMode } = useTheme();
+  
   return (
     <div className="flex items-center space-x-3 mb-4">
-      <span className={`flex-shrink-0 ${isPositive ? 'text-blue-500' : 'text-gray-500'}`}>
+      <span className={`flex-shrink-0 ${isPositive ? 'text-blue-500' : (darkMode ? 'text-gray-500' : 'text-gray-400')}`}>
         {icon}
       </span>
-      <span className={`text-sm ${isPositive ? 'text-white' : 'text-gray-400'}`}>{text}</span>
+      <span className={`text-sm ${
+        isPositive 
+          ? (darkMode ? 'text-white' : 'text-gray-900') 
+          : (darkMode ? 'text-gray-400' : 'text-gray-500')
+      }`}>{text}</span>
     </div>
   );
 };
 
 const ComparisonSection: React.FC = () => {
   const { t } = useTranslation();
+  const { darkMode } = useTheme();
   
   return (
-    <section className="py-20">
+    <section className={`py-20 ${
+      darkMode ? 'bg-black' : 'bg-white'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="text-4xl font-bold text-white text-center mb-4"
+          className={`text-4xl font-bold text-center mb-4 ${
+            darkMode ? 'text-white' : 'text-gray-900'
+          }`}
         >
           {t('comparisonSection.title', 'Why wait weeks? Create with AI')}<br />{t('comparisonSection.titleSecondLine', 'in minutes, not days')}
         </motion.h2>
@@ -40,7 +52,9 @@ const ComparisonSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           viewport={{ once: true }}
-          className="text-xl text-gray-300 text-center mb-16 max-w-3xl mx-auto"
+          className={`text-xl text-center mb-16 max-w-3xl mx-auto ${
+            darkMode ? 'text-gray-300' : 'text-gray-600'
+          }`}
         >
           {t('comparisonSection.description', 'Experience the difference between instant AI-powered creativity and old-school production headaches across all your creative needs.')}
         </motion.p>
@@ -54,17 +68,33 @@ const ComparisonSection: React.FC = () => {
             viewport={{ once: true }}
             className="relative rounded-xl overflow-hidden mb-8 md:mb-0"
           >
-            {/* Outer layer - white opacity border with glow */}
-            <div className="absolute inset-0 border-2 border-white/40 rounded-xl shadow-lg shadow-blue-500/20"></div>
+            {/* Outer layer - border with glow */}
+            <div className={`absolute inset-0 border-2 rounded-xl shadow-lg ${
+              darkMode 
+                ? 'border-white/40 shadow-blue-500/20' 
+                : 'border-gray-200/50 shadow-blue-500/10'
+            }`}></div>
             
             {/* Middle layer - subtle glow effect */}
-            <div className="absolute inset-[3px] rounded-lg bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className={`absolute inset-[3px] rounded-lg bg-gradient-to-br ${
+              darkMode 
+                ? 'from-white/10 to-transparent' 
+                : 'from-gray-100/30 to-transparent'
+            }`}></div>
             
             {/* Inner layer - glass effect with backdrop blur */}
-            <div className="absolute inset-[6px] backdrop-blur-lg bg-black/30 rounded-lg border border-white/20 shadow-inner shadow-white/10"></div>
+            <div className={`absolute inset-[6px] backdrop-blur-lg rounded-lg border shadow-inner ${
+              darkMode 
+                ? 'bg-black/30 border-white/20 shadow-white/10' 
+                : 'bg-white/30 border-gray-200/30 shadow-gray-500/10'
+            }`}></div>
             
             {/* Content container with glass morphism */}
-            <div className="absolute inset-[6px] bg-gradient-to-br from-white/5 to-transparent opacity-80 rounded-lg"></div>
+            <div className={`absolute inset-[6px] bg-gradient-to-br opacity-80 rounded-lg ${
+              darkMode 
+                ? 'from-white/5 to-transparent' 
+                : 'from-gray-100/10 to-transparent'
+            }`}></div>
             
             <div className="relative z-10 p-6">
               <div className="mb-6 overflow-hidden rounded-lg">
@@ -74,7 +104,9 @@ const ComparisonSection: React.FC = () => {
                   className="w-full h-32 md:h-64 object-cover rounded-lg"
                 />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">{t('comparisonSection.matrixAiTitle', 'MatrixAI\'s All-in-One Platform')}</h3>
+              <h3 className={`text-xl font-semibold mb-4 ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>{t('comparisonSection.matrixAiTitle', 'MatrixAI\'s All-in-One Platform')}</h3>
               
               <ComparisonItem 
                 icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -82,7 +114,9 @@ const ComparisonSection: React.FC = () => {
                 </svg>}
                 text={t('comparisonSection.chooseAiTool', 'Choose Your AI Tool')}
               />
-              <p className="text-sm text-gray-400 ml-8 mb-4">{t('comparisonSection.chooseAiToolDesc', 'Select from video creation, image generation, speech-to-text, content writing, or AI chat—all in one platform with a unified interface.')}</p>
+              <p className={`text-sm ml-8 mb-4 ${
+                darkMode ? 'text-gray-400' : 'text-gray-500'
+              }`}>{t('comparisonSection.chooseAiToolDesc', 'Select from video creation, image generation, speech-to-text, content writing, or AI chat—all in one platform with a unified interface.')}</p>
               
               <ComparisonItem 
                 icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -90,7 +124,9 @@ const ComparisonSection: React.FC = () => {
                 </svg>}
                 text={t('comparisonSection.describeWhatYouWant', 'Describe What You Want')}
               />
-              <p className="text-sm text-gray-400 ml-8 mb-4">{t('comparisonSection.describeWhatYouWantDesc', 'Use natural language to explain your vision. Our AI understands context, style preferences, and creative direction across all tools.')}</p>
+              <p className={`text-sm ml-8 mb-4 ${
+                darkMode ? 'text-gray-400' : 'text-gray-500'
+              }`}>{t('comparisonSection.describeWhatYouWantDesc', 'Use natural language to explain your vision. Our AI understands context, style preferences, and creative direction across all tools.')}</p>
               
               <ComparisonItem 
                 icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -98,14 +134,18 @@ const ComparisonSection: React.FC = () => {
                 </svg>}
                 text={t('comparisonSection.getProfessionalResults', 'Get Professional Results Instantly')}
               />
-              <p className="text-sm text-gray-400 ml-8 mb-4">{t('comparisonSection.getProfessionalResultsDesc', 'Our AI handles the complex work. Whether it\'s videos, images, transcriptions, content, or chat responses—get high-quality results in minutes, not days.')}</p>
+              <p className={`text-sm ml-8 mb-4 ${
+                darkMode ? 'text-gray-400' : 'text-gray-500'
+              }`}>{t('comparisonSection.getProfessionalResultsDesc', 'Our AI handles the complex work. Whether it\'s videos, images, transcriptions, content, or chat responses—get high-quality results in minutes, not days.')}</p>
             </div>
           </motion.div>
           
           {/* Mobile VS (below MatrixAI component) */}
           <div className="md:hidden relative flex items-center justify-center my-8">
             {/* Horizontal line */}
-            <div className="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+            <div className={`absolute w-full h-[1px] bg-gradient-to-r from-transparent to-transparent ${
+              darkMode ? 'via-white/30' : 'via-gray-400/30'
+            }`}></div>
             
             {/* VS in the middle */}
             <motion.div
@@ -115,17 +155,23 @@ const ComparisonSection: React.FC = () => {
               viewport={{ once: true }}
               className="relative z-10 px-6 py-3"
             >
-              <span className="text-2xl font-semibold text-white">vs</span>
+              <span className={`text-2xl font-semibold ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>vs</span>
             </motion.div>
           </div>
           
           {/* Desktop VS in the middle with vertical line */}
           <div className="hidden md:flex absolute left-1/2 top-0 bottom-0 -translate-x-1/2 items-center justify-center z-20">
             {/* Vertical line */}
-            <div className="absolute h-full w-[1px] bg-gradient-to-b from-transparent via-white/30 to-transparent"></div>
+            <div className={`absolute h-full w-[1px] bg-gradient-to-b from-transparent to-transparent ${
+              darkMode ? 'via-white/30' : 'via-gray-400/30'
+            }`}></div>
             
             {/* VS in the middle */}
-            <span className="text-2xl font-semibold text-white">vs</span>
+            <span className={`text-2xl font-semibold ${
+              darkMode ? 'text-white' : 'text-gray-900'
+            }`}>vs</span>
           </div>
           
           {/* Right side - Traditional Video Production */}
@@ -137,16 +183,28 @@ const ComparisonSection: React.FC = () => {
             className="relative rounded-xl overflow-hidden"
           >
             {/* Outer layer - white opacity border with glow */}
-            <div className="absolute inset-0 border-2 border-white/40 rounded-xl shadow-lg shadow-blue-500/20"></div>
+            <div className={`absolute inset-0 border-2 rounded-xl shadow-lg ${
+              darkMode 
+                ? 'border-white/40 shadow-blue-500/20' 
+                : 'border-gray-300/60 shadow-blue-500/10'
+            }`}></div>
             
             {/* Middle layer - subtle glow effect */}
-            <div className="absolute inset-[3px] rounded-lg bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className={`absolute inset-[3px] rounded-lg bg-gradient-to-br to-transparent ${
+              darkMode ? 'from-white/10' : 'from-gray-200/20'
+            }`}></div>
             
             {/* Inner layer - glass effect with backdrop blur */}
-            <div className="absolute inset-[6px] backdrop-blur-lg bg-black/30 rounded-lg border border-white/20 shadow-inner shadow-white/10"></div>
+            <div className={`absolute inset-[6px] backdrop-blur-lg rounded-lg border shadow-inner ${
+              darkMode 
+                ? 'bg-black/30 border-white/20 shadow-white/10' 
+                : 'bg-white/40 border-gray-200/30 shadow-gray-300/10'
+            }`}></div>
             
             {/* Content container with glass morphism */}
-            <div className="absolute inset-[6px] bg-gradient-to-br from-white/5 to-transparent opacity-80 rounded-lg"></div>
+            <div className={`absolute inset-[6px] bg-gradient-to-br to-transparent opacity-80 rounded-lg ${
+              darkMode ? 'from-white/5' : 'from-gray-100/10'
+            }`}></div>
             
             <div className="relative z-10 p-6">
               <div className="mb-6 overflow-hidden rounded-lg">
@@ -156,7 +214,9 @@ const ComparisonSection: React.FC = () => {
                   className="w-full h-32 md:h-64 object-cover rounded-lg"
                 />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">{t('comparisonSection.traditionalTitle', 'Traditional Creative Methods')}</h3>
+              <h3 className={`text-xl font-semibold mb-4 ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>{t('comparisonSection.traditionalTitle', 'Traditional Creative Methods')}</h3>
               
               <div className="space-y-4">
                 <ComparisonItem 

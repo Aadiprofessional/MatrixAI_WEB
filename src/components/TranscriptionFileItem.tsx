@@ -2,6 +2,7 @@ import React from 'react';
 import '../pages/SpeechToTextPage.css';
 import { motion } from 'framer-motion';
 import { FiClock, FiGlobe, FiLoader, FiDownload, FiEdit3, FiTrash } from 'react-icons/fi';
+import { useTheme } from '../context/ThemeContext';
 
 interface AudioFile {
   audioid: string;
@@ -54,13 +55,18 @@ const TranscriptionFileItem: React.FC<TranscriptionFileItemProps> = ({
   setIsDeleteModalOpen,
   languages
 }) => {
+  const { darkMode } = useTheme();
   return (
     <motion.div
       key={file.audioid}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className={`bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg border border-transparent border-gradient cursor-pointer transition-all overflow-hidden ${
+      className={`backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg border cursor-pointer transition-all duration-200 overflow-hidden ${
+        darkMode 
+          ? 'bg-gray-800/70 border-gray-700/50 hover:bg-gray-700/80 hover:border-gray-600/70' 
+          : 'bg-white/70 border-gray-200/50 hover:bg-white/90 hover:border-gray-300/70'
+      } ${
         viewMode === 'list' ? 'flex items-center mx-1 sm:mx-2 my-1' : 'm-2'
       }`}
     >
@@ -72,14 +78,18 @@ const TranscriptionFileItem: React.FC<TranscriptionFileItemProps> = ({
           <div className="flex items-center w-full min-w-0">
             {/* Main content - takes most space */}
             <div className="flex-1 min-w-0 mr-3">
-              <h3 className="font-medium text-gray-800 dark:text-gray-300 text-base sm:text-lg mb-1 overflow-hidden" title={getDisplayName(file)}>
+              <h3 className={`font-medium text-base sm:text-lg mb-1 overflow-hidden ${
+                darkMode ? 'text-gray-200' : 'text-gray-800'
+              }`} title={getDisplayName(file)}>
                  <span className="block truncate max-w-[120px] sm:max-w-[250px] md:max-w-[350px]">
                    {getDisplayName(file)}
                  </span>
                </h3>
               
               {/* Metadata in a single line for desktop, stacked for mobile */}
-              <div className="flex flex-col sm:flex-row sm:items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 space-y-1 sm:space-y-0 sm:space-x-4">
+              <div className={`flex flex-col sm:flex-row sm:items-center text-xs sm:text-sm space-y-1 sm:space-y-0 sm:space-x-4 ${
+                darkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
                 <div className="flex items-center">
                   <FiClock className="mr-1 flex-shrink-0" size={12} />
                   <span className="truncate">{formatDate(file.uploaded_at)}</span>
@@ -118,16 +128,22 @@ const TranscriptionFileItem: React.FC<TranscriptionFileItemProps> = ({
           </div>
         ) : (
           <div className={`${viewMode === 'grid' ? 'pr-20' : ''}`}>
-            <h3 className="font-medium text-gray-800 dark:text-gray-300 truncate mb-2" title={getDisplayName(file)}>
+            <h3 className={`font-medium truncate mb-2 ${
+              darkMode ? 'text-gray-200' : 'text-gray-800'
+            }`} title={getDisplayName(file)}>
               {getDisplayName(file)}
             </h3>
             
-            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-2">
+            <div className={`flex items-center text-sm mt-2 ${
+              darkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
               <FiClock className="mr-1.5" />
               <span>{formatDate(file.uploaded_at)}</span>
             </div>
             
-            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-2">
+            <div className={`flex items-center text-sm mt-2 ${
+              darkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
               <FiGlobe className="mr-1.5" />
               <span>{languages.find(l => l.value === file.language)?.label || 'Unknown'}</span>
               <span className="mx-2">•</span>
@@ -193,7 +209,9 @@ const TranscriptionFileItem: React.FC<TranscriptionFileItemProps> = ({
       )}
       
       {viewMode === 'grid' && (
-        <div className="mt-2 pt-3 px-5 pb-4 flex justify-between border-t dark:border-gray-700">
+        <div className={`mt-2 pt-3 px-5 pb-4 flex justify-between border-t ${
+          darkMode ? 'border-gray-700' : 'border-gray-200'
+        }`}>
           <div className="flex space-x-3">
             <button 
               onClick={(e) => {

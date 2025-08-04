@@ -22,6 +22,9 @@ gradientAnimationStyle.textContent = `
   .animate-gradient-x {
     background-size: 200% 200%;
     animation: gradient-x 3s ease infinite;
+    background-image: linear-gradient(to right, #059669, #2563eb, #7c3aed);
+  }
+  .dark .animate-gradient-x {
     background-image: linear-gradient(to right, #ec4899, #eab308, #a855f7);
   }
 `;
@@ -737,15 +740,15 @@ const ImageGeneratorPage: React.FC = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Black background with responsive height */}
+      {/* Background with responsive height */}
       
       {/* Gradient overlay with responsive height */}
-      <div className="absolute inset-0 bg-black z-0"></div>
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-transparent to-purple-900/30 z-0"></div>
+      <div className="absolute inset-0 bg-white dark:bg-black z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/30 via-transparent to-purple-100/30 dark:from-indigo-900/30 dark:via-transparent dark:to-purple-900/30 z-0"></div>
       
       
-      {/* Subtle gradient from bottom to create a fade to black effect */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 md:h-64 bg-gradient-to-t from-black via-black/80 to-transparent z-0"></div>
+      {/* Subtle gradient from bottom to create a fade effect */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 md:h-64 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-black dark:via-black/80 dark:to-transparent z-0"></div>
       
       {/* Subtle grid lines with animation - responsive height */}
       <div className="absolute inset-x-0 top-0 h-screen md:h-[600px] opacity-10 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] animate-gridMove"></div>
@@ -773,20 +776,20 @@ const ImageGeneratorPage: React.FC = () => {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-sm md:text-base text-gray-500 dark:text-gray-400"
+                className="text-sm md:text-base text-gray-700 dark:text-gray-400"
               >
                 {t('imageGenerator.description')}
               </motion.p>
             </div>
             
             {/* Main content with responsive layout */}
-            <div className="flex flex-col lg:flex-row gap-4 md:gap-6 px-3 md:px-4 lg:px-6 pb-4 md:pb-6 lg:pb-8">
+            <div className="flex flex-col lg:flex-row gap-4 md:gap-6 px-3 md:px-4 lg:px-6 pb-4 md:pb-6 lg:pb-8 justify-center items-start">
               {/* Left Column - Controls */}
-              <div className="w-full lg:w-2/5 p-3 md:p-4 lg:p-6 rounded-lg shadow-lg glass-effect">
+              <div className={`w-full lg:w-2/5 lg:max-w-md mx-auto lg:mx-0 p-3 md:p-4 lg:p-6 rounded-lg shadow-lg ${darkMode ? 'glass-effect' : 'bg-white/80 backdrop-blur-lg border border-gray-200/50'}`}>
                 {/* Image Upload Area */}
                 <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-gray-200">
+                  <label className={`block text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
                     {t('imageGenerator.uploadImageOptional')}
                   </label>
                   {uploadedImage && (
@@ -848,22 +851,30 @@ const ImageGeneratorPage: React.FC = () => {
                 ) : (
                   <AuthRequiredButton
                     onClick={triggerFileInput}
-                    className="w-full h-24 border-2 border-dashed rounded-lg flex flex-col items-center justify-center mb-3 transition-colors border-gray-600 hover:border-indigo-500 text-gray-400 bg-gray-800/30 backdrop-blur-sm"
+                    className={`w-full h-24 border-2 border-dashed rounded-lg flex flex-col items-center justify-center mb-3 transition-colors ${
+                      darkMode 
+                        ? 'border-gray-600 hover:border-indigo-500 text-gray-400 bg-gray-800/30 backdrop-blur-sm'
+                        : 'border-gray-300 hover:border-indigo-400 text-gray-600 bg-gray-50/50 backdrop-blur-sm'
+                    }`}
                   >
                     <FiUpload className="w-6 h-6 mb-2" />
                     <span className="text-sm">{t('imageGenerator.clickToUpload')}</span>
-                    <span className="text-xs mt-1 text-gray-500">{t('imageGenerator.fileFormats')}</span>
+                    <span className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{t('imageGenerator.fileFormats')}</span>
                   </AuthRequiredButton>
                 )}
               </div>
               
               <div className="mb-3 md:mb-4">
-                <label htmlFor="prompt" className="block text-sm font-medium mb-2 text-gray-200">
+                <label htmlFor="prompt" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">
                   {uploadedImage ? t('imageGenerator.describeEnhancement') : t('imageGenerator.describeImage')}
                 </label>
                 <textarea
                   id="prompt"
-                  className="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg text-sm md:text-base bg-gray-800/70 text-white border-gray-700 focus:border-indigo-500 border focus:ring-2 focus:ring-indigo-500 focus:outline-none backdrop-blur-sm"
+                  className={`w-full px-3 md:px-4 py-2 md:py-3 rounded-lg text-sm md:text-base border focus:ring-2 focus:outline-none backdrop-blur-sm ${
+                    darkMode
+                      ? 'bg-gray-800/70 text-white border-gray-700 focus:border-indigo-500 focus:ring-indigo-500'
+                      : 'bg-white/70 text-gray-900 border-gray-300 focus:border-indigo-400 focus:ring-indigo-400'
+                  }`}
                   rows={3}
                   placeholder={uploadedImage ? t('imageGenerator.enhancementPlaceholder') : t('imageGenerator.generationPlaceholder')}
                   value={message}
@@ -873,14 +884,18 @@ const ImageGeneratorPage: React.FC = () => {
               
               <div className="mb-4">
                 <div className="flex items-center">
-                  <label className="text-xs md:text-sm font-medium mr-2 text-gray-200">
+                  <label className="text-xs md:text-sm font-medium mr-2 text-gray-700 dark:text-gray-200">
                     {t('imageGenerator.numberOfImages')}
                   </label>
                   <select 
                     value={uploadedImage ? 1 : imageCount}
                     onChange={(e) => setImageCount(parseInt(e.target.value))}
                     disabled={loading || !!uploadedImage}
-                    className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm rounded-lg bg-gray-800/70 text-white border-gray-700 border focus:outline-none focus:ring-2 focus:ring-indigo-500 backdrop-blur-sm"
+                    className={`px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm rounded-lg border focus:outline-none focus:ring-2 backdrop-blur-sm ${
+                      darkMode
+                        ? 'bg-gray-800/70 text-white border-gray-700 focus:ring-indigo-500'
+                        : 'bg-white/70 text-gray-900 border-gray-300 focus:ring-indigo-400'
+                    }`}
                   >
                     <option value={1}>1</option>
                     {!uploadedImage && (
@@ -911,19 +926,19 @@ const ImageGeneratorPage: React.FC = () => {
               <div className="mt-3 md:mt-4">
                 {loading ? (
                   <div className="space-y-2 md:space-y-3">
-                    <div className="w-full rounded-full h-2 md:h-2.5 bg-gray-800/70">
+                    <div className="w-full rounded-full h-2 md:h-2.5 bg-gray-300 dark:bg-gray-800/70">
                       <div 
                         className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-2 md:h-2.5 rounded-full transition-all duration-500"
                         style={{ width: `${processingProgress}%` }}
                       ></div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs md:text-sm flex items-center text-gray-400">
+                      <span className="text-xs md:text-sm flex items-center text-gray-600 dark:text-gray-400">
                         <FiClock className="mr-1" /> {getStatusText()}
                       </span>
                       <button
                         onClick={cancelGeneration}
-                        className="text-xs md:text-sm flex items-center text-red-400 hover:text-red-300"
+                        className="text-xs md:text-sm flex items-center text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300"
                       >
                         <FiX className="mr-1" /> {t('common.cancel')}
                       </button>
@@ -933,11 +948,13 @@ const ImageGeneratorPage: React.FC = () => {
                   <AuthRequiredButton
                     onClick={handleGenerateImages}
                     disabled={!message.trim()}
-                    className={`w-full py-2 md:py-3 rounded-lg text-sm md:text-base font-medium flex items-center justify-center ${
+                    className={`w-full py-2 md:py-3 rounded-lg text-sm md:text-base font-medium flex items-center justify-center transition backdrop-blur-sm ${
                       !message.trim()
-                        ? 'bg-gray-800/50 text-gray-500'
+                        ? darkMode 
+                          ? 'bg-gray-800/50 text-gray-500'
+                          : 'bg-gray-300 text-gray-500'
                         : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white hover:opacity-90 shadow-lg shadow-indigo-500/20'
-                    } transition backdrop-blur-sm`}
+                    }`}
                   >
                     <FiImage className="mr-1.5 md:mr-2" />
                     {uploadedImage ? t('imageGenerator.enhanceImage') : t('imageGenerator.generateImages')}
@@ -966,10 +983,14 @@ const ImageGeneratorPage: React.FC = () => {
                   disabled={loading}
                   className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm rounded-lg flex items-center transition-colors w-full justify-center ${
                     loading
-                      ? 'bg-gray-700/50 text-gray-400 cursor-not-allowed'
+                      ? darkMode
+                        ? 'bg-gray-700/50 text-gray-400 cursor-not-allowed'
+                        : 'bg-gray-300/50 text-gray-500 cursor-not-allowed'
                       : showHistory
                         ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20'
-                        : 'bg-gray-800/70 text-white hover:bg-gray-700/90 backdrop-blur-sm border border-gray-700/50'
+                        : darkMode
+                          ? 'bg-gray-800/70 text-white hover:bg-gray-700/90 backdrop-blur-sm border border-gray-700/50'
+                          : 'bg-white/70 text-gray-900 hover:bg-gray-100/90 backdrop-blur-sm border border-gray-300/50'
                   }`}
                 >
                   <FiList className="mr-1.5 md:mr-2" />
@@ -980,7 +1001,7 @@ const ImageGeneratorPage: React.FC = () => {
               {/* Quick Prompts */}
               {!showHistory && (
                 <div className="mt-3 md:mt-4">
-                  <label className="block text-xs md:text-sm font-medium mb-2 text-gray-200">
+                  <label className="block text-xs md:text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">
                     {t('imageGenerator.quickPrompts')}
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -993,7 +1014,11 @@ const ImageGeneratorPage: React.FC = () => {
                       <button
                         key={index}
                         onClick={() => setMessage(prompt)}
-                        className="px-2 md:px-3 py-1.5 md:py-2 text-xs rounded-lg bg-gray-800/70 text-white hover:bg-gray-700/90 backdrop-blur-sm border border-gray-700/50 transition-colors text-left truncate"
+                        className={`px-2 md:px-3 py-1.5 md:py-2 text-xs rounded-lg backdrop-blur-sm border transition-colors text-left truncate ${
+                          darkMode
+                            ? 'bg-gray-800/70 text-white hover:bg-gray-700/90 border-gray-700/50'
+                            : 'bg-white/70 text-gray-900 hover:bg-gray-100/90 border-gray-300/50'
+                        }`}
                       >
                         {prompt}
                       </button>
@@ -1004,36 +1029,50 @@ const ImageGeneratorPage: React.FC = () => {
             </div>
             
             {/* Right Column - Image Display */}
-            <div className="w-full lg:w-3/5 flex justify-center">
+            <div className="w-full lg:w-3/5 flex items-center justify-center">
               {/* Add animated border effect */}
               <div className="relative rounded-lg overflow-hidden w-full max-w-2xl h-[400px] md:h-[500px] lg:h-[600px]">
                 {/* Colorful border using gradient background without purple */}
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500 to-pink-500 animate-gradient-x p-[3px] md:p-[6px]"></div>
                 
                 {/* Main content area */}
-                <div className="relative glass-effect rounded-lg overflow-hidden h-full">
+                <div className={`relative rounded-lg overflow-hidden h-full ${
+                  darkMode ? 'glass-effect' : 'bg-white/80 backdrop-blur-lg border border-gray-200/50'
+                }`}>
                 {showHistory ? (
               // History View
                 <div className="p-3 md:p-4 lg:p-6 h-[400px] md:h-[500px] lg:h-[600px] overflow-y-auto">
                 <div className="mb-3 md:mb-4 lg:mb-6">
-                    <h2 className="text-base md:text-lg lg:text-xl font-bold text-white">{t('imageGenerator.recentImages')}</h2>
+                    <h2 className={`text-base md:text-lg lg:text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('imageGenerator.recentImages')}</h2>
                   </div>
                 
                 {isLoading && imageHistory.length === 0 ? (
                   <div className="space-y-4">
                     {[...Array(3)].map((_, i) => (
-                      <div key={i} className="flex space-x-4 p-4 rounded-lg bg-gray-800/50 animate-pulse border border-gray-700/30">
-                        <div className="w-24 h-24 rounded-lg bg-gray-700/70 aspect-square"></div>
+                      <div key={i} className={`flex space-x-4 p-4 rounded-lg animate-pulse border ${
+                        darkMode 
+                          ? 'bg-gray-800/50 border-gray-700/30'
+                          : 'bg-gray-100/50 border-gray-300/30'
+                      }`}>
+                        <div className={`w-24 h-24 rounded-lg aspect-square ${
+                          darkMode ? 'bg-gray-700/70' : 'bg-gray-300/70'
+                        }`}></div>
                         <div className="flex-1 space-y-2">
-                          <div className="h-4 rounded bg-gray-700/70 w-3/4"></div>
-                          <div className="h-3 rounded bg-gray-700/70 w-1/2"></div>
-                          <div className="h-3 rounded bg-gray-700/70 w-1/4"></div>
+                          <div className={`h-4 rounded w-3/4 ${
+                            darkMode ? 'bg-gray-700/70' : 'bg-gray-300/70'
+                          }`}></div>
+                          <div className={`h-3 rounded w-1/2 ${
+                            darkMode ? 'bg-gray-700/70' : 'bg-gray-300/70'
+                          }`}></div>
+                          <div className={`h-3 rounded w-1/4 ${
+                            darkMode ? 'bg-gray-700/70' : 'bg-gray-300/70'
+                          }`}></div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : historyError ? (
-                  <div className="text-center py-8 text-red-400">
+                  <div className={`text-center py-8 ${darkMode ? 'text-red-400' : 'text-red-600'}`}>
                     <p className="text-lg mb-2">{t('imageGenerator.errorLoadingHistory')}</p>
                     <p className="text-sm">{historyError}</p>
                     <button
@@ -1044,7 +1083,7 @@ const ImageGeneratorPage: React.FC = () => {
                     </button>
                   </div>
                 ) : imageHistory.length === 0 ? (
-                  <div className="text-center py-16 text-gray-400">
+                  <div className={`text-center py-16 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     <FiImage className="w-16 h-16 mx-auto mb-4 opacity-30" />
                     <p className="text-lg">{t('imageGenerator.noImagesYet')}</p>
                     <p className="text-sm mt-2">{t('imageGenerator.generateFirstImage')}</p>
@@ -1054,10 +1093,16 @@ const ImageGeneratorPage: React.FC = () => {
                     {imageHistory.map((image, index) => (
                       <div 
                         key={image.image_id} 
-                        className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 p-3 md:p-4 rounded-lg border transition-all hover:shadow-md bg-gray-800/50 border-gray-700/50 hover:bg-gray-700/60 backdrop-blur-sm"
+                        className={`flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 p-3 md:p-4 rounded-lg border transition-all hover:shadow-md backdrop-blur-sm ${
+                          darkMode
+                            ? 'bg-gray-800/50 border-gray-700/50 hover:bg-gray-700/60'
+                            : 'bg-white/50 border-gray-300/50 hover:bg-gray-100/60'
+                        }`}
                       >
                         {/* Image Thumbnail */}
-                        <div className="relative flex-shrink-0 mx-auto sm:mx-0 flex justify-center items-center bg-gray-700/70 rounded-lg group">
+                        <div className={`relative flex-shrink-0 mx-auto sm:mx-0 flex justify-center items-center rounded-lg group ${
+                          darkMode ? 'bg-gray-700/70' : 'bg-gray-200/70'
+                        }`}>
                           <img 
                             src={image.image_url} 
                             alt={image.prompt_text || 'Generated image'} 
@@ -1085,10 +1130,14 @@ const ImageGeneratorPage: React.FC = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between">
                             <div className="flex-1 min-w-0 text-center sm:text-left">
-                              <h3 className="text-xs md:text-sm font-medium truncate text-white">
+                              <h3 className={`text-xs md:text-sm font-medium truncate ${
+                                darkMode ? 'text-white' : 'text-gray-900'
+                              }`}>
                                 {image.prompt_text || t('imageGenerator.generatedImage')}
                               </h3>
-                              <p className="text-xs mt-1 text-gray-400">
+                              <p className={`text-xs mt-1 ${
+                                darkMode ? 'text-gray-400' : 'text-gray-600'
+                              }`}>
                                 {new Date(image.created_at).toLocaleDateString('en-US', {
                                   year: 'numeric',
                                   month: 'short',
@@ -1101,7 +1150,9 @@ const ImageGeneratorPage: React.FC = () => {
                                 <span className="inline-flex items-center px-2 py-0.5 md:py-1 rounded-full text-xs font-medium bg-green-900/70 text-green-200">
                                   {t('imageGenerator.ready')}
                                 </span>
-                                <span className="text-xs text-gray-400">
+                                <span className={`text-xs ${
+                                  darkMode ? 'text-gray-400' : 'text-gray-600'
+                                }`}>
                                   {t('imageGenerator.imageNumber', { number: imageHistory.length - index })}
                                 </span>
                               </div>
@@ -1114,28 +1165,36 @@ const ImageGeneratorPage: React.FC = () => {
                                   setImages([image.image_url]);
                                   setShowHistory(false);
                                 }}
-                                className="p-1.5 md:p-2 rounded-lg transition-colors text-indigo-400 hover:bg-gray-700/70"
+                                className={`p-1.5 md:p-2 rounded-lg transition-colors text-indigo-400 ${
+                                  darkMode ? 'hover:bg-gray-700/70' : 'hover:bg-gray-200/70'
+                                }`}
                                 title={t('imageGenerator.viewImage')}
                               >
                                 <FiImage size={14} className="md:w-4 md:h-4" />
                               </button>
                               <button 
                                 onClick={() => handleDownload(image.image_url, image.prompt_text)}
-                                className="p-1.5 md:p-2 rounded-lg transition-colors text-gray-400 hover:bg-gray-700/70"
+                                className={`p-1.5 md:p-2 rounded-lg transition-colors ${
+                                  darkMode ? 'text-gray-400 hover:bg-gray-700/70' : 'text-gray-600 hover:bg-gray-200/70'
+                                }`}
                                 title={t('imageGenerator.downloadImage')}
                               >
                                 <FiDownload size={14} className="md:w-4 md:h-4" />
                               </button>
                               <button 
                                 onClick={() => handleShare(image.image_url)}
-                                className="p-1.5 md:p-2 rounded-lg transition-colors text-gray-400 hover:bg-gray-700/70"
+                                className={`p-1.5 md:p-2 rounded-lg transition-colors ${
+                                  darkMode ? 'text-gray-400 hover:bg-gray-700/70' : 'text-gray-600 hover:bg-gray-200/70'
+                                }`}
                                 title={t('imageGenerator.shareImage')}
                               >
                                 <FiShare2 size={14} className="md:w-4 md:h-4" />
                               </button>
                               <button 
                                 onClick={() => handleRemoveImage(image.image_id)}
-                                className="p-1.5 md:p-2 rounded-lg transition-colors text-red-400 hover:bg-gray-700/70"
+                                className={`p-1.5 md:p-2 rounded-lg transition-colors text-red-400 ${
+                                  darkMode ? 'hover:bg-gray-700/70' : 'hover:bg-gray-200/70'
+                                }`}
                                 title={t('imageGenerator.removeImage')}
                               >
                                 <FiTrash size={14} className="md:w-4 md:h-4" />
@@ -1153,7 +1212,7 @@ const ImageGeneratorPage: React.FC = () => {
                         disabled={currentPage <= 1 || isLoading}
                         className={`flex items-center justify-center w-full sm:w-auto px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm rounded-lg transition-colors ${
                           currentPage <= 1 || isLoading
-                            ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
+                            ? darkMode ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed' : 'bg-gray-300/50 text-gray-500 cursor-not-allowed'
                             : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20'
                         }`}
                       >
@@ -1161,7 +1220,9 @@ const ImageGeneratorPage: React.FC = () => {
                         {t('common.previous')}
                       </button>
                       
-                      <div className="text-xs md:text-sm order-first sm:order-none text-gray-300">
+                      <div className={`text-xs md:text-sm order-first sm:order-none ${
+                        darkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         {t('common.pageOf', { current: currentPage, total: totalPages })}
                       </div>
                       
@@ -1173,7 +1234,7 @@ const ImageGeneratorPage: React.FC = () => {
                         disabled={currentPage >= totalPages || isLoading}
                         className={`flex items-center justify-center w-full sm:w-auto px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm rounded-lg transition-colors ${
                           currentPage >= totalPages || isLoading
-                            ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
+                            ? darkMode ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed' : 'bg-gray-300/50 text-gray-500 cursor-not-allowed'
                             : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20'
                         }`}
                       >
@@ -1186,7 +1247,7 @@ const ImageGeneratorPage: React.FC = () => {
               </div>
             ) : (
               // Generator View
-              <div className="p-3 md:p-4 lg:p-6 rounded-lg shadow-lg bg-black backdrop-blur-md h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden">
+              <div className="p-3 md:p-4 lg:p-6 rounded-lg shadow-lg bg-white dark:bg-black backdrop-blur-md h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden">
                 {showSkeleton ? (
                   uploadedImage && uploadedImageUrl ? (
                     // Custom skeleton for image enhancement
@@ -1209,8 +1270,8 @@ const ImageGeneratorPage: React.FC = () => {
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 animate-gradient-x"></div>
                         
                         {/* Progress indicator */}
-                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 dark:from-black/70 to-transparent">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                             <div 
                               className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-1.5 rounded-full transition-all duration-500" 
                               style={{ width: `${processingProgress}%` }}
@@ -1224,7 +1285,7 @@ const ImageGeneratorPage: React.FC = () => {
                     // Regular skeleton for image generation
                     <div className={`grid ${imageCount === 1 ? 'grid-cols-1' : imageCount === 2 ? 'grid-cols-1 sm:grid-cols-2' : imageCount === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2'} gap-2 md:gap-3 lg:gap-4 p-2 md:p-4 lg:p-6 h-full`}>
                       {[...Array(imageCount)].map((_, i) => (
-                        <div key={i} className="relative rounded-lg overflow-hidden bg-gray-800/70 aspect-square">
+                        <div key={i} className="relative rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-800/70 aspect-square">
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse transform -skew-x-12 opacity-30"></div>
                           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 animate-gradient-x"></div>
                         </div>
@@ -1239,7 +1300,7 @@ const ImageGeneratorPage: React.FC = () => {
                           key={index} 
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className="relative group overflow-hidden rounded-lg shadow-md bg-gray-800/70 border border-gray-700/30 aspect-square"
+                          className="relative group overflow-hidden rounded-lg shadow-md bg-gray-100 dark:bg-gray-800/70 border border-gray-300 dark:border-gray-700/30 aspect-square"
                         >
                           <img 
                             src={imageUrl} 
@@ -1257,7 +1318,7 @@ const ImageGeneratorPage: React.FC = () => {
                           >
                             <FiX size={14} />
                           </button>
-                          <div className={`absolute inset-0 flex flex-col justify-end p-2 md:p-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/80 via-black/40 to-transparent`}>
+                          <div className={`absolute inset-0 flex flex-col justify-end p-2 md:p-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/80 dark:from-black/80 via-black/40 dark:via-black/40 to-transparent`}>
                             <div className="flex space-x-1 md:space-x-2">
                               <button 
                                 onClick={() => handleDownload(imageUrl, message)}
@@ -1278,7 +1339,11 @@ const ImageGeneratorPage: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center text-gray-400 h-[400px] md:h-[500px] lg:h-[600px] flex flex-col items-center justify-center p-3 md:p-4 lg:p-6 bg-gray-900/30 backdrop-blur-md overflow-hidden border border-gray-700/30">
+                  <div className={`w-full max-w-md mx-auto text-center h-[400px] md:h-[500px] lg:h-[600px] flex flex-col items-center justify-center p-3 md:p-4 lg:p-6 backdrop-blur-md overflow-hidden border rounded-lg ${
+                    darkMode 
+                      ? 'text-gray-400 bg-gray-900/30 border-gray-700/30' 
+                      : 'text-gray-600 bg-gray-100/30 border-gray-300/30'
+                  }`}>
                     <FiImage className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-3 md:mb-4 lg:mb-5 opacity-30" />
                     <p className="text-sm md:text-base lg:text-lg max-w-xs px-4">{t('imageGenerator.enterPromptToGenerate')}</p>
                   </div>

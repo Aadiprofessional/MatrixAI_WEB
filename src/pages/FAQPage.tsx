@@ -2,10 +2,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FiHelpCircle } from 'react-icons/fi';
 import { HomeNavbar } from '../components';
+import { useTheme } from '../context/ThemeContext';
 
 const FAQPage: React.FC = () => {
+  const { darkMode } = useTheme();
+  
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className={`min-h-screen ${darkMode ? 'bg-black text-white' : 'bg-white text-gray-900'}`}>
       {/* Add HomeNavbar */}
       <HomeNavbar />
       
@@ -14,7 +17,7 @@ const FAQPage: React.FC = () => {
         {/* FAQ Section */}
         <section className="py-20 relative">
           {/* Background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/90 to-black z-0"></div>
+          <div className={`absolute inset-0 ${darkMode ? 'bg-gradient-to-b from-black/90 to-black' : 'bg-gradient-to-b from-gray-50/90 to-white'} z-0`}></div>
           
           {/* Animated grid background */}
           <div className="absolute inset-0 z-0 opacity-20">
@@ -38,8 +41,8 @@ const FAQPage: React.FC = () => {
                     <FiHelpCircle className="h-10 w-10 text-purple-400" />
                   </div>
                 </div>
-                <h1 className="text-4xl font-bold text-white mb-4">Frequently Asked Questions</h1>
-                <p className="mt-4 text-xl text-gray-300 max-w-2xl mx-auto">
+                <h1 className={`text-4xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4`}>Frequently Asked Questions</h1>
+                <p className={`mt-4 text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-2xl mx-auto`}>
                   Find answers to common questions about MatrixAI's services, features, and capabilities.
                 </p>
               </motion.div>
@@ -53,7 +56,7 @@ const FAQPage: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
               >
-                <h2 className="text-2xl font-semibold text-purple-400 mb-6">General Questions</h2>
+                <h2 className={`text-2xl font-semibold ${darkMode ? 'text-purple-400' : 'text-purple-600'} mb-6`}>General Questions</h2>
                 <div className="space-y-6">
                   {[
                     {
@@ -75,10 +78,10 @@ const FAQPage: React.FC = () => {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className="backdrop-blur-md bg-black/30 rounded-lg p-6 shadow-lg border border-gray-700 hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
+                      className={`backdrop-blur-md ${darkMode ? 'bg-black/30 border-gray-700 hover:shadow-purple-900/20 hover:border-purple-700/50' : 'bg-white/70 border-gray-200 hover:shadow-purple-500/20 hover:border-purple-300'} rounded-lg p-6 shadow-lg transition-all duration-300`}
                     >
-                      <h3 className="text-lg font-semibold text-white">{faq.question}</h3>
-                      <p className="mt-2 text-gray-300">{faq.answer}</p>
+                      <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{faq.question}</h3>
+                      <p className={`mt-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{faq.answer}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -91,7 +94,7 @@ const FAQPage: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <h2 className="text-2xl font-semibold text-purple-400 mb-6">Subscription & Pricing</h2>
+                <h2 className={`text-2xl font-semibold ${darkMode ? 'text-purple-400' : 'text-purple-600'} mb-6`}>Subscription & Pricing</h2>
                 <div className="space-y-6">
                   {[
                     {
@@ -113,10 +116,10 @@ const FAQPage: React.FC = () => {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className="backdrop-blur-md bg-black/30 rounded-lg p-6 shadow-lg border border-gray-700 hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
+                      className={`backdrop-blur-md ${darkMode ? 'bg-black/30 border-gray-700 hover:shadow-purple-900/20 hover:border-purple-700/50' : 'bg-white/70 border-gray-200 hover:shadow-purple-500/20 hover:border-purple-300'} rounded-lg p-6 shadow-lg transition-all duration-300`}
                     >
-                      <h3 className="text-lg font-semibold text-white">{faq.question}</h3>
-                      <p className="mt-2 text-gray-300">{faq.answer}</p>
+                      <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{faq.question}</h3>
+                      <p className={`mt-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{faq.answer}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -129,7 +132,7 @@ const FAQPage: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
-                <h2 className="text-2xl font-semibold text-purple-400 mb-6">Technical Support</h2>
+                <h2 className={`text-2xl font-semibold ${darkMode ? 'text-purple-400' : 'text-purple-600'} mb-6`}>Technical Support</h2>
                 <div className="space-y-6">
                   {[
                     {
@@ -152,10 +155,10 @@ const FAQPage: React.FC = () => {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className="backdrop-blur-md bg-black/30 rounded-lg p-6 shadow-lg border border-gray-700 hover:shadow-purple-900/20 hover:border-purple-700/50 transition-all duration-300"
+                      className={`backdrop-blur-md ${darkMode ? 'bg-black/30 border-gray-700 hover:shadow-purple-900/20 hover:border-purple-700/50' : 'bg-white/70 border-gray-200 hover:shadow-purple-500/20 hover:border-purple-300'} rounded-lg p-6 shadow-lg transition-all duration-300`}
                     >
-                      <h3 className="text-lg font-semibold text-white">{faq.question}</h3>
-                      <p className="mt-2 text-gray-300">{faq.answer}</p>
+                      <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{faq.question}</h3>
+                      <p className={`mt-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{faq.answer}</p>
                     </motion.div>
                   ))}
                 </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
+import { useTheme } from '../context/ThemeContext';
 import { Layout } from '../components';
 import { userService } from '../services/userService';
 import { useTranslation } from 'react-i18next';
@@ -38,6 +39,7 @@ const OrderHistoryPage: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { userData } = useUser();
+  const { darkMode } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -163,7 +165,9 @@ const OrderHistoryPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="py-8 px-4 lg:px-8 page-background dark">
+      <div className={`py-8 px-4 lg:px-8 page-background ${
+        darkMode ? 'dark' : 'light'
+      }`}>
         {/* Background gradient effects */}
         <div className="fixed inset-0 -z-10 overflow-hidden">
           <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-pink-500/10 blur-3xl opacity-70"></div>
@@ -179,10 +183,14 @@ const OrderHistoryPage: React.FC = () => {
             className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center"
           >
             <div>
-              <h1 className="text-3xl font-bold text-primary">
+              <h1 className={`text-3xl font-bold ${
+                darkMode ? 'text-primary' : 'text-gray-900'
+              }`}>
                 {t('orderHistory.title')}
               </h1>
-              <p className="text-tertiary mt-1">
+              <p className={`mt-1 ${
+                darkMode ? 'text-tertiary' : 'text-gray-600'
+              }`}>
                 {t('orderHistory.subtitle')}
               </p>
             </div>
@@ -191,14 +199,22 @@ const OrderHistoryPage: React.FC = () => {
               <button 
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 transition-colors border border-gray-700"
+                className={`flex items-center px-3 py-2 rounded-lg text-sm transition-colors ${
+                  darkMode 
+                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700' 
+                    : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                }`}
               >
                 <FiRefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 <span>{refreshing ? t('orderHistory.refreshing') : t('orderHistory.refresh')}</span>
               </button>
               
               <button 
-                className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 transition-colors border border-gray-700"
+                className={`flex items-center px-3 py-2 rounded-lg text-sm transition-colors ${
+                  darkMode 
+                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700' 
+                    : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                }`}
               >
                 <FiDownload className="h-4 w-4 mr-2" />
                 <span>{t('orderHistory.export')}</span>
@@ -211,7 +227,11 @@ const OrderHistoryPage: React.FC = () => {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 rounded-lg bg-red-900/20 border border-red-800/30 text-red-300"
+              className={`mb-6 p-4 rounded-lg ${
+                darkMode 
+                  ? 'bg-red-900/20 border border-red-800/30 text-red-300' 
+                  : 'bg-red-50 border border-red-200 text-red-700'
+              }`}
             >
               {error}
             </motion.div>
@@ -225,14 +245,22 @@ const OrderHistoryPage: React.FC = () => {
             className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
           >
             {/* Total Orders */}
-            <div className="rounded-xl p-6 glass-effect border border-gray-700/50">
+            <div className={`rounded-xl p-6 glass-effect ${
+              darkMode ? 'border border-gray-700/50' : 'border border-gray-200 bg-white'
+            }`}>
               <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-blue-900/30 text-blue-300 mr-4">
+                <div className={`p-3 rounded-lg mr-4 ${
+                  darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-600'
+                }`}>
                   <FiShoppingBag className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-tertiary">{t('orderHistory.totalOrders')}</div>
-                  <div className="text-2xl font-bold text-primary">
+                  <div className={`text-sm font-medium ${
+                    darkMode ? 'text-tertiary' : 'text-gray-600'
+                  }`}>{t('orderHistory.totalOrders')}</div>
+                  <div className={`text-2xl font-bold ${
+                    darkMode ? 'text-primary' : 'text-gray-900'
+                  }`}>
                     {orders.length}
                   </div>
                 </div>
@@ -240,14 +268,22 @@ const OrderHistoryPage: React.FC = () => {
             </div>
 
             {/* Total Spending */}
-            <div className="rounded-xl p-6 glass-effect border border-gray-700/50">
+            <div className={`rounded-xl p-6 glass-effect ${
+              darkMode ? 'border border-gray-700/50' : 'border border-gray-200 bg-white'
+            }`}>
               <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-green-900/30 text-green-300 mr-4">
+                <div className={`p-3 rounded-lg mr-4 ${
+                  darkMode ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-600'
+                }`}>
                   <FiDollarSign className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-tertiary">{t('orderHistory.totalSpending')}</div>
-                  <div className="text-2xl font-bold text-primary">
+                  <div className={`text-sm font-medium ${
+                    darkMode ? 'text-tertiary' : 'text-gray-600'
+                  }`}>{t('orderHistory.totalSpending')}</div>
+                  <div className={`text-2xl font-bold ${
+                    darkMode ? 'text-primary' : 'text-gray-900'
+                  }`}>
                     ${totalSpending.toFixed(2)}
                   </div>
                 </div>
@@ -255,14 +291,22 @@ const OrderHistoryPage: React.FC = () => {
             </div>
 
             {/* Total Coins */}
-            <div className="rounded-xl p-6 glass-effect border border-gray-700/50">
+            <div className={`rounded-xl p-6 glass-effect ${
+              darkMode ? 'border border-gray-700/50' : 'border border-gray-200 bg-white'
+            }`}>
               <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-amber-900/30 text-amber-300 mr-4">
+                <div className={`p-3 rounded-lg mr-4 ${
+                  darkMode ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-100 text-amber-600'
+                }`}>
                   <FiPackage className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-tertiary">{t('orderHistory.totalCoinsAdded')}</div>
-                  <div className="text-2xl font-bold text-primary">
+                  <div className={`text-sm font-medium ${
+                    darkMode ? 'text-tertiary' : 'text-gray-600'
+                  }`}>{t('orderHistory.totalCoinsAdded')}</div>
+                  <div className={`text-2xl font-bold ${
+                    darkMode ? 'text-primary' : 'text-gray-900'
+                  }`}>
                     {totalCoinsAdded}
                   </div>
                 </div>
@@ -277,16 +321,20 @@ const OrderHistoryPage: React.FC = () => {
 
             {/* View Mode Toggle */}
             <div className="flex items-center space-x-2">
-              <div className="text-sm font-medium text-secondary">
+              <div className={`text-sm font-medium ${
+                darkMode ? 'text-secondary' : 'text-gray-700'
+              }`}>
                 {t('orderHistory.view')}:
               </div>
-              <div className="flex rounded-lg overflow-hidden border border-gray-700">
+              <div className={`flex rounded-lg overflow-hidden border ${
+                darkMode ? 'border-gray-700' : 'border-gray-300'
+              }`}>
                 <button
                     onClick={() => setViewMode('list')}
                     className={`p-2 ${
                       viewMode === 'list'
                         ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        : (darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-50')
                     }`}
                 >
                   <FiList className="h-4 w-4" />
@@ -296,7 +344,7 @@ const OrderHistoryPage: React.FC = () => {
                     className={`p-2 ${
                       viewMode === 'grid'
                         ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        : (darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-50')
                     }`}
                 >
                   <FiGrid className="h-4 w-4" />
@@ -312,70 +360,106 @@ const OrderHistoryPage: React.FC = () => {
             transition={{ duration: 0.4, delay: 0.1 }}
           >
             {loading ? (
-              <div className="rounded-xl p-20 flex justify-center items-center glass-effect border border-gray-700/50">
+              <div className={`rounded-xl p-20 flex justify-center items-center glass-effect ${
+                darkMode ? 'border border-gray-700/50' : 'border border-gray-200 bg-white'
+              }`}>
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
               </div>
             ) : filteredOrders.length === 0 ? (
-              <div className="rounded-xl p-12 text-center glass-effect border border-gray-700/50 text-tertiary">
+              <div className={`rounded-xl p-12 text-center glass-effect ${
+                darkMode ? 'border border-gray-700/50 text-tertiary' : 'border border-gray-200 bg-white text-gray-500'
+              }`}>
                 <FiShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2 text-secondary">{t('orderHistory.noOrdersFound')}</h3>
+                <h3 className={`text-lg font-medium mb-2 ${
+                  darkMode ? 'text-secondary' : 'text-gray-700'
+                }`}>{t('orderHistory.noOrdersFound')}</h3>
                 <p>{t('orderHistory.noPurchasesYet')}</p>
               </div>
             ) : viewMode === 'list' ? (
               // List View
-              <div className="rounded-xl overflow-hidden glass-effect border border-gray-700/50">
+              <div className={`rounded-xl overflow-hidden glass-effect ${
+                darkMode ? 'border border-gray-700/50' : 'border border-gray-200 bg-white'
+              }`}>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-700/50">
+                    <thead className={darkMode ? 'bg-gray-700/50' : 'bg-gray-50'}>
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                          darkMode ? 'text-gray-300' : 'text-gray-500'
+                        }`}>
                           {t('orderHistory.table.orderId')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                          darkMode ? 'text-gray-300' : 'text-gray-500'
+                        }`}>
                           {t('orderHistory.table.plan')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                          darkMode ? 'text-gray-300' : 'text-gray-500'
+                        }`}>
                           {t('orderHistory.table.date')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                          darkMode ? 'text-gray-300' : 'text-gray-500'
+                        }`}>
                           {t('orderHistory.table.amount')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                          darkMode ? 'text-gray-300' : 'text-gray-500'
+                        }`}>
                           {t('orderHistory.table.coins')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                          darkMode ? 'text-gray-300' : 'text-gray-500'
+                        }`}>
                           {t('orderHistory.table.validTill')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                          darkMode ? 'text-gray-300' : 'text-gray-500'
+                        }`}>
                           {t('orderHistory.table.status')}
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-700">
+                    <tbody className={`divide-y ${
+                      darkMode ? 'divide-gray-700' : 'divide-gray-200'
+                    }`}>
                       {paginatedOrders.map((order) => {
                         const statusInfo = getStatusInfo(order.status);
                         
                         return (
                           <tr 
                             key={order.id}
-                            className="hover:bg-gray-700/50"
+                            className={darkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}
                           >
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                              darkMode ? 'text-primary' : 'text-gray-900'
+                            }`}>
                               #{order.id}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                              darkMode ? 'text-secondary' : 'text-gray-600'
+                            }`}>
                               {order.plan_name}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                              darkMode ? 'text-secondary' : 'text-gray-600'
+                            }`}>
                               {formatDate(order.created_at)}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                              darkMode ? 'text-primary' : 'text-gray-900'
+                            }`}>
                               ${order.total_price.toFixed(2)}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                              darkMode ? 'text-secondary' : 'text-gray-600'
+                            }`}>
                               +{order.coins_added}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                              darkMode ? 'text-secondary' : 'text-gray-600'
+                            }`}>
                               {formatDate(order.plan_valid_till)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -403,11 +487,19 @@ const OrderHistoryPage: React.FC = () => {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3 }}
-                      className="rounded-xl overflow-hidden bg-gray-800/50 border border-gray-700/50 hover:border-indigo-700/50 transition-all duration-300 hover:shadow-lg"
+                      className={`rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg ${
+                        darkMode 
+                          ? 'bg-gray-800/50 border border-gray-700/50 hover:border-indigo-700/50' 
+                          : 'bg-white border border-gray-200 hover:border-indigo-300'
+                      }`}
                     >
-                      <div className="p-5 border-b border-gray-700/50">
+                      <div className={`p-5 border-b ${
+                        darkMode ? 'border-gray-700/50' : 'border-gray-200'
+                      }`}>
                         <div className="flex justify-between items-center">
-                          <h3 className="text-lg font-medium text-primary">
+                          <h3 className={`text-lg font-medium ${
+                            darkMode ? 'text-primary' : 'text-gray-900'
+                          }`}>
                             {order.plan_name}
                           </h3>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color} ${statusInfo.bgColor}`}>
@@ -415,7 +507,9 @@ const OrderHistoryPage: React.FC = () => {
                             <span className="ml-1.5">{order.status}</span>
                           </span>
                         </div>
-                        <div className="text-sm mt-1 text-tertiary">
+                        <div className={`text-sm mt-1 ${
+                          darkMode ? 'text-tertiary' : 'text-gray-500'
+                        }`}>
                           {t('orderHistory.orderNumber', { id: order.id })}
                         </div>
                       </div>
@@ -423,25 +517,35 @@ const OrderHistoryPage: React.FC = () => {
                       <div className="p-5">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <div className="text-xs font-medium text-tertiary">
+                            <div className={`text-xs font-medium ${
+                              darkMode ? 'text-tertiary' : 'text-gray-500'
+                            }`}>
                               {t('orderHistory.purchaseDate')}
                             </div>
-                            <div className="mt-1 text-sm text-secondary">
+                            <div className={`mt-1 text-sm ${
+                              darkMode ? 'text-secondary' : 'text-gray-600'
+                            }`}>
                               {formatDate(order.created_at)}
                             </div>
                           </div>
                           
                           <div>
-                            <div className="text-xs font-medium text-tertiary">
+                            <div className={`text-xs font-medium ${
+                              darkMode ? 'text-tertiary' : 'text-gray-500'
+                            }`}>
                               {t('orderHistory.validUntil')}
                             </div>
-                            <div className="mt-1 text-sm text-secondary">
+                            <div className={`mt-1 text-sm ${
+                              darkMode ? 'text-secondary' : 'text-gray-600'
+                            }`}>
                               {formatDate(order.plan_valid_till)}
                             </div>
                           </div>
                           
                           <div>
-                            <div className="text-xs font-medium text-tertiary">
+                            <div className={`text-xs font-medium ${
+                              darkMode ? 'text-tertiary' : 'text-gray-500'
+                            }`}>
                               {t('orderHistory.amount')}
                             </div>
                             <div className="mt-1 text-sm font-medium text-amber-400">
@@ -450,10 +554,14 @@ const OrderHistoryPage: React.FC = () => {
                           </div>
                           
                           <div>
-                            <div className="text-xs font-medium text-tertiary">
+                            <div className={`text-xs font-medium ${
+                              darkMode ? 'text-tertiary' : 'text-gray-500'
+                            }`}>
                               {t('orderHistory.coinsAdded')}
                             </div>
-                            <div className="mt-1 text-sm font-medium text-secondary">
+                            <div className={`mt-1 text-sm font-medium ${
+                              darkMode ? 'text-secondary' : 'text-gray-600'
+                            }`}>
                               +{order.coins_added}
                             </div>
                           </div>
@@ -468,7 +576,9 @@ const OrderHistoryPage: React.FC = () => {
             {/* Pagination */}
             {filteredOrders.length > 0 && (
               <div className="mt-6 flex justify-between items-center">
-                <div className="text-sm text-tertiary">
+                <div className={`text-sm ${
+                  darkMode ? 'text-tertiary' : 'text-gray-500'
+                }`}>
                   {t('orderHistory.pagination.showing', {
                     start: (page - 1) * ordersPerPage + 1,
                     end: Math.min(page * ordersPerPage, filteredOrders.length),
@@ -480,27 +590,39 @@ const OrderHistoryPage: React.FC = () => {
                   <button
                     onClick={prevPage}
                     disabled={page === 1}
-                    className={`p-2 rounded-lg ${
+                    className={`p-2 rounded-lg border ${
                       page === 1
-                        ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                        : 'bg-gray-800 text-gray-200 hover:bg-gray-700'
-                    } border border-gray-700`}
+                        ? darkMode 
+                          ? 'bg-gray-800 text-gray-600 cursor-not-allowed border-gray-700'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                        : darkMode
+                          ? 'bg-gray-800 text-gray-200 hover:bg-gray-700 border-gray-700'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
+                    }`}
                   >
                     <FiChevronLeft className="h-5 w-5" />
                   </button>
                   
-                  <div className="px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-700">
+                  <div className={`px-4 py-2 rounded-lg border ${
+                    darkMode 
+                      ? 'bg-gray-800 text-white border-gray-700'
+                      : 'bg-white text-gray-900 border-gray-200'
+                  }`}>
                     {page} / {totalPages}
                   </div>
                   
                   <button
                     onClick={nextPage}
                     disabled={page === totalPages}
-                    className={`p-2 rounded-lg ${
+                    className={`p-2 rounded-lg border ${
                       page === totalPages
-                        ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                        : 'bg-gray-800 text-gray-200 hover:bg-gray-700'
-                    } border border-gray-700`}
+                        ? darkMode 
+                          ? 'bg-gray-800 text-gray-600 cursor-not-allowed border-gray-700'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                        : darkMode
+                          ? 'bg-gray-800 text-gray-200 hover:bg-gray-700 border-gray-700'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
+                    }`}
                   >
                     <FiChevronRight className="h-5 w-5" />
                   </button>

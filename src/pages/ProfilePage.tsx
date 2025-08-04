@@ -146,52 +146,52 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
   };
 
   const getTransactionColor = (transactionName: string) => {
-    if (!transactionName) return 'bg-gray-800 text-gray-300';
+    if (!transactionName) return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700';
     
     const name = transactionName.toLowerCase();
     
     // Content generation related
     if (name.includes('content_generation')) 
-      return 'bg-green-900/50 text-green-300';
+      return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700';
     
     // Chat related
     if (name.includes('chat') || name.includes('message')) 
-      return 'bg-blue-900/50 text-blue-300';
+      return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700';
     
     // Image related
     if (name.includes('image')) 
-      return 'bg-purple-900/50 text-purple-300';
+      return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-700';
     
     // Video related
     if (name.includes('video')) 
-      return 'bg-red-900/50 text-red-300';
+      return darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-700';
     
     // Audio/transcription related
     if (name.includes('audio') || name.includes('transcription')) 
-      return 'bg-indigo-900/50 text-indigo-300';
+      return darkMode ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700';
     
     // Credit related
     if (name.includes('credit')) 
-      return 'bg-green-900/50 text-green-300';
+      return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700';
     
     // Debit related
     if (name.includes('debit')) 
-      return 'bg-red-900/50 text-red-300';
+      return darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-700';
     
     // Subscription related
     if (name.includes('subscription')) 
-      return 'bg-blue-900/50 text-blue-300';
+      return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700';
     
     // Refund related
     if (name.includes('refund')) 
-      return 'bg-purple-900/50 text-purple-300';
+      return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-700';
     
     // Withdrawal related
     if (name.includes('withdrawal')) 
-      return 'bg-amber-900/50 text-amber-300';
+      return darkMode ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700';
     
     // Default fallback
-    return 'bg-gray-800 text-gray-300';
+    return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700';
   };
 
   const getStatusIcon = (status: string) => {

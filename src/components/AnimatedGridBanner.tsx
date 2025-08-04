@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiArrowRight } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 // Declare the spline-viewer custom element globally
 declare global {
@@ -29,6 +30,8 @@ const AnimatedGridBanner: React.FC<AnimatedGridBannerProps> = ({
   buttonText = 'Get Started',
   buttonLink = '/signup'
 }) => {
+  const { darkMode } = useTheme();
+  
   useEffect(() => {
     // Dynamically load the Spline viewer script
     const script = document.createElement('script');
@@ -47,9 +50,13 @@ const AnimatedGridBanner: React.FC<AnimatedGridBannerProps> = ({
   // No need to generate grid cells as we're using separate horizontal and vertical lines
   
   return (
-    <div className="relative w-full max-w-5xl mx-auto overflow-hidden rounded-lg border border-gray-800/30 shadow-2xl shadow-blue-900/10 bg-black mb-10">
-      {/* Spline 3D Background - Right aligned, 2x bigger, can overflow */}
-      <div className="absolute top-0 right-0 w-[240%] h-[200%] z-0 overflow-visible" style={{ transform: 'translateX(50%)' }}>
+    <div className={`relative w-full overflow-hidden shadow-2xl mb-10 ${
+      darkMode 
+        ? 'shadow-blue-900/10 bg-black' 
+        : 'shadow-blue-500/5 bg-white'
+    }`}>
+      {/* Spline 3D Background - Left aligned, 2x bigger, can overflow */}
+      <div className="absolute top-0 left-0 w-[240%] h-[200%] z-0 overflow-visible" style={{ transform: 'translateX(-50%)' }}>
         <div className="w-full h-full"> 
           {React.createElement('spline-viewer', { 
             url: '/grid.splinecode', 
@@ -75,14 +82,25 @@ const AnimatedGridBanner: React.FC<AnimatedGridBannerProps> = ({
           {Array.from({ length: 12 }, (_, i) => (
             <motion.div 
               key={`h-${i}`}
-              className="h-px w-full bg-white/5"
-              initial={{ opacity: 0.03, boxShadow: '0 0 1px rgba(255,255,255,0.05)' }}
+              className={`h-px w-full ${
+                darkMode ? 'bg-white/5' : 'bg-gray-400/10'
+              }`}
+              initial={{ 
+                opacity: 0.03, 
+                boxShadow: darkMode 
+                  ? '0 0 1px rgba(255,255,255,0.05)' 
+                  : '0 0 1px rgba(0,0,0,0.05)'
+              }}
               animate={{ 
                 opacity: [0.03, 0.07, 0.03],
-                boxShadow: [
+                boxShadow: darkMode ? [
                   '0 0 1px rgba(255,255,255,0.05)', 
                   '0 0 2px rgba(255,255,255,0.1)', 
                   '0 0 1px rgba(255,255,255,0.05)'
+                ] : [
+                  '0 0 1px rgba(0,0,0,0.05)', 
+                  '0 0 2px rgba(0,0,0,0.1)', 
+                  '0 0 1px rgba(0,0,0,0.05)'
                 ]
               }}
               transition={{ 
@@ -100,14 +118,25 @@ const AnimatedGridBanner: React.FC<AnimatedGridBannerProps> = ({
           {Array.from({ length: 15 }, (_, i) => (
             <motion.div 
               key={`v-${i}`}
-              className="w-px h-full bg-white/5"
-              initial={{ opacity: 0.03, boxShadow: '0 0 1px rgba(255,255,255,0.05)' }}
+              className={`w-px h-full ${
+                darkMode ? 'bg-white/5' : 'bg-gray-400/10'
+              }`}
+              initial={{ 
+                opacity: 0.03, 
+                boxShadow: darkMode 
+                  ? '0 0 1px rgba(255,255,255,0.05)' 
+                  : '0 0 1px rgba(0,0,0,0.05)'
+              }}
               animate={{ 
                 opacity: [0.03, 0.07, 0.03],
-                boxShadow: [
+                boxShadow: darkMode ? [
                   '0 0 1px rgba(255,255,255,0.05)', 
                   '0 0 2px rgba(255,255,255,0.1)', 
                   '0 0 1px rgba(255,255,255,0.05)'
+                ] : [
+                  '0 0 1px rgba(0,0,0,0.05)', 
+                  '0 0 2px rgba(0,0,0,0.1)', 
+                  '0 0 1px rgba(0,0,0,0.05)'
                 ]
               }}
               transition={{ 
@@ -122,12 +151,20 @@ const AnimatedGridBanner: React.FC<AnimatedGridBannerProps> = ({
         
         {/* Gradient overlay */}
         <motion.div 
-          className="absolute inset-0 bg-gradient-to-b from-black/10 via-blue-900/5 to-black/20"
+          className={`absolute inset-0 ${
+            darkMode 
+              ? 'bg-gradient-to-b from-black/10 via-blue-900/5 to-black/20' 
+              : 'bg-gradient-to-b from-white/10 via-blue-100/5 to-white/20'
+          }`}
           animate={{
-            background: [
+            background: darkMode ? [
               'linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(29,78,216,0.05), rgba(0,0,0,0.2))',
               'linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(37,99,235,0.07), rgba(0,0,0,0.2))',
               'linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(29,78,216,0.05), rgba(0,0,0,0.2))'
+            ] : [
+              'linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(219,234,254,0.05), rgba(255,255,255,0.2))',
+              'linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(191,219,254,0.07), rgba(255,255,255,0.2))',
+              'linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(219,234,254,0.05), rgba(255,255,255,0.2))'
             ]
           }}
           transition={{
@@ -152,20 +189,24 @@ const AnimatedGridBanner: React.FC<AnimatedGridBannerProps> = ({
       </div>
       
       {/* Content */}
-      <div className="relative z-20 px-6 py-12 md:py-16 lg:py-20 text-center">
+      <div className="relative z-20 px-6 py-12 md:py-16 lg:py-20 text-center min-h-[60vh] flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
           viewport={{ once: true }}
-          className="max-w-3xl mx-auto"
+          className="max-w-4xl mx-auto ml-auto mr-6 text-right"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+          <h2 className={`text-3xl md:text-4xl font-bold mb-6 ${
+            darkMode ? 'text-white' : 'text-gray-900'
+          }`}>
             {title}
           </h2>
           
           {description && (
-            <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
+            <p className={`text-lg mb-8 max-w-2xl mx-auto ${
+              darkMode ? 'text-gray-300' : 'text-gray-600'
+            }`}>
               {description}
             </p>
           )}
@@ -173,7 +214,11 @@ const AnimatedGridBanner: React.FC<AnimatedGridBannerProps> = ({
           {buttonText && (
             <Link 
               to={buttonLink} 
-              className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-base shadow-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-300"
+              className={`inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-base shadow-lg transition-colors duration-300 ${
+                darkMode 
+                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
+                  : 'bg-indigo-500 hover:bg-indigo-600 text-white'
+              }`}
             >
               {buttonText} <FiArrowRight className="ml-2" />
             </Link>

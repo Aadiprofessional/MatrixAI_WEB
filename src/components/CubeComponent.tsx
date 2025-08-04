@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiMessageSquare, FiImage, FiVideo, FiFileText, FiMic, FiShield, FiArrowRight, FiSend, FiUser, FiMail, FiPhone } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 
 // Declare the spline-viewer custom element globally
 declare global {
@@ -19,6 +20,7 @@ declare global {
 
 const CubeComponent: React.FC = () => {
   const { t } = useTranslation();
+  const { darkMode } = useTheme();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -58,12 +60,18 @@ const CubeComponent: React.FC = () => {
  
 
   return (
-    <div className="relative w-full min-h-[700px] lg:h-[700px] bg-black overflow-hidden">
-      {/* Black background */}
-      <div className="absolute inset-0 bg-black">
+    <div className={`relative w-full min-h-[700px] lg:h-[700px] overflow-hidden ${
+      darkMode ? 'bg-black' : 'bg-gray-50'
+    }`}>
+      {/* Background */}
+      <div className={`absolute inset-0 ${
+        darkMode ? 'bg-black' : 'bg-gray-50'
+      }`}>
         {/* Simple line of light from corner at 75 degrees - responsive */}
         <div 
-          className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-white/40 to-transparent"
+          className={`absolute bottom-0 left-0 h-1 bg-gradient-to-r to-transparent ${
+            darkMode ? 'from-white/40' : 'from-gray-400/40'
+          }`}
           style={{
             width: '80%',
             transformOrigin: 'left bottom',
@@ -73,7 +81,9 @@ const CubeComponent: React.FC = () => {
         
         {/* Mobile-specific light effect */}
         <div 
-          className="lg:hidden absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-white/30 to-transparent"
+          className={`lg:hidden absolute bottom-0 left-0 h-0.5 bg-gradient-to-r to-transparent ${
+            darkMode ? 'from-white/30' : 'from-gray-400/30'
+          }`}
           style={{
             width: '60%',
             transformOrigin: 'left bottom',
@@ -85,14 +95,18 @@ const CubeComponent: React.FC = () => {
         <div 
           className="absolute top-0 right-0 w-full h-full"
           style={{
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 30%, transparent 60%)',
+            background: darkMode 
+              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 30%, transparent 60%)'
+              : 'linear-gradient(135deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.05) 30%, transparent 60%)',
             clipPath: 'polygon(100% 0%, 70% 0%, 0% 100%, 30% 100%)'
           }}
         ></div>
         
         {/* Additional torch glow effect */}
         <div 
-          className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"
+          className={`absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl ${
+            darkMode ? 'bg-white/10' : 'bg-gray-400/10'
+          }`}
           style={{
             transform: 'translate(25%, -25%)'
           }}
@@ -106,20 +120,28 @@ const CubeComponent: React.FC = () => {
             
             {/* Mobile: Cube first, Desktop: Form first */}
             <motion.div 
-              className="order-2 lg:order-1 text-white space-y-6 w-full flex justify-center"
+              className={`order-2 lg:order-1 space-y-6 w-full flex justify-center ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
               {/* Contact Form with Glass Effect */}
               <motion.div
-                className="backdrop-blur-md bg-white/10 border border-white/20 rounded-xl p-6 sm:p-8 shadow-2xl w-full max-w-md lg:max-w-lg xl:max-w-xl"
+                className={`backdrop-blur-md rounded-xl p-6 sm:p-8 shadow-2xl w-full max-w-md lg:max-w-lg xl:max-w-xl ${
+                  darkMode 
+                    ? 'bg-white/10 border border-white/20' 
+                    : 'bg-black/10 border border-gray-300/20'
+                }`}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <motion.h2 
-                  className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 text-center"
+                  className={`text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-center ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.4 }}
@@ -128,7 +150,9 @@ const CubeComponent: React.FC = () => {
                 </motion.h2>
                 
                 <motion.p 
-                  className="text-gray-300 mb-6 text-sm sm:text-base text-center"
+                  className={`mb-6 text-sm sm:text-base text-center ${
+                    darkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.6 }}
@@ -150,7 +174,11 @@ const CubeComponent: React.FC = () => {
                         placeholder={t('contact.form.namePlaceholder')}
                         value={formData.name}
                         onChange={handleInputChange}
-                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent backdrop-blur-sm transition-all duration-300 text-sm sm:text-base"
+                        className={`w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent backdrop-blur-sm transition-all duration-300 text-sm sm:text-base ${
+                          darkMode 
+                            ? 'bg-white/5 border border-white/20 text-white placeholder-gray-400' 
+                            : 'bg-black/5 border border-gray-300/20 text-gray-900 placeholder-gray-500'
+                        }`}
                         required
                       />
                     </div>
@@ -169,7 +197,11 @@ const CubeComponent: React.FC = () => {
                         placeholder={t('contact.form.emailPlaceholder')}
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent backdrop-blur-sm transition-all duration-300 text-sm sm:text-base"
+                        className={`w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent backdrop-blur-sm transition-all duration-300 text-sm sm:text-base ${
+                          darkMode 
+                            ? 'bg-white/5 border border-white/20 text-white placeholder-gray-400' 
+                            : 'bg-black/5 border border-gray-300/20 text-gray-900 placeholder-gray-500'
+                        }`}
                         required
                       />
                     </div>
@@ -188,7 +220,11 @@ const CubeComponent: React.FC = () => {
                         placeholder={t('contact.form.phonePlaceholder')}
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent backdrop-blur-sm transition-all duration-300 text-sm sm:text-base"
+                        className={`w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent backdrop-blur-sm transition-all duration-300 text-sm sm:text-base ${
+                          darkMode 
+                            ? 'bg-white/5 border border-white/20 text-white placeholder-gray-400' 
+                            : 'bg-black/5 border border-gray-300/20 text-gray-900 placeholder-gray-500'
+                        }`}
                       />
                     </div>
                   </motion.div>
@@ -204,7 +240,11 @@ const CubeComponent: React.FC = () => {
                       value={formData.message}
                       onChange={handleInputChange}
                       rows={4}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent backdrop-blur-sm transition-all duration-300 resize-none text-sm sm:text-base"
+                      className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent backdrop-blur-sm transition-all duration-300 resize-none text-sm sm:text-base ${
+                        darkMode 
+                          ? 'bg-white/5 border border-white/20 text-white placeholder-gray-400' 
+                          : 'bg-black/5 border border-gray-300/20 text-gray-900 placeholder-gray-500'
+                      }`}
                       required
                     ></textarea>
                   </motion.div>

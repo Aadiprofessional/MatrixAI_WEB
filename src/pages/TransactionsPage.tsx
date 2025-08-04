@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
+import { useTheme } from '../context/ThemeContext';
 import { Layout } from '../components';
 import { userService } from '../services/userService';
 import coinImage from '../assets/coin.png';
@@ -100,6 +101,7 @@ const TransactionsPage: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { userData, refreshUserData } = useUser();
+  const { darkMode } = useTheme();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -251,30 +253,30 @@ const TransactionsPage: React.FC = () => {
     const amount = transaction.coin_amount;
     
     if (amount > 0) {
-      return 'bg-green-900/50 text-green-300'; // Credit
+      return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700'; // Credit
     } else if (amount < 0) {
       if (name.includes('subscription')) {
-        return 'bg-blue-900/50 text-blue-300';
+        return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700';
       } else if (name.includes('chat') || name.includes('message')) {
-        return 'bg-blue-900/50 text-blue-300';
+        return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700';
       } else if (name.includes('video')) {
-        return 'bg-purple-900/50 text-purple-300';
+        return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-700';
       } else if (name.includes('content generation') || name.includes('content_generation')) {
-        return 'bg-green-900/50 text-green-300';
+        return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700';
       } else if (name.includes('image')) {
-        return 'bg-indigo-900/50 text-indigo-300';
+        return darkMode ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700';
       } else if (name.includes('audio') || name.includes('transcription')) {
-        return 'bg-orange-900/50 text-orange-300';
+        return darkMode ? 'bg-orange-900/50 text-orange-300' : 'bg-orange-100 text-orange-700';
       } else {
-        return 'bg-red-900/50 text-red-300'; // Generic debit
+        return darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-700'; // Generic debit
       }
     } else if (name.includes('refund')) {
-      return 'bg-purple-900/50 text-purple-300';
+      return darkMode ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-700';
     } else if (name.includes('withdrawal')) {
-      return 'bg-amber-900/50 text-amber-300';
+      return darkMode ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700';
     }
     
-    return 'bg-gray-800 text-gray-300'; // Default
+    return darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'; // Default
   };
 
   // Get status icon and color
@@ -284,30 +286,30 @@ const TransactionsPage: React.FC = () => {
       case 'success':
         return {
           icon: <FiCheckCircle className="h-5 w-5" />,
-          color: 'text-green-400'
+          color: darkMode ? 'text-green-400' : 'text-green-600'
         };
       case 'pending':
         return {
           icon: <FiClock className="h-5 w-5" />,
-          color: 'text-amber-400'
+          color: darkMode ? 'text-amber-400' : 'text-amber-600'
         };
       case 'failed':
       case 'error':
         return {
           icon: <FiXCircle className="h-5 w-5" />,
-          color: 'text-red-400'
+          color: darkMode ? 'text-red-400' : 'text-red-600'
         };
       default:
         return {
           icon: <FiCreditCard className="h-5 w-5" />,
-          color: 'text-gray-400'
+          color: darkMode ? 'text-gray-400' : 'text-gray-600'
         };
     }
   };
 
   return (
     <Layout>
-      <div className="py-8 px-4 lg:px-8 page-background dark">
+      <div className={`py-8 px-4 lg:px-8 page-background ${darkMode ? 'dark' : ''}`}>
         {/* Background gradient effects */}
         <div className="fixed inset-0 -z-10 overflow-hidden">
           <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-purple-500/10 blur-3xl opacity-70"></div>
@@ -335,14 +337,22 @@ const TransactionsPage: React.FC = () => {
               <button 
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 transition-colors border border-gray-700"
+                className={`flex items-center px-3 py-2 rounded-lg text-sm transition-colors border ${
+                  darkMode 
+                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-200 border-gray-700' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300'
+                }`}
               >
                 <FiRefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 <span>{refreshing ? t('transactions.refreshing') : t('transactions.refresh')}</span>
               </button>
               
               <button 
-                className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 transition-colors border border-gray-700"
+                className={`flex items-center px-3 py-2 rounded-lg text-sm transition-colors border ${
+                  darkMode 
+                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-200 border-gray-700' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300'
+                }`}
               >
                 <FiDownload className="h-4 w-4 mr-2" />
                 <span>{t('transactions.export')}</span>
@@ -355,7 +365,11 @@ const TransactionsPage: React.FC = () => {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 rounded-lg bg-red-900/20 border border-red-800/30 text-red-300"
+              className={`mb-6 p-4 rounded-lg border ${
+                darkMode 
+                  ? 'bg-red-900/20 border-red-800/30 text-red-300' 
+                  : 'bg-red-50 border-red-200 text-red-700'
+              }`}
             >
               {error}
             </motion.div>
@@ -366,11 +380,15 @@ const TransactionsPage: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="rounded-xl glass-effect border border-gray-700/50 p-6 mb-8"
+            className={`rounded-xl glass-effect p-6 mb-8 ${
+              darkMode ? 'border border-gray-700/50' : 'border border-gray-200 bg-white'
+            }`}
           >
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div className="flex items-center mb-4 md:mb-0">
-                <div className="p-3 rounded-lg bg-amber-900/30 text-amber-300 mr-4">
+                <div className={`p-3 rounded-lg mr-4 ${
+                  darkMode ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-100 text-amber-600'
+                }`}>
                   <FiCreditCard className="h-6 w-6" />
                 </div>
                 <div>
@@ -421,13 +439,17 @@ const TransactionsPage: React.FC = () => {
               <div className="text-sm font-medium text-secondary">
                 {t('transactions.view')}:
               </div>
-              <div className="flex rounded-lg overflow-hidden border border-gray-700">
+              <div className={`flex rounded-lg overflow-hidden border ${
+                darkMode ? 'border-gray-700' : 'border-gray-300'
+              }`}>
                 <button
                     onClick={() => setViewMode('list')}
                     className={`p-2 ${
                       viewMode === 'list'
                         ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        : darkMode 
+                          ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                 >
                   <FiList className="h-4 w-4" />
@@ -437,7 +459,9 @@ const TransactionsPage: React.FC = () => {
                     className={`p-2 ${
                       viewMode === 'grid'
                         ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        : darkMode 
+                          ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                 >
                   <FiGrid className="h-4 w-4" />
@@ -453,38 +477,54 @@ const TransactionsPage: React.FC = () => {
             transition={{ duration: 0.4, delay: 0.1 }}
           >
             {loading ? (
-              <div className="rounded-xl p-20 flex justify-center items-center glass-effect border border-gray-700/50">
+              <div className={`rounded-xl p-20 flex justify-center items-center glass-effect border ${
+                darkMode ? 'border-gray-700/50' : 'border-gray-200 bg-white'
+              }`}>
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
               </div>
             ) : filteredTransactions.length === 0 ? (
-              <div className="rounded-xl p-12 text-center glass-effect border border-gray-700/50 text-tertiary">
+              <div className={`rounded-xl p-12 text-center glass-effect ${
+                darkMode ? 'border border-gray-700/50 text-tertiary' : 'border border-gray-200 bg-white text-gray-500'
+              }`}>
                 <FiCreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2 text-secondary">{t('transactions.noTransactionsFound')}</h3>
+                <h3 className={`text-lg font-medium mb-2 ${
+                  darkMode ? 'text-secondary' : 'text-gray-700'
+                }`}>{t('transactions.noTransactionsFound')}</h3>
                 <p>{t('transactions.noTransactionsYet')}</p>
               </div>
             ) : viewMode === 'list' ? (
               // List View
-              <div className="rounded-xl overflow-hidden glass-effect border border-gray-700/50">
+              <div className={`rounded-xl overflow-hidden glass-effect ${
+                darkMode ? 'border border-gray-700/50' : 'border border-gray-200 bg-white'
+              }`}>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-700/50">
+                    <thead className={darkMode ? 'bg-gray-700/50' : 'bg-gray-50'}>
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                          darkMode ? 'text-gray-300' : 'text-gray-500'
+                        }`}>
                           {t('transactions.table.type')}
                         </th>
                       
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                          darkMode ? 'text-gray-300' : 'text-gray-500'
+                        }`}>
                           {t('transactions.table.amount')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                          darkMode ? 'text-gray-300' : 'text-gray-500'
+                        }`}>
                           {t('transactions.table.date')}
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                          darkMode ? 'text-gray-300' : 'text-gray-500'
+                        }`}>
                           {t('transactions.table.status')}
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-700">
+                    <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
                       {paginatedTransactions.map((transaction, index) => {
                         // Default status to 'completed' if not provided
                         const status = transaction.status || 'completed';
@@ -494,14 +534,16 @@ const TransactionsPage: React.FC = () => {
                         return (
                           <tr 
                             key={transaction.id || index}
-                            className="hover:bg-gray-700/50"
+                            className={darkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}
                           >
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
                                 <div className={`p-2 rounded-lg mr-3 ${getTransactionColor(transaction)}`}>
                                   {getTransactionIcon(transaction)}
                                 </div>
-                                <div className="text-sm font-medium text-primary">
+                                <div className={`text-sm font-medium ${
+                                  darkMode ? 'text-primary' : 'text-gray-900'
+                                }`}>
                                   {transaction.transaction_name ? 
                                     t(`transactions.types.${transaction.transaction_name.toLowerCase().replace(/\s+/g, '_')}`, {
                                       defaultValue: transaction.transaction_name.split('_').map(word => 
@@ -516,8 +558,8 @@ const TransactionsPage: React.FC = () => {
                            
                             <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
                               transaction.coin_amount > 0
-                                ? 'text-green-400'
-                                : 'text-red-400'
+                                ? (darkMode ? 'text-green-400' : 'text-green-600')
+                                : (darkMode ? 'text-red-400' : 'text-red-600')
                             }`}>
                               <div className="flex items-center">
                                 {transaction.coin_amount > 0
@@ -527,11 +569,15 @@ const TransactionsPage: React.FC = () => {
                                 <img src={coinImage} alt="coin" className="w-4 h-4 ml-1" />
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                              darkMode ? 'text-secondary' : 'text-gray-600'
+                            }`}>
                               {formatDate(transaction.created_at || transaction.time)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              <span className={`px-2 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-gray-800 ${statusInfo.color}`}>
+                              <span className={`px-2 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full ${
+                                darkMode ? 'bg-gray-800' : 'bg-gray-100'
+                              } ${statusInfo.color}`}>
                                 {statusInfo.icon}
                                 <span className="ml-1.5">{t(`transactions.status.${status.toLowerCase()}`, { defaultValue: status })}</span>
                               </span>
@@ -557,15 +603,23 @@ const TransactionsPage: React.FC = () => {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3 }}
-                      className="rounded-xl overflow-hidden bg-gray-800/50 border border-gray-700/50 hover:border-indigo-700/50 transition-all duration-300 hover:shadow-lg"
+                      className={`rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg ${
+                        darkMode 
+                          ? 'bg-gray-800/50 border border-gray-700/50 hover:border-indigo-700/50' 
+                          : 'bg-white border border-gray-200 hover:border-indigo-300'
+                      }`}
                     >
-                      <div className="p-5 border-b border-gray-700/50">
+                      <div className={`p-5 border-b ${
+                        darkMode ? 'border-gray-700/50' : 'border-gray-200'
+                      }`}>
                         <div className="flex justify-between items-center">
                           <div className="flex items-center">
                             <div className={`p-2 rounded-lg mr-3 ${getTransactionColor(transaction)}`}>
                               {getTransactionIcon(transaction)}
                             </div>
-                            <h3 className="text-lg font-medium text-primary">
+                            <h3 className={`text-lg font-medium ${
+                              darkMode ? 'text-primary' : 'text-gray-900'
+                            }`}>
                               {transaction.transaction_name ? 
                                 t(`transactions.types.${transaction.transaction_name.toLowerCase().replace(/\s+/g, '_')}`, {
                                   defaultValue: transaction.transaction_name.split('_').map(word => 
@@ -576,12 +630,16 @@ const TransactionsPage: React.FC = () => {
                               }
                             </h3>
                           </div>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color} bg-gray-800`}>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color} ${
+                            darkMode ? 'bg-gray-800' : 'bg-gray-100'
+                          }`}>
                             {statusInfo.icon}
                             <span className="ml-1.5">{t(`transactions.status.${status.toLowerCase()}`, { defaultValue: status })}</span>
                           </span>
                         </div>
-                        <div className="text-sm mt-1 text-tertiary">
+                        <div className={`text-sm mt-1 ${
+                          darkMode ? 'text-tertiary' : 'text-gray-500'
+                        }`}>
                           {t('transactions.transactionId', { id: transaction.id || index + 1 })}
                         </div>
                       </div>
@@ -589,13 +647,15 @@ const TransactionsPage: React.FC = () => {
                       <div className="p-5">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <div className="text-xs font-medium text-tertiary">
+                            <div className={`text-xs font-medium ${
+                              darkMode ? 'text-tertiary' : 'text-gray-500'
+                            }`}>
                               {t('transactions.amount')}
                             </div>
                             <div className={`mt-1 text-lg font-medium flex items-center ${
                               transaction.coin_amount > 0
-                                ? 'text-green-400'
-                                : 'text-red-400'
+                                ? (darkMode ? 'text-green-400' : 'text-green-600')
+                                : (darkMode ? 'text-red-400' : 'text-red-600')
                             }`}>
                               {transaction.coin_amount > 0
                                 ? `+${transaction.coin_amount}`
@@ -606,20 +666,28 @@ const TransactionsPage: React.FC = () => {
                           </div>
                           
                           <div>
-                            <div className="text-xs font-medium text-tertiary">
+                            <div className={`text-xs font-medium ${
+                              darkMode ? 'text-tertiary' : 'text-gray-500'
+                            }`}>
                               {t('transactions.remainingBalance')}
                             </div>
-                            <div className="mt-1 text-lg font-medium text-secondary flex items-center">
+                            <div className={`mt-1 text-lg font-medium flex items-center ${
+                              darkMode ? 'text-secondary' : 'text-gray-700'
+                            }`}>
                               {transaction.remaining_coins}
                               <img src={coinImage} alt="coin" className="w-4 h-4 ml-1" />
                             </div>
                           </div>
                           
                           <div className="col-span-2">
-                            <div className="text-xs font-medium text-tertiary">
+                            <div className={`text-xs font-medium ${
+                              darkMode ? 'text-tertiary' : 'text-gray-500'
+                            }`}>
                               {t('transactions.date')}
                             </div>
-                            <div className="mt-1 text-sm text-secondary">
+                            <div className={`mt-1 text-sm ${
+                              darkMode ? 'text-secondary' : 'text-gray-600'
+                            }`}>
                               {formatDate(transaction.created_at || transaction.time)}
                             </div>
                           </div>
@@ -634,7 +702,9 @@ const TransactionsPage: React.FC = () => {
             {/* Pagination */}
             {filteredTransactions.length > 0 && (
               <div className="mt-6 flex justify-between items-center">
-                <div className="text-sm text-tertiary">
+                <div className={`text-sm ${
+                  darkMode ? 'text-tertiary' : 'text-gray-600'
+                }`}>
                   {t('transactions.pagination.showing', {
                     start: (page - 1) * transactionsPerPage + 1,
                     end: Math.min(page * transactionsPerPage, filteredTransactions.length),
@@ -648,14 +718,18 @@ const TransactionsPage: React.FC = () => {
                     disabled={page === 1}
                     className={`p-2 rounded-lg ${
                       page === 1
-                        ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                        : 'bg-gray-800 text-gray-200 hover:bg-gray-700'
-                    } border border-gray-700`}
+                        ? (darkMode ? 'bg-gray-800 text-gray-600' : 'bg-gray-100 text-gray-400') + ' cursor-not-allowed'
+                        : (darkMode ? 'bg-gray-800 text-gray-200 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300')
+                    } ${darkMode ? 'border border-gray-700' : ''}`}
                   >
                     <FiChevronLeft className="h-5 w-5" />
                   </button>
                   
-                  <div className="px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-700">
+                  <div className={`px-4 py-2 rounded-lg ${
+                    darkMode 
+                      ? 'bg-gray-800 text-white border border-gray-700' 
+                      : 'bg-white text-gray-900 border border-gray-300'
+                  }`}>
                     {page} / {totalPages}
                   </div>
                   
@@ -663,10 +737,10 @@ const TransactionsPage: React.FC = () => {
                     onClick={nextPage}
                     disabled={page === totalPages}
                     className={`p-2 rounded-lg ${
-                      page === totalPages
-                        ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                        : 'bg-gray-800 text-gray-200 hover:bg-gray-700'
-                    } border border-gray-700`}
+                      page >= totalPages
+                        ? (darkMode ? 'bg-gray-800 text-gray-600' : 'bg-gray-100 text-gray-400') + ' cursor-not-allowed'
+                        : (darkMode ? 'bg-gray-800 text-gray-200 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300')
+                    } ${darkMode ? 'border border-gray-700' : ''}`}
                   >
                     <FiChevronRight className="h-5 w-5" />
                   </button>

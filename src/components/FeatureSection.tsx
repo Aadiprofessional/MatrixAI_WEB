@@ -1,6 +1,7 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 
 interface FeatureCardProps {
   title: string;
@@ -12,6 +13,7 @@ interface FeatureCardProps {
 }
 
 const FeatureCard: React.FC<FeatureCardProps & { index?: number }> = ({ title, description, videoSrc, imageSrc, position, index }) => {
+  const { darkMode } = useTheme();
   const videoRef = useRef<HTMLVideoElement>(null);
   
   // Determine if this card should be square (1st and 4th cards)
@@ -46,16 +48,32 @@ const FeatureCard: React.FC<FeatureCardProps & { index?: number }> = ({ title, d
   
   return (
     <div className={`rounded-xl overflow-hidden h-full relative ${position === 'left' ? 'col-span-1' : 'col-span-1 md:col-span-2'}`}>
-      {/* Outer layer - white opacity border with glow */}
-      <div className="absolute inset-0 border-2 border-white/10 rounded-xl shadow-lg shadow-blue-500/20"></div>
+      {/* Outer layer - border with glow */}
+      <div className={`absolute inset-0 border-2 rounded-xl shadow-lg ${
+        darkMode 
+          ? 'border-white/10 shadow-blue-500/20' 
+          : 'border-gray-300/30 shadow-gray-400/20'
+      }`}></div>
       
       {/* Middle layer - subtle glow effect */}
-      <div className="absolute inset-[3px] rounded-lg bg-gradient-to-br from-white/10 to-transparent"></div>
+      <div className={`absolute inset-[3px] rounded-lg bg-gradient-to-br ${
+        darkMode 
+          ? 'from-white/10 to-transparent' 
+          : 'from-gray-200/30 to-transparent'
+      }`}></div>
       
       {/* Inner layer - glass effect with padding */}
-      <div className="relative m-2 rounded-lg overflow-hidden backdrop-blur-lg bg-black/30 h-[calc(100%-16px)] border border-white/20 shadow-inner shadow-white/10">
+      <div className={`relative m-2 rounded-lg overflow-hidden backdrop-blur-lg h-[calc(100%-16px)] border shadow-inner ${
+        darkMode 
+          ? 'bg-black/30 border-white/20 shadow-white/10' 
+          : 'bg-white/30 border-gray-300/20 shadow-gray-300/10'
+      }`}>
         {/* Content container with glass morphism */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-80"></div>
+        <div className={`absolute inset-0 bg-gradient-to-br opacity-80 ${
+          darkMode 
+            ? 'from-white/5 to-transparent' 
+            : 'from-gray-100/20 to-transparent'
+        }`}></div>
         
         <div className={`relative z-10 ${isSquare ? 'aspect-[2/1] md:aspect-square' : 'aspect-[2/1] md:aspect-video'}`}>
           {videoSrc ? (
@@ -77,8 +95,12 @@ const FeatureCard: React.FC<FeatureCardProps & { index?: number }> = ({ title, d
           ) : null}
         </div>
         <div className="relative z-10 p-6">
-          <h3 className="text-xl font-semibold text-white mb-2">{title}</h3>
-          <p className="text-gray-400">{description}</p>
+          <h3 className={`text-xl font-semibold mb-2 ${
+            darkMode ? 'text-white' : 'text-gray-900'
+          }`}>{title}</h3>
+          <p className={`${
+            darkMode ? 'text-gray-400' : 'text-gray-600'
+          }`}>{description}</p>
         </div>
       </div>
     </div>
@@ -87,12 +109,19 @@ const FeatureCard: React.FC<FeatureCardProps & { index?: number }> = ({ title, d
 
 const FeatureSection: React.FC = () => {
   const { t } = useTranslation();
+  const { darkMode } = useTheme();
   
   return (
-    <section className="py-20 bg-black">
+    <section className={`py-20 ${
+      darkMode ? 'bg-black' : 'bg-gray-50'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-4xl font-bold text-white mb-10 text-left">{t('featureSection.title', 'Why creators are switching to MatrixAI')}</h2>
-        <p className="text-xl text-gray-300 mb-10 text-left max-w-3xl">{t('featureSection.description', 'Tired of slow tools and generic results? See how our all-in-one AI platform solves the problems nobody else can.')}</p>
+        <h2 className={`text-4xl font-bold mb-10 text-left ${
+          darkMode ? 'text-white' : 'text-gray-900'
+        }`}>{t('featureSection.title', 'Why creators are switching to MatrixAI')}</h2>
+        <p className={`text-xl mb-10 text-left max-w-3xl ${
+          darkMode ? 'text-gray-300' : 'text-gray-600'
+        }`}>{t('featureSection.description', 'Tired of slow tools and generic results? See how our all-in-one AI platform solves the problems nobody else can.')}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FeatureCard 
             title={t('featureSection.imageToVideo.title', 'Image to Video Magic')}

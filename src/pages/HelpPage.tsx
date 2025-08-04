@@ -24,7 +24,9 @@ const FAQItem = ({ question, answer }: { question: string, answer: string }) => 
   const { darkMode } = useContext(ThemeContext);
   
   return (
-    <div className="border-b border-gray-700 py-4">
+    <div className={`border-b py-4 ${
+      darkMode ? 'border-gray-700' : 'border-gray-200'
+    }`}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex justify-between items-center focus:outline-none"
@@ -61,8 +63,14 @@ const HelpCategory = ({ title, icon, description, linkText, linkUrl }: {
   const { darkMode } = useContext(ThemeContext);
   
   return (
-    <div className="rounded-xl h-full glass-effect border border-gray-700/50 p-6 transition-all duration-300 hover:shadow-lg">
-      <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-blue-900 to-purple-900 text-white flex items-center justify-center mb-4">
+    <div className={`rounded-xl h-full glass-effect border p-6 transition-all duration-300 hover:shadow-lg ${
+      darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
+    }`}>
+      <div className={`w-12 h-12 rounded-lg text-white flex items-center justify-center mb-4 ${
+        darkMode 
+          ? 'bg-gradient-to-r from-blue-900 to-purple-900' 
+          : 'bg-gradient-to-r from-blue-600 to-purple-600'
+      }`}>
         {icon}
       </div>
       <h3 className="text-xl font-bold mb-2 text-primary">
@@ -73,7 +81,11 @@ const HelpCategory = ({ title, icon, description, linkText, linkUrl }: {
       </p>
       <a 
         href={linkUrl}
-        className="inline-flex items-center font-medium text-blue-400 hover:text-blue-300"
+        className={`inline-flex items-center font-medium ${
+          darkMode 
+            ? 'text-blue-400 hover:text-blue-300' 
+            : 'text-blue-600 hover:text-blue-700'
+        }`}
       >
         {linkText}
         <FiArrowRight className="ml-2" />
@@ -153,7 +165,9 @@ const HelpPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="py-8 px-4 lg:px-8 page-background dark">
+      <div className={`py-8 px-4 lg:px-8 page-background ${
+        darkMode ? 'dark' : ''
+      }`}>
         {/* Background gradient effects */}
         <div className="fixed inset-0 -z-10 overflow-hidden">
           <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-purple-500/10 blur-3xl opacity-70"></div>
@@ -191,7 +205,11 @@ const HelpPage: React.FC = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full p-4 pl-10 text-sm rounded-lg bg-gray-800 border-gray-700 text-primary placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500"
+                className={`block w-full p-4 pl-10 text-sm rounded-lg text-primary focus:ring-blue-500 focus:border-blue-500 ${
+                  darkMode 
+                    ? 'bg-gray-800 border-gray-700 placeholder-gray-400' 
+                    : 'bg-white border-gray-300 placeholder-gray-500'
+                }`}
                 placeholder={t('help.searchPlaceholder')}
               />
               <button 
@@ -236,7 +254,9 @@ const HelpPage: React.FC = () => {
             <h2 className="text-2xl font-bold mb-6 text-primary">
               {t('help.faqTitle')}
             </h2>
-            <div className="rounded-xl glass-effect border border-gray-700/50 p-6">
+            <div className={`rounded-xl glass-effect border p-6 ${
+              darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
+            }`}>
               {faqData.map((faq, index) => (
                 <FAQItem key={index} question={faq.question} answer={faq.answer} />
               ))}
@@ -250,8 +270,14 @@ const HelpPage: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="mb-8"
           >
-            <div className="rounded-xl glass-effect border border-gray-700/50 p-6 text-center">
-              <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-r from-blue-900 to-purple-900 text-white flex items-center justify-center mb-4">
+            <div className={`rounded-xl glass-effect border p-6 text-center ${
+              darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
+            }`}>
+              <div className={`mx-auto w-16 h-16 rounded-full text-white flex items-center justify-center mb-4 ${
+                darkMode 
+                  ? 'bg-gradient-to-r from-blue-900 to-purple-900' 
+                  : 'bg-gradient-to-r from-blue-600 to-purple-600'
+              }`}>
                 <FiCpu className="h-6 w-6" />
               </div>
               <h2 className="text-2xl font-bold mb-2 text-primary">
@@ -275,13 +301,19 @@ const HelpPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <div className="rounded-xl glass-effect border border-gray-700/50 p-6">
+            <div className={`rounded-xl glass-effect border p-6 ${
+              darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
+            }`}>
               <h2 className="text-2xl font-bold mb-6 text-primary">
                 {t('help.contact.title')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-start">
-                  <div className="rounded-lg p-3 bg-gray-700 text-blue-400 mr-4">
+                  <div className={`rounded-lg p-3 mr-4 ${
+                    darkMode 
+                      ? 'bg-gray-700 text-blue-400' 
+                      : 'bg-gray-100 text-blue-600'
+                  }`}>
                     <FiMail className="h-6 w-6" />
                   </div>
                   <div>
@@ -293,7 +325,11 @@ const HelpPage: React.FC = () => {
                     </p>
                     <a 
                       href="mailto:support@matrixaiglobal.com"
-                      className="mt-2 inline-block font-medium text-blue-400 hover:text-blue-300"
+                      className={`mt-2 inline-block font-medium ${
+                        darkMode 
+                          ? 'text-blue-400 hover:text-blue-300' 
+                          : 'text-blue-600 hover:text-blue-700'
+                      }`}
                     >
                       support@matrixaiglobal.com
                     </a>

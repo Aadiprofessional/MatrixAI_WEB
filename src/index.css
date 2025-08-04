@@ -40,13 +40,13 @@
     @apply bg-secondary-500 text-white hover:bg-secondary-600 focus:ring-secondary-400;
   }
   .btn-outline {
-    @apply border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-primary-500;
+    @apply border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-primary-500;
   }
   .input {
-    @apply w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent;
+    @apply w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent;
   }
   .card {
-    @apply bg-white rounded-xl shadow-soft p-6;
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-soft p-6;
   }
   .heading-1 {
     @apply text-4xl md:text-5xl font-display font-bold;
@@ -61,7 +61,7 @@
     @apply text-xl md:text-2xl font-display font-semibold;
   }
   .shadow-soft {
-    @apply shadow-md shadow-gray-200/50;
+    @apply shadow-md shadow-gray-200/50 dark:shadow-gray-900/50;
   }
 }
 

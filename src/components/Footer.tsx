@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { ThemeContext } from '../context/ThemeContext';
 
 interface FooterCategory {
   title: string;
@@ -23,20 +24,31 @@ const Footer: React.FC<FooterProps> = ({
   socialLinks = [],
   companyName 
 }) => {
+  const { darkMode } = useContext(ThemeContext);
   
   return (
-    <footer className="bg-black py-16 border-t border-gray-800">
+    <footer className={`py-16 border-t ${
+      darkMode 
+        ? 'bg-black border-gray-800' 
+        : 'bg-white border-gray-200'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           {categories.map((category, index) => (
             <div key={index} className="space-y-4">
-              <h3 className="text-gray-300 font-medium text-sm">{category.title}</h3>
+              <h3 className={`font-medium text-sm ${
+                darkMode ? 'text-gray-300' : 'text-gray-700'
+              }`}>{category.title}</h3>
               <ul className="space-y-1">
                 {category.links.map((link, linkIndex) => (
                   <li key={linkIndex}>
                     <Link 
                       to={link.url} 
-                      className="text-gray-500 hover:text-gray-300 transition-colors text-sm"
+                      className={`transition-colors text-sm ${
+                        darkMode 
+                          ? 'text-gray-500 hover:text-gray-300' 
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
                     >
                       {link.name}
                     </Link>
@@ -47,9 +59,15 @@ const Footer: React.FC<FooterProps> = ({
           ))}
         </div>
         
-        <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
-          <div className="text-gray-500 mb-4 md:mb-0">
-            <span className="text-xl font-medium text-white">{companyName}</span>
+        <div className={`mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center ${
+          darkMode ? 'border-gray-800' : 'border-gray-200'
+        }`}>
+          <div className={`mb-4 md:mb-0 ${
+            darkMode ? 'text-gray-500' : 'text-gray-600'
+          }`}>
+            <span className={`text-xl font-medium ${
+              darkMode ? 'text-white' : 'text-gray-900'
+            }`}>{companyName}</span>
           </div>
           
           {socialLinks.length > 0 && (
@@ -60,7 +78,11 @@ const Footer: React.FC<FooterProps> = ({
                   href={link.url} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className={`transition-colors ${
+                    darkMode 
+                      ? 'text-gray-400 hover:text-white' 
+                      : 'text-gray-500 hover:text-gray-900'
+                  }`}
                 >
                   {link.icon}
                 </a>

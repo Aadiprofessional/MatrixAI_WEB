@@ -7,7 +7,7 @@ import re
 def read_excel_translations():
     try:
         # Open Excel file as ZIP
-        with zipfile.ZipFile('/Users/aadisrivastava/Downloads/project/MatrixAI/MatrixAI_Web/aiagent/Copy of Translate(1).xlsx', 'r') as z:
+        with zipfile.ZipFile('/Users/aadisrivastava/Downloads/project/MatrixAI/MatrixAI_Web/aiagent/Translate（2）.xlsx', 'r') as z:
             # Get list of worksheet files
             worksheet_files = [f for f in z.namelist() if f.startswith('xl/worksheets/sheet') and f.endswith('.xml')]
             print(f"Found worksheets: {worksheet_files}")
@@ -79,12 +79,17 @@ def read_excel_translations():
                             row_data.append(cell_value.strip() if cell_value else "")
                         
                         # Skip header row (row 0) and empty rows
-                        if row_idx > 0 and len(row_data) >= 3 and row_data[0] and row_data[2]:
-                            english_key = row_data[0]
-                            chinese_traditional = row_data[2]
+                        if row_idx > 0 and len(row_data) >= 3 and row_data[0]:
+                            english_text = row_data[0]
+                            chinese_simplified = row_data[1] if len(row_data) > 1 else ""
+                            chinese_traditional = row_data[2] if len(row_data) > 2 else ""
                             
-                            if english_key and chinese_traditional:
-                                sheet_translations[english_key] = chinese_traditional
+                            if english_text:
+                                sheet_translations[english_text] = {
+                                    'en': english_text,
+                                    'zh-CN': chinese_simplified,
+                                    'zh-TW': chinese_traditional
+                                }
                 
                 all_translations[sheet_name] = sheet_translations
                 print(f"Extracted {len(sheet_translations)} translations from {sheet_name}")
@@ -92,8 +97,11 @@ def read_excel_translations():
                 # Show some examples
                 if sheet_translations:
                     print("Examples:")
-                    for i, (eng, chi) in enumerate(list(sheet_translations.items())[:3]):
-                        print(f"  '{eng}' -> '{chi}'")
+                    for i, (eng, translations) in enumerate(list(sheet_translations.items())[:3]):
+                        print(f"  EN: '{eng}'")
+                        print(f"  ZH-CN: '{translations['zh-CN']}'")
+                        print(f"  ZH-TW: '{translations['zh-TW']}'")
+                        print()
             
             return all_translations
             

@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiGlobe, FiChevronDown } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 
 type Language = 'en' | 'zh-CN' | 'zh-TW';
 
 const SimpleLanguageSelector: React.FC = () => {
   const { i18n, t } = useTranslation();
+  const { darkMode } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState<Language>(i18n.language as Language);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -50,7 +52,11 @@ const SimpleLanguageSelector: React.FC = () => {
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={toggleDropdown}
-        className="flex items-center text-gray-200 hover:text-white transition-colors duration-200 text-sm bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-md"
+        className={`flex items-center transition-colors duration-200 text-sm border px-3 py-1.5 rounded-md ${
+          darkMode 
+            ? 'text-gray-200 hover:text-white bg-gray-800 border-gray-700' 
+            : 'text-gray-700 hover:text-gray-900 bg-white border-gray-300 hover:border-gray-400'
+        }`}
       >
         <FiGlobe className="w-4 h-4 mr-1.5" />
         <span className="hidden md:inline">{currentLanguage.name}</span>
@@ -59,9 +65,15 @@ const SimpleLanguageSelector: React.FC = () => {
       </button>
       
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg backdrop-blur-md bg-black/90 border border-gray-700 z-50">
+        <div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg backdrop-blur-md border z-50 ${
+          darkMode 
+            ? 'bg-black/90 border-gray-700' 
+            : 'bg-white/95 border-gray-200'
+        }`}>
           <div className="py-2">
-            <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+            <div className={`px-3 py-2 text-xs font-semibold uppercase tracking-wide ${
+              darkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
               {t('navbar.selectLanguage', 'Select Language')}
             </div>
             {languages.map((lang) => (
@@ -70,13 +82,19 @@ const SimpleLanguageSelector: React.FC = () => {
                 onClick={() => handleLanguageChange(lang.code)}
                 className={`w-full flex items-center px-3 py-2 text-left text-sm transition-colors duration-150 ${
                   selectedLang === lang.code
-                    ? 'bg-gray-700/50 text-white'
-                    : 'text-gray-200 hover:bg-gray-700/30 hover:text-white'
+                    ? darkMode 
+                      ? 'bg-gray-700/50 text-white' 
+                      : 'bg-blue-50 text-blue-900'
+                    : darkMode 
+                      ? 'text-gray-200 hover:bg-gray-700/30 hover:text-white' 
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                 }`}
               >
                 <span>{lang.name}</span>
                 {selectedLang === lang.code && (
-                  <span className="ml-auto text-blue-400">✓</span>
+                  <span className={`ml-auto ${
+                    darkMode ? 'text-blue-400' : 'text-blue-600'
+                  }`}>✓</span>
                 )}
               </button>
             ))}

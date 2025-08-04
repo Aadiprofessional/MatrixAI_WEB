@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiCheck, FiStar, FiZap, FiTrendingUp, FiPackage, FiMic, FiImage, FiVideo, FiMessageSquare, FiEdit3, FiArrowRight } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-import HomeNavbar from '../components/HomeNavbar';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 
 interface PricingPlan {
   id: string;
@@ -37,6 +37,7 @@ const PricingPage: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { darkMode } = useTheme();
   const [selectedPlan, setSelectedPlan] = useState<string>('monthly');
 
   // Pricing plans data from ChargeModal.tsx
@@ -182,29 +183,16 @@ const PricingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Background video with overlay */}
-      <div className="fixed inset-0 z-0 overflow-hidden">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute min-w-full min-h-full object-cover"
-          style={{ filter: 'brightness(0.3) contrast(1.2)' }}
-        >
-          <source src="/videos/matrix-bg.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/90 backdrop-blur-md"></div>
-      </div>
+    <div className={`min-h-screen page-background ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+      {/* Background gradient effects */}
+      <div className="gradient-blob-1"></div>
+      <div className="gradient-blob-2"></div>
 
       {/* Content */}
       <div className="relative z-10">
-        <HomeNavbar />
-
-        <div className="container mx-auto px-4 pt-32 pb-20">
+        <div className={`container mx-auto px-4 ${!user ? 'pt-20' : 'pt-20'} pb-20`}>
           {/* Hero Section */}
-          <div className="text-center mb-16 backdrop-blur-md bg-gray-950/60 border border-gray-800 rounded-xl p-10 max-w-4xl mx-auto">
+          <div className={`text-center mb-16 glass-effect rounded-xl p-10 max-w-4xl mx-auto`}>
             <motion.h1 
               className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-pink-600"
               initial={{ opacity: 0, y: 20 }}
@@ -214,7 +202,7 @@ const PricingPage: React.FC = () => {
               {t('pricing.title')}
             </motion.h1>
             <motion.p 
-              className="text-xl text-gray-300 max-w-3xl mx-auto"
+              className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -233,7 +221,7 @@ const PricingPage: React.FC = () => {
             {pricingPlans.map((plan, index) => (
               <motion.div 
                 key={plan.id}
-                className={`relative rounded-2xl backdrop-blur-md bg-gray-950 border border-gray-800 overflow-hidden transition-all duration-300 hover:transform hover:scale-105 hover:shadow-xl hover:shadow-${plan.color}-500/20 flex flex-col h-[550px]`}
+                className={`relative rounded-2xl glass-effect overflow-hidden transition-all duration-300 hover:transform hover:scale-105 hover:shadow-xl hover:shadow-${plan.color}-500/20 flex flex-col h-[550px]`}
                 whileHover={{ y: -5 }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -248,7 +236,7 @@ const PricingPage: React.FC = () => {
                 
                 {/* Discount badge */}
                 {plan.discount && (
-                  <div className="absolute top-0 left-0 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-1 rounded-br-lg text-sm font-medium z-10">
+                  <div className="absolute top-0 right-0 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-1 rounded-bl-lg text-sm font-medium z-10">
                     {plan.discount}
                   </div>
                 )}
@@ -256,36 +244,36 @@ const PricingPage: React.FC = () => {
                 {/* Header */}
                 <div className={`p-6 bg-gradient-to-r ${plan.bgGradient} h-[140px] flex flex-col justify-center`}>
                   <div className="flex items-center mb-4">
-                    <div className="p-3 bg-black/30 rounded-lg mr-4">
+                    <div className="p-3 bg-black/30 rounded-lg mr-4 text-white">
                       {plan.icon}
                     </div>
-                    <h3 className="text-2xl font-bold">{plan.name}</h3>
+                    <h3 className="text-2xl font-bold text-white">{plan.name}</h3>
                   </div>
                   
                   <div className="flex items-baseline">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    <span className="ml-1 text-lg opacity-80">{plan.currency}</span>
+                    <span className="text-4xl font-bold text-white">{plan.price}</span>
+                    <span className="ml-1 text-lg text-white opacity-80">{plan.currency}</span>
                     {plan.period && (
-                      <span className="ml-1 text-sm opacity-70">{plan.period}</span>
+                      <span className="ml-1 text-sm text-white opacity-70">{plan.period}</span>
                     )}
                   </div>
                   
                   {plan.originalPrice && (
                     <div className="mt-1">
-                      <span className="text-sm line-through opacity-70">{plan.originalPrice} {plan.currency}</span>
+                      <span className="text-sm line-through text-white opacity-70">{plan.originalPrice} {plan.currency}</span>
                     </div>
                   )}
                 </div>
                 
                 {/* Coins */}
-                <div className="p-6 border-b border-gray-800 bg-gray-900">
+                <div className={`p-6 border-b ${darkMode ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}>
                   <div className="flex items-center">
                     <div className="p-2 bg-amber-500/10 rounded-lg mr-3">
                       <FiZap className="w-5 h-5 text-amber-400" />
                     </div>
                     <div>
                       <span className="text-2xl font-bold text-amber-400">{plan.coins}</span>
-                      <span className="ml-2 text-gray-300">{t('pricing.coins')}</span>
+                      <span className={`ml-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{t('pricing.coins')}</span>
                     </div>
                   </div>
                 </div>
@@ -296,7 +284,7 @@ const PricingPage: React.FC = () => {
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-start">
                         <FiCheck className="w-5 h-5 text-green-400 mr-2 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-300">{feature}</span>
+                        <span className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -324,7 +312,7 @@ const PricingPage: React.FC = () => {
           >
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-600">{t('pricing.aiServicesPricing')}</h2>
-              <p className="text-gray-300 max-w-2xl mx-auto">
+              <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-2xl mx-auto`}>
                 {t('pricing.coinSystemDescription')}
               </p>
             </div>
@@ -333,7 +321,7 @@ const PricingPage: React.FC = () => {
               {aiServicesInfo.map((service, index) => (
                 <motion.div 
                   key={index}
-                  className="backdrop-blur-md bg-gray-950 border border-gray-800 rounded-xl p-6 transition-all duration-300 hover:border-gray-600 h-[140px] flex flex-col justify-between"
+                  className={`glass-effect rounded-xl p-6 transition-all duration-300 ${darkMode ? 'hover:border-gray-600' : 'hover:border-gray-400'} h-[140px] flex flex-col justify-between`}
                   whileHover={{ y: -5 }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -349,8 +337,8 @@ const PricingPage: React.FC = () => {
                   </div>
                   
                   <div className="flex justify-between items-center">
-                    <div className="text-gray-400">{service.unit}</div>
-                    <div className="text-lg font-bold text-white">{service.cost}</div>
+                    <div className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{service.unit}</div>
+                    <div className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{service.cost}</div>
                   </div>
                 </motion.div>
               ))}
@@ -366,35 +354,35 @@ const PricingPage: React.FC = () => {
           >
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">{t('pricing.faq')}</h2>
-              <p className="text-gray-300">{t('pricing.faqDescription')}</p>
+              <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{t('pricing.faqDescription')}</p>
             </div>
             
             <div className="space-y-6">
-              <div className="backdrop-blur-md bg-gray-950 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors duration-300">
-                <h3 className="text-xl font-semibold mb-2 text-white">{t('pricing.faqQuestion1')}</h3>
-                <p className="text-gray-300">{t('pricing.faqAnswer1')}</p>
+              <div className={`glass-effect rounded-xl p-6 ${darkMode ? 'hover:border-gray-700' : 'hover:border-gray-400'} transition-colors duration-300`}>
+                <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('pricing.faqQuestion1')}</h3>
+                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{t('pricing.faqAnswer1')}</p>
               </div>
               
-              <div className="backdrop-blur-md bg-gray-950 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors duration-300">
-                <h3 className="text-xl font-semibold mb-2 text-white">{t('pricing.faqQuestion2')}</h3>
-                <p className="text-gray-300">{t('pricing.faqAnswer2')}</p>
+              <div className={`glass-effect rounded-xl p-6 ${darkMode ? 'hover:border-gray-700' : 'hover:border-gray-400'} transition-colors duration-300`}>
+                <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('pricing.faqQuestion2')}</h3>
+                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{t('pricing.faqAnswer2')}</p>
               </div>
               
-              <div className="backdrop-blur-md bg-gray-950 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors duration-300">
-                <h3 className="text-xl font-semibold mb-2 text-white">{t('pricing.faqQuestion3')}</h3>
-                <p className="text-gray-300">{t('pricing.faqAnswer3')}</p>
+              <div className={`glass-effect rounded-xl p-6 ${darkMode ? 'hover:border-gray-700' : 'hover:border-gray-400'} transition-colors duration-300`}>
+                <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('pricing.faqQuestion3')}</h3>
+                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{t('pricing.faqAnswer3')}</p>
               </div>
               
-              <div className="backdrop-blur-md bg-gray-950 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors duration-300">
-                <h3 className="text-xl font-semibold mb-2 text-white">{t('pricing.faqQuestion4')}</h3>
-                <p className="text-gray-300">{t('pricing.faqAnswer4')}</p>
+              <div className={`glass-effect rounded-xl p-6 ${darkMode ? 'hover:border-gray-700' : 'hover:border-gray-400'} transition-colors duration-300`}>
+                <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('pricing.faqQuestion4')}</h3>
+                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{t('pricing.faqAnswer4')}</p>
               </div>
             </div>
           </motion.div>
 
           {/* CTA Section */}
           <motion.div 
-            className="text-center mt-20 backdrop-blur-md bg-gray-950/80 border border-gray-800 rounded-xl p-10 max-w-4xl mx-auto"
+            className="text-center mt-20 glass-effect rounded-xl p-10 max-w-4xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
@@ -410,7 +398,7 @@ const PricingPage: React.FC = () => {
               </Link>
               <Link 
                 to="/contact" 
-                className="px-8 py-3 rounded-lg border border-gray-600 text-white font-medium hover:bg-gray-800 transition-colors flex items-center justify-center"
+                className={`px-8 py-3 rounded-lg border ${darkMode ? 'border-gray-600 text-white hover:bg-gray-800' : 'border-gray-300 text-gray-900 hover:bg-gray-100'} font-medium transition-colors flex items-center justify-center`}
               >
                 {t('pricing.contactSales')}
               </Link>

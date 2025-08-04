@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 interface UseCaseTabProps {
   id: string;
@@ -11,10 +12,16 @@ interface UseCaseTabProps {
 }
 
 const UseCaseTab = ({ id, label, isActive, onClick }: UseCaseTabProps): React.ReactElement => {
+  const { darkMode } = useTheme();
+  
   return (
     <button
       onClick={onClick}
-      className={`py-2 px-1 border-l-2 text-left ${isActive ? 'border-indigo-500 text-white' : 'border-transparent text-gray-400 hover:text-gray-300'}`}
+      className={`py-2 px-1 border-l-2 text-left ${
+        isActive 
+          ? 'border-indigo-500' + (darkMode ? ' text-white' : ' text-gray-900')
+          : 'border-transparent' + (darkMode ? ' text-gray-400 hover:text-gray-300' : ' text-gray-600 hover:text-gray-800')
+      }`}
     >
       {label}
     </button>
@@ -23,7 +30,8 @@ const UseCaseTab = ({ id, label, isActive, onClick }: UseCaseTabProps): React.Re
 
 const UseCasesSection: React.FC = () => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('video-creation');
+  const { darkMode } = useTheme();
+  const [activeTab, setActiveTab] = useState<string>('imageToVideo');
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const useCases = [
@@ -102,7 +110,11 @@ const UseCasesSection: React.FC = () => {
   }, [activeTab, useCases]);
 
   return (
-    <section className="py-20 bg-gradient-to-b from-black to-gray-900">
+    <section className={`py-20 ${
+      darkMode 
+        ? 'bg-gradient-to-b from-black to-gray-900' 
+        : 'bg-gradient-to-b from-gray-50 to-white'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="flex flex-col">
@@ -111,7 +123,9 @@ const UseCasesSection: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="text-4xl md:text-5xl font-bold text-white mb-6"
+              className={`text-4xl md:text-5xl font-bold mb-6 ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}
             >
               {t('useCasesSection.title', 'Made for every creator.')}<br />
               {t('useCasesSection.subtitle', 'See how pros use our')}<br />
@@ -148,17 +162,33 @@ const UseCasesSection: React.FC = () => {
           </div>
           
           <div className="relative rounded-lg overflow-hidden aspect-square">
-            {/* Outer layer - white opacity border with glow */}
-            <div className="absolute inset-0 border-2 border-white/10 rounded-xl shadow-lg shadow-blue-500/20"></div>
+            {/* Outer layer - border with glow */}
+            <div className={`absolute inset-0 border-2 rounded-xl shadow-lg ${
+              darkMode 
+                ? 'border-white/10 shadow-blue-500/20' 
+                : 'border-gray-200/50 shadow-blue-500/10'
+            }`}></div>
             
             {/* Middle layer - subtle glow effect */}
-            <div className="absolute inset-[3px] rounded-lg bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className={`absolute inset-[3px] rounded-lg bg-gradient-to-br ${
+              darkMode 
+                ? 'from-white/10 to-transparent' 
+                : 'from-gray-100/30 to-transparent'
+            }`}></div>
             
             {/* Inner layer - glass effect with backdrop blur */}
-            <div className="absolute inset-[6px] backdrop-blur-lg bg-black/30 rounded-lg border border-white/20 shadow-inner shadow-white/10"></div>
+            <div className={`absolute inset-[6px] backdrop-blur-lg rounded-lg border shadow-inner ${
+              darkMode 
+                ? 'bg-black/30 border-white/20 shadow-white/10' 
+                : 'bg-white/30 border-gray-200/30 shadow-gray-500/10'
+            }`}></div>
             
             {/* Content container with glass morphism */}
-            <div className="absolute inset-[6px] bg-gradient-to-br from-white/5 to-transparent opacity-80 rounded-lg"></div>
+            <div className={`absolute inset-[6px] bg-gradient-to-br opacity-80 rounded-lg ${
+              darkMode 
+                ? 'from-white/5 to-transparent' 
+                : 'from-gray-100/10 to-transparent'
+            }`}></div>
             
             <div className="relative z-10 p-4 h-full flex items-center justify-center">
               <motion.div

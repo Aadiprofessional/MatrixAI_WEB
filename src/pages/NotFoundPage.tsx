@@ -2,13 +2,15 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 import '../styles/CommonStyles.css';
 
 const NotFoundPage: React.FC = () => {
   const { t } = useTranslation();
+  const { darkMode } = useTheme();
   
   return (
-    <div className="min-h-[calc(100vh-16rem)] flex items-center justify-center px-4 py-12 page-background dark">
+    <div className={`min-h-[calc(100vh-16rem)] flex items-center justify-center px-4 py-12 page-background ${darkMode ? 'text-white' : 'text-gray-900'}`}>
       {/* Background gradient effects */}
       <div className="gradient-blob-1"></div>
       <div className="gradient-blob-2"></div>

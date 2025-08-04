@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 
 interface ModelInfo {
   id: string;
@@ -38,6 +39,7 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
   hasSpeakerButton = false,
   bgStyle,
 }) => {
+  const { darkMode } = useTheme();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -82,7 +84,9 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
               {modelName}
             </motion.div>
             <motion.h2 
-              className="text-4xl font-bold text-white"
+              className={`text-4xl font-bold ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3 }}
@@ -91,7 +95,9 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
               {title}
             </motion.h2>
             <motion.p 
-              className="text-gray-300 text-lg leading-relaxed"
+              className={`text-lg leading-relaxed ${
+                darkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
@@ -111,17 +117,33 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
           >
             {/* Glass card effect */}
             <div className="relative rounded-xl overflow-hidden">
-              {/* Outer layer - white opacity border with glow */}
-              <div className="absolute inset-0 border-2 border-white/40 rounded-xl shadow-lg shadow-blue-500/20"></div>
+              {/* Outer layer - border with glow */}
+              <div className={`absolute inset-0 border-2 rounded-xl shadow-lg ${
+                darkMode 
+                  ? 'border-white/40 shadow-blue-500/20' 
+                  : 'border-gray-300/60 shadow-gray-400/20'
+              }`}></div>
               
               {/* Middle layer - subtle glow effect */}
-              <div className="absolute inset-[3px] rounded-lg bg-gradient-to-br from-white/10 to-transparent"></div>
+              <div className={`absolute inset-[3px] rounded-lg bg-gradient-to-br ${
+                darkMode 
+                  ? 'from-white/10 to-transparent' 
+                  : 'from-gray-200/30 to-transparent'
+              }`}></div>
               
               {/* Inner layer - glass effect with backdrop blur */}
-              <div className="absolute inset-[6px] backdrop-blur-lg bg-black/30 rounded-lg border border-white/20 shadow-inner shadow-white/10"></div>
+              <div className={`absolute inset-[6px] backdrop-blur-lg rounded-lg border shadow-inner ${
+                darkMode 
+                  ? 'bg-black/30 border-white/20 shadow-white/10' 
+                  : 'bg-white/30 border-gray-300/20 shadow-gray-300/10'
+              }`}></div>
               
               {/* Content container with glass morphism */}
-              <div className="absolute inset-[6px] bg-gradient-to-br from-white/5 to-transparent opacity-80 rounded-lg"></div>
+              <div className={`absolute inset-[6px] bg-gradient-to-br opacity-80 rounded-lg ${
+                darkMode 
+                  ? 'from-white/5 to-transparent' 
+                  : 'from-gray-100/20 to-transparent'
+              }`}></div>
               
               <div className="relative z-10 p-4 flex justify-center items-center">
                 <div className="flex flex-col md:flex-row items-center justify-center w-full relative gap-6">
@@ -205,11 +227,14 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({
 
 const ModelsShowcaseSection: React.FC = () => {
   const { t } = useTranslation();
+  const { darkMode } = useTheme();
   const [selectedModel, setSelectedModel] = useState<string>('google-veo');
   
   // Define a common background style for all sections
   const sectionBgStyle = {
-    background: 'linear-gradient(to bottom, #000000, #111827)',
+    background: darkMode 
+      ? 'linear-gradient(to bottom, #000000, #111827)' 
+      : 'linear-gradient(to bottom, #f9fafb, #f3f4f6)',
     backgroundAttachment: 'fixed'
   };
   

@@ -9,6 +9,10 @@
   inset: -2px;
   z-index: -1;
   border-radius: 14px; /* slightly larger than the card's border-radius */
+  background: linear-gradient(to right, #059669, #2563eb, #7c3aed);
+}
+
+.dark .border-gradient::before {
   background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
   opacity: 0;
   transition: opacity 0.3s ease;

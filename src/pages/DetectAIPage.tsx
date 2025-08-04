@@ -290,8 +290,8 @@ const DetectAIPage: React.FC = () => {
             {
               icon: <FiAlertTriangle className="text-yellow-500" />,
               style: {
-                backgroundColor: '#FFFBEB',
-                color: '#92400E'
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#1F2937' : '#FFFBEB',
+                color: document.documentElement.classList.contains('dark') ? '#FCD34D' : '#92400E'
               }
             }
           );
@@ -460,7 +460,7 @@ ${text}
         </div>
       );
       scoreClass = "text-red-500";
-        scoreColor = "#ef4444";
+        scoreColor = darkMode ? "#ef4444" : "#dc2626";
     } else if (score >= 50) {
       statusComponent = (
         <div className="flex items-center text-yellow-500">
@@ -469,7 +469,7 @@ ${text}
         </div>
       );
       scoreClass = "text-yellow-500";
-        scoreColor = "#eab308";
+        scoreColor = darkMode ? "#eab308" : "#d97706";
     } else {
       statusComponent = (
         <div className="flex items-center text-green-500">
@@ -478,7 +478,7 @@ ${text}
         </div>
       );
       scoreClass = "text-green-500";
-        scoreColor = "#22c55e";
+        scoreColor = darkMode ? "#22c55e" : "#16a34a";
     }
     
     return (
