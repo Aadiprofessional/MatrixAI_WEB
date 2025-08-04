@@ -452,6 +452,11 @@ const VideoCreatorPage: React.FC = () => {
   };
 
   const handleGenerateVideo = async () => {
+    if (!user) {
+      // This should not happen since AuthRequiredButton handles it, but adding as safety
+      return;
+    }
+    
     if (!user?.id) return;
     
     // Disable the button to prevent multiple clicks
@@ -936,6 +941,12 @@ const VideoCreatorPage: React.FC = () => {
   
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    
+    if (!user) {
+      // This should not happen since AuthRequiredButton handles it, but adding as safety
+      return;
+    }
+    
     if (file && user?.id) {
       try {
         setIsUploadingImage(true);

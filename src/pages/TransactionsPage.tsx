@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { Layout } from '../components';
 import { userService } from '../services/userService';
+import coinImage from '../assets/coin.png';
 import { 
   FiCreditCard, 
   FiArrowDown, 
@@ -374,8 +375,9 @@ const TransactionsPage: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-tertiary">{t('transactions.currentBalance')}</div>
-                  <div className="text-2xl font-bold text-primary">
-                    {userData?.user_coins || 0} {t('transactions.coins')}
+                  <div className="text-2xl font-bold text-primary flex items-center">
+                    {userData?.user_coins || 0}
+                    <img src={coinImage} alt="coin" className="w-6 h-6 ml-2" />
                   </div>
                 </div>
               </div>
@@ -517,10 +519,13 @@ const TransactionsPage: React.FC = () => {
                                 ? 'text-green-400'
                                 : 'text-red-400'
                             }`}>
-                              {transaction.coin_amount > 0
-                                ? `+${transaction.coin_amount}`
-                                : transaction.coin_amount
-                              } {t('transactions.coins')}
+                              <div className="flex items-center">
+                                {transaction.coin_amount > 0
+                                  ? `-${transaction.coin_amount}`
+                                  : `${transaction.coin_amount}`
+                                }
+                                <img src={coinImage} alt="coin" className="w-4 h-4 ml-1" />
+                              </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
                               {formatDate(transaction.created_at || transaction.time)}
@@ -587,15 +592,16 @@ const TransactionsPage: React.FC = () => {
                             <div className="text-xs font-medium text-tertiary">
                               {t('transactions.amount')}
                             </div>
-                            <div className={`mt-1 text-lg font-medium ${
+                            <div className={`mt-1 text-lg font-medium flex items-center ${
                               transaction.coin_amount > 0
                                 ? 'text-green-400'
                                 : 'text-red-400'
                             }`}>
                               {transaction.coin_amount > 0
                                 ? `+${transaction.coin_amount}`
-                                : transaction.coin_amount
-                              } {t('transactions.coins')}
+                                : `${transaction.coin_amount}`
+                              }
+                              <img src={coinImage} alt="coin" className="w-4 h-4 ml-1" />
                             </div>
                           </div>
                           
@@ -603,8 +609,9 @@ const TransactionsPage: React.FC = () => {
                             <div className="text-xs font-medium text-tertiary">
                               {t('transactions.remainingBalance')}
                             </div>
-                            <div className="mt-1 text-lg font-medium text-secondary">
-                              {transaction.remaining_coins} {t('transactions.coins')}
+                            <div className="mt-1 text-lg font-medium text-secondary flex items-center">
+                              {transaction.remaining_coins}
+                              <img src={coinImage} alt="coin" className="w-4 h-4 ml-1" />
                             </div>
                           </div>
                           

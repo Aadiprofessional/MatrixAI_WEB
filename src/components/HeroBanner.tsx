@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
@@ -13,9 +13,22 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
   description, 
   backgroundImage 
 }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { t } = useTranslation();
+
+
+
+  useEffect(() => {
+    // Auto-play video when component mounts and video ref is available
+    const timer = setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current.play().catch(console.error);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
   
   const togglePlayPause = () => {
     if (videoRef.current) {
@@ -28,7 +41,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
     }
   };
   return (
-    <section className="relative py-20 bg-black text-white overflow-hidden">
+    <section className="relative py-20 bg-black text-white overflow-hidden min-h-screen">
       {/* Background image with overlay */}
       {backgroundImage && (
         <div className="absolute inset-0 z-0">
@@ -41,14 +54,10 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
         </div>
       )}
       
+
+      
       <div className="relative z-10 max-w-10xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          viewport={{ once: true }}
-          className="max-w-6xl mx-auto"
-        >
+        <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
             {title}
           </h1>
@@ -93,7 +102,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
               </button>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

@@ -200,7 +200,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpe
     { path: '/settings', label: t('nav.settings'), icon: <FiSettings className="w-5 h-5" /> },
     { path: '/help', label: t('nav.help'), icon: <FiHelpCircle className="w-5 h-5" /> },
   ];
-
+  
   return (
     <>
       {/* Mobile Overlay */}
@@ -253,7 +253,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpe
               <div className="flex items-center justify-between mb-8 px-2">
                 <Link to="/dashboard" className="flex items-center">
                   <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-white">
-                    <img src={matrix} alt="MatrixAI Logo" className="h-12 w-48" />
+                    <img src={matrix} alt="MatrixAI Logo" className="h-10 w-10 object-contain" />
                   </div>
                   {(!collapsed || isMobile) ? (
                     <div className="flex items-center">

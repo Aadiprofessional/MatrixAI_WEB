@@ -28,13 +28,16 @@ const AuthRequiredButton: React.FC<AuthRequiredButtonProps> = ({
   const navigate = useNavigate();
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // For content history display, we'll allow the click even without authentication
-    // This is a temporary fix to allow content to be displayed in the UI
+    // Check if user is authenticated
+    if (!user) {
+      // If user is not authenticated, redirect to login page
+      navigate('/login');
+      return;
+    }
+    
+    // If user is authenticated and onClick handler exists, execute it
     if (onClick) {
       onClick(e);
-    } else if (!user) {
-      // If user is not authenticated and no onClick handler, redirect to login page
-      navigate('/login');
     }
   };
 

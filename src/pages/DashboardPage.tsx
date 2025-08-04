@@ -567,7 +567,7 @@ const DashboardPage: React.FC = () => {
                 <div className="flex items-center gap-2 sm:gap-3">
                   <Link to="/transactions" className={`text-xs sm:text-sm flex items-center gap-1 ${
                     darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
-                  } font-medium`}>
+                  } font-regular`}>
                     <span className="hidden sm:inline">{t('dashboard.viewAllActivity', 'View all activity')}</span>
                     <span className="sm:hidden">View all</span>
                     <FiArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />

@@ -149,6 +149,7 @@ const HumaniseTextPage: React.FC = () => {
   };
 
   const handleHumaniseText = async () => {
+    if (!userData?.uid) return;
     if (!text.trim()) return;
     
     // If user is not pro and has used all free generations, show pro alert
@@ -348,7 +349,7 @@ const HumaniseTextPage: React.FC = () => {
                   )}
                 </div>
                 
-                <button
+                <AuthRequiredButton
                   onClick={handleHumaniseText}
                   disabled={!text.trim() || isProcessing}
                   className={`w-full py-3 px-4 rounded-lg font-medium transition-all ${
@@ -372,7 +373,7 @@ const HumaniseTextPage: React.FC = () => {
                       </span>
                     </div>
                   )}
-                </button>
+                </AuthRequiredButton>
 
                    <AuthRequiredButton
                   onClick={() => {

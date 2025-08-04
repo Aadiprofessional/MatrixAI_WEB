@@ -1,7 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiArrowRight } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+
+// Declare the spline-viewer custom element globally
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'spline-viewer': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        url?: string;
+        'events-target'?: string;
+        style?: React.CSSProperties;
+      };
+    }
+  }
+}
 
 interface AnimatedGridBannerProps {
   title: string;
@@ -16,12 +29,47 @@ const AnimatedGridBanner: React.FC<AnimatedGridBannerProps> = ({
   buttonText = 'Get Started',
   buttonLink = '/signup'
 }) => {
+  useEffect(() => {
+    // Dynamically load the Spline viewer script
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.src = 'https://unpkg.com/@splinetool/viewer@1.9.48/build/spline-viewer.js';
+    document.head.appendChild(script);
+
+    return () => {
+      // Clean up script when component unmounts
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, []);
+  
   // No need to generate grid cells as we're using separate horizontal and vertical lines
   
   return (
     <div className="relative w-full max-w-5xl mx-auto overflow-hidden rounded-lg border border-gray-800/30 shadow-2xl shadow-blue-900/10 bg-black mb-10">
+      {/* Spline 3D Background - Right aligned, 2x bigger, can overflow */}
+      <div className="absolute top-0 right-0 w-[240%] h-[200%] z-0 overflow-visible" style={{ transform: 'translateX(50%)' }}>
+        <div className="w-full h-full"> 
+          {React.createElement('spline-viewer', { 
+            url: '/grid.splinecode', 
+            style: { 
+              width: '100%', 
+              height: '100%', 
+              background: 'transparent', 
+            }, 
+            'events-target': 'global', 
+            'logo': false, 
+            'loading-anim': false, 
+            'loading-anim-type': 'none', 
+            'auto-rotate': false, 
+            'camera-controls': true 
+          })} 
+        </div>
+      </div>
+      
       {/* Animated grid background */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden z-5">
         {/* Horizontal grid lines */}
         <div className="absolute inset-0 flex flex-col justify-between">
           {Array.from({ length: 12 }, (_, i) => (
@@ -104,7 +152,7 @@ const AnimatedGridBanner: React.FC<AnimatedGridBannerProps> = ({
       </div>
       
       {/* Content */}
-      <div className="relative z-10 px-6 py-12 md:py-16 lg:py-20 text-center">
+      <div className="relative z-20 px-6 py-12 md:py-16 lg:py-20 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

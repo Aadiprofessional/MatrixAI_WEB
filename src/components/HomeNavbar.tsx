@@ -19,13 +19,13 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
   // No longer need toggle functions for hover behavior
   // Instead, we'll use CSS hover states
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-4 py-3">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-4 py-1">
       <div className="max-w-7xl mx-auto">
-        <div className="backdrop-blur-md bg-black/20 rounded-lg shadow-lg px-4 py-4 border border-gray-700">
+        <div className="backdrop-blur-md bg-black/20 rounded-lg shadow-lg px-4 py-2 border border-gray-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2">
-                <img src={matrixLogo} alt="Matrix AI" className="w-8 h-8" />
+                <img src={matrixLogo} alt="Matrix AI" className="w-16 h-16 object-contain -my-2" />
                 <span className="font-bold text-xl">matrixai<span className="text-red-500">.</span>asia</span>
               </Link>
             </div>

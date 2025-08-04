@@ -578,6 +578,11 @@ const ImageGeneratorPage: React.FC = () => {
 
   // Function to generate images
   const handleGenerateImages = async () => {
+    if (!user) {
+      // This should not happen since AuthRequiredButton handles it, but adding as safety
+      return;
+    }
+    
     if (!message.trim() || !uid) return;
     
     // If user is not pro and has used all free generations, show pro alert
