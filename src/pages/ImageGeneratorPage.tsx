@@ -1339,13 +1339,15 @@ const ImageGeneratorPage: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className={`w-full max-w-md mx-auto text-center h-[400px] md:h-[500px] lg:h-[600px] flex flex-col items-center justify-center p-3 md:p-4 lg:p-6 backdrop-blur-md overflow-hidden border rounded-lg ${
-                    darkMode 
-                      ? 'text-gray-400 bg-gray-900/30 border-gray-700/30' 
-                      : 'text-gray-600 bg-gray-100/30 border-gray-300/30'
-                  }`}>
-                    <FiImage className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-3 md:mb-4 lg:mb-5 opacity-30" />
-                    <p className="text-sm md:text-base lg:text-lg max-w-xs px-4">{t('imageGenerator.enterPromptToGenerate')}</p>
+                  <div className="flex items-center justify-center h-full p-6">
+                    <div className={`aspect-square w-full max-w-sm text-center flex flex-col items-center justify-center p-6 backdrop-blur-md overflow-hidden border rounded-lg ${
+                      darkMode 
+                        ? 'text-gray-400 bg-gray-900/30 border-gray-700/30' 
+                        : 'text-gray-600 bg-gray-100/30 border-gray-300/30'
+                    }`}>
+                      <FiImage className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-3 md:mb-4 lg:mb-5 opacity-30" />
+                      <p className="text-sm md:text-base lg:text-lg max-w-xs px-4">{t('imageGenerator.enterPromptToGenerate')}</p>
+                    </div>
                   </div>
                 )}
               </div>

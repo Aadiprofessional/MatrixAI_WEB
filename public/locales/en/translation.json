@@ -1734,7 +1734,6 @@
     "email": "Email",
     "phone": "Phone",
     "company": "Company",
-    "subject": "Subject",
     "message": "Message",
     "messagePlaceholder": "How can we help you?",
     "agreeTerms": "I agree to the privacy policy and terms of service.",

@@ -36,18 +36,8 @@
   background: rgba(255, 255, 255, 0.02);
 }
 
-.page-title {
-  color: #1f2937;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
 
-.dark .page-title {
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
+
 
 .page-subtitle {
   color: rgba(31, 41, 55, 0.8);
@@ -559,9 +549,7 @@
     padding: 1rem;
   }
   
-  .page-title {
-    font-size: 2rem;
-  }
+
   
   .generation-form {
     padding: 1.5rem;

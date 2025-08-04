@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ThemeContext } from '../context/ThemeContext';
 import { Layout } from '../components';
+import '../styles/CommonStyles.css';
 import { useTranslation } from 'react-i18next';
 import { 
   FiMoon, 
@@ -319,7 +320,7 @@ const SettingsPage: React.FC = () => {
             transition={{ duration: 0.5 }}
             className="mb-4 sm:mb-6 lg:mb-8"
           >
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-1 sm:mb-2">
+            <h1 className="page-title text-2xl sm:text-3xl lg:text-4xl mb-1 sm:mb-2">
               {t('settings.settings')}
             </h1>
             <p className="text-sm sm:text-base text-tertiary">
