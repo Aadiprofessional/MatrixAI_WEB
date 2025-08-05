@@ -182,28 +182,32 @@ const ComparisonSection: React.FC = () => {
             viewport={{ once: true }}
             className="relative rounded-xl overflow-hidden"
           >
-            {/* Outer layer - white opacity border with glow */}
+            {/* Outer layer - border with glow */}
             <div className={`absolute inset-0 border-2 rounded-xl shadow-lg ${
               darkMode 
                 ? 'border-white/40 shadow-blue-500/20' 
-                : 'border-gray-300/60 shadow-blue-500/10'
+                : 'border-gray-200/50 shadow-blue-500/10'
             }`}></div>
             
             {/* Middle layer - subtle glow effect */}
-            <div className={`absolute inset-[3px] rounded-lg bg-gradient-to-br to-transparent ${
-              darkMode ? 'from-white/10' : 'from-gray-200/20'
+            <div className={`absolute inset-[3px] rounded-lg bg-gradient-to-br ${
+              darkMode 
+                ? 'from-white/10 to-transparent' 
+                : 'from-gray-100/30 to-transparent'
             }`}></div>
             
             {/* Inner layer - glass effect with backdrop blur */}
             <div className={`absolute inset-[6px] backdrop-blur-lg rounded-lg border shadow-inner ${
               darkMode 
                 ? 'bg-black/30 border-white/20 shadow-white/10' 
-                : 'bg-white/40 border-gray-200/30 shadow-gray-300/10'
+                : 'bg-white/30 border-gray-200/30 shadow-gray-500/10'
             }`}></div>
             
             {/* Content container with glass morphism */}
-            <div className={`absolute inset-[6px] bg-gradient-to-br to-transparent opacity-80 rounded-lg ${
-              darkMode ? 'from-white/5' : 'from-gray-100/10'
+            <div className={`absolute inset-[6px] bg-gradient-to-br opacity-80 rounded-lg ${
+              darkMode 
+                ? 'from-white/5 to-transparent' 
+                : 'from-gray-100/10 to-transparent'
             }`}></div>
             
             <div className="relative z-10 p-6">

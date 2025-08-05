@@ -115,7 +115,7 @@ const LanguageSelector: React.FC = () => {
                         : 'bg-blue-50 text-blue-600'
                       : darkMode
                         ? 'text-gray-200 hover:text-white'
-                        : 'text-gray-700 hover:text-gray-900'
+                        : 'text-gray-700 hover:text-gray-800'
                   }`}
                   role="menuitem"
                 >

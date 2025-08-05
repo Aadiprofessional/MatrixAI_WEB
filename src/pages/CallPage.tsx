@@ -791,7 +791,7 @@ const CallPage: React.FC = () => {
   // Show error page if speech recognition is not supported
   if (!speechSupported) {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800 text-white' : 'bg-gradient-to-b from-blue-50 to-indigo-100 text-gray-900'}`}>
+      <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800 text-white' : 'bg-gradient-to-b from-blue-50 to-indigo-100 text-gray-800'}`}>
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-bold mb-4">Browser Not Supported</h1>
           <p className="mb-6">Your browser doesn't support speech recognition. Please try using Chrome or Edge.</p>
@@ -804,7 +804,7 @@ const CallPage: React.FC = () => {
   }
   
   return (
-    <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800 text-white' : 'bg-gradient-to-b from-blue-50 to-indigo-100 text-gray-900'} overflow-hidden fixed inset-0`}>
+    <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800 text-white' : 'bg-gradient-to-b from-blue-50 to-indigo-100 text-gray-800'} overflow-hidden fixed inset-0`}>
       {/* Stylish call header */}
       <div className={`w-full ${darkMode ? 'bg-gray-800 bg-opacity-90' : 'bg-gradient-to-r from-blue-600 to-indigo-600'} py-4 px-4 flex items-center justify-between shadow-lg z-20 sticky top-0`}>
         <div className="flex items-center space-x-3">
@@ -936,8 +936,8 @@ const CallPage: React.FC = () => {
                     dangerouslySetInnerHTML={{ __html: formatText(message.text) }}
                   />
                   <span className="text-xs opacity-50 float-right mt-1">
-                    {message.sender === 'ai' ? 'AI' : 'You'}
-                  </span>
+                {message.sender === 'ai' ? 'AI' : 'You'}
+              </span>
                 </motion.div>
               ))}
               
@@ -1065,4 +1065,4 @@ const CallPage: React.FC = () => {
   );
 };
 
-export default CallPage; 
+export default CallPage;

@@ -87,7 +87,7 @@ const HomePage: React.FC = () => {
               <span className="hidden md:inline">{t('homePage.title', 'Your Complete AI')}<br />{t('homePage.titleSecondLine', 'Creative Suite')}</span>
               <span className="md:hidden">{t('homePage.titleMobile', 'Creative Suite')}</span>
             </h1>
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-200 mb-6 md:mb-10 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-6 md:mb-10 max-w-2xl mx-auto">
               <span className="hidden md:inline">{t('homePage.description', 'Trusted by creators. Powered by top AI models. Generate stunning videos from images, create beautiful artwork, transcribe speech to text, write compelling content, and chat with our lightning-fast AI assistant—all in one platform.')}</span>
               <span className="md:hidden">{t('homePage.descriptionMobile', 'Trusted by creators. Generate stunning videos from images, create beautiful artwork, transcribe speech to text, write compelling content, and chat with our lightning-fast AI assistant—all in one platform.')}</span>
             </p>
@@ -105,7 +105,7 @@ const HomePage: React.FC = () => {
                 </Link>
               </motion.div>
             </div>
-            <div className="flex items-center justify-center gap-8 text-gray-300 text-sm">
+            <div className="flex items-center justify-center gap-8 text-gray-400 text-sm">
               <div className="flex items-center">
                 <span>{t('homePage.userCount', '11M+ users')}</span>
               </div>

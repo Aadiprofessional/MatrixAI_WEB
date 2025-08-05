@@ -608,6 +608,18 @@ Create content that is original, well-researched, and engaging for the target au
       return;
     }
     
+    // Check if user is Pro
+    if (!isPro) {
+      navigate('/subscription', { state: { feature: 'Content Writer' } });
+      return;
+    }
+    
+    // Check if user has at least 3 coins
+    if (userData && (userData.user_coins || 0) < 3) {
+      setShowInsufficientCoins(true);
+      return;
+    }
+    
     setIsGenerating(true);
     setIsStreaming(true);
     setError(null);
@@ -616,23 +628,6 @@ Create content that is original, well-researched, and engaging for the target au
     setEditedContent('');
     
     try {
-      // Check coins
-      if (userData && (userData.user_coins || 0) < 2) {
-        setShowInsufficientCoins(true);
-        return;
-      }
-
-      // Deduct coins before generating
-      if (uid) {
-        try {
-          await userService.subtractCoins(uid, 2, 'content_generation');
-          toast.success(t('contentWriter.success.coinsDeducted'));
-        } catch (coinError) {
-          console.error('Error deducting coins:', coinError);
-          toast.error(t('contentWriter.errors.insufficientCoins'));
-          return;
-        }
-      }
 
       // Define chunk handler for real-time updates
       const handleChunk = (chunk: string) => {

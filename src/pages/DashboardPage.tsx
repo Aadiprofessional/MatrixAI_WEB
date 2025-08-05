@@ -130,8 +130,8 @@ const AIToolSection = ({ title, icon, description, color, route, isPopular = fal
         <div className={`w-10 h-10 sm:w-12 sm:h-12 ${color} rounded-lg flex items-center justify-center mb-3 sm:mb-4`}>
           {icon}
         </div>
-        <h3 className={`text-base sm:text-lg font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'} line-clamp-2`}>{title}</h3>
-        <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3 sm:mb-4 line-clamp-2`}>{description}</p>
+        <h3 className={`text-base sm:text-lg font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'} line-clamp-2`}>{title}</h3>
+      <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3 sm:mb-4 line-clamp-2`}>{description}</p>
         <div className={`text-xs sm:text-sm font-medium ${
           darkMode ? 'text-blue-400' : 'text-blue-600'
         } flex items-center group-hover:text-blue-500 transition-colors`}>
@@ -318,7 +318,7 @@ const DashboardPage: React.FC = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className={`text-2xl sm:text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}
+              className={`text-2xl sm:text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}
             >
               {t('dashboard.welcome')}, {userData?.name?.split(' ')[0] || 'User'}
             </motion.h1>
@@ -326,7 +326,7 @@ const DashboardPage: React.FC = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1 flex items-center gap-2 text-sm sm:text-base`}
+              className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1 flex items-center gap-2 text-sm sm:text-base`}
             >
               <FiCalendar className="w-4 h-4" />
               <span className="hidden sm:inline">{currentDate}</span>
@@ -385,7 +385,7 @@ const DashboardPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex flex-col min-w-0 flex-1">
                   <span className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-xs sm:text-sm font-medium truncate`}>{t('dashboard.coins')}</span>
-                  <span className={`text-lg sm:text-xl lg:text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{dashboardStats.totalCoins.toLocaleString()}</span>
+                  <span className={`text-lg sm:text-xl lg:text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{dashboardStats.totalCoins.toLocaleString()}</span>
                 </div>
                 <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg bg-yellow-500 flex items-center justify-center text-white shadow-sm flex-shrink-0">
                   <FiDollarSign size={16} className="sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
@@ -415,7 +415,7 @@ const DashboardPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex flex-col min-w-0 flex-1">
                   <span className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-xs sm:text-sm font-medium truncate`}>{t('dashboard.chatMessages')}</span>
-                  <span className={`text-lg sm:text-xl lg:text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{dashboardStats.chatMessages}</span>
+                  <span className={`text-lg sm:text-xl lg:text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{dashboardStats.chatMessages}</span>
                 </div>
                 <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg bg-blue-500 flex items-center justify-center text-white shadow-sm flex-shrink-0">
                   <FiMessageSquare size={16} className="sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
@@ -445,7 +445,7 @@ const DashboardPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex flex-col min-w-0 flex-1">
                   <span className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-xs sm:text-sm font-medium truncate`}>{t('dashboard.videosCreated')}</span>
-                  <span className={`text-lg sm:text-xl lg:text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{dashboardStats.videoCount}</span>
+                  <span className={`text-lg sm:text-xl lg:text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{dashboardStats.videoCount}</span>
                 </div>
                 <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg bg-purple-500 flex items-center justify-center text-white shadow-sm flex-shrink-0">
                   <FiVideo size={16} className="sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
@@ -475,7 +475,7 @@ const DashboardPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex flex-col min-w-0 flex-1">
                   <span className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-xs sm:text-sm font-medium truncate`}>{t('dashboard.subscription', 'Subscription')}</span>
-                  <span className={`text-lg sm:text-xl lg:text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{dashboardStats.subscriptionStatus}</span>
+                  <span className={`text-lg sm:text-xl lg:text-2xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{dashboardStats.subscriptionStatus}</span>
                 </div>
                 <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg ${isPro ? 'bg-green-500' : 'bg-gray-500'} flex items-center justify-center text-white shadow-sm flex-shrink-0`}>
                   <FiStar size={16} className="sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
@@ -500,7 +500,7 @@ const DashboardPage: React.FC = () => {
               className="mb-6 sm:mb-8"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-                <h2 className={`text-xl sm:text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <h2 className={`text-xl sm:text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                   {t('dashboard.aiTools', 'AI Tools')}
                 </h2>
                 <Link to="/tools" className={`text-sm flex items-center gap-1 ${
@@ -561,7 +561,7 @@ const DashboardPage: React.FC = () => {
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-                <h3 className={`text-base sm:text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <h3 className={`text-base sm:text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                   {t('dashboard.recentActivity')}
                 </h3>
                 <div className="flex items-center gap-2 sm:gap-3">
@@ -611,7 +611,7 @@ const DashboardPage: React.FC = () => {
                          <FiActivity className="w-3 h-3 sm:w-4 sm:h-4 text-white" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
+                        <p className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-800'} truncate`}>
                           {activity.title}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
@@ -651,7 +651,7 @@ const DashboardPage: React.FC = () => {
                   : 'bg-white border border-gray-100 shadow-sm'
               }`}
             >
-              <h3 className={`text-base sm:text-lg font-bold mb-3 sm:mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h3 className={`text-base sm:text-lg font-bold mb-3 sm:mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                 {t('dashboard.quickActions', 'Quick Actions')}
               </h3>
               <div className="grid grid-cols-2 gap-2 sm:gap-3">

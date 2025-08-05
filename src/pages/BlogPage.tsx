@@ -647,9 +647,13 @@ const BlogPage: React.FC = () => {
               <input
                 type="email"
                 placeholder={t('blog.enterEmail')}
-                className="flex-1 px-4 py-3 rounded-lg border-0 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                className={`flex-1 px-4 py-3 rounded-lg border-2 focus:ring-2 focus:ring-blue-300 focus:outline-none ${
+                  darkMode 
+                    ? 'border-gray-500 bg-black/30 text-white placeholder-gray-400' 
+                    : 'border-gray-400 bg-white text-gray-900 placeholder-gray-500'
+                }`}
               />
-              <button className="bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+              <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-200">
                 {t('blog.subscribe')}
               </button>
             </div>

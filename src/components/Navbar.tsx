@@ -148,10 +148,10 @@ const Navbar: React.FC<NavbarProps> = ({ onMobileSidebarToggle, isMobileSidebarO
             </div>
             <input
               type="text"
-              className={`block max-w-[240px] w-full p-2 pl-10 text-sm rounded-lg ${
+              className={`block max-w-[240px] w-full p-2 pl-10 text-sm rounded-lg border-2 ${
                 darkMode 
-                  ? 'bg-black/30 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500' 
-                  : 'bg-white/30 border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500'
+                  ? 'bg-black/30 border-gray-500 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-400' 
+                  : 'bg-white/30 border-gray-400 text-gray-900 focus:ring-blue-500 focus:border-blue-400'
               }`}
               placeholder={t('dashboard.search')}
             />
@@ -336,10 +336,10 @@ const Navbar: React.FC<NavbarProps> = ({ onMobileSidebarToggle, isMobileSidebarO
             </div>
             <input
               type="text"
-              className={`block w-full p-2 pl-10 text-sm rounded-lg ${
+              className={`block w-full p-2 pl-10 text-sm rounded-lg border-2 ${
                 darkMode 
-                  ? 'bg-black/30 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500' 
-                  : 'bg-white/30 border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500'
+                  ? 'bg-black/30 border-gray-500 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-400' 
+                  : 'bg-white/30 border-gray-400 text-gray-900 focus:ring-blue-500 focus:border-blue-400'
               }`}
               placeholder={t('dashboard.search')}
               autoFocus

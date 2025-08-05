@@ -96,7 +96,7 @@ const FeatureCard: React.FC<FeatureCardProps & { index?: number }> = ({ title, d
         </div>
         <div className="relative z-10 p-6">
           <h3 className={`text-xl font-semibold mb-2 ${
-            darkMode ? 'text-white' : 'text-gray-900'
+            darkMode ? 'text-white' : 'text-gray-800'
           }`}>{title}</h3>
           <p className={`${
             darkMode ? 'text-gray-400' : 'text-gray-600'
@@ -117,7 +117,7 @@ const FeatureSection: React.FC = () => {
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className={`text-4xl font-bold mb-10 text-left ${
-          darkMode ? 'text-white' : 'text-gray-900'
+          darkMode ? 'text-white' : 'text-gray-800'
         }`}>{t('featureSection.title', 'Why creators are switching to MatrixAI')}</h2>
         <p className={`text-xl mb-10 text-left max-w-3xl ${
           darkMode ? 'text-gray-300' : 'text-gray-600'

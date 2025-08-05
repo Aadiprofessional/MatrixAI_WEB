@@ -473,7 +473,7 @@ const HumaniseTextPage: React.FC = () => {
             {/* Header */}
             <div className="border-b border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
+                <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 flex items-center">
                   <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-1.5 rounded-md mr-2">
                     <FiUser className="w-5 h-5" />
                   </span>
@@ -532,7 +532,7 @@ const HumaniseTextPage: React.FC = () => {
                   <div className="h-24 w-24 rounded-full bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 bg-opacity-10 flex items-center justify-center mb-6 animate-gradient-x">
                     <FiUser className="h-12 w-12 text-green-500 dark:text-green-400" />
                   </div>
-                  <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-3">{t('humanizeText.empty')}</h3>
+                  <h3 className="text-xl font-medium text-gray-800 dark:text-gray-100 mb-3">{t('humanizeText.empty')}</h3>
                   <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
                     {t('humanizeText.emptyDesc')}
                   </p>
@@ -546,7 +546,7 @@ const HumaniseTextPage: React.FC = () => {
       {/* Saved Content */}
       {savedContents.length > 0 && (
         <div className="mt-8">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-4 flex items-center">
             <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-1.5 rounded-md mr-2">
               <FiSave className="w-5 h-5" />
             </span>
@@ -562,7 +562,7 @@ const HumaniseTextPage: React.FC = () => {
                 onClick={() => handleLoadSaved(saved.content)}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+                  <h4 className="text-sm font-medium text-gray-800 dark:text-gray-100 line-clamp-2">
                     {saved.title}
                   </h4>
                   <button
@@ -592,7 +592,7 @@ const HumaniseTextPage: React.FC = () => {
               <div>
                 {/* View Mode Toggle */}
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                     {t('humanizeText.history') || 'Humanization History'}
                   </h3>
                   <div className="flex items-center space-x-2">
@@ -634,7 +634,7 @@ const HumaniseTextPage: React.FC = () => {
                         }}
                       >
                         <div className="flex items-start justify-between mb-2">
-                          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+                          <h4 className="text-sm font-medium text-gray-800 dark:text-gray-100 line-clamp-2">
                             {item.title}
                           </h4>
                           <button
@@ -675,7 +675,7 @@ const HumaniseTextPage: React.FC = () => {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-2">
-                              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              <h4 className="text-sm font-medium text-gray-800 dark:text-gray-100">
                                 {item.title}
                               </h4>
                               <div className="flex items-center space-x-2">

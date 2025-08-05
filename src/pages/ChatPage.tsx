@@ -242,19 +242,11 @@ const ChatPage: React.FC = () => {
     { id: 'financial', name: t('chat.roles.financial.name'), description: t('chat.roles.financial.description') },
   ];
   
-  // Initial messages with translations
-  const initialMessages: Message[] = [
-    { 
-      id: 1, 
-      role: 'assistant', 
-      content: t('chat.initialMessage'),
-      timestamp: new Date(Date.now() - 120000).toISOString()
-    }
-  ];
+  // Removed createInitialMessages function - using empty arrays for truly empty chats
   const location = useLocation();
   const { chatId: routeChatId } = useParams<{ chatId: string }>();
   const uid = user?.id;
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState(roleOptions[0]);
@@ -264,6 +256,8 @@ const ChatPage: React.FC = () => {
   const [showProAlert, setShowProAlert] = useState(false);
   const [freeMessagesLeft, setFreeMessagesLeft] = useState(5);
   const [freeUploadsLeft, setFreeUploadsLeft] = useState(2);
+  const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState('');
   
   // Set CSS variables for sidebar widths on component mount
   useEffect(() => {
@@ -282,32 +276,32 @@ const ChatPage: React.FC = () => {
     code: CodeBlock,
     pre: ({ children }: any) => <div className="overflow-auto">{children}</div>,
     h1: ({ children }: any) => (
-      <h1 className={`text-2xl font-bold mb-4 mt-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+      <h1 className="text-2xl font-bold mb-4 mt-6">
         {children}
       </h1>
     ),
     h2: ({ children }: any) => (
-      <h2 className={`text-xl font-bold mb-3 mt-5 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+      <h2 className="text-xl font-bold mb-3 mt-5">
         {children}
       </h2>
     ),
     h3: ({ children }: any) => (
-      <h3 className={`text-lg font-semibold mb-2 mt-4 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+      <h3 className="text-lg font-semibold mb-2 mt-4">
         {children}
       </h3>
     ),
     p: ({ children }: any) => (
-      <p className={`mb-4 leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+      <p className="mb-4 leading-relaxed">
         {children}
       </p>
     ),
     ul: ({ children }: any) => (
-      <ul className={`mb-4 ml-6 space-y-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+      <ul className="mb-4 ml-6 space-y-1">
         {children}
       </ul>
     ),
     ol: ({ children }: any) => (
-      <ol className={`mb-4 ml-6 space-y-1 list-decimal ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+      <ol className="mb-4 ml-6 space-y-1 list-decimal">
         {children}
       </ol>
     ),
@@ -324,12 +318,12 @@ const ChatPage: React.FC = () => {
       </blockquote>
     ),
     strong: ({ children }: any) => (
-      <strong className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+      <strong className="font-semibold">
         {children}
       </strong>
     ),
     em: ({ children }: any) => (
-      <em className={`italic ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+      <em className="italic">
         {children}
       </em>
     ),
@@ -379,6 +373,120 @@ const ChatPage: React.FC = () => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const historyDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Fetch user chats from database without updating current messages
+  const fetchUserChatsWithoutMessageUpdate = async () => {
+    try {
+      // Get current user session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session?.user?.id) {
+        return [];
+      }
+      
+      const userId = session.user.id;
+      
+      // Query all chats for this user
+      const { data: userChats, error: chatsError } = await supabase
+        .from('user_chats')
+        .select('*')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false });
+      
+      if (chatsError || !userChats || userChats.length === 0) {
+        return [];
+      }
+      
+      // Format chats for our UI (without affecting current messages)
+      const formattedChats = userChats.map(chat => {
+        // Process messages to handle images and format correctly
+        const processedMessages = (chat.messages || []).map((msg: any) => {
+          // Check if this is an image message
+          if (msg.text && typeof msg.text === 'string' && 
+              msg.text.includes('supabase.co/storage/v1/')) {
+            return {
+              id: msg.id || Date.now().toString(),
+              role: msg.sender === 'bot' ? 'assistant' : 'user',
+              content: '', // Empty content for image messages
+              timestamp: msg.timestamp || new Date().toISOString(),
+              fileContent: msg.text, // Use the URL as fileContent
+              fileName: 'Image'
+            };
+          }
+          
+          // Regular text message
+          return {
+            id: msg.id || Date.now().toString(),
+            role: msg.sender === 'bot' ? 'assistant' : 'user',
+            content: msg.text || '',
+            timestamp: msg.timestamp || new Date().toISOString()
+          };
+        });
+        
+        return {
+          id: chat.chat_id,
+          title: chat.name || 'New Chat',
+          messages: processedMessages || [],
+          role: chat.role || 'general',
+          roleDescription: chat.role_description || '',
+          description: chat.description || ''
+        };
+      });
+      
+      // Group chats by recency
+      const today: {id: string, title: string, role: string}[] = [];
+      const yesterday: {id: string, title: string, role: string}[] = [];
+      const lastWeek: {id: string, title: string, role: string}[] = [];
+      const lastMonth: {id: string, title: string, role: string}[] = [];
+      
+      const now = new Date();
+      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      
+      formattedChats.forEach(chat => {
+        // Ensure we have a role, defaulting to 'general' if none exists
+        const chatRole = chat.role || 'general';
+        // Get proper role name for display
+        const roleName = getRoleName(chatRole);
+        const chatObj = { 
+          id: chat.id, 
+          title: chat.title, 
+          role: chatRole,
+          roleName: roleName // Store the actual role name for display
+        };
+        const chatDate = new Date(userChats.find(c => c.chat_id === chat.id)?.updated_at || now);
+        
+        if (chatDate >= oneDayAgo) {
+          today.push(chatObj);
+        } else if (chatDate >= oneWeekAgo) {
+          yesterday.push(chatObj);
+        } else if (chatDate >= oneMonthAgo) {
+          lastWeek.push(chatObj);
+        } else {
+          lastMonth.push(chatObj);
+        }
+      });
+      
+      setGroupedChatHistory({
+        today,
+        yesterday,
+        lastWeek,
+        lastMonth,
+        older: []
+      });
+      
+      // Only update chats list, don't affect current messages
+      setChats(formattedChats);
+      
+      // Return the formatted chats for immediate use
+      return formattedChats;
+      
+    } catch (error) {
+      console.error('Error fetching chats for real-time update:', error);
+      return [];
+    }
+  };
+
   // Fetch user chats from database
   const fetchUserChats = async () => {
     try {
@@ -396,7 +504,7 @@ const ChatPage: React.FC = () => {
         setChats([{
           id: localChatId,
           title: 'Local Chat',
-          messages: initialMessages,
+          messages: [],
           role: 'general',
           description: 'Offline mode'
         }]);
@@ -414,7 +522,7 @@ const ChatPage: React.FC = () => {
         setChats([{
           id: localChatId,
           title: 'Local Chat',
-          messages: initialMessages,
+          messages: [],
           role: 'general',
           description: 'Guest mode'
         }]);
@@ -450,7 +558,7 @@ const ChatPage: React.FC = () => {
         setChats([{
           id: localChatId,
           title: 'Local Chat',
-          messages: initialMessages,
+          messages: [],
           role: 'general',
           description: 'Connection error - working offline'
         }]);
@@ -544,7 +652,7 @@ const ChatPage: React.FC = () => {
         if (routeChatId) {
           const specificChat = formattedChats.find(chat => chat.id === routeChatId);
           if (specificChat) {
-            setMessages(specificChat.messages.length > 0 ? specificChat.messages : initialMessages);
+            setMessages(specificChat.messages || []);
             setChatId(routeChatId);
             setSelectedRole(roleOptions.find(role => role.id === specificChat.role) || roleOptions[0]);
           } else {
@@ -555,7 +663,7 @@ const ChatPage: React.FC = () => {
         } else if (formattedChats.length > 0) {
           // If no specific chat ID, load the most recent chat
           const recentChat = formattedChats[0];
-          setMessages(recentChat.messages.length > 0 ? recentChat.messages : initialMessages);
+          setMessages(recentChat.messages || []);
           setChatId(recentChat.id);
           setSelectedRole(roleOptions.find(role => role.id === recentChat.role) || roleOptions[0]);
           // Update URL without reloading
@@ -589,12 +697,12 @@ const ChatPage: React.FC = () => {
       const localChatId = routeChatId || Date.now().toString();
       setChatId(localChatId);
       setChats([{
-        id: localChatId,
-        title: 'Local Chat',
-        messages: initialMessages,
-        role: 'general',
-        description: 'Error mode - working offline'
-      }]);
+          id: localChatId,
+          title: 'Local Chat',
+          messages: [],
+          role: 'general',
+          description: 'Error mode - working offline'
+        }]);
     }
   };
 
@@ -617,6 +725,7 @@ const ChatPage: React.FC = () => {
         .from('user_chats')
         .select('*')
         .eq('chat_id', chatId)
+        .eq('user_id', userId)
         .single();
       
       if (chatError && chatError.code !== 'PGRST116') { // PGRST116 is "not found" error
@@ -646,7 +755,8 @@ const ChatPage: React.FC = () => {
             description: role === 'user' ? messageContent.substring(0, 30) + (messageContent.length > 30 ? '...' : '') : existingChat.description,
             updated_at: timestamp
           })
-          .eq('chat_id', chatId);
+          .eq('chat_id', chatId)
+          .eq('user_id', userId);
         
         if (updateError) {
           console.error('Error updating chat:', updateError);
@@ -666,7 +776,8 @@ const ChatPage: React.FC = () => {
                 description: role === 'user' ? messageContent.substring(0, 30) + (messageContent.length > 30 ? '...' : '') : existingChat.description,
                 updated_at: timestamp
               })
-              .eq('chat_id', chatId);
+              .eq('chat_id', chatId)
+              .eq('user_id', userId);
             
             if (retryError) {
               console.error('Error on retry with reduced messages:', retryError);
@@ -739,11 +850,20 @@ const ChatPage: React.FC = () => {
   // Delete chat from database
   const deleteChat = async (chatIdToDelete: string) => {
     try {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user?.id) {
+        console.error('No authenticated user found');
+        return;
+      }
+      
       // Delete from database
       const { error } = await supabase
         .from('user_chats')
         .delete()
-        .eq('chat_id', chatIdToDelete);
+        .eq('chat_id', chatIdToDelete)
+        .eq('user_id', session.user.id);
       
       if (error) {
         console.error('Error deleting chat:', error);
@@ -773,12 +893,38 @@ const ChatPage: React.FC = () => {
         if (remainingChats.length > 0) {
           // Select the most recent chat
           const newCurrentChat = remainingChats[0];
+          // Clear current state completely before switching
+          setMessages([]);
+          setMessageHistory([]);
+          setInputMessage('');
+          setSelectedFile(null);
+          setDisplayedText({});
+          setIsTyping({});
+          setEditingMessageId(null);
+          setEditingContent('');
+          
           setChatId(newCurrentChat.id);
-          setMessages(newCurrentChat.messages.length > 0 ? newCurrentChat.messages : emptyInitialMessages);
+          setMessages(newCurrentChat.messages || []);
           setSelectedRole(roleOptions.find(role => role.id === newCurrentChat.role) || roleOptions[0]);
           navigate(`/chat/${newCurrentChat.id}`, { replace: true });
+          localStorage.setItem('lastActiveChatId', newCurrentChat.id);
         } else {
-          startNewChat();
+          // No remaining chats, create a completely new one
+          const newChatId = Date.now().toString();
+          setMessages([]);
+          setMessageHistory([]);
+          setInputMessage('');
+          setSelectedFile(null);
+          setDisplayedText({});
+          setIsTyping({});
+          setEditingMessageId(null);
+          setEditingContent('');
+          
+          setChatId(newChatId);
+          setMessages([]);
+          setSelectedRole(roleOptions[0]);
+          navigate(`/chat/${newChatId}`, { replace: true });
+          localStorage.setItem('lastActiveChatId', newChatId);
         }
       }
     } catch (error) {
@@ -819,7 +965,8 @@ const ChatPage: React.FC = () => {
       
       if (routeChatId) {
         // User already accessed a specific chat via URL, no redirect needed
-        await fetchUserChats();
+        // Only fetch chats for history, don't load messages (selectChat will handle that)
+        await fetchUserChatsWithoutMessageUpdate();
         // Store this as the last active chat
         localStorage.setItem('lastActiveChatId', routeChatId);
       } else if (lastActiveChatId) {
@@ -844,8 +991,8 @@ const ChatPage: React.FC = () => {
         table: 'user_chats'
       }, (payload) => {
         console.log('Real-time update received:', payload);
-        // Refresh chats when changes occur
-        fetchUserChats();
+        // Only refresh chats list without affecting current messages
+        fetchUserChatsWithoutMessageUpdate();
       })
       .subscribe();
     
@@ -1308,17 +1455,18 @@ const ChatPage: React.FC = () => {
               ? `${inputMessage}\n\n[Attached ${fileTypeLabel}: ${selectedFile.name}]` 
               : `[Attached ${fileTypeLabel}: ${selectedFile.name}]`;
             
-            // Add user message with file
-            const userMessage = {
-              id: messages.length + 1,
-              role: 'user',
-              content: userMessageContent,
-              timestamp: new Date().toISOString(),
-              fileContent: publicUrl,
-              fileName: selectedFile.name
-            };
-            
-            setMessages([...messages, userMessage]);
+            // Add user message with file using functional update
+            setMessages(prev => {
+              const userMessage = {
+                id: prev.length + 1,
+                role: 'user',
+                content: userMessageContent,
+                timestamp: new Date().toISOString(),
+                fileContent: publicUrl,
+                fileName: selectedFile.name
+              };
+              return [...prev, userMessage];
+            });
             
             // Save user message to database
             await saveChatToDatabase(publicUrl, 'user');
@@ -1342,36 +1490,40 @@ const ChatPage: React.FC = () => {
           return;
         }
       } else {
-        // Add user message
-        const userMessage = {
-          id: messages.length + 1,
-          role: 'user',
-          content: userMessageContent,
-          timestamp: new Date().toISOString()
-        };
+          // Add user message using functional update to ensure we get the latest state
+          setMessages(prev => {
+            const userMessage = {
+              id: prev.length + 1,
+              role: 'user',
+              content: userMessageContent,
+              timestamp: new Date().toISOString()
+            };
+            return [...prev, userMessage];
+          });
+          
+          // Save user message to database
+          await saveChatToDatabase(userMessageContent, 'user');
+          
+          setInputMessage('');
+        }
         
-        setMessages([...messages, userMessage]);
+        // Create a streaming bot message that will be updated in real-time
+        // Calculate the streaming message ID using current messages state
+        let streamingMessageId: number = 0;
+        let streamingContent = '';
         
-        // Save user message to database
-        await saveChatToDatabase(userMessageContent, 'user');
-        
-        setInputMessage('');
-      }
-      
-      // Create a streaming bot message that will be updated in real-time
-      const streamingMessageId = messages.length + 2;
-      let streamingContent = '';
-      
-      // Add initial empty streaming message
-      const initialStreamingMessage = {
-        id: streamingMessageId,
-        role: 'assistant',
-        content: '',
-        timestamp: new Date().toISOString(),
-        isStreaming: true
-      };
-      
-      setMessages(prev => [...prev, initialStreamingMessage]);
+        // Add initial empty streaming message using functional update
+        setMessages(prev => {
+          streamingMessageId = prev.length + 1;
+          const initialStreamingMessage = {
+            id: streamingMessageId,
+            role: 'assistant',
+            content: '',
+            timestamp: new Date().toISOString(),
+            isStreaming: true
+          };
+          return [...prev, initialStreamingMessage];
+        });
       
       // Define chunk handler for real-time updates
       const handleChunk = (chunk: string) => {
@@ -1476,7 +1628,7 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  // When a role is changed, automatically create a new chat with that role
+  // When a role is changed, update the current chat's role instead of creating a new chat
   const handleRoleChange = async (role: typeof roleOptions[0]) => {
     setSelectedRole(role);
     setShowRoleSelector(false);
@@ -1484,93 +1636,60 @@ const ChatPage: React.FC = () => {
     // Stop any ongoing speech
     stopSpeech();
     
-    // Generate a new chat ID
-    const newChatId = Date.now().toString();
-    setChatId(newChatId);
-    
-    // Clear the messageHistory to prevent duplicating previous messages
-    setMessageHistory([]);
-    
-    // Reset inputMessage in case there was draft text
-    setInputMessage('');
-    
-    // Clear any selected file
-    setSelectedFile(null);
-    
-    // Create role-specific welcome message
-    const roleChangeMessage = {
-      id: 1,
-      role: 'assistant',
-      content: t('chat.roleChangeMessage', { roleName: role.name, roleDescription: role.description }),
-      timestamp: new Date().toISOString()
-    };
-    
-    // Set messages with the new role message
-    setMessages([roleChangeMessage]);
-    
-    // Reset message history for the new role
-    setMessageHistory([{ role: 'assistant', content: roleChangeMessage.content }]);
-    
     try {
       // Get current user session
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session?.user?.id) {
-        console.log('No authenticated user, skipping database creation');
+      if (session?.user?.id) {
+        const userId = session.user.id;
+        const timestamp = new Date().toISOString();
         
-        // Update URL without reloading
-        navigate(`/chat/${newChatId}`, { replace: true });
+        // Update the current chat's role in the database
+        const { error: updateError } = await supabase
+          .from('user_chats')
+          .update({
+            role: role.id,
+            role_description: role.description,
+            updated_at: timestamp
+          })
+          .eq('chat_id', chatId)
+          .eq('user_id', userId);
         
-        return;
+        if (updateError) {
+          console.error('Error updating chat role:', updateError);
+        } else {
+          // Update local chats state
+          setChats(prev => prev.map(chat => 
+            chat.id === chatId 
+              ? { ...chat, role: role.id, roleDescription: role.description }
+              : chat
+          ));
+          
+          // Update grouped chat history
+          setGroupedChatHistory(prev => {
+            const updateChatInGroup = (group: {id: string, title: string, role: string, roleName?: string}[]) => 
+              group.map(chat => 
+                chat.id === chatId 
+                  ? { ...chat, role: role.id, roleName: role.name }
+                  : chat
+              );
+            
+            return {
+              today: updateChatInGroup(prev.today),
+              yesterday: updateChatInGroup(prev.yesterday),
+              lastWeek: updateChatInGroup(prev.lastWeek),
+              lastMonth: updateChatInGroup(prev.lastMonth),
+              older: updateChatInGroup(prev.older)
+            };
+          });
+        }
       }
       
-      const userId = session.user.id;
-      const timestamp = new Date().toISOString();
-      
-      // Create new chat with role-specific information
-      const newChat = {
-        chat_id: newChatId,
-        user_id: userId,
-        name: `${role.name} Chat`,
-        messages: [{
-          sender: 'bot',
-          text: roleChangeMessage.content,
-          timestamp: timestamp
-        }],
-        role: role.id,
-        role_description: role.description,
-        created_at: timestamp,
-        updated_at: timestamp
-      };
-      
-      const { error: insertError } = await supabase
-        .from('user_chats')
-        .insert(newChat);
-      
-      if (insertError) {
-        console.error('Error creating new chat:', insertError);
-      } else {
-        // Update local state with the new chat
-        setChats(prev => [{
-          id: newChatId,
-          title: `${role.name} Chat`,
-          messages: [roleChangeMessage],
-          role: role.id,
-          roleDescription: role.description,
-          description: `New conversation with ${role.name}`
-        }, ...prev]);
-        
-        // Update URL without reloading
-        navigate(`/chat/${newChatId}`, { replace: true });
-        
-        // Update local storage with new chat ID
-        localStorage.setItem('lastActiveChatId', newChatId);
-        
-        // Refresh chat list to show the new chat
-        await fetchUserChats();
-      }
+      // Show success message
+      showSuccess(`Role changed to ${role.name}`);
     } catch (error) {
       console.error('Error in role change:', error);
+      showError('Failed to change role. Please try again.');
     }
   };
 
@@ -1589,6 +1708,109 @@ const ChatPage: React.FC = () => {
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Handle edit message functionality
+  const handleEditMessage = (messageId: number, content: string) => {
+    setEditingMessageId(messageId);
+    setEditingContent(content);
+  };
+
+  const handleSaveEdit = async () => {
+    if (editingMessageId && editingContent.trim()) {
+      // Update the message content
+      setMessages(prev => prev.map(msg => 
+        msg.id === editingMessageId 
+          ? { ...msg, content: editingContent.trim() }
+          : msg
+      ));
+      
+      // Clear editing state
+      setEditingMessageId(null);
+      setEditingContent('');
+      
+      // Save to database if user is logged in
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data?.session?.user?.id) {
+          const updatedMessages = messages.map(msg => 
+            msg.id === editingMessageId 
+              ? { ...msg, content: editingContent.trim() }
+              : msg
+          );
+          
+          await supabase
+            .from('user_chats')
+            .update({ 
+              messages: updatedMessages.map(msg => ({
+                id: msg.id,
+                sender: msg.role === 'assistant' ? 'bot' : 'user',
+                text: msg.content,
+                timestamp: msg.timestamp
+              }))
+            })
+            .eq('chat_id', chatId)
+            .eq('user_id', data.session.user.id);
+        }
+      } catch (error) {
+        console.error('Error saving edited message:', error);
+      }
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditingContent('');
+  };
+
+  // Handle deleting a chat from history
+  const handleDeleteChat = async (chatIdToDelete: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent chat selection when clicking delete
+    
+    if (!uid) {
+      showError('You must be logged in to delete chats');
+      return;
+    }
+
+    try {
+      // Delete from Supabase
+      const { error } = await supabase
+        .from('user_chats')
+        .delete()
+        .eq('chat_id', chatIdToDelete)
+        .eq('user_id', uid);
+
+      if (error) {
+        console.error('Error deleting chat:', error);
+        showError('Failed to delete chat');
+        return;
+      }
+
+      // Remove from local state
+      setChats(prev => prev.filter(chat => chat.id !== chatIdToDelete));
+      
+      // Remove from grouped chat history
+      setGroupedChatHistory(prev => ({
+        today: prev.today.filter(chat => chat.id !== chatIdToDelete),
+        yesterday: prev.yesterday.filter(chat => chat.id !== chatIdToDelete),
+        lastWeek: prev.lastWeek.filter(chat => chat.id !== chatIdToDelete),
+        lastMonth: prev.lastMonth.filter(chat => chat.id !== chatIdToDelete),
+        older: prev.older.filter(chat => chat.id !== chatIdToDelete)
+      }));
+
+      // If the deleted chat is the current chat, navigate to a new chat
+      if (chatIdToDelete === chatId) {
+        const newChatId = Date.now().toString();
+        navigate(`/chat/${newChatId}`, { replace: true });
+        setChatId(newChatId);
+        setMessages([]);
+      }
+
+      showSuccess('Chat deleted successfully');
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+      showError('Failed to delete chat');
+    }
   };
 
   // Handle file upload with better error reporting
@@ -1725,17 +1947,17 @@ const ChatPage: React.FC = () => {
     const newChatId = customChatId || Date.now().toString();
     setChatId(newChatId);
     
-    // Clear the messageHistory to prevent duplicating previous messages
+    // Clear all state completely to prevent any leakage
     setMessageHistory([]);
-    
-    // Reset inputMessage in case there was draft text
     setInputMessage('');
-    
-    // Clear any selected file
     setSelectedFile(null);
+    setDisplayedText({});
+    setIsTyping({});
+    setEditingMessageId(null);
+    setEditingContent('');
     
-    // Use initialMessages for the UI display
-    setMessages(initialMessages);
+    // Start with empty messages - no initial message
+    setMessages([]);
     setSelectedRole(roleOptions[0]);
     
     try {
@@ -1754,21 +1976,17 @@ const ChatPage: React.FC = () => {
       const userId = session.user.id;
       const timestamp = new Date().toISOString();
       
-      // Initialize with welcome message for database storage
-      const newChat = {
-        chat_id: newChatId,
-        user_id: userId,
-        name: 'New Chat',
-        messages: [{
-          sender: 'bot',
-          text: 'Hello! I\'m MatrixAI. How can I help you today?',
-          timestamp: timestamp
-        }],
-        role: selectedRole.id,
-        role_description: selectedRole.description,
-        created_at: timestamp,
-        updated_at: timestamp
-      };
+      // Create empty chat in database - no initial messages
+        const newChat = {
+          chat_id: newChatId,
+          user_id: userId,
+          name: 'New Chat',
+          messages: [],
+          role: roleOptions[0].id,
+          role_description: roleOptions[0].description,
+          created_at: timestamp,
+          updated_at: timestamp
+        };
       
       const { error: insertError } = await supabase
         .from('user_chats')
@@ -1781,9 +1999,9 @@ const ChatPage: React.FC = () => {
         setChats(prev => [{
           id: newChatId,
           title: 'New Chat',
-          messages: initialMessages,
-          role: selectedRole.id,
-          roleDescription: selectedRole.description,
+          messages: [],
+          role: roleOptions[0].id,
+          roleDescription: roleOptions[0].description,
           description: 'New conversation'
         }, ...prev]);
         
@@ -1799,8 +2017,8 @@ const ChatPage: React.FC = () => {
           today: [{ 
             id: newChatId, 
             title: 'New Chat', 
-            role: selectedRole.id,
-            roleName: selectedRole.name
+            role: roleOptions[0].id,
+            roleName: roleOptions[0].name
           }, ...prev.today]
         }));
       }
@@ -1821,6 +2039,8 @@ const ChatPage: React.FC = () => {
     setSelectedFile(null);
     setDisplayedText({});
     setIsTyping({});
+    setEditingMessageId(null);
+    setEditingContent('');
     
     // Create a new chat ID and update URL
     const newChatId = Date.now().toString();
@@ -1828,13 +2048,16 @@ const ChatPage: React.FC = () => {
     navigate(`/chat/${newChatId}`, { replace: true });
     localStorage.setItem('lastActiveChatId', newChatId);
     
+    // Reset to default role
+    setSelectedRole(roleOptions[0]);
+    
     try {
       // When not logged in, we don't need to create a database entry
       // just update the local state
       const { data } = await supabase.auth.getSession();
       if (!data?.session?.user?.id) {
-        // For non-logged in users, just set the initial messages
-        setMessages(initialMessages);
+        // For non-logged in users, start with empty messages
+        setMessages([]);
         return;
       }
       
@@ -1842,8 +2065,8 @@ const ChatPage: React.FC = () => {
       await startNewChat(newChatId);
     } catch (error) {
       console.error('Error starting new chat:', error);
-      // Fallback to showing initial messages
-      setMessages(initialMessages);
+      // Fallback to empty messages
+      setMessages([]);
     }
   };
 
@@ -2088,92 +2311,140 @@ const ChatPage: React.FC = () => {
         </div>
         
         {/* Delete button */}
-        <AuthRequiredButton
+        <button
           onClick={(e) => {
             e.stopPropagation();
-            if (window.confirm(t('chat.deleteConfirmation'))) {
-              deleteChat(chat.id);
+            if (window.confirm('Are you sure you want to delete this chat?')) {
+              handleDeleteChat(chat.id, e);
             }
           }}
-          className={`p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
-            darkMode ? 'hover:bg-gray-600 text-gray-400' : 'hover:bg-gray-200 text-gray-500'
+          className={`p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 ${
+            darkMode 
+              ? 'hover:bg-red-600 text-gray-400 hover:text-white' 
+              : 'hover:bg-red-100 text-gray-500 hover:text-red-600'
           }`}
-          title={t('chat.deleteChat')}
+          title="Delete chat"
         >
-          <FiX className="w-3.5 h-3.5" />
-        </AuthRequiredButton>
+          <FiTrash2 className="w-3 h-3" />
+        </button>
       </div>
     );
   };
 
   // Function to select a chat
   const selectChat = async (selectedChatId: string) => {
-    if (selectedChatId === chatId) return; // Already selected
+    if (selectedChatId === chatId) {
+      // Even if same chat, flush everything and reload fresh from database
+      stopSpeech();
+      
+      // Completely flush all local state
+      setMessages([]);
+      setMessageHistory([]);
+      setInputMessage('');
+      setSelectedFile(null);
+      setDisplayedText({});
+      setIsTyping({});
+      setEditingMessageId(null);
+      setEditingContent('');
+      setCoinsUsed({});
+      setChats([]);
+      
+      // Force reload from database
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
     
     stopSpeech(); // Stop any ongoing speech
+    
+    // Completely flush all local state - no local data retention
+    setMessages([]);
+    setMessageHistory([]);
+    setInputMessage('');
+    setSelectedFile(null);
+    setDisplayedText({});
+    setIsTyping({});
+    setEditingMessageId(null);
+    setEditingContent('');
+    setCoinsUsed({});
+    setChats([]); // Clear local chats completely
+    
     setChatId(selectedChatId);
     setShowHistoryDropdown(false);
     
     // Update last active chat in localStorage
     localStorage.setItem('lastActiveChatId', selectedChatId);
     
-    // Find the chat in the local state first
-    const selectedChat = chats.find(chat => chat.id === selectedChatId);
+    // Force a longer delay to ensure complete state clearing
+    await new Promise(resolve => setTimeout(resolve, 100));
     
-    if (selectedChat) {
-      setMessages(selectedChat.messages.length > 0 ? selectedChat.messages : emptyInitialMessages);
-      setSelectedRole(roleOptions.find(role => role.id === selectedChat.role) || roleOptions[0]);
+    // Always fetch fresh from database - no local cache usage
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session?.user?.id) {
+        // Create new local chat if no session
+        setMessages([]);
+        setSelectedRole(roleOptions[0]);
+        navigate(`/chat/${selectedChatId}`, { replace: true });
+        return;
+      }
+      
+      const userId = session.user.id;
+      
+      // Fetch specific chat directly from database
+      const { data: chatData, error: chatError } = await supabase
+        .from('user_chats')
+        .select('*')
+        .eq('chat_id', selectedChatId)
+        .eq('user_id', userId)
+        .single();
+      
+      if (chatError || !chatData) {
+        // Chat not found, create new one
+        console.log('Chat not found in database, creating new chat with ID:', selectedChatId);
+        setMessages([]);
+        setSelectedRole(roleOptions[0]);
+        navigate(`/chat/${selectedChatId}`, { replace: true });
+        return;
+      }
+      
+      // Process messages from database with consistent IDs
+      const processedMessages = (chatData.messages || []).map((msg: any, index: number) => {
+        // Create a consistent ID based on message content and position to prevent duplicates
+        const consistentId = msg.id || `${selectedChatId}-${index}-${msg.timestamp || Date.now()}`;
+        
+        if (msg.text && typeof msg.text === 'string' && 
+            msg.text.includes('supabase.co/storage/v1/')) {
+          return {
+            id: consistentId,
+            role: msg.sender === 'bot' ? 'assistant' : 'user',
+            content: '',
+            timestamp: msg.timestamp || new Date().toISOString(),
+            fileContent: msg.text,
+            fileName: 'Uploaded file'
+          };
+        } else {
+          return {
+            id: consistentId,
+            role: msg.sender === 'bot' ? 'assistant' : 'user',
+            content: msg.text || '',
+            timestamp: msg.timestamp || new Date().toISOString()
+          };
+        }
+      });
+      
+      // Set fresh messages from database only
+      setMessages(() => processedMessages);
+      setSelectedRole(roleOptions.find(role => role.id === chatData.role) || roleOptions[0]);
       
       // Update URL
       navigate(`/chat/${selectedChatId}`, { replace: true });
-    } else {
-      // If not found locally, fetch from database
-      try {
-        const { data: chatData, error } = await supabase
-          .from('user_chats')
-          .select('*')
-          .eq('chat_id', selectedChatId)
-          .single();
-        
-        if (error) {
-          console.error('Error fetching chat:', error);
-          return;
-        }
-        
-        if (chatData) {
-          // Process messages
-          const processedMessages = chatData.messages.map((msg: any) => {
-            // Check if this is an image message
-            if (msg.text && typeof msg.text === 'string' && 
-                msg.text.includes('supabase.co/storage/v1/')) {
-              return {
-                id: msg.id || Date.now().toString(),
-                role: msg.sender === 'bot' ? 'assistant' : 'user',
-                content: '', // Empty content for image messages
-                timestamp: msg.timestamp || new Date().toISOString(),
-                fileContent: msg.text, // Use the URL as fileContent
-                fileName: 'Image'
-              };
-            }
-            
-            // Regular text message
-            return {
-              id: msg.id || Date.now().toString(),
-              role: msg.sender === 'bot' ? 'assistant' : 'user',
-              content: msg.text || '',
-              timestamp: msg.timestamp || new Date().toISOString()
-            };
-          });
-          
-          setMessages(processedMessages.length > 0 ? processedMessages : emptyInitialMessages);
-          setSelectedRole(roleOptions.find(role => role.id === chatData.role) || roleOptions[0]);
-          
-          // Update URL
-          navigate(`/chat/${selectedChatId}`, { replace: true });
-        }
-      } catch (error) {
-        console.error('Error selecting chat:', error);
-      }
+      
+    } catch (error) {
+      console.error('Error fetching chat from database:', error);
+      // Fallback to empty chat
+      setMessages([]);
+      setSelectedRole(roleOptions[0]);
+      navigate(`/chat/${selectedChatId}`, { replace: true });
     }
   };
 
@@ -2343,22 +2614,7 @@ const ChatPage: React.FC = () => {
                                   <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
                                     {t('chat.today')}
                                   </h4>
-                                  {groupedChatHistory.today.map(chat => (
-                                    <button
-                                      key={chat.id}
-                                      onClick={() => selectChat(chat.id)}
-                                      className={`w-full text-left p-2 rounded-md mb-1 transition-colors ${
-                                        chat.id === chatId
-                                          ? (darkMode ? 'bg-blue-900/50 text-blue-200' : 'bg-blue-100 text-blue-800')
-                                          : (darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-700')
-                                      }`}
-                                    >
-                                      <div className="text-sm truncate">{chat.title}</div>
-                                      {chat.roleName && (
-                                        <div className="text-xs text-gray-500 mt-1">{chat.roleName}</div>
-                                      )}
-                                    </button>
-                                  ))}
+                                  {groupedChatHistory.today.map(chat => renderChatHistoryItem(chat, t('chat.today')))}
                                 </div>
                               )}
                               
@@ -2368,22 +2624,7 @@ const ChatPage: React.FC = () => {
                                   <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
                                     {t('chat.yesterday')}
                                   </h4>
-                                  {groupedChatHistory.yesterday.map(chat => (
-                                    <button
-                                      key={chat.id}
-                                      onClick={() => selectChat(chat.id)}
-                                      className={`w-full text-left p-2 rounded-md mb-1 transition-colors ${
-                                        chat.id === chatId
-                                          ? (darkMode ? 'bg-blue-900/50 text-blue-200' : 'bg-blue-100 text-blue-800')
-                                          : (darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-700')
-                                      }`}
-                                    >
-                                      <div className="text-sm truncate">{chat.title}</div>
-                                      {chat.roleName && (
-                                        <div className="text-xs text-gray-500 mt-1">{chat.roleName}</div>
-                                      )}
-                                    </button>
-                                  ))}
+                                  {groupedChatHistory.yesterday.map(chat => renderChatHistoryItem(chat, t('chat.yesterday')))}
                                 </div>
                               )}
                               
@@ -2393,22 +2634,7 @@ const ChatPage: React.FC = () => {
                                   <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
                                     {t('chat.lastWeek')}
                                   </h4>
-                                  {groupedChatHistory.lastWeek.map(chat => (
-                                    <button
-                                      key={chat.id}
-                                      onClick={() => selectChat(chat.id)}
-                                      className={`w-full text-left p-2 rounded-md mb-1 transition-colors ${
-                                        chat.id === chatId
-                                          ? (darkMode ? 'bg-blue-900/50 text-blue-200' : 'bg-blue-100 text-blue-800')
-                                          : (darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-700')
-                                      }`}
-                                    >
-                                      <div className="text-sm truncate">{chat.title}</div>
-                                      {chat.roleName && (
-                                        <div className="text-xs text-gray-500 mt-1">{chat.roleName}</div>
-                                      )}
-                                    </button>
-                                  ))}
+                                  {groupedChatHistory.lastWeek.map(chat => renderChatHistoryItem(chat, t('chat.lastWeek')))}
                                 </div>
                               )}
                               
@@ -2418,22 +2644,7 @@ const ChatPage: React.FC = () => {
                                   <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
                                     {t('chat.lastMonth')}
                                   </h4>
-                                  {groupedChatHistory.lastMonth.map(chat => (
-                                    <button
-                                      key={chat.id}
-                                      onClick={() => selectChat(chat.id)}
-                                      className={`w-full text-left p-2 rounded-md mb-1 transition-colors ${
-                                        chat.id === chatId
-                                          ? (darkMode ? 'bg-blue-900/50 text-blue-200' : 'bg-blue-100 text-blue-800')
-                                          : (darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-700')
-                                      }`}
-                                    >
-                                      <div className="text-sm truncate">{chat.title}</div>
-                                      {chat.roleName && (
-                                        <div className="text-xs text-gray-500 mt-1">{chat.roleName}</div>
-                                      )}
-                                    </button>
-                                  ))}
+                                  {groupedChatHistory.lastMonth.map(chat => renderChatHistoryItem(chat, t('chat.lastMonth')))}
                                 </div>
                               )}
                               
@@ -2482,6 +2693,37 @@ const ChatPage: React.FC = () => {
                   {/* Messages container with improved markdown */}
                   <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-2 sm:px-4 py-2 sm:py-4">
                     <div className="max-w-3xl mx-auto space-y-3 sm:space-y-6">
+                      {/* Empty state when no messages */}
+                      {messages.length === 0 && !isLoading && (
+                        <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
+                          <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mb-4 sm:mb-6 ${
+                            darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                          }`}>
+                            <FiCpu className="w-8 h-8 sm:w-10 sm:h-10" />
+                          </div>
+                          <h3 className={`text-lg sm:text-xl font-semibold mb-2 ${
+                            darkMode ? 'text-gray-200' : 'text-gray-800'
+                          }`}>
+                            {t('chat.emptyState.title') || 'Start a new conversation'}
+                          </h3>
+                          <p className={`text-sm sm:text-base mb-6 max-w-md ${
+                            darkMode ? 'text-gray-400' : 'text-gray-600'
+                          }`}>
+                            {t('chat.emptyState.description') || 'Ask me anything! I\'m here to help with your questions and tasks.'}
+                          </p>
+                          <div className={`text-xs sm:text-sm ${
+                            darkMode ? 'text-gray-500' : 'text-gray-500'
+                          }`}>
+                            {selectedRole.name && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                                <FiCpu className="w-3 h-3 mr-1" />
+                                {selectedRole.name}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
                       {messages.map((message) => (
                         <motion.div
                           key={message.id}
@@ -2503,7 +2745,7 @@ const ChatPage: React.FC = () => {
                             <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4 ${
                               message.role === 'user'
                                 ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
-                                : (darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm')
+                                : (darkMode ? 'bg-gray-800 border border-gray-700 text-gray-100' : 'bg-white border border-gray-200 shadow-sm text-gray-900')
                             }`}>
                               {/* File content (if any) */}
                               {'fileContent' in message && message.fileContent && (
@@ -2533,25 +2775,59 @@ const ChatPage: React.FC = () => {
                               )}
                               
                               {/* Text content with markdown and math rendering */}
-                              <div className="markdown-content">
-                                {message.isStreaming ? (
-                                  <ReactMarkdown
-                                    remarkPlugins={[remarkGfm, remarkMath]}
-                                    rehypePlugins={[rehypeRaw, rehypeKatex]}
-                                    components={MarkdownComponents}
-                                  >
-                                    {preprocessContent(displayedText[message.id] || '')}
-                                  </ReactMarkdown>
-                                ) : (
-                                  <ReactMarkdown
-                                    remarkPlugins={[remarkGfm, remarkMath]}
-                                    rehypePlugins={[rehypeRaw, rehypeKatex]}
-                                    components={MarkdownComponents}
-                                  >
-                                    {preprocessContent(message.content)}
-                                  </ReactMarkdown>
-                                )}
-                              </div>
+              <div className="markdown-content">
+                {editingMessageId === message.id ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={editingContent}
+                      onChange={(e) => setEditingContent(e.target.value)}
+                      className={`w-full p-3 border rounded-lg resize-none ${
+                        darkMode 
+                          ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500' 
+                          : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500'
+                      } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                      rows={3}
+                      autoFocus
+                    />
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={handleSaveEdit}
+                        className="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm flex items-center space-x-1"
+                      >
+                        <FiCheck size={14} />
+                        <span>Save</span>
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className={`px-3 py-1 rounded-lg transition-colors text-sm flex items-center space-x-1 ${
+                          darkMode 
+                            ? 'bg-gray-600 text-gray-300 hover:bg-gray-500' 
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        <FiX size={14} />
+                        <span>Cancel</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : message.isStreaming ? (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeRaw, rehypeKatex]}
+                    components={MarkdownComponents}
+                  >
+                    {preprocessContent(displayedText[message.id] || '')}
+                  </ReactMarkdown>
+                ) : (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeRaw, rehypeKatex]}
+                    components={MarkdownComponents}
+                  >
+                    {preprocessContent(message.content)}
+                  </ReactMarkdown>
+                )}
+              </div>
                               
                               {/* Coin usage display for AI messages */}
                               {message.role === 'assistant' && uid && coinsUsed[message.id] && (
@@ -2588,6 +2864,15 @@ const ChatPage: React.FC = () => {
                                   >
                                     <FiCopy size={12} className="sm:w-3.5 sm:h-3.5" />
                                   </button>
+                                  {message.role === 'user' && (
+                                    <button 
+                                      onClick={() => handleEditMessage(message.id, message.content)}
+                                      className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                                      aria-label="Edit message"
+                                    >
+                                      <FiEdit size={12} className="sm:w-3.5 sm:h-3.5" />
+                                    </button>
+                                  )}
                                   {message.role === 'assistant' && (
                                     <>
                                       <button 

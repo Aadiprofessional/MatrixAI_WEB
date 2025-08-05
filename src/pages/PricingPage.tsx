@@ -183,7 +183,7 @@ const PricingPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen page-background ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+    <div className={`min-h-screen page-background ${darkMode ? 'text-white' : 'text-gray-800'}`}>
       {/* Background gradient effects */}
       <div className="gradient-blob-1"></div>
       <div className="gradient-blob-2"></div>
@@ -338,7 +338,7 @@ const PricingPage: React.FC = () => {
                   
                   <div className="flex justify-between items-center">
                     <div className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{service.unit}</div>
-                    <div className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{service.cost}</div>
+                    <div className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{service.cost}</div>
                   </div>
                 </motion.div>
               ))}
@@ -359,22 +359,22 @@ const PricingPage: React.FC = () => {
             
             <div className="space-y-6">
               <div className={`glass-effect rounded-xl p-6 ${darkMode ? 'hover:border-gray-700' : 'hover:border-gray-400'} transition-colors duration-300`}>
-                <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('pricing.faqQuestion1')}</h3>
+                <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{t('pricing.faqQuestion1')}</h3>
                 <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{t('pricing.faqAnswer1')}</p>
               </div>
               
               <div className={`glass-effect rounded-xl p-6 ${darkMode ? 'hover:border-gray-700' : 'hover:border-gray-400'} transition-colors duration-300`}>
-                <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('pricing.faqQuestion2')}</h3>
+                <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{t('pricing.faqQuestion2')}</h3>
                 <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{t('pricing.faqAnswer2')}</p>
               </div>
               
               <div className={`glass-effect rounded-xl p-6 ${darkMode ? 'hover:border-gray-700' : 'hover:border-gray-400'} transition-colors duration-300`}>
-                <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('pricing.faqQuestion3')}</h3>
+                <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{t('pricing.faqQuestion3')}</h3>
                 <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{t('pricing.faqAnswer3')}</p>
               </div>
               
               <div className={`glass-effect rounded-xl p-6 ${darkMode ? 'hover:border-gray-700' : 'hover:border-gray-400'} transition-colors duration-300`}>
-                <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('pricing.faqQuestion4')}</h3>
+                <h3 className={`text-xl font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{t('pricing.faqQuestion4')}</h3>
                 <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{t('pricing.faqAnswer4')}</p>
               </div>
             </div>
@@ -398,7 +398,7 @@ const PricingPage: React.FC = () => {
               </Link>
               <Link 
                 to="/contact" 
-                className={`px-8 py-3 rounded-lg border ${darkMode ? 'border-gray-600 text-white hover:bg-gray-800' : 'border-gray-300 text-gray-900 hover:bg-gray-100'} font-medium transition-colors flex items-center justify-center`}
+                className={`px-8 py-3 rounded-lg border ${darkMode ? 'border-gray-600 text-white hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'} font-medium transition-colors flex items-center justify-center`}
               >
                 {t('pricing.contactSales')}
               </Link>

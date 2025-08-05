@@ -121,7 +121,7 @@ const CubeComponent: React.FC = () => {
             {/* Mobile: Cube first, Desktop: Form first */}
             <motion.div 
               className={`order-2 lg:order-1 space-y-6 w-full flex justify-center ${
-                darkMode ? 'text-white' : 'text-gray-900'
+                darkMode ? 'text-white' : 'text-gray-800'
               }`}
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -140,7 +140,7 @@ const CubeComponent: React.FC = () => {
               >
                 <motion.h2 
                   className={`text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-center ${
-                    darkMode ? 'text-white' : 'text-gray-900'
+                    darkMode ? 'text-white' : 'text-gray-800'
                   }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -177,7 +177,7 @@ const CubeComponent: React.FC = () => {
                         className={`w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent backdrop-blur-sm transition-all duration-300 text-sm sm:text-base ${
                           darkMode 
                             ? 'bg-white/5 border border-white/20 text-white placeholder-gray-400' 
-                            : 'bg-black/5 border border-gray-300/20 text-gray-900 placeholder-gray-500'
+                            : 'bg-black/5 border border-gray-300/20 text-gray-700 placeholder-gray-500'
                         }`}
                         required
                       />
@@ -200,7 +200,7 @@ const CubeComponent: React.FC = () => {
                         className={`w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent backdrop-blur-sm transition-all duration-300 text-sm sm:text-base ${
                           darkMode 
                             ? 'bg-white/5 border border-white/20 text-white placeholder-gray-400' 
-                            : 'bg-black/5 border border-gray-300/20 text-gray-900 placeholder-gray-500'
+                            : 'bg-black/5 border border-gray-300/20 text-gray-700 placeholder-gray-500'
                         }`}
                         required
                       />
@@ -223,7 +223,7 @@ const CubeComponent: React.FC = () => {
                         className={`w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent backdrop-blur-sm transition-all duration-300 text-sm sm:text-base ${
                           darkMode 
                             ? 'bg-white/5 border border-white/20 text-white placeholder-gray-400' 
-                            : 'bg-black/5 border border-gray-300/20 text-gray-900 placeholder-gray-500'
+                            : 'bg-black/5 border border-gray-300/20 text-gray-700 placeholder-gray-500'
                         }`}
                       />
                     </div>
@@ -243,7 +243,7 @@ const CubeComponent: React.FC = () => {
                       className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent backdrop-blur-sm transition-all duration-300 resize-none text-sm sm:text-base ${
                         darkMode 
                           ? 'bg-white/5 border border-white/20 text-white placeholder-gray-400' 
-                          : 'bg-black/5 border border-gray-300/20 text-gray-900 placeholder-gray-500'
+                          : 'bg-black/5 border border-gray-300/20 text-gray-700 placeholder-gray-500'
                       }`}
                       required
                     ></textarea>

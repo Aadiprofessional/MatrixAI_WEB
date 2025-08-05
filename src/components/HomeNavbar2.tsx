@@ -44,7 +44,7 @@ const HomeNavbar2: React.FC<HomeNavbarProps> = () => {
             <div className="flex items-center space-x-2 md:space-x-4">
               <Link to="/" className="flex items-center space-x-2 pl-0">
                 <img src={matrixLogo} alt="Matrix AI" className="w-12 h-12 md:w-16 md:h-16 object-contain -my-2" />
-                <span className={`font-bold text-sm md:text-base ${darkMode ? 'text-white' : 'text-gray-900'}`}>matrixai<span className="text-red-500">.</span>asia</span>
+                <span className={`font-bold text-sm md:text-base hidden sm:block ${darkMode ? 'text-white' : 'text-gray-800'}`}>matrixai<span className="text-red-500">.</span>asia</span>
               </Link>
               
               {/* Tools Dropdown - Hidden on mobile */}
@@ -54,7 +54,7 @@ const HomeNavbar2: React.FC<HomeNavbarProps> = () => {
                   className={`flex items-center transition-colors duration-200 text-sm px-3 py-1.5 rounded-md border ${
                     darkMode 
                       ? 'text-gray-200 hover:text-white bg-gray-800 border-gray-700' 
-                      : 'text-gray-700 hover:text-gray-900 bg-gray-100 border-gray-300'
+                      : 'text-gray-700 hover:text-gray-800 bg-gray-100 border-gray-300'
                   }`}
                 >
                   <span>{currentPage || 'Tools'}</span>

@@ -328,6 +328,7 @@ const TranscriptionPage: React.FC = () => {
 
   // Languages array with internationalization
   const languages = [
+    { label: t('transcription.languages.english'), value: 'en' },
     { label: t('transcription.languages.chineseSimplified'), value: 'zh' },
     { label: t('transcription.languages.chineseTraditional'), value: 'zh-TW' },
     { label: t('transcription.languages.spanish'), value: 'es' },
@@ -610,6 +611,27 @@ const TranscriptionPage: React.FC = () => {
     return t('transcription.languages.english');
   };
 
+  // Function to check if text contains Chinese characters
+  const isChinese = (text: string): boolean => {
+    return /[\u4e00-\u9fff]/.test(text);
+  };
+
+  // Function to remove spaces from Chinese text
+  const formatChineseText = (text: string): string => {
+    if (isChinese(text)) {
+      return text.replace(/\s+/g, '');
+    }
+    return text;
+  };
+
+  // Function to clean Chinese text for SRT (remove spaces and punctuation)
+  const cleanChineseForSRT = (text: string): string => {
+    if (isChinese(text)) {
+      return text.replace(/\s+/g, '').replace(/[。.]/g, '');
+    }
+    return text;
+  };
+
   // Get state passed from the previous page
   const locationState = location.state as any;
 
@@ -852,7 +874,8 @@ const TranscriptionPage: React.FC = () => {
   };
 
   const copyTranscription = () => {
-    navigator.clipboard.writeText(transcription);
+    const formattedTranscription = formatChineseText(transcription);
+    navigator.clipboard.writeText(formattedTranscription);
     // Could show a toast notification here
     alert(t('transcription.success.transcriptionCopied'));
   };
@@ -1261,7 +1284,12 @@ const TranscriptionPage: React.FC = () => {
       const group = wordsData.slice(i, i + groupSize);
       const startTime = group[0].start;
       const endTime = group[group.length - 1].end;
-      const text = group.map(w => w.punctuated_word || w.word).join(' ');
+      
+      // Get text with punctuation if available, otherwise use word
+      let text = group.map(w => w.punctuated_word || w.word).join(' ');
+      
+      // Clean Chinese text for SRT (remove spaces and punctuation)
+      text = cleanChineseForSRT(text);
       
       // Convert seconds to SRT time format (HH:MM:SS,mmm)
       const formatSRTTime = (seconds: number) => {
@@ -1296,7 +1324,7 @@ const TranscriptionPage: React.FC = () => {
         (word.word.match(/[.!?]$/) && (index === allWords.length - 1 || allWords[index + 1]?.word.match(/^[A-Z]/)))
       ) {
         paragraphs.push({
-          text: currentParagraph.map(w => w.word).join(' '),
+          text: currentParagraph.map(w => formatChineseText(w.word)).join(currentParagraph.some(w => isChinese(w.word)) ? '' : ' '),
           words: [...currentParagraph],
           startTime: currentParagraph[0]?.startTime || 0,
           endTime: currentParagraph[currentParagraph.length - 1]?.endTime || 0
@@ -1308,7 +1336,7 @@ const TranscriptionPage: React.FC = () => {
     // Add any remaining words as the last paragraph
     if (currentParagraph.length > 0) {
       paragraphs.push({
-        text: currentParagraph.map(w => w.word).join(' '),
+        text: currentParagraph.map(w => formatChineseText(w.word)).join(currentParagraph.some(w => isChinese(w.word)) ? '' : ' '),
         words: [...currentParagraph],
         startTime: currentParagraph[0]?.startTime || 0,
         endTime: currentParagraph[currentParagraph.length - 1]?.endTime || 0
@@ -1850,7 +1878,7 @@ const TranscriptionPage: React.FC = () => {
                                   }
                                 }}
                               >
-                                {word.word}{' '}
+                                {formatChineseText(word.word)}{isChinese(word.word) ? '' : ' '}
                               </span>
                             );
                           })}

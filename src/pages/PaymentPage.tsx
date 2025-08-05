@@ -383,7 +383,7 @@ const PaymentPage: React.FC = () => {
               <FiCheck className="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
             
-            <h2 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h2 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
               {t('payment.success_title') || 'Payment Successful!'}
             </h2>
             
@@ -407,14 +407,14 @@ const PaymentPage: React.FC = () => {
           {/* Back button */}
           <button
             onClick={() => navigate(-1)}
-            className={`flex items-center text-sm font-medium mb-6 ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+            className={`flex items-center text-sm font-medium mb-6 ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'}`}
           >
             <FiArrowLeft className="mr-2" />
             {t('payment.back') || 'Back'}
           </button>
           
           {/* Page title */}
-          <h1 className={`text-2xl font-bold mb-8 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+          <h1 className={`text-2xl font-bold mb-8 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
             {t('payment.checkout') || 'Checkout'}
           </h1>
           
@@ -424,7 +424,7 @@ const PaymentPage: React.FC = () => {
               <div className={`rounded-xl p-6 ${
                 darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
               } shadow-sm`}>
-                <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                   {t('payment.method_title') || 'Payment Method'}
                 </h2>
                 

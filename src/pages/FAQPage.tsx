@@ -8,7 +8,7 @@ const FAQPage: React.FC = () => {
   const { darkMode } = useTheme();
   
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-black text-white' : 'bg-white text-gray-900'}`}>
+    <div className={`min-h-screen ${darkMode ? 'bg-black text-white' : 'bg-white text-gray-800'}`}>
       {/* Add HomeNavbar */}
       <HomeNavbar />
       
@@ -41,7 +41,7 @@ const FAQPage: React.FC = () => {
                     <FiHelpCircle className="h-10 w-10 text-purple-400" />
                   </div>
                 </div>
-                <h1 className={`text-4xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4`}>Frequently Asked Questions</h1>
+                <h1 className={`text-4xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'} mb-4`}>Frequently Asked Questions</h1>
                 <p className={`mt-4 text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-2xl mx-auto`}>
                   Find answers to common questions about MatrixAI's services, features, and capabilities.
                 </p>
@@ -80,7 +80,7 @@ const FAQPage: React.FC = () => {
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                       className={`backdrop-blur-md ${darkMode ? 'bg-black/30 border-gray-700 hover:shadow-purple-900/20 hover:border-purple-700/50' : 'bg-white/70 border-gray-200 hover:shadow-purple-500/20 hover:border-purple-300'} rounded-lg p-6 shadow-lg transition-all duration-300`}
                     >
-                      <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{faq.question}</h3>
+                      <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{faq.question}</h3>
                       <p className={`mt-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{faq.answer}</p>
                     </motion.div>
                   ))}
@@ -118,7 +118,7 @@ const FAQPage: React.FC = () => {
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                       className={`backdrop-blur-md ${darkMode ? 'bg-black/30 border-gray-700 hover:shadow-purple-900/20 hover:border-purple-700/50' : 'bg-white/70 border-gray-200 hover:shadow-purple-500/20 hover:border-purple-300'} rounded-lg p-6 shadow-lg transition-all duration-300`}
                     >
-                      <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{faq.question}</h3>
+                      <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{faq.question}</h3>
                       <p className={`mt-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{faq.answer}</p>
                     </motion.div>
                   ))}
@@ -157,7 +157,7 @@ const FAQPage: React.FC = () => {
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                       className={`backdrop-blur-md ${darkMode ? 'bg-black/30 border-gray-700 hover:shadow-purple-900/20 hover:border-purple-700/50' : 'bg-white/70 border-gray-200 hover:shadow-purple-500/20 hover:border-purple-300'} rounded-lg p-6 shadow-lg transition-all duration-300`}
                     >
-                      <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{faq.question}</h3>
+                      <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{faq.question}</h3>
                       <p className={`mt-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{faq.answer}</p>
                     </motion.div>
                   ))}

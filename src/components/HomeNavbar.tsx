@@ -32,7 +32,7 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2">
                 <img src={matrixLogo} alt="Matrix AI" className="w-16 h-16 object-contain -my-2" />
-                <span className={`font-bold text-xl ${
+                <span className={`font-bold text-xl hidden sm:block ${
                   darkMode ? 'text-white' : 'text-gray-900'
                 }`}>matrixai<span className="text-red-500">.</span>asia</span>
               </Link>

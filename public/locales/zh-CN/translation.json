@@ -143,7 +143,11 @@
     "uploadedImage": "上传图像",
     "viewAllHistory": "查看所有历史",
     "roleChangeMessage": "你好！\n我现在是您的{{rolename}}。 \n{{roledescription}}我今天如何为您提供帮助？",
-    "yesterday": "昨天"
+    "yesterday": "昨天",
+    "emptyState": {
+      "title": "开始新对话",
+      "description": "问我任何问题！我在这里帮助您解答问题和完成任务。"
+    }
   },
   "chooseFromProfessionalTemplates": "从专业模板中选择",
   "chooseTemplateOrCreateOwn": "选择模板或创建自己的",

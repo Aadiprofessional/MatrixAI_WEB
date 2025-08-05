@@ -172,7 +172,11 @@
     "shareMessage": "Share message",
     "placeholder": "Type your message here...",
     "uploadFile": "Upload file",
-    "sendMessage": "Send message"
+    "sendMessage": "Send message",
+    "emptyState": {
+      "title": "Start a new conversation",
+      "description": "Ask me anything! I'm here to help with your questions and tasks."
+    }
   },
   "featureSection": {
     "title": "Featured AI Tools",

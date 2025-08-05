@@ -274,18 +274,7 @@ const ModelsShowcaseSection: React.FC = () => {
         bgStyle={sectionBgStyle}
       />
       
-      <FeatureSection 
-        title={t('modelsShowcase.featureSections.speechToText.title', 'Convert Speech to Accurate Text')}
-        subtitle={t('modelsShowcase.featureSections.speechToText.subtitle', 'SPEECH TO TEXT & CONTENT WRITING')}
-        modelName={t('modelsShowcase.featureSections.speechToText.modelName', 'SPEECH TO TEXT & CONTENT WRITING')}
-        description={t('modelsShowcase.featureSections.speechToText.description', 'Our advanced speech recognition technology converts audio recordings into precise text transcriptions with high accuracy. Perfect for meetings, interviews, content creation, and accessibility. Combine with our content generation to transform your spoken ideas into polished written content instantly.')}
-        imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
-        imageAlt="Speech to Text demonstration"
-        videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
-        hasPlayButton={true}
-        hasSpeakerButton={true}
-        bgStyle={sectionBgStyle}
-      />
+
       
       <FeatureSection 
         title={t('modelsShowcase.featureSections.aiChat.title', 'Experience Lightning-Fast AI Chat')}
@@ -295,7 +284,7 @@ const ModelsShowcaseSection: React.FC = () => {
         imageSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/images/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8_0a6fb8f0-d1b0-4328-a715-f0915691ef07.png"
         imageAlt="AI Chat demonstration"
         videoSrc="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/videos/video_1752772565812.mp4"
-        isReversed={true}
+        isReversed={false}
         hasPlayButton={true}
         hasSpeakerButton={true}
         bgStyle={sectionBgStyle}
