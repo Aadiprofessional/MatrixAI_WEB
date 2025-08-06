@@ -1,2003 +1,235 @@
 {
-
+  "sheet1": {
+    "active": {
+      "en": "active",
+      "zh-CN": "有效",
+      "zh-TW": "有效"
+    },
+    "content writer": {
+      "en": "content writer",
+      "zh-CN": "内容创作器",
+      "zh-TW": "內容創作器"
+    }
+  },
   "sheet10": {
-    "Convert audio to text with high accuracy. Ideal for transcribing meetings, interviews, and other audio recordings.": {
-      "en": "Convert audio to text with high accuracy. Ideal for transcribing meetings, interviews, and other audio recordings.",
-      "zh-CN": "高精度地将音频转换为文本。非常适合转录会议、采访和其他音频记录。",
-      "zh-TW": "高精度地將音頻轉換為文本。非常適合轉錄會議、採訪和其他音頻記錄。"
+    "5 articles found": {
+      "en": "5 articles found",
+      "zh-CN": "找到 5 篇文章",
+      "zh-TW": "找到 5 篇文章"
     }
   },
   "sheet11": {
-    "Why wait weeks? Create with AI in minutes, not days Matrix AI is the best platform for all your needs": {
-      "en": "Why wait weeks? Create with AI in minutes, not days Matrix AI is the best platform for all your needs",
-      "zh-CN": "何必等上几周？几分钟内即可使用 AI 进行创作，无需几天时间。MatrixAI 是满足您所有需求的最佳平台。",
-      "zh-TW": "何必等上幾周？幾分鐘內即可使用 AI 進行創作，無需幾天時間。MatrixAI 是滿足您所有需求的最佳平臺。"
-    },
-    "Experience the difference between instant AI-powered creativity and old-school production headaches across all your creative needs.": {
-      "en": "Experience the difference between instant AI-powered creativity and old-school production headaches across all your creative needs.",
-      "zh-CN": "体验即时人工智能创意与传统制作难题之间的区别，满足您的所有创意需求。",
-      "zh-TW": "體驗即時人工智能創意與傳統製作難題之間的區別，滿足您的所有創意需求。"
+    "Sales": {
+      "en": "Sales",
+      "zh-CN": "销售咨询",
+      "zh-TW": "銷售諮詢"
     }
   },
   "sheet12": {
-    "Convert audio files to accurate text transcriptions.": {
-      "en": "Convert audio files to accurate text transcriptions.",
-      "zh-CN": "利用人工智能将想法转化为引人入胜的视频",
-      "zh-TW": "利用人工智能將想法轉化為引人入勝的視頻"
+    "Visit us at one of our global offices": {
+      "en": "Visit us at one of our global offices",
+      "zh-CN": "前往我们的任一全球办事处",
+      "zh-TW": "前往我們的任一全球辦事處"
     }
   },
-
-  "sheet14": {
-    "English": {
-      "en": "English",
-      "zh-CN": "Chinese Simplified",
-      "zh-TW": "Chinese Traditinal"
-    },
-    "features": {
-      "en": "features",
-      "zh-CN": "功能",
-      "zh-TW": "功能"
-    },
-    "career": {
-      "en": "career",
-      "zh-CN": "就业机会",
-      "zh-TW": "就業機會"
-    },
-    "contact": {
-      "en": "contact",
-      "zh-CN": "联系",
-      "zh-TW": "聯繫"
-    }
-  },
-
- 
-  "sheet3": {
-    "Join the AI Revolution": {
-      "en": "Join the AI Revolution",
-      "zh-CN": "加入人工智能革命",
-      "zh-TW": "加入人工智能革命"
-    },
-    "Help us build the future of artificial intelligence. Work with cutting-edge technology and brilliant minds to create AI that makes a difference.": {
-      "en": "Help us build the future of artificial intelligence. Work with cutting-edge technology and brilliant minds to create AI that makes a difference.",
-      "zh-CN": "与我们携手共创人工智能的未来。携手尖端科技与杰出人才，共同创造意义非凡的人工智能。",
-      "zh-TW": "與我們攜手共創人工智能的未來。攜手尖端科技與傑出人才，共同創造意義非凡的人工智能。"
-    },
-    "View open positions": {
-      "en": "View open positions",
-      "zh-CN": "查看空缺职位",
-      "zh-TW": "查看空缺職位"
-    },
-    "Learn about culture": {
-      "en": "Learn about culture",
-      "zh-CN": "了解文化",
-      "zh-TW": "瞭解文化"
-    },
-    "Team Members": {
-      "en": "Team Members",
-      "zh-CN": "团队成员",
-      "zh-TW": "團隊成員"
-    },
-    "Countries": {
-      "en": "Countries",
-      "zh-CN": "国家",
-      "zh-TW": "國家"
-    },
-    "AI Interactions": {
-      "en": "AI Interactions",
-      "zh-CN": "人工智能交互",
-      "zh-TW": "人工智能交互"
-    },
-    "Series A Funding": {
-      "en": "Series A Funding",
-      "zh-CN": "A轮融资",
-      "zh-TW": "A輪融資"
-    },
-    "Why Work With Us?": {
-      "en": "Why Work With Us?",
-      "zh-CN": "为什么与我们合作？",
-      "zh-TW": "為什麼與我們合作？"
-    },
-    "We offer competitive benefits and a culture that values innovation, growth, and work-life balance.": {
-      "en": "We offer competitive benefits and a culture that values innovation, growth, and work-life balance.",
-      "zh-CN": "我们提供有竞争力的福利和重视创新、成长和工作与生活平衡的文化。",
-      "zh-TW": "我們提供有競爭力的福利和重視創新、成長和工作與生活平衡的文化。"
-    },
-    "Health & Wellness": {
-      "en": "Health & Wellness",
-      "zh-CN": "健康与保健",
-      "zh-TW": "健康與保健"
-    },
-    "Comprehensive health, dental, and vision insurance": {
-      "en": "Comprehensive health, dental, and vision insurance",
-      "zh-CN": "综合健康、牙科和视力保险",
-      "zh-TW": "綜合健康、牙科和視力保險"
-    },
-    "Flexible Work": {
-      "en": "Flexible Work",
-      "zh-CN": "弹性工作",
-      "zh-TW": "彈性工作"
-    },
-    "Remote-first culture with flexible hours": {
-      "en": "Remote-first culture with flexible hours",
-      "zh-CN": "远程优先文化和灵活的工作时间",
-      "zh-TW": "遠程優先文化和靈活的工作時間"
-    },
-    "Learning Budget": {
-      "en": "Learning Budget",
-      "zh-CN": "学习预算",
-      "zh-TW": "學習預算"
-    },
-    "$3,000 annual budget for courses and conferences": {
-      "en": "$3,000 annual budget for courses and conferences",
-      "zh-CN": "每年 3,000 美元的课程和会议预算",
-      "zh-TW": "每年 3,000 美元的課程和會議預算"
-    },
-    "Equity Package": {
-      "en": "Equity Package",
-      "zh-CN": "股权方案",
-      "zh-TW": "股權方案"
-    },
-    "Competitive equity in a fast-growing company": {
-      "en": "Competitive equity in a fast-growing company",
-      "zh-CN": "快速发展的公司中的竞争股权",
-      "zh-TW": "快速發展的公司中的競爭股權"
-    },
-    "Team Events": {
-      "en": "Team Events",
-      "zh-CN": "团队活动",
-      "zh-TW": "團隊活動"
-    },
-    "Regular team building and company retreats": {
-      "en": "Regular team building and company retreats",
-      "zh-CN": "定期团队建设和公司休假",
-      "zh-TW": "定期團隊建設和公司休假"
-    },
-    "Latest Tech": {
-      "en": "Latest Tech",
-      "zh-CN": "最新科技",
-      "zh-TW": "最新科技"
-    },
-    "Top-tier equipment and tools for your work": {
-      "en": "Top-tier equipment and tools for your work",
-      "zh-CN": "适合您工作的顶级设备和工具",
-      "zh-TW": "適合您工作的頂級設備和工具"
-    },
-    "Open Positions": {
-      "en": "Open Positions",
-      "zh-CN": "空缺职位",
-      "zh-TW": "空缺職位"
-    },
-    "Find your next career opportunity with us": {
-      "en": "Find your next career opportunity with us",
-      "zh-CN": "与我们一起寻找您的下一个职业机会",
-      "zh-TW": "與我們一起尋找您的下一個職業機會"
-    },
-    "Don't See the Right Role?": {
-      "en": "Don't See the Right Role?",
-      "zh-CN": "没有看到正确的角色？",
-      "zh-TW": "沒有看到正確的角色？"
-    },
-    "We're always looking for talented people. Send us your resume and let's talk!": {
-      "en": "We're always looking for talented people. Send us your resume and let's talk!",
-      "zh-CN": "我们一直在寻找优秀人才。请发送您的简历，让我们与您洽谈！",
-      "zh-TW": "我們一直在尋找優秀人才。請發送您的簡歷，讓我們與您洽談！"
-    },
-    "Send Resume": {
-      "en": "Send Resume",
-      "zh-CN": "发送简历",
-      "zh-TW": "發送簡歷"
-    },
-    "Ask Questions": {
-      "en": "Ask Questions",
-      "zh-CN": "提出问题",
-      "zh-TW": "提出問題"
-    }
-  },
-  "sheet4": {
-    "Privacy Policy": {
-      "en": "Privacy Policy",
-      "zh-CN": "隐私政策",
-      "zh-TW": "隱私政策"
-    },
-    "Your privacy is important to us. This policy explains how we collect, use, and protect your personal information when you use MatrixAI.": {
-      "en": "Your privacy is important to us. This policy explains how we collect, use, and protect your personal information when you use MatrixAI.",
-      "zh-CN": "我们重视您的隐私。本政策解释了您在使用 MatrixAI 时，我们如何收集、使用和保护您的个人信息。",
-      "zh-TW": "我們重視您的隱私。本政策解釋了您在使用 MatrixAI 時，我們如何收集、使用和保護您的個人信息。"
-    },
-    "Last updated": {
-      "en": "Last updated",
-      "zh-CN": "最后更新",
-      "zh-TW": "最後更新"
-    },
-    "Effective date": {
-      "en": "Effective date",
-      "zh-CN": "生效日期",
-      "zh-TW": "生效日期"
-    },
-    "Table of Contents": {
-      "en": "Table of Contents",
-      "zh-CN": "目录",
-      "zh-TW": "目錄"
-    },
-    "Information We Collect": {
-      "en": "Information We Collect",
-      "zh-CN": "我们收集的信息",
-      "zh-TW": "我們收集的信息"
-    },
-    "How We Use Your Information": {
-      "en": "How We Use Your Information",
-      "zh-CN": "我们如何使用您的信息",
-      "zh-TW": "我們如何使用您的信息"
-    },
-    "Information Sharing and Disclosure": {
-      "en": "Information Sharing and Disclosure",
-      "zh-CN": "信息共享与披露",
-      "zh-TW": "信息共享與披露"
-    },
-    "Data Security": {
-      "en": "Data Security",
-      "zh-CN": "数据安全",
-      "zh-TW": "數據安全"
-    },
-    "Your Rights and Choices": {
-      "en": "Your Rights and Choices",
-      "zh-CN": "您的权利和选择",
-      "zh-TW": "您的權利和選擇"
-    },
-    "Cookies and Tracking Technologies": {
-      "en": "Cookies and Tracking Technologies",
-      "zh-CN": "Cookie 和追踪技术",
-      "zh-TW": "Cookie 和追蹤技術"
-    },
-    "International Data Transfers": {
-      "en": "International Data Transfers",
-      "zh-CN": "国际数据传输",
-      "zh-TW": "國際數據傳輸"
-    },
-    "Children's Privacy": {
-      "en": "Children's Privacy",
-      "zh-CN": "儿童隐私",
-      "zh-TW": "兒童隱私"
-    },
-    "Changes to This Privacy Policy": {
-      "en": "Changes to This Privacy Policy",
-      "zh-CN": "本隐私政策的变更",
-      "zh-TW": "本隱私政策的變更"
-    },
-    "We collect information you provide directly to us, such as when you create an account, use our services, or contact us. This includes:": {
-      "en": "We collect information you provide directly to us, such as when you create an account, use our services, or contact us. This includes:",
-      "zh-CN": "我们收集您直接提供给我们的信息，例如您创建帐户、使用我们的服务或联系我们时提供的信息。这些信息包括：",
-      "zh-TW": "我們收集您直接提供給我們的信息，例如您創建帳戶、使用我們的服務或聯繫我們時提供的信息。這些信息包括："
-    },
-    "• Personal information (name, email address, phone number)": {
-      "en": "• Personal information (name, email address, phone number)",
-      "zh-CN": "• 个人信息（姓名、电子邮件地址、电话号码）",
-      "zh-TW": "• 個人信息（姓名、電子郵件地址、電話號碼）"
-    },
-    "• Account credentials and preferences": {
-      "en": "• Account credentials and preferences",
-      "zh-CN": "• 帐户凭证和偏好设置",
-      "zh-TW": "• 帳戶憑證和偏好設置"
-    },
-    "• Content you create or upload using our AI tools": {
-      "en": "• Content you create or upload using our AI tools",
-      "zh-CN": "• 您使用我们的 AI 工具创建或上传的内容",
-      "zh-TW": "• 您使用我們的 AI 工具創建或上傳的內容"
-    },
-    "• Payment information (processed securely through third-party providers)": {
-      "en": "• Payment information (processed securely through third-party providers)",
-      "zh-CN": "• 付款信息（通过第三方提供商安全处理）",
-      "zh-TW": "• 付款信息（通過第三方提供商安全處理）"
-    },
-    "• Communication history with our support team": {
-      "en": "• Communication history with our support team",
-      "zh-CN": "• 与我们的支持团队的沟通历史",
-      "zh-TW": "• 與我們的支持團隊的溝通歷史"
-    },
-    "We also automatically collect certain information about your device and usage patterns, including:": {
-      "en": "We also automatically collect certain information about your device and usage patterns, including:",
-      "zh-CN": "我们还会自动收集有关您的设备和使用模式的某些信息，包括：",
-      "zh-TW": "我們還會自動收集有關您的設備和使用模式的某些信息，包括："
-    },
-    "• Device information (IP address, browser type, operating system)": {
-      "en": "• Device information (IP address, browser type, operating system)",
-      "zh-CN": "• 设备信息（IP 地址、浏览器类型、操作系统）",
-      "zh-TW": "• 設備信息（IP 地址、瀏覽器類型、操作系統）"
-    },
-    "• Usage data (features used, time spent, interaction patterns)": {
-      "en": "• Usage data (features used, time spent, interaction patterns)",
-      "zh-CN": "• 使用数据（使用的功能、花费的时间、交互模式）",
-      "zh-TW": "• 使用數據（使用的功能、花費的時間、交互模式）"
-    },
-    "• Performance data to improve our AI models": {
-      "en": "• Performance data to improve our AI models",
-      "zh-CN": "• 性能数据用于改进我们的 AI 模型",
-      "zh-TW": "• 性能數據用於改進我們的 AI 模型"
-    },
-    "• Cookies and similar tracking technologies": {
-      "en": "• Cookies and similar tracking technologies",
-      "zh-CN": "• Cookie 和类似的追踪技术",
-      "zh-TW": "• Cookie 和類似的追蹤技術"
-    },
-    "We use the information we collect to:": {
-      "en": "We use the information we collect to:",
-      "zh-CN": "我们将使用收集到的信息来：",
-      "zh-TW": "我們將使用收集到的信息來："
-    },
-    "• Provide, maintain, and improve our AI services": {
-      "en": "• Provide, maintain, and improve our AI services",
-      "zh-CN": "• 提供、维护和改进我们的人工智能服务",
-      "zh-TW": "• 提供、維護和改進我們的人工智能服務"
-    },
-    "• Process transactions and send related information": {
-      "en": "• Process transactions and send related information",
-      "zh-CN": "• 处理交易并发送相关信息",
-      "zh-TW": "• 處理交易並發送相關信息"
-    },
-    "• Personalize your experience and provide relevant content": {
-      "en": "• Personalize your experience and provide relevant content",
-      "zh-CN": "• 个性化您的体验并提供相关内容",
-      "zh-TW": "• 個性化您的體驗並提供相關內容"
-    },
-    "• Train and improve our AI models (with appropriate safeguards)": {
-      "en": "• Train and improve our AI models (with appropriate safeguards)",
-      "zh-CN": "• 训练和改进我们的人工智能模型（采取适当的保护措施）",
-      "zh-TW": "• 訓練和改進我們的人工智能模型（採取適當的保護措施）"
-    },
-    "• Communicate with you about our services, updates, and offers": {
-      "en": "• Communicate with you about our services, updates, and offers",
-      "zh-CN": "• 与您沟通我们的服务、更新和优惠",
-      "zh-TW": "• 與您溝通我們的服務、更新和優惠"
-    },
-    "• Detect, prevent, and address technical issues and security threats": {
-      "en": "• Detect, prevent, and address technical issues and security threats",
-      "zh-CN": "• 检测、预防和解决技术问题和安全威胁",
-      "zh-TW": "• 檢測、預防和解決技術問題和安全威脅"
-    },
-    "• Comply with legal obligations and protect our rights": {
-      "en": "• Comply with legal obligations and protect our rights",
-      "zh-CN": "• 遵守法律义务并保护我们的权利",
-      "zh-TW": "• 遵守法律義務並保護我們的權利"
-    },
-    "We use your data to make our AI more helpful while respecting your privacy. Content you create is used to improve our models only in aggregated, anonymized ways unless you explicitly opt-in to additional data usage.": {
-      "en": "We use your data to make our AI more helpful while respecting your privacy. Content you create is used to improve our models only in aggregated, anonymized ways unless you explicitly opt-in to additional data usage.",
-      "zh-CN": "我们使用您的数据是为了让我们的 AI 更加实用，同时尊重您的隐私。除非您明确选择允许使用更多数据，否则我们仅会以汇总且匿名的方式使用您创建的内容来改进我们的模型。",
-      "zh-TW": "我們使用您的數據是為了讓我們的 AI 更加實用，同時尊重您的隱私。除非您明確選擇允許使用更多數據，否則我們僅會以匯總且匿名的方式使用您創建的內容來改進我們的模型。"
-    },
-    "We do not sell, trade, or otherwise transfer your personal information to third parties except in the following circumstances:": {
-      "en": "We do not sell, trade, or otherwise transfer your personal information to third parties except in the following circumstances:",
-      "zh-CN": "除以下情况外，我们不会出售、交易或以其他方式转让您的个人信息给第三方：",
-      "zh-TW": "除以下情況外，我們不會出售、交易或以其他方式轉讓您的個人信息給第三方："
-    },
-    "• Service Providers: We may share information with trusted third-party service providers who help us operate our platform (cloud hosting, payment processing, analytics)": {
-      "en": "• Service Providers: We may share information with trusted third-party service providers who help us operate our platform (cloud hosting, payment processing, analytics)",
-      "zh-CN": "• 服务提供商：我们可能会与帮助我们运营平台（云托管、支付处理、分析）的可信第三方服务提供商共享信息",
-      "zh-TW": "• 服務提供商：我們可能會與幫助我們運營平臺（雲託管、支付處理、分析）的可信第三方服務提供商共享信息"
-    },
-    "• Legal Requirements: We may disclose information if required by law, court order, or government request": {
-      "en": "• Legal Requirements: We may disclose information if required by law, court order, or government request",
-      "zh-CN": "• 法律要求：如果法律、法院命令或政府要求，我们可能会披露信息",
-      "zh-TW": "• 法律要求：如果法律、法院命令或政府要求，我們可能會披露信息"
-    },
-    "• Business Transfers: Information may be transferred as part of a merger, acquisition, or sale of assets": {
-      "en": "• Business Transfers: Information may be transferred as part of a merger, acquisition, or sale of assets",
-      "zh-CN": "• 业务转移：信息可能会作为合并、收购或资产出售的一部分进行转移",
-      "zh-TW": "• 業務轉移：信息可能會作為合併、收購或資產出售的一部分進行轉移"
-    },
-    "• Protection of Rights: We may share information to protect our rights, property, or safety, or that of our users": {
-      "en": "• Protection of Rights: We may share information to protect our rights, property, or safety, or that of our users",
-      "zh-CN": "• 权利保护：我们可能会共享信息以保护我们或我们用户的权利、财产或安全",
-      "zh-TW": "• 權利保護：我們可能會共享信息以保護我們或我們用戶的權利、財產或安全"
-    },
-    "• Consent: We may share information with your explicit consent": {
-      "en": "• Consent: We may share information with your explicit consent",
-      "zh-CN": "• 同意：我们可能会在您明确同意的情况下共享信息",
-      "zh-TW": "• 同意：我們可能會在您明確同意的情況下共享信息"
-    },
-    "All third-party service providers are bound by confidentiality agreements and are prohibited from using your information for any other purpose.": {
-      "en": "All third-party service providers are bound by confidentiality agreements and are prohibited from using your information for any other purpose.",
-      "zh-CN": "所有第三方服务提供商均受保密协议的约束，禁止将您的信息用于任何其他目的。",
-      "zh-TW": "所有第三方服務提供商均受保密協議的約束，禁止將您的信息用於任何其他目的。"
-    },
-    "We implement appropriate technical and organizational security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction:": {
-      "en": "We implement appropriate technical and organizational security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction:",
-      "zh-CN": "我们实施适当的技术和组织安全措施，以保护您的个人信息免遭未经授权的访问、更改、披露或破坏：",
-      "zh-TW": "我們實施適當的技術和組織安全措施，以保護您的個人信息免遭未經授權的訪問、更改、披露或破壞："
-    },
-    "• Encryption in transit and at rest using industry-standard protocols": {
-      "en": "• Encryption in transit and at rest using industry-standard protocols",
-      "zh-CN": "• 使用行业标准协议进行传输中和静态加密",
-      "zh-TW": "• 使用行業標準協議進行傳輸中和靜態加密"
-    },
-    "• Regular security audits and penetration testing": {
-      "en": "• Regular security audits and penetration testing",
-      "zh-CN": "• 定期安全审计和渗透测试",
-      "zh-TW": "• 定期安全審計和滲透測試"
-    },
-    "• Access controls and authentication requirements for our staff": {
-      "en": "• Access controls and authentication requirements for our staff",
-      "zh-CN": "• 对我们员工的访问控制和身份验证要求",
-      "zh-TW": "• 對我們員工的訪問控制和身份驗證要求"
-    },
-    "• Secure data centers with physical and environmental protections": {
-      "en": "• Secure data centers with physical and environmental protections",
-      "zh-CN": "• 通过物理和环境保护来保护数据中心",
-      "zh-TW": "• 通過物理和環境保護來保護數據中心"
-    },
-    "• Incident response procedures for potential security breaches": {
-      "en": "• Incident response procedures for potential security breaches",
-      "zh-CN": "• 潜在安全漏洞的事件响应程序",
-      "zh-TW": "• 潛在安全漏洞的事件響應程序"
-    },
-    "• Regular security training for our employees": {
-      "en": "• Regular security training for our employees",
-      "zh-CN": "• 定期为员工提供安全培训",
-      "zh-TW": "• 定期為員工提供安全培訓"
-    },
-    "While we strive to protect your information, no method of transmission over the internet or electronic storage is 100% secure. We cannot guarantee absolute security but are committed to protecting your data using industry best practices.": {
-      "en": "While we strive to protect your information, no method of transmission over the internet or electronic storage is 100% secure. We cannot guarantee absolute security but are committed to protecting your data using industry best practices.",
-      "zh-CN": "虽然我们努力保护您的信息，但没有任何一种互联网传输或电子存储方式是 100% 安全的。我们无法保证绝对安全，但致力于采用行业最佳实践来保护您的数据。",
-      "zh-TW": "雖然我們努力保護您的信息，但沒有任何一種互聯網傳輸或電子存儲方式是 100% 安全的。我們無法保證絕對安全，但致力於採用行業最佳實踐來保護您的數據。"
-    },
-    "You have several rights regarding your personal information:": {
-      "en": "You have several rights regarding your personal information:",
-      "zh-CN": "您对您的个人信息拥有多项权利：",
-      "zh-TW": "您對您的個人信息擁有多項權利："
-    },
-    "• Access: Request a copy of the personal information we hold about you": {
-      "en": "• Access: Request a copy of the personal information we hold about you",
-      "zh-CN": "• 访问：索取我们持有的您的个人信息副本",
-      "zh-TW": "• 訪問：索取我們持有的您的個人信息副本"
-    },
-    "• Correction: Request correction of inaccurate or incomplete information": {
-      "en": "• Correction: Request correction of inaccurate or incomplete information",
-      "zh-CN": "• 更正：请求更正不准确或不完整的信息",
-      "zh-TW": "• 更正：請求更正不準確或不完整的信息"
-    },
-    "• Deletion: Request deletion of your personal information (subject to certain exceptions)": {
-      "en": "• Deletion: Request deletion of your personal information (subject to certain exceptions)",
-      "zh-CN": "• 删除：请求删除您的个人信息（有某些例外情况）",
-      "zh-TW": "• 刪除：請求刪除您的個人信息（有某些例外情況）"
-    },
-    "• Portability: Request transfer of your data to another service provider": {
-      "en": "• Portability: Request transfer of your data to another service provider",
-      "zh-CN": "• 可移植性：请求将您的数据传输到另一个服务提供商",
-      "zh-TW": "• 可移植性：請求將您的數據傳輸到另一個服務提供商"
-    },
-    "• Restriction: Request limitation of processing of your personal information": {
-      "en": "• Restriction: Request limitation of processing of your personal information",
-      "zh-CN": "• 限制：请求限制处理您的个人信息",
-      "zh-TW": "• 限制：請求限制處理您的個人信息"
-    },
-    "• Objection: Object to processing of your personal information for certain purposes": {
-      "en": "• Objection: Object to processing of your personal information for certain purposes",
-      "zh-CN": "• 反对：反对为特定目的处理您的个人信息",
-      "zh-TW": "• 反對：反對為特定目的處理您的個人信息"
-    },
-    "• Withdraw Consent: Withdraw consent for data processing where consent is the legal basis": {
-      "en": "• Withdraw Consent: Withdraw consent for data processing where consent is the legal basis",
-      "zh-CN": "• 撤回同意：在同意是法律依据的情况下撤回数据处理的同意",
-      "zh-TW": "• 撤回同意：在同意是法律依據的情況下撤回數據處理的同意"
-    },
-    "To exercise these rights, please contact us at info@matrixaiglobal.com. We will respond to your request within 30 days.": {
-    "en": "To exercise these rights, please contact us at info@matrixaiglobal.com. We will respond to your request within 30 days.",
-    "zh-CN": "如需行使这些权利，请通过 info@matrixaiglobal.com 与我们联系。我们将在 30 天内回复您的请求。",
-    "zh-TW": "如需行使這些權利，請通過 info@matrixaiglobal.com 與我們聯繫。我們將在 30 天內回復您的請求。"
-  },
-    "We use cookies and similar tracking technologies to collect and store information about your interactions with our services:": {
-      "en": "We use cookies and similar tracking technologies to collect and store information about your interactions with our services:",
-      "zh-CN": "我们使用 Cookie 和类似的追踪技术来收集和存储有关您与我们服务互动的信息：",
-      "zh-TW": "我們使用 Cookie 和類似的追蹤技術來收集和存儲有關您與我們服務互動的信息："
-    },
-    "• Essential Cookies: Required for basic functionality and security": {
-      "en": "• Essential Cookies: Required for basic functionality and security",
-      "zh-CN": "• 基本 Cookie：基本功能和安全所需",
-      "zh-TW": "• 基本 Cookie：基本功能和安全所需"
-    },
-    "• Performance Cookies: Help us understand how you use our services": {
-      "en": "• Performance Cookies: Help us understand how you use our services",
-      "zh-CN": "• 性能 Cookie：帮助我们了解您如何使用我们的服务",
-      "zh-TW": "• 性能 Cookie：幫助我們瞭解您如何使用我們的服務"
-    },
-    "• Functionality Cookies: Remember your preferences and settings": {
-      "en": "• Functionality Cookies: Remember your preferences and settings",
-      "zh-CN": "• 功能性 Cookie：记住您的偏好和设置",
-      "zh-TW": "• 功能性 Cookie：記住您的偏好和設置"
-    },
-    "• Analytics Cookies: Provide insights into usage patterns and performance": {
-      "en": "• Analytics Cookies: Provide insights into usage patterns and performance",
-      "zh-CN": "• 分析 Cookie：提供对使用模式和性能的洞察",
-      "zh-TW": "• 分析 Cookie：提供對使用模式和性能的洞察"
-    },
-    "You can control cookies through your browser settings, but disabling certain cookies may affect the functionality of our services. We also use local storage and similar technologies to enhance your experience.": {
-      "en": "You can control cookies through your browser settings, but disabling certain cookies may affect the functionality of our services. We also use local storage and similar technologies to enhance your experience.",
-      "zh-CN": "您可以通过浏览器设置控制 Cookie，但禁用某些 Cookie 可能会影响我们服务的功能。我们还使用本地存储和类似技术来提升您的体验。",
-      "zh-TW": "您可以通過瀏覽器設置控制 Cookie，但禁用某些 Cookie 可能會影響我們服務的功能。我們還使用本地存儲和類似技術來提升您的體驗。"
-    },
-    "MatrixAI operates globally, and your information may be transferred to and processed in countries other than your own. When we transfer personal information internationally, we ensure appropriate safeguards are in place:": {
-      "en": "MatrixAI operates globally, and your information may be transferred to and processed in countries other than your own. When we transfer personal information internationally, we ensure appropriate safeguards are in place:",
-      "zh-CN": "MatrixAI 在全球范围内运营，您的信息可能会被传输到您所在国家/地区以外的国家/地区并在那里进行处理。当我们进行国际个人信息传输时，我们确保采取适当的保障措施：",
-      "zh-TW": "MatrixAI 在全球範圍內運營，您的信息可能會被傳輸到您所在國家/地區以外的國家/地區並在那裡進行處理。當我們進行國際個人信息傳輸時，我們確保採取適當的保障措施："
-    },
-    "• Standard Contractual Clauses approved by relevant authorities": {
-      "en": "• Standard Contractual Clauses approved by relevant authorities",
-      "zh-CN": "• 经相关部门批准的标准合同条款",
-      "zh-TW": "• 經相關部門批准的標準合同條款"
-    },
-    "• Adequacy decisions recognizing equivalent protection levels": {
-      "en": "• Adequacy decisions recognizing equivalent protection levels",
-      "zh-CN": "• 承认同等保护水平的充分性决定",
-      "zh-TW": "• 承認同等保護水平的充分性決定"
-    },
-    "• Binding corporate rules for intra-group transfers": {
-      "en": "• Binding corporate rules for intra-group transfers",
-      "zh-CN": "• 集团内部转移的约束性公司规则",
-      "zh-TW": "• 集團內部轉移的約束性公司規則"
-    },
-    "• Your explicit consent for specific transfers": {
-      "en": "• Your explicit consent for specific transfers",
-      "zh-CN": "• 您对特定转移的明确同意",
-      "zh-TW": "• 您對特定轉移的明確同意"
-    },
-    "We are committed to protecting your information regardless of where it is processed and ensure that international transfers comply with applicable data protection laws.": {
-      "en": "We are committed to protecting your information regardless of where it is processed and ensure that international transfers comply with applicable data protection laws.",
-      "zh-CN": "我们致力于保护您的信息，无论其在何处处理，并确保国际转移符合适用的数据保护法。",
-      "zh-TW": "我們致力於保護您的信息，無論其在何處處理，並確保國際轉移符合適用的數據保護法。"
-    },
-    "Our services are not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided us with personal information, please contact us immediately.": {
-      "en": "Our services are not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided us with personal information, please contact us immediately.",
-      "zh-CN": "我们的服务不适用于13岁以下的儿童。我们不会故意收集13岁以下儿童的个人信息。如果您是父母或监护人，并且认为您的孩子向我们提供了个人信息，请立即联系我们。",
-      "zh-TW": "我們的服務不適用於13歲以下的兒童。我們不會故意收集13歲以下兒童的個人信息。如果您是父母或監護人，並且認為您的孩子向我們提供了個人信息，請立即聯繫我們。"
-    },
-    "If we discover that we have collected personal information from a child under 13, we will take steps to delete such information promptly. For users between 13 and 18, we recommend parental guidance when using our services.": {
-      "en": "If we discover that we have collected personal information from a child under 13, we will take steps to delete such information promptly. For users between 13 and 18, we recommend parental guidance when using our services.",
-      "zh-CN": "如果我们发现收集了13岁以下儿童的个人信息，我们将采取措施及时删除此类信息。对于13至18岁的用户，我们建议他们在家长的指导下使用我们的服务。",
-      "zh-TW": "如果我們發現收集了13歲以下兒童的個人信息，我們將採取措施及時刪除此類信息。對於13至18歲的用戶，我們建議他們在家長的指導下使用我們的服務。"
-    },
-    "We may update this Privacy Policy from time to time to reflect changes in our practices or applicable laws. We will notify you of any material changes by:": {
-      "en": "We may update this Privacy Policy from time to time to reflect changes in our practices or applicable laws. We will notify you of any material changes by:",
-      "zh-CN": "我们可能会不时更新本隐私政策，以反映我们的做法或适用法律的变化。我们将通过以下方式通知您任何重大变更：",
-      "zh-TW": "我們可能會不時更新本隱私政策，以反映我們的做法或適用法律的變化。我們將通過以下方式通知您任何重大變更："
-    },
-    "• Posting the updated policy on our website": {
-      "en": "• Posting the updated policy on our website",
-      "zh-CN": "• 在我们的网站上发布更新后的政策",
-      "zh-TW": "• 在我們的網站上發佈更新後的政策"
-    },
-    "• Sending an email notification to registered users": {
-      "en": "• Sending an email notification to registered users",
-      "zh-CN": "• 向注册用户发送电子邮件通知",
-      "zh-TW": "• 向註冊用戶發送電子郵件通知"
-    },
-    "• Displaying a prominent notice on our platform": {
-      "en": "• Displaying a prominent notice on our platform",
-      "zh-CN": "• 在我们的平台上显示醒目的通知",
-      "zh-TW": "• 在我們的平臺上顯示醒目的通知"
-    },
-    "The updated policy will be effective when posted unless otherwise specified. We encourage you to review this policy periodically to stay informed about how we protect your information.": {
-      "en": "The updated policy will be effective when posted unless otherwise specified. We encourage you to review this policy periodically to stay informed about how we protect your information.",
-      "zh-CN": "除非另有说明，更新后的政策自发布之日起生效。我们建议您定期查看本政策，以了解我们如何保护您的信息。",
-      "zh-TW": "除非另有說明，更新後的政策自發佈之日起生效。我們建議您定期查看本政策，以瞭解我們如何保護您的信息。"
-    },
-    "Questions About Your Privacy?": {
-      "en": "Questions About Your Privacy?",
-      "zh-CN": "对您的隐私有疑问？",
-      "zh-TW": "對您的隱私有疑問？"
-    },
-    "If you have any questions about this Privacy Policy or how we handle your personal information, please don't hesitate to contact us.": {
-      "en": "If you have any questions about this Privacy Policy or how we handle your personal information, please don't hesitate to contact us.",
-      "zh-CN": "如果您对本隐私政策或我们如何处理您的个人信息有任何疑问，请随时与我们联系。",
-      "zh-TW": "如果您對本隱私政策或我們如何處理您的個人信息有任何疑問，請隨時與我們聯繫。"
-    },
-    "Email Us": {
-      "en": "Email Us",
-      "zh-CN": "给我们发电子邮件",
-      "zh-TW": "給我們發電子郵件"
-    },
-    "Contact Form": {
-      "en": "Contact Form",
-      "zh-CN": "联系表格",
-      "zh-TW": "聯繫表格"
-    }
-  },
-  "sheet5": {
-    "Terms of Service": {
-      "en": "Terms of Service",
-      "zh-CN": "服务条款",
-      "zh-TW": "服務條款"
-    },
-    "These terms govern your use of MatrixAI's services. Please read them carefully to understand your rights and responsibilities.": {
-      "en": "These terms govern your use of MatrixAI's services. Please read them carefully to understand your rights and responsibilities.",
-      "zh-CN": "本条款约束您对 MatrixAI 服务的使用。请仔细阅读，以了解您的权利和责任。",
-      "zh-TW": "本條款約束您對 MatrixAI 服務的使用。請仔細閱讀，以瞭解您的權利和責任。"
-    },
-    "Last updated": {
-      "en": "Last updated",
-      "zh-CN": "最后更新",
-      "zh-TW": "最後更新"
-    },
-    "Effective date": {
-      "en": "Effective date",
-      "zh-CN": "生效日期",
-      "zh-TW": "生效日期"
-    },
-    "Table of Contents": {
-      "en": "Table of Contents",
-      "zh-CN": "目录",
-      "zh-TW": "目錄"
-    },
-    "Acceptance of Terms": {
-      "en": "Acceptance of Terms",
-      "zh-CN": "接受条款",
-      "zh-TW": "接受條款"
-    },
-    "Description of Service": {
-      "en": "Description of Service",
-      "zh-CN": "服务描述",
-      "zh-TW": "服務描述"
-    },
-    "User Accounts and Registration": {
-      "en": "User Accounts and Registration",
-      "zh-CN": "用户帐户和注册",
-      "zh-TW": "用戶帳戶和註冊"
-    },
-    "Acceptable Use Policy": {
-      "en": "Acceptable Use Policy",
-      "zh-CN": "可接受使用政策",
-      "zh-TW": "可接受使用政策"
-    },
-    "Content and Intellectual Property": {
-      "en": "Content and Intellectual Property",
-      "zh-CN": "内容和知识产权",
-      "zh-TW": "內容和知識產權"
-    },
-    "Payment and Billing": {
-      "en": "Payment and Billing",
-      "zh-CN": "付款和账单",
-      "zh-TW": "付款和賬單"
-    },
-    "Privacy and Data Security": {
-      "en": "Privacy and Data Security",
-      "zh-CN": "隐私和数据安全",
-      "zh-TW": "隱私和數據安全"
-    },
-    "Disclaimers and Limitations": {
-      "en": "Disclaimers and Limitations",
-      "zh-CN": "免责声明和限制",
-      "zh-TW": "免責聲明和限制"
-    },
-    "Termination": {
-      "en": "Termination",
-      "zh-CN": "终止",
-      "zh-TW": "終止"
-    },
-    "Governing Law and Disputes": {
-      "en": "Governing Law and Disputes",
-      "zh-CN": "适用法律和争议",
-      "zh-TW": "適用法律和爭議"
-    },
-    "By accessing or using MatrixAI's services, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing our services.": {
-      "en": "By accessing or using MatrixAI's services, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing our services.",
-      "zh-CN": "通过访问或使用MatrixAI的服务，您同意受本服务条款以及所有适用法律法规的约束。如果您不同意本服务条款中的任何一项，您将被禁止使用或访问我们的服务。",
-      "zh-TW": "通過訪問或使用MatrixAI的服務，您同意受本服務條款以及所有適用法律法規的約束。如果您不同意本服務條款中的任何一項，您將被禁止使用或訪問我們的服務。"
-    },
-    "These terms constitute a legally binding agreement between you and MatrixAI. Your use of our services is also governed by our Privacy Policy, which is incorporated into these terms by reference.": {
-      "en": "These terms constitute a legally binding agreement between you and MatrixAI. Your use of our services is also governed by our Privacy Policy, which is incorporated into these terms by reference.",
-      "zh-CN": "这些条款构成您与 MatrixAI 之间具有法律约束力的协议。您对我们服务的使用也受我们的隐私政策管辖，该政策通过引用纳入本条款。",
-      "zh-TW": "這些條款構成您與 MatrixAI 之間具有法律約束力的協議。您對我們服務的使用也受我們的隱私政策管轄，該政策通過引用納入本條款。"
-    },
-    "We reserve the right to modify these terms at any time. Changes will be effective immediately upon posting. Your continued use of our services after any such changes constitutes your acceptance of the new terms.": {
-      "en": "We reserve the right to modify these terms at any time. Changes will be effective immediately upon posting. Your continued use of our services after any such changes constitutes your acceptance of the new terms.",
-      "zh-CN": "我们保留随时修改这些条款的权利。修改内容一经发布即刻生效。如果您在任何此类修改后继续使用我们的服务，则表示您接受新的条款。",
-      "zh-TW": "我們保留隨時修改這些條款的權利。修改內容一經發佈即刻生效。如果您在任何此類修改後繼續使用我們的服務，則表示您接受新的條款。"
-    },
-    "MatrixAI provides artificial intelligence-powered tools and services including but not limited to:": {
-      "en": "MatrixAI provides artificial intelligence-powered tools and services including but not limited to:",
-      "zh-CN": "MatrixAI 提供人工智能驱动的工具和服务，包括但不限于：",
-      "zh-TW": "MatrixAI 提供人工智能驅動的工具和服務，包括但不限於："
-    },
-    "• AI-powered chat and conversation interfaces": {
-      "en": "• AI-powered chat and conversation interfaces",
-      "zh-CN": "• 人工智能聊天和对话界面",
-      "zh-TW": "• 人工智能聊天和對話界面"
-    },
-    "• Image generation and editing tools": {
-      "en": "• Image generation and editing tools",
-      "zh-CN": "• 图像生成和编辑工具",
-      "zh-TW": "• 圖像生成和編輯工具"
-    },
-    "• Video creation and editing capabilities": {
-      "en": "• Video creation and editing capabilities",
-      "zh-CN": "• 视频创建和编辑功能",
-      "zh-TW": "• 視頻創建和編輯功能"
-    },
-    "• Content writing and text generation": {
-      "en": "• Content writing and text generation",
-      "zh-CN": "• 内容写作和文本生成",
-      "zh-TW": "• 內容寫作和文本生成"
-    },
-    "• Speech-to-text and text-to-speech services": {
-      "en": "• Speech-to-text and text-to-speech services",
-      "zh-CN": "• 语音转文本和文本转语音服务",
-      "zh-TW": "• 語音轉文本和文本轉語音服務"
-    },
-    "• Data analysis and visualization tools": {
-      "en": "• Data analysis and visualization tools",
-      "zh-CN": "• 数据分析和可视化工具",
-      "zh-TW": "• 數據分析和可視化工具"
-    },
-    "• API access for developers": {
-      "en": "• API access for developers",
-      "zh-CN": "• 为开发人员提供 API 访问",
-      "zh-TW": "• 為開發人員提供 API 訪問"
-    },
-    "Our services are provided \"as is\" and we reserve the right to modify, suspend, or discontinue any aspect of our services at any time without notice.": {
-      "en": "Our services are provided \"as is\" and we reserve the right to modify, suspend, or discontinue any aspect of our services at any time without notice.",
-      "zh-CN": "我们的服务按“原样”提供，我们保留随时修改、暂停或终止我们任何方面服务的权利，恕不另行通知。",
-      "zh-TW": "我們的服務按“原樣”提供，我們保留隨時修改、暫停或終止我們任何方面服務的權利，恕不另行通知。"
-    },
-    "To access certain features of our services, you must create an account. You agree to:": {
-      "en": "To access certain features of our services, you must create an account. You agree to:",
-      "zh-CN": "要访问我们服务的某些功能，您必须创建一个帐户。您同意：",
-      "zh-TW": "要訪問我們服務的某些功能，您必須創建一個帳戶。您同意："
-    },
-    "• Provide accurate, current, and complete information during registration": {
-      "en": "• Provide accurate, current, and complete information during registration",
-      "zh-CN": "• 在注册时提供准确、最新和完整的信息",
-      "zh-TW": "• 在註冊時提供準確、最新和完整的信息"
-    },
-    "• Maintain the security of your account credentials": {
-      "en": "• Maintain the security of your account credentials",
-      "zh-CN": "• 维护您的帐户凭证的安全",
-      "zh-TW": "• 維護您的帳戶憑證的安全"
-    },
-    "• Accept responsibility for all activities that occur under your account": {
-      "en": "• Accept responsibility for all activities that occur under your account",
-      "zh-CN": "• 对您帐户下发生的所有活动承担责任",
-      "zh-TW": "• 對您帳戶下發生的所有活動承擔責任"
-    },
-    "• Notify us immediately of any unauthorized use of your account": {
-      "en": "• Notify us immediately of any unauthorized use of your account",
-      "zh-CN": "• 如果您的帐户有任何未经授权的使用，请立即通知我们",
-      "zh-TW": "• 如果您的帳戶有任何未經授權的使用，請立即通知我們"
-    },
-    "• Not share your account with others or allow others to access your account": {
-      "en": "• Not share your account with others or allow others to access your account",
-      "zh-CN": "• 不要与他人共享您的帐户或允许他人访问您的帐户",
-      "zh-TW": "• 不要與他人共享您的帳戶或允許他人訪問您的帳戶"
-    },
-    "You must be at least 13 years old to create an account. If you are under 18, you must have parental consent to use our services.": {
-      "en": "You must be at least 13 years old to create an account. If you are under 18, you must have parental consent to use our services.",
-      "zh-CN": "您必须年满 13 岁才能创建帐户。如果您未满 18 岁，则必须获得父母同意才能使用我们的服务。",
-      "zh-TW": "您必須年滿 13 歲才能創建帳戶。如果您未滿 18 歲，則必須獲得父母同意才能使用我們的服務。"
-    },
-    "We reserve the right to suspend or terminate accounts that violate these terms or engage in prohibited activities.": {
-      "en": "We reserve the right to suspend or terminate accounts that violate these terms or engage in prohibited activities.",
-      "zh-CN": "我们保留暂停或终止违反这些条款或从事禁止活动的帐户的权利。",
-      "zh-TW": "我們保留暫停或終止違反這些條款或從事禁止活動的帳戶的權利。"
-    },
-    "You agree not to use our services for any unlawful or prohibited activities, including but not limited to:": {
-      "en": "You agree not to use our services for any unlawful or prohibited activities, including but not limited to:",
-      "zh-CN": "您同意不将我们的服务用于任何非法或禁止的活动，包括但不限于：",
-      "zh-TW": "您同意不將我們的服務用於任何非法或禁止的活動，包括但不限於："
-    },
-    "• Generating harmful, illegal, or offensive content": {
-      "en": "• Generating harmful, illegal, or offensive content",
-      "zh-CN": "• 生成有害、非法或冒犯性内容",
-      "zh-TW": "• 生成有害、非法或冒犯性內容"
-    },
-    "• Violating intellectual property rights": {
-      "en": "• Violating intellectual property rights",
-      "zh-CN": "• 侵犯知识产权",
-      "zh-TW": "• 侵犯知識產權"
-    },
-    "• Harassing, threatening, or intimidating others": {
-      "en": "• Harassing, threatening, or intimidating others",
-      "zh-CN": "• 骚扰、威胁或恐吓他人",
-      "zh-TW": "• 騷擾、威脅或恐嚇他人"
-    },
-    "• Distributing malware or conducting cyberattacks": {
-      "en": "• Distributing malware or conducting cyberattacks",
-      "zh-CN": "• 传播恶意软件或进行网络攻击",
-      "zh-TW": "• 傳播惡意軟件或進行網絡攻擊"
-    },
-    "• Attempting to reverse engineer our AI models": {
-      "en": "• Attempting to reverse engineer our AI models",
-      "zh-CN": "• 尝试对我们的人工智能模型进行逆向工程",
-      "zh-TW": "• 嘗試對我們的人工智能模型進行逆向工程"
-    },
-    "• Circumventing usage limits or security measures": {
-      "en": "• Circumventing usage limits or security measures",
-      "zh-CN": "• 规避使用限制或安全措施",
-      "zh-TW": "• 規避使用限制或安全措施"
-    },
-    "• Creating fake accounts or impersonating others": {
-      "en": "• Creating fake accounts or impersonating others",
-      "zh-CN": "• 创建虚假账户或冒充他人",
-      "zh-TW": "• 創建虛假賬戶或冒充他人"
-    },
-    "• Spamming or sending unsolicited communications": {
-      "en": "• Spamming or sending unsolicited communications",
-      "zh-CN": "• 发送垃圾邮件或未经请求的通信",
-      "zh-TW": "• 發送垃圾郵件或未經請求的通信"
-    },
-    "We reserve the right to monitor usage and take appropriate action against violations, including account suspension or termination.": {
-      "en": "We reserve the right to monitor usage and take appropriate action against violations, including account suspension or termination.",
-      "zh-CN": "我们保留监控使用情况并对违规行为采取适当行动的权利，包括暂停或终止帐户。",
-      "zh-TW": "我們保留監控使用情況並對違規行為採取適當行動的權利，包括暫停或終止帳戶。"
-    },
-    "Content Ownership:": {
-      "en": "Content Ownership:",
-      "zh-CN": "内容所有权：",
-      "zh-TW": "內容所有權："
-    },
-    "• You retain ownership of content you create using our services": {
-      "en": "• You retain ownership of content you create using our services",
-      "zh-CN": "• 您保留使用我们的服务所创建内容的所有权",
-      "zh-TW": "• 您保留使用我們的服務所創建內容的所有權"
-    },
-    "• We do not claim ownership of your generated content": {
-      "en": "• We do not claim ownership of your generated content",
-      "zh-CN": "• 我们不主张对您生成的内容的所有权",
-      "zh-TW": "• 我們不主張對您生成的內容的所有權"
-    },
-    "• You are responsible for ensuring your content complies with applicable laws": {
-      "en": "• You are responsible for ensuring your content complies with applicable laws",
-      "zh-CN": "• 您有责任确保您的内容符合适用法律",
-      "zh-TW": "• 您有責任確保您的內容符合適用法律"
-    },
-    "License to Us:": {
-      "en": "License to Us:",
-      "zh-CN": "授予我们的许可：",
-      "zh-TW": "授予我們的許可："
-    },
-    "• You grant us a limited license to process your content to provide our services": {
-      "en": "• You grant us a limited license to process your content to provide our services",
-      "zh-CN": "• 您授予我们有限的许可，以处理您的内容来提供我们的服务",
-      "zh-TW": "• 您授予我們有限的許可，以處理您的內容來提供我們的服務"
-    },
-    "• We may use aggregated, anonymized data to improve our AI models": {
-      "en": "• We may use aggregated, anonymized data to improve our AI models",
-      "zh-CN": "• 我们可能会使用汇总的匿名数据来改进我们的人工智能模型",
-      "zh-TW": "• 我們可能會使用匯總的匿名數據來改進我們的人工智能模型"
-    },
-    "• We will not use your content for marketing without your consent": {
-      "en": "• We will not use your content for marketing without your consent",
-      "zh-CN": "• 未经您的同意，我们不会将您的内容用于营销目的",
-      "zh-TW": "• 未經您的同意，我們不會將您的內容用於營銷目的"
-    },
-    "Our Intellectual Property:": {
-      "en": "Our Intellectual Property:",
-      "zh-CN": "我们的知识产权：",
-      "zh-TW": "我們的知識產權："
-    },
-    "• Our AI models, software, and services are protected by intellectual property laws": {
-      "en": "• Our AI models, software, and services are protected by intellectual property laws",
-      "zh-CN": "• 我们的人工智能模型、软件和服务受知识产权法保护",
-      "zh-TW": "• 我們的人工智能模型、軟件和服務受知識產權法保護"
-    },
-    "• You may not copy, modify, or distribute our proprietary technology": {
-      "en": "• You may not copy, modify, or distribute our proprietary technology",
-      "zh-CN": "• 您不得复制、修改或分发我们的专有技术",
-      "zh-TW": "• 您不得複製、修改或分發我們的專有技術"
-    },
-    "• Our trademarks and branding are protected and may not be used without permission": {
-      "en": "• Our trademarks and branding are protected and may not be used without permission",
-      "zh-CN": "• 我们的商标和品牌受到保护，未经许可不得使用",
-      "zh-TW": "• 我們的商標和品牌受到保護，未經許可不得使用"
-    },
-    "Subscription Plans:": {
-      "en": "Subscription Plans:",
-      "zh-CN": "订阅计划：",
-      "zh-TW": "訂閱計劃："
-    },
-    "• We offer various subscription plans with different features and usage limits": {
-      "en": "• We offer various subscription plans with different features and usage limits",
-      "zh-CN": "• 我们提供具有不同功能和使用限制的各种订阅计划",
-      "zh-TW": "• 我們提供具有不同功能和使用限制的各種訂閱計劃"
-    },
-    "• Subscription fees are billed in advance on a recurring basis": {
-      "en": "• Subscription fees are billed in advance on a recurring basis",
-      "zh-CN": "• 订阅费用将定期提前收取",
-      "zh-TW": "• 訂閱費用將定期提前收取"
-    },
-    "• All fees are non-refundable unless required by law": {
-      "en": "• All fees are non-refundable unless required by law",
-      "zh-CN": "• 除非法律要求，所有费用均不予退还",
-      "zh-TW": "• 除非法律要求，所有費用均不予退還"
-    },
-    "Payment Processing:": {
-      "en": "Payment Processing:",
-      "zh-CN": "付款处理：",
-      "zh-TW": "付款處理："
-    },
-    "• Payments are processed through secure third-party payment processors": {
-      "en": "• Payments are processed through secure third-party payment processors",
-      "zh-CN": "• 付款通过安全的第三方支付处理器进行处理",
-      "zh-TW": "• 付款通過安全的第三方支付處理器進行處理"
-    },
-    "• You must provide accurate payment information": {
-      "en": "• You must provide accurate payment information",
-      "zh-CN": "• 您必须提供准确的付款信息",
-      "zh-TW": "• 您必須提供準確的付款信息"
-    },
-    "• You authorize us to charge your payment method for applicable fees": {
-      "en": "• You authorize us to charge your payment method for applicable fees",
-      "zh-CN": "• 您授权我们通过您的付款方式收取适用费用",
-      "zh-TW": "• 您授權我們通過您的付款方式收取適用費用"
-    },
-    "Changes to Pricing:": {
-      "en": "Changes to Pricing:",
-      "zh-CN": "定价变更：",
-      "zh-TW": "定價變更："
-    },
-    "• We may change our pricing with 30 days' notice": {
-      "en": "• We may change our pricing with 30 days' notice",
-      "zh-CN": "• 我们可能会提前 30 天通知更改价格",
-      "zh-TW": "• 我們可能會提前 30 天通知更改價格"
-    },
-    "• Price changes will not affect your current billing cycle": {
-      "en": "• Price changes will not affect your current billing cycle",
-      "zh-CN": "• 价格变动不会影响您当前的计费周期",
-      "zh-TW": "• 價格變動不會影響您當前的計費週期"
-    },
-    "• You may cancel your subscription before price changes take effect": {
-      "en": "• You may cancel your subscription before price changes take effect",
-      "zh-CN": "• 您可以在价格变动生效之前取消订阅",
-      "zh-TW": "• 您可以在價格變動生效之前取消訂閱"
-    },
-    "Usage Limits:": {
-      "en": "Usage Limits:",
-      "zh-CN": "使用限制：",
-      "zh-TW": "使用限制："
-    },
-    "• Each plan has specific usage limits and features": {
-      "en": "• Each plan has specific usage limits and features",
-      "zh-CN": "• 每个计划都有特定的使用限制和功能",
-      "zh-TW": "• 每個計劃都有特定的使用限制和功能"
-    },
-    "• Exceeding limits may result in additional charges or service restrictions": {
-      "en": "• Exceeding limits may result in additional charges or service restrictions",
-      "zh-CN": "• 超出限制可能会导致额外费用或服务限制",
-      "zh-TW": "• 超出限制可能會導致額外費用或服務限制"
-    },
-    "• We will notify you when approaching usage limits": {
-      "en": "• We will notify you when approaching usage limits",
-      "zh-CN": "• 当接近使用限制时，我们会通知您",
-      "zh-TW": "• 當接近使用限制時，我們會通知您"
-    },
-    "Data Protection:": {
-      "en": "Data Protection:",
-      "zh-CN": "数据保护：",
-      "zh-TW": "數據保護："
-    },
-    "• We implement industry-standard security measures to protect your data": {
-      "en": "• We implement industry-standard security measures to protect your data",
-      "zh-CN": "• 我们实施行业标准的安全措施来保护您的数据",
-      "zh-TW": "• 我們實施行業標準的安全措施來保護您的數據"
-    },
-    "• Your personal information is handled according to our Privacy Policy": {
-      "en": "• Your personal information is handled according to our Privacy Policy",
-      "zh-CN": "• 您的个人信息将根据我们的隐私政策进行处理。",
-      "zh-TW": "• 您的個人信息將根據我們的隱私政策進行處理。"
-    },
-    "• We use encryption and secure protocols for data transmission and storage": {
-      "en": "• We use encryption and secure protocols for data transmission and storage",
-      "zh-CN": "• 我们使用加密和安全协议进行数据传输和存储",
-      "zh-TW": "• 我們使用加密和安全協議進行數據傳輸和存儲"
-    },
-    "Data Retention:": {
-      "en": "Data Retention:",
-      "zh-CN": "数据保留：",
-      "zh-TW": "數據保留："
-    },
-    "• We retain your data only as long as necessary to provide our services": {
-      "en": "• We retain your data only as long as necessary to provide our services",
-      "zh-CN": "• 我们仅在提供服务所需的时间内保留您的数据",
-      "zh-TW": "• 我們僅在提供服務所需的時間內保留您的數據"
-    },
-    "• You may request deletion of your data subject to legal requirements": {
-      "en": "• You may request deletion of your data subject to legal requirements",
-      "zh-CN": "• 您可以根据法律要求要求删除您的数据",
-      "zh-TW": "• 您可以根據法律要求要求刪除您的數據"
-    },
-    "• Some data may be retained for security and legal compliance purposes": {
-      "en": "• Some data may be retained for security and legal compliance purposes",
-      "zh-CN": "• 出于安全和法律合规目的，可能会保留某些数据",
-      "zh-TW": "• 出於安全和法律合規目的，可能會保留某些數據"
-    },
-    "Third-Party Services:": {
-      "en": "Third-Party Services:",
-      "zh-CN": "第三方服务：",
-      "zh-TW": "第三方服務："
-    },
-    "• We may use third-party services for payment processing, analytics, and infrastructure": {
-      "en": "• We may use third-party services for payment processing, analytics, and infrastructure",
-      "zh-CN": "• 我们可能会使用第三方服务进行支付处理、分析和基础设施",
-      "zh-TW": "• 我們可能會使用第三方服務進行支付處理、分析和基礎設施"
-    },
-    "• These services are bound by confidentiality agreements": {
-      "en": "• These services are bound by confidentiality agreements",
-      "zh-CN": "• 这些服务受保密协议约束",
-      "zh-TW": "• 這些服務受保密協議約束"
-    },
-    "• We carefully vet all third-party providers for security and privacy compliance": {
-      "en": "• We carefully vet all third-party providers for security and privacy compliance",
-      "zh-CN": "• 我们仔细审查所有第三方提供商的安全和隐私合规性",
-      "zh-TW": "• 我們仔細審查所有第三方提供商的安全和隱私合規性"
-    },
-    "Service Availability:": {
-      "en": "Service Availability:",
-      "zh-CN": "服务可用性：",
-      "zh-TW": "服務可用性："
-    },
-    "• Our services are provided \"as is\" without warranties of any kind": {
-      "en": "• Our services are provided \"as is\" without warranties of any kind",
-      "zh-CN": "• 我们的服务按“原样”提供，不提供任何形式的担保",
-      "zh-TW": "• 我們的服務按“原樣”提供，不提供任何形式的擔保"
-    },
-    "• We do not guarantee uninterrupted or error-free service": {
-      "en": "• We do not guarantee uninterrupted or error-free service",
-      "zh-CN": "• 我们不保证服务不中断或无错误",
-      "zh-TW": "• 我們不保證服務不中斷或無錯誤"
-    },
-    "• Scheduled maintenance may temporarily affect service availability": {
-      "en": "• Scheduled maintenance may temporarily affect service availability",
-      "zh-CN": "• 定期维护可能会暂时影响服务可用性",
-      "zh-TW": "• 定期維護可能會暫時影響服務可用性"
-    },
-    "AI Limitations:": {
-      "en": "AI Limitations:",
-      "zh-CN": "人工智能的局限性：",
-      "zh-TW": "人工智能的局限性："
-    },
-    "• AI-generated content may contain errors or inaccuracies": {
-      "en": "• AI-generated content may contain errors or inaccuracies",
-      "zh-CN": "• 人工智能生成的内容可能包含错误或不准确之处",
-      "zh-TW": "• 人工智能生成的內容可能包含錯誤或不準確之處"
-    },
-    "• You are responsible for reviewing and verifying AI-generated content": {
-      "en": "• You are responsible for reviewing and verifying AI-generated content",
-      "zh-CN": "• 您有责任审查和验证人工智能生成的内容",
-      "zh-TW": "• 您有責任審查和驗證人工智能生成的內容"
-    },
-    "• We do not guarantee the accuracy, completeness, or reliability of AI outputs": {
-      "en": "• We do not guarantee the accuracy, completeness, or reliability of AI outputs",
-      "zh-CN": "• 我们不保证人工智能输出的准确性、完整性或可靠性",
-      "zh-TW": "• 我們不保證人工智能輸出的準確性、完整性或可靠性"
-    },
-    "Limitation of Liability:": {
-      "en": "Limitation of Liability:",
-      "zh-CN": "责任限制：",
-      "zh-TW": "責任限制："
-    },
-    "• Our liability is limited to the amount you paid for our services": {
-      "en": "• Our liability is limited to the amount you paid for our services",
-      "zh-CN": "• 我们的责任仅限于您为我们的服务支付的金额",
-      "zh-TW": "• 我們的責任僅限於您為我們的服務支付的金額"
-    },
-    "• We are not liable for indirect, incidental, or consequential damages": {
-      "en": "• We are not liable for indirect, incidental, or consequential damages",
-      "zh-CN": "• 我们不承担间接、偶然或后果性损害的责任",
-      "zh-TW": "• 我們不承擔間接、偶然或後果性損害的責任"
-    },
-    "• Some jurisdictions do not allow certain limitations, so these may not apply to you": {
-      "en": "• Some jurisdictions do not allow certain limitations, so these may not apply to you",
-      "zh-CN": "• 某些司法管辖区不允许某些限制，因此这些限制可能不适用于您",
-      "zh-TW": "• 某些司法管轄區不允許某些限制，因此這些限制可能不適用於您"
-    },
-    "Termination by You:": {
-      "en": "Termination by You:",
-      "zh-CN": "您终止：",
-      "zh-TW": "您終止："
-    },
-    "• You may terminate your account at any time through your account settings": {
-      "en": "• You may terminate your account at any time through your account settings",
-      "zh-CN": "• 您可以随时通过您的帐户设置终止您的帐户",
-      "zh-TW": "• 您可以隨時通過您的帳戶設置終止您的帳戶"
-    },
-    "• Cancellation will take effect at the end of your current billing period": {
-      "en": "• Cancellation will take effect at the end of your current billing period",
-      "zh-CN": "• 取消将在您当前计费周期结束时生效",
-      "zh-TW": "• 取消將在您當前計費週期結束時生效"
-    },
-    "• You remain responsible for all charges incurred before termination": {
-      "en": "• You remain responsible for all charges incurred before termination",
-      "zh-CN": "• 您仍需承担终止前产生的所有费用",
-      "zh-TW": "• 您仍需承擔終止前產生的所有費用"
-    },
-    "Termination by Us:": {
-      "en": "Termination by Us:",
-      "zh-CN": "由我们终止：",
-      "zh-TW": "由我們終止："
-    },
-    "• We may terminate your account for violations of these terms": {
-      "en": "• We may terminate your account for violations of these terms",
-      "zh-CN": "• 如果您违反这些条款，我们可能会终止您的帐户",
-      "zh-TW": "• 如果您違反這些條款，我們可能會終止您的帳戶"
-    },
-    "• We may suspend or terminate services for non-payment": {
-      "en": "• We may suspend or terminate services for non-payment",
-      "zh-CN": "• 我们可能会因未付款而暂停或终止服务",
-      "zh-TW": "• 我們可能會因未付款而暫停或終止服務"
-    },
-    "• We will provide reasonable notice before termination when possible": {
-      "en": "• We will provide reasonable notice before termination when possible",
-      "zh-CN": "• 我们将尽可能在终止合同前提供合理的通知",
-      "zh-TW": "• 我們將盡可能在終止合同前提供合理的通知"
-    },
-    "Effect of Termination:": {
-      "en": "Effect of Termination:",
-      "zh-CN": "终止的效力：",
-      "zh-TW": "終止的效力："
-    },
-    "• Your right to use our services will cease immediately": {
-      "en": "• Your right to use our services will cease immediately",
-      "zh-CN": "• 您使用我们服务的权利将立即终止",
-      "zh-TW": "• 您使用我們服務的權利將立即終止"
-    },
-    "• We may delete your account and data after termination": {
-      "en": "• We may delete your account and data after termination",
-      "zh-CN": "• 我们可能会在终止后删除您的帐户和数据",
-      "zh-TW": "• 我們可能會在終止後刪除您的帳戶和數據"
-    },
-    "• Certain provisions of these terms will survive termination": {
-      "en": "• Certain provisions of these terms will survive termination",
-      "zh-CN": "• 本条款的某些规定在终止后仍然有效。",
-      "zh-TW": "• 本條款的某些規定在終止後仍然有效。"
-    },
-    "Governing Law:": {
-      "en": "Governing Law:",
-      "zh-CN": "适用法律：",
-      "zh-TW": "適用法律："
-    },
-    "• These terms are governed by the laws of the jurisdiction where MatrixAI is incorporated": {
-      "en": "• These terms are governed by the laws of the jurisdiction where MatrixAI is incorporated",
-      "zh-CN": "• 这些条款受 MatrixAI 注册地法律管辖",
-      "zh-TW": "• 這些條款受 MatrixAI 註冊地法律管轄"
-    },
-    "• Any disputes will be resolved in the courts of that jurisdiction": {
-      "en": "• Any disputes will be resolved in the courts of that jurisdiction",
-      "zh-CN": "• 任何争议将由该管辖区的法院解决",
-      "zh-TW": "• 任何爭議將由該管轄區的法院解決"
-    },
-    "• You consent to the jurisdiction and venue of these courts": {
-      "en": "• You consent to the jurisdiction and venue of these courts",
-      "zh-CN": "• 您同意这些法院的管辖权和审判地",
-      "zh-TW": "• 您同意這些法院的管轄權和審判地"
-    },
-    "Dispute Resolution:": {
-      "en": "Dispute Resolution:",
-      "zh-CN": "争议解决：",
-      "zh-TW": "爭議解決："
-    },
-    "• We encourage resolving disputes through direct communication": {
-      "en": "• We encourage resolving disputes through direct communication",
-      "zh-CN": "• 我们鼓励通过直接沟通解决争议",
-      "zh-TW": "• 我們鼓勵通過直接溝通解決爭議"
-    },
-    "• For formal disputes, we may require binding arbitration": {
-      "en": "• For formal disputes, we may require binding arbitration",
-      "zh-CN": "• 对于正式争议，我们可能要求进行具有约束力的仲裁",
-      "zh-TW": "• 對於正式爭議，我們可能要求進行具有約束力的仲裁"
-    },
-    "• You may opt out of arbitration by providing written notice within 30 days": {
-      "en": "• You may opt out of arbitration by providing written notice within 30 days",
-      "zh-CN": "• 您可以在 30 天内以书面形式通知选择退出仲裁",
-      "zh-TW": "• 您可以在 30 天內以書面形式通知選擇退出仲裁"
-    },
-    "Class Action Waiver:": {
-      "en": "Class Action Waiver:",
-      "zh-CN": "集体诉讼豁免：",
-      "zh-TW": "集體訴訟豁免："
-    },
-    "• You agree to resolve disputes individually, not as part of a class action": {
-      "en": "• You agree to resolve disputes individually, not as part of a class action",
-      "zh-CN": "• 您同意单独解决争议，而不是作为集体诉讼的一部分",
-      "zh-TW": "• 您同意單獨解決爭議，而不是作為集體訴訟的一部分"
-    },
-    "• This waiver applies to all claims and disputes between us": {
-      "en": "• This waiver applies to all claims and disputes between us",
-      "zh-CN": "• 此豁免适用于我们之间的所有索赔和纠纷",
-      "zh-TW": "• 此豁免適用於我們之間的所有索賠和糾紛"
-    },
-    "• Some jurisdictions may not allow class action waivers": {
-      "en": "• Some jurisdictions may not allow class action waivers",
-      "zh-CN": "• 某些司法管辖区可能不允许集体诉讼豁免",
-      "zh-TW": "• 某些司法管轄區可能不允許集體訴訟豁免"
-    },
-    "Questions About These Terms?": {
-      "en": "Questions About These Terms?",
-      "zh-CN": "对这些条款有疑问吗？",
-      "zh-TW": "對這些條款有疑問嗎？"
-    },
-    "If you have any questions about these Terms of Service, please contact us. We're here to help clarify any concerns.": {
-      "en": "If you have any questions about these Terms of Service, please contact us. We're here to help clarify any concerns.",
-      "zh-CN": "如果您对本服务条款有任何疑问，请联系我们。我们将竭诚为您解答任何疑问。",
-      "zh-TW": "如果您對本服務條款有任何疑問，請聯繫我們。我們將竭誠為您解答任何疑問。"
-    },
-    "Email Us": {
-      "en": "Email Us",
-      "zh-CN": "给我们发电子邮件",
-      "zh-TW": "給我們發電子郵件"
-    },
-    "Contact Form": {
-      "en": "Contact Form",
-      "zh-CN": "联系表格",
-      "zh-TW": "聯繫表格"
-    }
-  },
-  "sheet6": {
-    "Cookie Policy": {
-      "en": "Cookie Policy",
-      "zh-CN": "Cookie 政策",
-      "zh-TW": "Cookie 政策"
-    },
-    "Learn about how MatrixAI uses cookies and similar technologies to enhance your experience and provide our services.": {
-      "en": "Learn about how MatrixAI uses cookies and similar technologies to enhance your experience and provide our services.",
-      "zh-CN": "了解 MatrixAI 如何使用 cookie 和类似技术来增强您的体验并提供我们的服务。",
-      "zh-TW": "瞭解 MatrixAI 如何使用 cookie 和類似技術來增強您的體驗並提供我們的服務。"
-    },
-    "Last updated": {
-      "en": "Last updated",
-      "zh-CN": "最后更新",
-      "zh-TW": "最後更新"
-    },
-    "Effective date": {
-      "en": "Effective date",
-      "zh-CN": "生效日期",
-      "zh-TW": "生效日期"
-    },
-    "What Are Cookies?": {
-      "en": "What Are Cookies?",
-      "zh-CN": "什么是 Cookie？",
-      "zh-TW": "什麼是 Cookie？"
-    },
-    "Cookies are small text files that are stored on your device when you visit our website. They help us provide you with a better experience by remembering your preferences, keeping you logged in, and analyzing how you use our services.": {
-      "en": "Cookies are small text files that are stored on your device when you visit our website. They help us provide you with a better experience by remembering your preferences, keeping you logged in, and analyzing how you use our services.",
-      "zh-CN": "Cookie 是您访问我们网站时存储在您设备上的小型文本文件。它们会记住您的偏好设置、保持您的登录状态并分析您使用我们服务的方式，从而帮助我们为您提供更好的体验。",
-      "zh-TW": "Cookie 是您訪問我們網站時存儲在您設備上的小型文本文件。它們會記住您的偏好設置、保持您的登錄狀態並分析您使用我們服務的方式，從而幫助我們為您提供更好的體驗。"
-    },
-    "We use both first-party cookies (set by MatrixAI) and third-party cookies (set by our partners) to enhance functionality, provide analytics, and deliver relevant content.": {
-      "en": "We use both first-party cookies (set by MatrixAI) and third-party cookies (set by our partners) to enhance functionality, provide analytics, and deliver relevant content.",
-      "zh-CN": "我们同时使用第一方 cookie（由 MatrixAI 设置）和第三方 cookie（由我们的合作伙伴设置）来增强功能、提供分析和提供相关内容。",
-      "zh-TW": "我們同時使用第一方 cookie（由 MatrixAI 設置）和第三方 cookie（由我們的合作夥伴設置）來增強功能、提供分析和提供相關內容。"
+  "sheet13": {
+    "This Cookie Policy explains how MatrixAI uses cookies and similar technologies to recognize you when you visit our website and use our services.": {
+      "en": "This Cookie Policy explains how MatrixAI uses cookies and similar technologies to recognize you when you visit our website and use our services.",
+      "zh-CN": "本 Cookie 政策说明当你访问我们的网站并使用我们的服务时，MatrixAI 如何使用 Cookie 及类似技术来识别你 。",
+      "zh-TW": "本 Cookie 政策說明當你訪問我們的網站並使用我們的服務時，MatrixAI 如何使用 Cookie 及類似技術來識別你 。"
+    },
+    "Cookies can be \"persistent\" or \"session\" cookies. Persistent cookies remain on your device when you go offline, while session cookies are deleted when you close your web browser.": {
+      "en": "Cookies can be \"persistent\" or \"session\" cookies. Persistent cookies remain on your device when you go offline, while session cookies are deleted when you close your web browser.",
+      "zh-CN": "Cookie 可分为 “持久型” 或 “会话型” Cookie 。持久型 Cookie 在你离线时仍会保留在设备上，而会话型 Cookie 在你关闭网络浏览器时会被删除 。",
+      "zh-TW": "Cookie 可分為 “持久型” 或 “會話型” Cookie 。持久型 Cookie 在你離線時仍會保留在設備上，而會話型 Cookie 在你關閉網絡瀏覽器時會被刪除 。"
     },
     "Types of Cookies We Use": {
       "en": "Types of Cookies We Use",
       "zh-CN": "我们使用的 Cookie 类型",
       "zh-TW": "我們使用的 Cookie 類型"
+    }
+  },
+  "sheet14": {},
+  "sheet15": {
+    "Matrix AI is the best platform for all your needs": {
+      "en": "Matrix AI is the best platform for all your needs",
+      "zh-CN": "MatrixAI 是满足您所有需求的最佳平台。",
+      "zh-TW": "MatrixAI 是滿足您所有需求的最佳平臺。"
+    }
+  },
+  "sheet16": {
+    "You've selected General Inquiries. Fill out the form below and we'll get back to you as soon as possible.": {
+      "en": "You've selected General Inquiries. Fill out the form below and we'll get back to you as soon as possible.",
+      "zh-CN": "您已经选择了一般查询。 填写下面的表格，我们将尽快与您联系。",
+      "zh-TW": "您已經選擇了一般查詢。 填寫下面的表格，我們將儘快與您聯繫。"
     },
-    "We use different types of cookies for various purposes": {
-      "en": "We use different types of cookies for various purposes",
-      "zh-CN": "我们出于各种目的使用不同类型的 Cookie",
-      "zh-TW": "我們出於各種目的使用不同類型的 Cookie"
+    "You've selected Sales. Fill out the form below and we'll get back to you as soon as possible.": {
+      "en": "You've selected Sales. Fill out the form below and we'll get back to you as soon as possible.",
+      "zh-CN": "您已经选择了销售咨询。 填写下面的表格，我们将尽快与您联系。",
+      "zh-TW": "您已經選擇了銷售諮詢。 填寫下面的表格，我們將儘快與您聯繫。"
+    },
+    "You've selected Support. Fill out the form below and we'll get back to you as soon as possible.": {
+      "en": "You've selected Support. Fill out the form below and we'll get back to you as soon as possible.",
+      "zh-CN": "您已经选择了支持。 填写下面的表格，我们将尽快与您联系。",
+      "zh-TW": "您已經選擇了支持。 填寫下面的表格，我們將儘快與您聯繫。"
+    }
+  },
+  "sheet17": {
+    "Types of Cookies We Use": {
+      "en": "Types of Cookies We Use",
+      "zh-CN": "我们使用的 Cookie 类型",
+      "zh-TW": "我們使用的 Cookie 類型"
     },
     "Essential Cookies": {
       "en": "Essential Cookies",
-      "zh-CN": "绝对必要的 Cookie",
-      "zh-TW": "絕對必要的 Cookie"
-    },
-    "Required": {
-      "en": "Required",
-      "zh-CN": "必需的",
-      "zh-TW": "必需的"
-    },
-    "These cookies are necessary for the website to function properly and cannot be disabled.": {
-      "en": "These cookies are necessary for the website to function properly and cannot be disabled.",
-      "zh-CN": "这些 cookie 是网站正常运行所必需的，无法被禁用。",
-      "zh-TW": "這些 cookie 是網站正常運行所必需的，無法被禁用。"
-    },
-    "Examples:": {
-      "en": "Examples:",
-      "zh-CN": "例子：",
-      "zh-TW": "例子："
-    },
-    "Authentication cookies to keep you logged in": {
-      "en": "Authentication cookies to keep you logged in",
-      "zh-CN": "身份验证 cookie 可让您保持登录状态",
-      "zh-TW": "身份驗證 cookie 可讓您保持登錄狀態"
-    },
-    "Security cookies to protect against attacks": {
-      "en": "Security cookies to protect against attacks",
-      "zh-CN": "安全 Cookie 可防止攻击",
-      "zh-TW": "安全 Cookie 可防止攻擊"
-    },
-    "Session cookies to maintain your preferences": {
-      "en": "Session cookies to maintain your preferences",
-      "zh-CN": "会话 Cookie 可维护您的偏好设置",
-      "zh-TW": "會話 Cookie 可維護您的偏好設置"
-    },
-    "Load balancing cookies for optimal performance": {
-      "en": "Load balancing cookies for optimal performance",
-      "zh-CN": "负载平衡 cookie 以实现最佳性能",
-      "zh-TW": "負載平衡 cookie 以實現最佳性能"
+      "zh-CN": "必不可少的 Cookie",
+      "zh-TW": "必不可少的 Cookie"
     },
     "Functional Cookies": {
       "en": "Functional Cookies",
       "zh-CN": "功能 Cookie",
       "zh-TW": "功能 Cookie"
     },
-    "Optional": {
-      "en": "Optional",
-      "zh-CN": "选修的",
-      "zh-TW": "選修的"
-    },
-    "These cookies enable enhanced functionality and personalization.": {
-      "en": "These cookies enable enhanced functionality and personalization.",
-      "zh-CN": "这些 cookie 可实现增强的功能和个性化。",
-      "zh-TW": "這些 cookie 可實現增強的功能和個性化。"
-    },
-    "Language and region preferences": {
-      "en": "Language and region preferences",
-      "zh-CN": "语言和地区偏好",
-      "zh-TW": "語言和地區偏好"
-    },
-    "Theme and display settings (dark/light mode)": {
-      "en": "Theme and display settings (dark/light mode)",
-      "zh-CN": "主题和显示设置（暗/亮模式）",
-      "zh-TW": "主題和顯示設置（暗/亮模式）"
-    },
-    "Accessibility preferences": {
-      "en": "Accessibility preferences",
-      "zh-CN": "辅助功能偏好设置",
-      "zh-TW": "輔助功能偏好設置"
-    },
-    "Customized dashboard layouts": {
-      "en": "Customized dashboard layouts",
-      "zh-CN": "定制仪表板布局",
-      "zh-TW": "定制儀錶板佈局"
-    },
     "Analytics Cookies": {
       "en": "Analytics Cookies",
       "zh-CN": "分析型 Cookie",
       "zh-TW": "分析型 Cookie"
-    },
-    "These cookies help us understand how visitors interact with our website.": {
-      "en": "These cookies help us understand how visitors interact with our website.",
-      "zh-CN": "这些 cookie 帮助我们了解访问者如何与我们的网站互动。",
-      "zh-TW": "這些 cookie 幫助我們瞭解訪問者如何與我們的網站互動。"
-    },
-    "Google Analytics for usage statistics": {
-      "en": "Google Analytics for usage statistics",
-      "zh-CN": "Google Analytics 使用情况统计",
-      "zh-TW": "Google Analytics 使用情況統計"
-    },
-    "Performance monitoring cookies": {
-      "en": "Performance monitoring cookies",
-      "zh-CN": "性能监控 Cookie",
-      "zh-TW": "性能監控 Cookie"
-    },
-    "A/B testing cookies for feature improvements": {
-      "en": "A/B testing cookies for feature improvements",
-      "zh-CN": "用于功能改进的 A/B 测试 Cookie",
-      "zh-TW": "用於功能改進的 A/B 測試 Cookie"
-    },
-    "User behavior tracking (anonymized)": {
-      "en": "User behavior tracking (anonymized)",
-      "zh-CN": "用户行为追踪（匿名）",
-      "zh-TW": "用戶行為追蹤（匿名）"
     },
     "Marketing Cookies": {
       "en": "Marketing Cookies",
       "zh-CN": "推广 Cookies",
       "zh-TW": "推廣 Cookies"
     },
-    "These cookies are used to deliver relevant advertisements and track campaign effectiveness.": {
-      "en": "These cookies are used to deliver relevant advertisements and track campaign effectiveness.",
-      "zh-CN": "这些 cookie 用于投放相关广告并跟踪广告活动的效果。",
-      "zh-TW": "這些 cookie 用於投放相關廣告並跟蹤廣告活動的效果。"
-    },
-    "Social media integration cookies": {
-      "en": "Social media integration cookies",
-      "zh-CN": "社交媒体集成 Cookie",
-      "zh-TW": "社交媒體集成 Cookie"
-    },
-    "Advertising platform cookies": {
-      "en": "Advertising platform cookies",
-      "zh-CN": "广告平台 Cookie",
-      "zh-TW": "廣告平臺 Cookie"
-    },
-    "Remarketing and retargeting cookies": {
-      "en": "Remarketing and retargeting cookies",
-      "zh-CN": "再营销和重定向 Cookie",
-      "zh-TW": "再營銷和重定向 Cookie"
-    },
-    "Campaign attribution cookies": {
-      "en": "Campaign attribution cookies",
-      "zh-CN": "活动归因 Cookie",
-      "zh-TW": "活動歸因 Cookie"
-    },
-    "Third-Party Services": {
-      "en": "Third-Party Services",
-      "zh-CN": "第三方服务",
-      "zh-TW": "第三方服務"
-    },
-    "We work with trusted partners who may also set cookies": {
-      "en": "We work with trusted partners who may also set cookies",
-      "zh-CN": "我们与值得信赖的合作伙伴合作，他们也可能设置 Cookie",
-      "zh-TW": "我們與值得信賴的合作夥伴合作，他們也可能設置 Cookie"
-    },
-    "Service": {
-      "en": "Service",
-      "zh-CN": "服务",
-      "zh-TW": "服務"
-    },
-    "Google Analytics": {
-      "en": "Google Analytics",
-      "zh-CN": "谷歌分析",
-      "zh-TW": "穀歌分析"
-    },
-    "Stripe": {
-      "en": "Stripe",
-      "zh-CN": "条纹",
-      "zh-TW": "條紋"
-    },
-    "Intercom": {
-      "en": "Intercom",
-      "zh-CN": "对讲机",
-      "zh-TW": "對講機"
-    },
-    "Hotjar": {
-      "en": "Hotjar",
-      "zh-CN": "热罐",
-      "zh-TW": "熱罐"
-    },
-    "Purpose": {
-      "en": "Purpose",
-      "zh-CN": "目的",
-      "zh-TW": "目的"
-    },
-    "Website analytics and performance monitoring": {
-      "en": "Website analytics and performance monitoring",
-      "zh-CN": "网站分析和性能监控",
-      "zh-TW": "網站分析和性能監控"
-    },
-    "Payment processing and fraud prevention": {
-      "en": "Payment processing and fraud prevention",
-      "zh-CN": "支付处理和欺诈预防",
-      "zh-TW": "支付處理和欺詐預防"
-    },
-    "Customer support and communication": {
-      "en": "Customer support and communication",
-      "zh-CN": "客户支持和沟通",
-      "zh-TW": "客戶支持和溝通"
-    },
-    "User experience analysis and heatmaps": {
-      "en": "User experience analysis and heatmaps",
-      "zh-CN": "用户体验分析和热图",
-      "zh-TW": "用戶體驗分析和熱圖"
-    },
-    "Data Collected": {
-      "en": "Data Collected",
-      "zh-CN": "收集的数据",
-      "zh-TW": "收集的數據"
-    },
-    "Usage patterns, page views, session duration": {
-      "en": "Usage patterns, page views, session duration",
-      "zh-CN": "使用模式、页面浏览量、会话时长",
-      "zh-TW": "使用模式、頁面瀏覽量、會話時長"
-    },
-    "Payment information, transaction data": {
-      "en": "Payment information, transaction data",
-      "zh-CN": "支付信息、交易数据",
-      "zh-TW": "支付信息、交易數據"
-    },
-    "Support conversations, user preferences": {
-      "en": "Support conversations, user preferences",
-      "zh-CN": "支持对话、用户偏好",
-      "zh-TW": "支持對話、用戶偏好"
-    },
-    "Mouse movements, clicks, scroll behavior": {
-      "en": "Mouse movements, clicks, scroll behavior",
-      "zh-CN": "鼠标移动、点击、滚动行为",
-      "zh-TW": "鼠標移動、點擊、滾動行為"
-    },
-    "Retention": {
-      "en": "Retention",
-      "zh-CN": "保留",
-      "zh-TW": "保留"
-    },
-    "26 months": {
-      "en": "26 months",
-      "zh-CN": "26个月",
-      "zh-TW": "26個月"
-    },
-    "7 years (regulatory requirement)": {
-      "en": "7 years (regulatory requirement)",
-      "zh-CN": "7年（监管要求）",
-      "zh-TW": "7年（監管要求）"
-    },
-    "2 years": {
-      "en": "2 years",
-      "zh-CN": "2年",
-      "zh-TW": "2年"
-    },
-    "365 days": {
-      "en": "365 days",
-      "zh-CN": "365天",
-      "zh-TW": "365天"
-    },
-    "Opt-Out": {
-      "en": "Opt-Out",
-      "zh-CN": "选择退出",
-      "zh-TW": "選擇退出"
-    },
-    "N/A (essential for payment processing)": {
-      "en": "N/A (essential for payment processing)",
-      "zh-CN": "N/A（付款处理必需）",
-      "zh-TW": "N/A（付款處理必需）"
-    },
-    "Contact support to disable": {
-      "en": "Contact support to disable",
-      "zh-CN": "联系支持人员以禁用",
-      "zh-TW": "聯繫支持人員以禁用"
-    },
-    "Managing Your Cookie Preferences": {
-      "en": "Managing Your Cookie Preferences",
-      "zh-CN": "管理您的 Cookie 偏好设置",
-      "zh-TW": "管理您的 Cookie 偏好設置"
-    },
-    "Browser Settings": {
-      "en": "Browser Settings",
-      "zh-CN": "浏览器设置",
-      "zh-TW": "瀏覽器設置"
-    },
-    "You can control cookies through your browser settings:": {
-      "en": "You can control cookies through your browser settings:",
-      "zh-CN": "您可以通过浏览器设置来控制 cookies：",
-      "zh-TW": "您可以通過瀏覽器設置來控制 cookies："
-    },
-    "• Block all cookies": {
-      "en": "• Block all cookies",
-      "zh-CN": "• 阻止所有 Cookie",
-      "zh-TW": "• 阻止所有 Cookie"
-    },
-    "• Block third-party cookies only": {
-      "en": "• Block third-party cookies only",
-      "zh-CN": "• 仅阻止第三方 Cookie",
-      "zh-TW": "• 僅阻止第三方 Cookie"
-    },
-    "• Delete existing cookies": {
-      "en": "• Delete existing cookies",
-      "zh-CN": "• 删除现有的 Cookie",
-      "zh-TW": "• 刪除現有的 Cookie"
-    },
-    "• Set cookies to expire when you close your browser": {
-      "en": "• Set cookies to expire when you close your browser",
-      "zh-CN": "• 设置 Cookie 在您关闭浏览器时过期",
-      "zh-TW": "• 設置 Cookie 在您關閉瀏覽器時過期"
-    },
     "Cookie Consent": {
       "en": "Cookie Consent",
       "zh-CN": "Cookie 同意",
       "zh-TW": "Cookie 同意"
     },
-    "You can manage your cookie preferences at any time:": {
-      "en": "You can manage your cookie preferences at any time:",
-      "zh-CN": "您可以随时管理您的 Cookie 偏好设置：",
-      "zh-TW": "您可以隨時管理您的 Cookie 偏好設置："
+    "Block all cookies": {
+      "en": "Block all cookies",
+      "zh-CN": "阻止所有 Cookie",
+      "zh-TW": "阻止所有 Cookie"
     },
-    "Cookie Preferences": {
-      "en": "Cookie Preferences",
-      "zh-CN": "Cookie偏好设置",
-      "zh-TW": "Cookie偏好設置"
+    "Block third-party cookies only": {
+      "en": "Block third-party cookies only",
+      "zh-CN": "仅阻止第三方 Cookie",
+      "zh-TW": "僅阻止第三方 Cookie"
     },
-    "Updates to This Policy": {
-      "en": "Updates to This Policy",
-      "zh-CN": "本政策的更新",
-      "zh-TW": "本政策的更新"
+    "Delete existing cookies": {
+      "en": "Delete existing cookies",
+      "zh-CN": "删除现有的 Cookie",
+      "zh-TW": "刪除現有的 Cookie"
+    },
+    "Set cookies to expire when you close your browser": {
+      "en": "Set cookies to expire when you close your browser",
+      "zh-CN": "设置 Cookie 在您关闭浏览器时过期",
+      "zh-TW": "設置 Cookie 在您關閉瀏覽器時過期"
     },
     "We may update this Cookie Policy from time to time to reflect changes in our practices or applicable laws. We will notify you of any material changes by posting the updated policy on our website.": {
       "en": "We may update this Cookie Policy from time to time to reflect changes in our practices or applicable laws. We will notify you of any material changes by posting the updated policy on our website.",
       "zh-CN": "我们可能会不时更新本 Cookie 政策，以反映我们的做法或适用法律的变化。我们将通过在我们的网站上发布更新后的政策来通知您任何重大变更。",
       "zh-TW": "我們可能會不時更新本 Cookie 政策，以反映我們的做法或適用法律的變化。我們將通過在我們的網站上發佈更新後的政策來通知您任何重大變更。"
+    }
+  },
+  "sheet2": {
+    "content writer": {
+      "en": "content writer",
+      "zh-CN": "内容创作器",
+      "zh-TW": "內容創作器"
+    }
+  },
+  "sheet3": {
+    "Prompt": {
+      "en": "Prompt",
+      "zh-CN": "指令",
+      "zh-TW": "指令"
+    }
+  },
+  "sheet4": {
+    "Speech to Text & Content Writing": {
+      "en": "Speech to Text & Content Writing",
+      "zh-CN": "语音转文字与内容撰写",
+      "zh-TW": "語音轉文字與內容撰寫"
+    }
+  },
+  "sheet5": {
+    "Appearance": {
+      "en": "Appearance",
+      "zh-CN": "外观",
+      "zh-TW": "外觀"
     },
-    "We encourage you to review this policy periodically to stay informed about how we use cookies and similar technologies.": {
-      "en": "We encourage you to review this policy periodically to stay informed about how we use cookies and similar technologies.",
-      "zh-CN": "我们鼓励您定期查看此政策，以了解我们如何使用 cookie 和类似技术。",
-      "zh-TW": "我們鼓勵您定期查看此政策，以瞭解我們如何使用 cookie 和類似技術。"
+    "Theme": {
+      "en": "Theme",
+      "zh-CN": "主题",
+      "zh-TW": "主題"
     },
-    "Questions About Cookies?": {
-      "en": "Questions About Cookies?",
-      "zh-CN": "关于 Cookie 的问题？",
-      "zh-TW": "關於 Cookie 的問題？"
+    "Light": {
+      "en": "Light",
+      "zh-CN": "浅色",
+      "zh-TW": "淺色"
     },
-    "If you have any questions about our use of cookies or this Cookie Policy, please don't hesitate to contact us.": {
-      "en": "If you have any questions about our use of cookies or this Cookie Policy, please don't hesitate to contact us.",
-      "zh-CN": "如果您对我们使用 Cookie 或本 Cookie 政策有任何疑问，请随时联系我们。",
-      "zh-TW": "如果您對我們使用 Cookie 或本 Cookie 政策有任何疑問，請隨時聯繫我們。"
+    "Dark": {
+      "en": "Dark",
+      "zh-CN": "深色",
+      "zh-TW": "深色"
     },
-    "Email Us": {
-      "en": "Email Us",
-      "zh-CN": "给我们发电子邮件",
-      "zh-TW": "給我們發電子郵件"
+    "Use System Preference": {
+      "en": "Use System Preference",
+      "zh-CN": "使用系统偏好设置",
+      "zh-TW": "使用系統偏好設置"
+    }
+  },
+  "sheet6": {
+    "Essential Only": {
+      "en": "Essential Only",
+      "zh-CN": "仅必要",
+      "zh-TW": "僅必要"
     },
-    "Contact Form": {
-      "en": "Contact Form",
-      "zh-CN": "联系表格",
-      "zh-TW": "聯繫表格"
+    "All Cookies": {
+      "en": "All Cookies",
+      "zh-CN": "所有 Cookie",
+      "zh-TW": "所有 Cookie"
     }
   },
   "sheet7": {
-    "Frequently Asked Questions": {
-      "en": "Frequently Asked Questions",
-      "zh-CN": "常见问题",
-      "zh-TW": "常見問題"
+    "Japanese": {
+      "en": "Japanese",
+      "zh-CN": "日文",
+      "zh-TW": "日文"
     },
-    "Find answers to common questions about MatrixAI's services, features, and capabilities.": {
-      "en": "Find answers to common questions about MatrixAI's services, features, and capabilities.",
-      "zh-CN": "查找有关 MatrixAI 的服务、功能和能力的常见问题的答案。",
-      "zh-TW": "查找有關 MatrixAI 的服務、功能和能力的常見問題的答案。"
-    },
-    "General Questions": {
-      "en": "General Questions",
-      "zh-CN": "一般问题",
-      "zh-TW": "一般問題"
-    },
-    "What is MatrixAI?": {
-      "en": "What is MatrixAI?",
-      "zh-CN": "什么是MatrixAI？",
-      "zh-TW": "什麼是MatrixAI？"
-    },
-    "MatrixAI is a comprehensive AI platform that offers a suite of tools for content creation, image generation, video production, and more. Our platform is designed to help individuals and businesses leverage the power of artificial intelligence to enhance their creative and professional workflows.": {
-      "en": "MatrixAI is a comprehensive AI platform that offers a suite of tools for content creation, image generation, video production, and more. Our platform is designed to help individuals and businesses leverage the power of artificial intelligence to enhance their creative and professional workflows.",
-      "zh-CN": "MatrixAI 是一个综合性的人工智能平台，提供内容创作、图像生成、视频制作等一系列工具。我们的平台旨在帮助个人和企业利用人工智能的力量，提升他们的创意和专业工作流程。",
-      "zh-TW": "MatrixAI 是一個綜合性的人工智能平臺，提供內容創作、圖像生成、視頻製作等一系列工具。我們的平臺旨在幫助個人和企業利用人工智能的力量，提升他們的創意和專業工作流程。"
-    },
-    "How do I get started with MatrixAI?": {
-      "en": "How do I get started with MatrixAI?",
-      "zh-CN": "如何开始使用 MatrixAI？",
-      "zh-TW": "如何開始使用 MatrixAI？"
-    },
-    "Getting started is easy! Simply sign up for an account, choose a subscription plan that fits your needs, and you'll have immediate access to our AI tools. We offer a user-friendly interface and comprehensive tutorials to help you make the most of our platform.": {
-      "en": "Getting started is easy! Simply sign up for an account, choose a subscription plan that fits your needs, and you'll have immediate access to our AI tools. We offer a user-friendly interface and comprehensive tutorials to help you make the most of our platform.",
-      "zh-CN": "入门非常简单！只需注册账户，选择适合您需求的订阅方案，即可立即访问我们的 AI 工具。我们提供用户友好的界面和全面的教程，帮助您充分利用我们的平台。",
-      "zh-TW": "入門非常簡單！只需註冊賬戶，選擇適合您需求的訂閱方案，即可立即訪問我們的 AI 工具。我們提供用戶友好的界面和全面的教程，幫助您充分利用我們的平臺。"
-    },
-    "Is MatrixAI suitable for beginners?": {
-      "en": "Is MatrixAI suitable for beginners?",
-      "zh-CN": "MatrixAI 适合初学者吗？",
-      "zh-TW": "MatrixAI 適合初學者嗎？"
-    },
-    "Absolutely! MatrixAI is designed to be accessible to users of all skill levels. Our intuitive interface and guided workflows make it easy for beginners to create professional-quality content, while advanced users will appreciate the depth of customization options available.": {
-      "en": "Absolutely! MatrixAI is designed to be accessible to users of all skill levels. Our intuitive interface and guided workflows make it easy for beginners to create professional-quality content, while advanced users will appreciate the depth of customization options available.",
-      "zh-CN": "当然！MatrixAI 的设计旨在让所有技能水平的用户都能轻松上手。我们直观的界面和引导式工作流程，让初学者也能轻松创作专业品质的内容，而高级用户则会欣赏其丰富的自定义选项。",
-      "zh-TW": "當然！MatrixAI 的設計旨在讓所有技能水平的用戶都能輕鬆上手。我們直觀的界面和引導式工作流程，讓初學者也能輕鬆創作專業品質的內容，而高級用戶則會欣賞其豐富的自定義選項。"
-    },
-    "Subscription & Pricing": {
-      "en": "Subscription & Pricing",
-      "zh-CN": "订阅和定价",
-      "zh-TW": "訂閱和定價"
-    },
-    "What subscription plans do you offer?": {
-      "en": "What subscription plans do you offer?",
-      "zh-CN": "你们提供哪些订阅计划？",
-      "zh-TW": "你們提供哪些訂閱計劃？"
-    },
-    "We offer several subscription tiers to meet different needs and budgets. Our plans range from a free tier with basic functionality to premium plans with advanced features, higher usage limits, and priority support. Visit our Pricing page for detailed information on each plan.": {
-      "en": "We offer several subscription tiers to meet different needs and budgets. Our plans range from a free tier with basic functionality to premium plans with advanced features, higher usage limits, and priority support. Visit our Pricing page for detailed information on each plan.",
-      "zh-CN": "我们提供多种订阅级别，以满足不同的需求和预算。我们的套餐涵盖从提供基本功能的免费套餐，到提供高级功能、更高使用限额和优先支持的高级套餐。访问我们的定价页面，了解每个套餐的详细信息。",
-      "zh-TW": "我們提供多種訂閱級別，以滿足不同的需求和預算。我們的套餐涵蓋從提供基本功能的免費套餐，到提供高級功能、更高使用限額和優先支持的高級套餐。訪問我們的定價頁面，瞭解每個套餐的詳細信息。"
-    },
-    "Can I upgrade or downgrade my subscription?": {
-      "en": "Can I upgrade or downgrade my subscription?",
-      "zh-CN": "我可以升级或降级我的订阅吗？",
-      "zh-TW": "我可以升級或降級我的訂閱嗎？"
-    },
-    "Yes, you can change your subscription plan at any time. When upgrading, you'll have immediate access to the additional features. When downgrading, the changes will take effect at the end of your current billing cycle.": {
-      "en": "Yes, you can change your subscription plan at any time. When upgrading, you'll have immediate access to the additional features. When downgrading, the changes will take effect at the end of your current billing cycle.",
-      "zh-CN": "是的，您可以随时更改订阅方案。升级后，您可以立即使用附加功能。降级后，更改将在您当前计费周期结束时生效。",
-      "zh-TW": "是的，您可以隨時更改訂閱方案。升級後，您可以立即使用附加功能。降級後，更改將在您當前計費週期結束時生效。"
-    },
-    "Do you offer refunds?": {
-      "en": "Do you offer refunds?",
-      "zh-CN": "你们提供退款吗？",
-      "zh-TW": "你們提供退款嗎？"
-    },
-    "We offer a 7-day money-back guarantee for new subscribers. If you're not satisfied with our service within the first week, contact our support team for a full refund. After this period, refunds are handled on a case-by-case basis.": {
-      "en": "We offer a 7-day money-back guarantee for new subscribers. If you're not satisfied with our service within the first week, contact our support team for a full refund. After this period, refunds are handled on a case-by-case basis.",
-      "zh-CN": "我们为新用户提供 7 天退款保证。如果您在第一周内对我们的服务不满意，请联系我们的支持团队申请全额退款。超过此期限，退款将根据具体情况处理。",
-      "zh-TW": "我們為新用戶提供 7 天退款保證。如果您在第一周內對我們的服務不滿意，請聯繫我們的支持團隊申請全額退款。超過此期限，退款將根據具體情況處理。"
-    },
-    "Technical Support": {
-      "en": "Technical Support",
-      "zh-CN": "技术支援",
-      "zh-TW": "技術支援"
-    },
-    "How quickly will I receive a response to my support request?": {
-      "en": "How quickly will I receive a response to my support request?",
-      "zh-CN": "我多久能收到对我的支持请求的回复？",
-      "zh-TW": "我多久能收到對我的支持請求的回復？"
-    },
-    "We aim to respond to all inquiries within 24 hours during business days. For urgent support issues, premium and enterprise customers have access to expedited response times.": {
-      "en": "We aim to respond to all inquiries within 24 hours during business days. For urgent support issues, premium and enterprise customers have access to expedited response times.",
-      "zh-CN": "我们力求在工作日内 24 小时内回复所有咨询。对于紧急支持问题，高级客户和企业客户可享受快速响应。",
-      "zh-TW": "我們力求在工作日內 24 小時內回復所有諮詢。對於緊急支持問題，高級客戶和企業客戶可享受快速響應。"
-    },
-    "Do you have a knowledge base or help center?": {
-      "en": "Do you have a knowledge base or help center?",
-      "zh-CN": "您有知识库或帮助中心吗？",
-      "zh-TW": "您有知識庫或幫助中心嗎？"
-    },
-    "Yes, we have an extensive knowledge base with tutorials, guides, and FAQs at help.matrixai.asia. It's a great first stop for common questions and learning how to use our platform effectively.": {
-      "en": "Yes, we have an extensive knowledge base with tutorials, guides, and FAQs at help.matrixai.asia. It's a great first stop for common questions and learning how to use our platform effectively.",
-      "zh-CN": "是的，我们在 help.matrixai.asia 拥有丰富的知识库，其中包含教程、指南和常见问题解答。它是解答常见问题和学习如何有效使用我们平台的理想之选。",
-      "zh-TW": "是的，我們在 help.matrixai.asia 擁有豐富的知識庫，其中包含教程、指南和常見問題解答。它是解答常見問題和學習如何有效使用我們平臺的理想之選。"
-    },
-    "I'm interested in a partnership. Who should I contact?": {
-      "en": "I'm interested in a partnership. Who should I contact?",
-      "zh-CN": "我对合作感兴趣。我应该联系谁？",
-      "zh-TW": "我對合作感興趣。我應該聯繫誰？"
-    },
-    "For partnership inquiries, please visit our Contact page and select \"General Inquiries\" and mention partnership in your message. Our business development team will get back to you promptly.": {
-      "en": "For partnership inquiries, please visit our Contact page and select \"General Inquiries\" and mention partnership in your message. Our business development team will get back to you promptly.",
-      "zh-CN": "如需咨询合作事宜，请访问我们的“联系”页面，选择“一般咨询”，并在留言中注明合作意向。我们的业务拓展团队将尽快与您联系。",
-      "zh-TW": "如需諮詢合作事宜，請訪問我們的“聯繫”頁面，選擇“一般諮詢”，並在留言中注明合作意向。我們的業務拓展團隊將儘快與您聯繫。"
+    "Chinese": {
+      "en": "Chinese",
+      "zh-CN": "中文",
+      "zh-TW": "中文"
     }
   },
   "sheet8": {
-    "System Status": {
-      "en": "System Status",
-      "zh-CN": "系统状态",
-      "zh-TW": "系統狀態"
-    },
-    "Real-time status and performance metrics for all MatrixAI services and infrastructure.": {
-      "en": "Real-time status and performance metrics for all MatrixAI services and infrastructure.",
-      "zh-CN": "所有 MatrixAI 服务和基础设施的实时状态和性能指标。",
-      "zh-TW": "所有 MatrixAI 服務和基礎設施的實時狀態和性能指標。"
-    },
-    "Current Status:": {
-      "en": "Current Status:",
-      "zh-CN": "当前状态：",
-      "zh-TW": "當前狀態："
-    },
-    "All Systems Operational": {
-      "en": "All Systems Operational",
-      "zh-CN": "所有系统运行正常",
-      "zh-TW": "所有系統運行正常"
-    },
-    "Last Updated": {
-      "en": "Last Updated",
-      "zh-CN": "最近更新时间",
-      "zh-TW": "最近更新時間"
-    },
-    "Service Status": {
-      "en": "Service Status",
-      "zh-CN": "服务状态",
-      "zh-TW": "服務狀態"
-    },
-    "Current status of all MatrixAI services and infrastructure": {
-      "en": "Current status of all MatrixAI services and infrastructure",
-      "zh-CN": "所有 MatrixAI 服务和基础设施的当前状态",
-      "zh-TW": "所有 MatrixAI 服務和基礎設施的當前狀態"
-    },
-    "API Services": {
-      "en": "API Services",
-      "zh-CN": "API 服务",
-      "zh-TW": "API 服務"
-    },
-    "Core API endpoints and AI model access": {
-      "en": "Core API endpoints and AI model access",
-      "zh-CN": "核心 API 端点和 AI 模型访问",
-      "zh-TW": "核心 API 端點和 AI 模型訪問"
-    },
-    "Uptime": {
-      "en": "Uptime",
-      "zh-CN": "正常运行时间",
-      "zh-TW": "正常運行時間"
-    },
-    "Response Time": {
-      "en": "Response Time",
-      "zh-CN": "响应时间",
-      "zh-TW": "響應時間"
-    },
-    "Chat Interface": {
-      "en": "Chat Interface",
-      "zh-CN": "聊天界面",
-      "zh-TW": "聊天界面"
-    },
-    "Real-time chat and conversation features": {
-      "en": "Real-time chat and conversation features",
-      "zh-CN": "实时聊天和对话功能",
-      "zh-TW": "實時聊天和對話功能"
-    },
-    "Image Generation": {
-      "en": "Image Generation",
-      "zh-CN": "图像生成",
-      "zh-TW": "圖像生成"
-    },
-    "AI-powered image creation and editing": {
-      "en": "AI-powered image creation and editing",
-      "zh-CN": "人工智能驱动的图像创建和编辑",
-      "zh-TW": "人工智能驅動的圖像創建和編輯"
-    },
-    "Database": {
-      "en": "Database",
-      "zh-CN": "数据库",
-      "zh-TW": "數據庫"
-    },
-    "User data and content storage": {
-      "en": "User data and content storage",
-      "zh-CN": "用户数据和内容存储",
-      "zh-TW": "用戶數據和內容存儲"
-    },
-    "Content Delivery": {
-      "en": "Content Delivery",
-      "zh-CN": "内容交付",
-      "zh-TW": "內容交付"
-    },
-    "Global content distribution network": {
-      "en": "Global content distribution network",
-      "zh-CN": "全球内容分发网络",
-      "zh-TW": "全球內容分發網絡"
-    },
-    "Status": {
-      "en": "Status",
-      "zh-CN": "地位",
-      "zh-TW": "地位"
-    },
-    "Operational": {
-      "en": "Operational",
-      "zh-CN": "操作",
-      "zh-TW": "操作"
-    },
-    "Authentication": {
-      "en": "Authentication",
-      "zh-CN": "验证",
-      "zh-TW": "驗證"
-    },
-    "User login and security services": {
-      "en": "User login and security services",
-      "zh-CN": "用户登录和安全服务",
-      "zh-TW": "用戶登錄和安全服務"
-    },
-    "Recent Incidents": {
-      "en": "Recent Incidents",
-      "zh-CN": "近期事件",
-      "zh-TW": "近期事件"
-    },
-    "Past incidents and their resolution status": {
-      "en": "Past incidents and their resolution status",
-      "zh-CN": "过去事件及其解决情况",
-      "zh-TW": "過去事件及其解決情況"
-    },
-    "Resolved: Intermittent API Timeouts": {
-      "en": "Resolved: Intermittent API Timeouts",
-      "zh-CN": "已解决：间歇性 API 超时",
-      "zh-TW": "已解決：間歇性 API 超時"
-    },
-    "MEDIUM": {
-      "en": "MEDIUM",
-      "zh-CN": "中等的",
-      "zh-TW": "中等的"
-    },
-    "Some users experienced slower response times during peak hours": {
-      "en": "Some users experienced slower response times during peak hours",
-      "zh-CN": "一些用户在高峰时段遇到响应时间较慢的情况",
-      "zh-TW": "一些用戶在高峰時段遇到響應時間較慢的情況"
-    },
-    "Started": {
-      "en": "Started",
-      "zh-CN": "开始时间",
-      "zh-TW": "開始時間"
-    },
-    "Resolved": {
-      "en": "Resolved",
-      "zh-CN": "解决时间",
-      "zh-TW": "解決時間"
-    },
-    "Updates:": {
-      "en": "Updates:",
-      "zh-CN": "更新：",
-      "zh-TW": "更新："
-    },
-    "Issue has been fully resolved. All services are operating normally.": {
-      "en": "Issue has been fully resolved. All services are operating normally.",
-      "zh-CN": "问题已完全解决。所有服务均正常运行。",
-      "zh-TW": "問題已完全解決。所有服務均正常運行。"
-    },
-    "We have implemented a fix and are monitoring the situation.": {
-      "en": "We have implemented a fix and are monitoring the situation.",
-      "zh-CN": "我们已经实施修复并正在监控情况。",
-      "zh-TW": "我們已經實施修復並正在監控情況。"
-    },
-    "We have identified the cause as increased traffic load and are scaling our infrastructure.": {
-      "en": "We have identified the cause as increased traffic load and are scaling our infrastructure.",
-      "zh-CN": "我们已经确定原因是流量负载增加，并且正在扩展我们的基础设施。",
-      "zh-TW": "我們已經確定原因是流量負載增加，並且正在擴展我們的基礎設施。"
-    },
-    "We are investigating reports of slower API response times.": {
-      "en": "We are investigating reports of slower API response times.",
-      "zh-CN": "我们正在调查有关 API 响应时间较慢的报告。",
-      "zh-TW": "我們正在調查有關 API 響應時間較慢的報告。"
-    },
-    "Scheduled Maintenance: Database Optimization": {
-      "en": "Scheduled Maintenance: Database Optimization",
-      "zh-CN": "定期维护：数据库优化",
-      "zh-TW": "定期維護：數據庫優化"
-    },
-    "LOW": {
-      "en": "LOW",
-      "zh-CN": "低的",
-      "zh-TW": "低的"
-    },
-    "Routine database maintenance to improve performance": {
-      "en": "Routine database maintenance to improve performance",
-      "zh-CN": "定期维护数据库以提高性能",
-      "zh-TW": "定期維護數據庫以提高性能"
-    },
-    "Maintenance completed successfully. All systems are fully operational.": {
-      "en": "Maintenance completed successfully. All systems are fully operational.",
-      "zh-CN": "维护成功完成。所有系统均已完全正常运行。",
-      "zh-TW": "維護成功完成。所有系統均已完全正常運行。"
-    },
-    "Scheduled maintenance has begun. Some features may be temporarily unavailable.": {
-      "en": "Scheduled maintenance has begun. Some features may be temporarily unavailable.",
-      "zh-CN": "计划维护已开始。某些功能可能暂时不可用。",
-      "zh-TW": "計劃維護已開始。某些功能可能暫時不可用。"
-    },
-    "Performance Metrics": {
-      "en": "Performance Metrics",
-      "zh-CN": "绩效指标",
-      "zh-TW": "績效指標"
-    },
-    "Key performance indicators for the past 30 days": {
-      "en": "Key performance indicators for the past 30 days",
-      "zh-CN": "过去 30 天的关键绩效指标",
-      "zh-TW": "過去 30 天的關鍵績效指標"
-    },
-    "Overall Uptime": {
-      "en": "Overall Uptime",
-      "zh-CN": "总体正常运行时间",
-      "zh-TW": "總體正常運行時間"
-    },
-    "Avg Response Time": {
-      "en": "Avg Response Time",
-      "zh-CN": "平均响应时间",
-      "zh-TW": "平均響應時間"
-    },
-    "API Requests": {
-      "en": "API Requests",
-      "zh-CN": "API 请求",
-      "zh-TW": "API 請求"
-    },
-    "Success Rate": {
-      "en": "Success Rate",
-      "zh-CN": "成功率",
-      "zh-TW": "成功率"
-    },
-    "Need Help or Have Questions?": {
-      "en": "Need Help or Have Questions?",
-      "zh-CN": "需要帮助或有疑问吗？",
-      "zh-TW": "需要幫助或有疑問嗎？"
-    },
-    "If you're experiencing issues not reflected on this page, please contact our support team.": {
-      "en": "If you're experiencing issues not reflected on this page, please contact our support team.",
-      "zh-CN": "如果您遇到此页面未反映的问题，请联系我们的支持团队。",
-      "zh-TW": "如果您遇到此頁面未反映的問題，請聯繫我們的支持團隊。"
-    },
-    "Email Support": {
-      "en": "Email Support",
-      "zh-CN": "电子邮件支持",
-      "zh-TW": "電子郵件支持"
-    },
-    "Contact Form": {
-      "en": "Contact Form",
-      "zh-CN": "联系表格",
-      "zh-TW": "聯繫表格"
+    "Comprehensive guides and API documentation": {
+      "en": "Comprehensive guides and API documentation",
+      "zh-CN": "综合指南与 API 文档",
+      "zh-TW": "綜合指南與 API 文檔"
     }
   },
   "sheet9": {
-    "Creative Suite": {
-      "en": "Creative Suite",
-      "zh-CN": "创意套件",
-      "zh-TW": "創意套件"
+    "MatrixAI Speech to Text": {
+      "en": "MatrixAI Speech to Text",
+      "zh-CN": "MatrixAI 语音转文字",
+      "zh-TW": "MatrixAI 語音轉文字"
     },
-    "Start creating with AI": {
-      "en": "Start creating with AI",
-      "zh-CN": "开始使用AI进行创作",
-      "zh-TW": "開始使用AI進行創作"
+    "Convert audio to text quickly and accurately": {
+      "en": "Convert audio to text quickly and accurately",
+      "zh-CN": "快速精准地将音频转换为文字",
+      "zh-TW": "快速精准地將音頻轉換為文字"
+    },
+    "Drag & drop your audio file here": {
+      "en": "Drag & drop your audio file here",
+      "zh-CN": "将音频文件拖放至此处",
+      "zh-TW": "將音頻文件拖放至此處"
+    },
+    "Browse Files": {
+      "en": "Browse Files",
+      "zh-CN": "浏览文件",
+      "zh-TW": "瀏覽文件"
     }
   }
 }

@@ -49,7 +49,7 @@ const PublicResourceLayout: React.FC<PublicResourceLayoutProps> = ({ children })
             title: t('layout.footer.categories.explore'),
             links: [
               { name: t('layout.footer.links.aboutUs'), url: "/about" },
-              { name: t('layout.footer.links.features'), url: "/features" },
+          
               { name: t('layout.footer.links.blog'), url: "/blog" },
               { name: t('layout.footer.links.enterprise'), url: "/enterprise" },
               { name: t('layout.footer.links.careers'), url: "/careers" },

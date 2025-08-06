@@ -25,6 +25,7 @@ import rehypeKatex from 'rehype-katex';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import 'katex/dist/katex.min.css';
+import katex from 'katex';
 import MindMapComponent from '../components/MindMapComponent';
 
 // Define types for word timings
@@ -298,19 +299,288 @@ const MarkdownComponents = {
   }
 };
 
+// Function to render text with math expressions and markdown formatting
+const renderTextWithMath = (text: string, theme: string, textStyle?: string) => {
+  if (!text) return null;
+  
+  // Preprocess the content to handle math expressions and clean formatting
+  const processedText = preprocessContent(text);
+  
+  return (
+    <div className={`markdown-content ${theme === 'dark' ? 'dark' : ''} ${textStyle || ''}`}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex, rehypeRaw]}
+        components={{
+          h1: ({ children }: any) => {
+            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            return (
+              <h1 className={`text-2xl font-bold mb-4 mt-6 flex items-center gap-2 ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
+                <span className="text-blue-500">📋</span>
+                {cleanText}
+              </h1>
+            );
+          },
+          h2: ({ children }: any) => {
+            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            return (
+              <h2 className={`text-xl font-bold mb-3 mt-5 flex items-center gap-2 ${
+                theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+              }`}>
+                <span className="text-green-500">📝</span>
+                {cleanText}
+              </h2>
+            );
+          },
+          h3: ({ children }: any) => {
+            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            return (
+              <h3 className={`text-lg font-semibold mb-2 mt-4 flex items-center gap-2 ${
+                theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+              }`}>
+                <span className="text-purple-500">📌</span>
+                {cleanText}
+              </h3>
+            );
+          },
+          h4: ({ children }: any) => {
+            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            return (
+              <h4 className={`text-base font-semibold mb-2 mt-3 flex items-center gap-2 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+                <span className="text-orange-500">🔸</span>
+                {cleanText}
+              </h4>
+            );
+          },
+          h5: ({ children }: any) => {
+            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            return (
+              <h5 className={`text-sm font-medium mb-1 mt-2 flex items-center gap-2 ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+              }`}>
+                <span className="text-yellow-500">🔹</span>
+                {cleanText}
+              </h5>
+            );
+          },
+          h6: ({ children }: any) => {
+            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            return (
+              <h6 className={`text-xs font-medium mb-1 mt-2 flex items-center gap-2 ${
+                theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+              }`}>
+                <span className="text-gray-500">▪️</span>
+                {cleanText}
+              </h6>
+            );
+          },
+          p: ({ children }: any) => (
+            <p className={`mb-4 leading-relaxed ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              {children}
+            </p>
+          ),
+          ul: ({ children }: any) => (
+            <ul className={`mb-4 ml-6 space-y-1 list-disc ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              {children}
+            </ul>
+          ),
+          ol: ({ children }: any) => (
+            <ol className={`mb-4 ml-6 space-y-1 list-decimal ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              {children}
+            </ol>
+          ),
+          li: ({ children }: any) => (
+            <li className="mb-1">{children}</li>
+          ),
+          blockquote: ({ children }: any) => (
+            <blockquote className={`border-l-4 pl-4 py-2 my-4 italic ${
+              theme === 'dark' 
+                ? 'border-blue-400 bg-blue-900/20 text-blue-200' 
+                : 'border-blue-500 bg-blue-50 text-blue-800'
+            }`}>
+              {children}
+            </blockquote>
+          ),
+          strong: ({ children }: any) => (
+            <strong className={`font-semibold ${
+              theme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>
+              {children}
+            </strong>
+          ),
+          em: ({ children }: any) => (
+            <em className={`italic ${
+              theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+            }`}>
+              {children}
+            </em>
+          ),
+          a: ({ children, href }: any) => (
+            <a 
+              href={href}
+              className={`underline ${
+                theme === 'dark' ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'
+              }`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {children}
+            </a>
+          ),
+        }}
+      >
+        {processedText}
+      </ReactMarkdown>
+    </div>
+  );
+};
+
+const renderLineWithMath = (text: string, textStyle?: string) => {
+  if (!text) return null;
+
+  // Split text by math expressions, bold, italic, and other formatting
+  // Updated to handle $$$$...$$$$, $$...$$, and $...$ patterns
+  const parts = text.split(/(\$\$\$\$[^$]*\$\$\$\$|\$\$[^$]*\$\$|\$[^$]*\$|\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*)/);
+
+  return parts.map((part, index) => {
+    // Check for $$$$...$$$$  (math2 converted format)
+    if (part.match(/^\$\$\$\$[^$]*\$\$\$\$$/)) {
+      const mathContent = part.slice(4, -4); // Remove $$$$ and $$$$
+      try {
+        const html = katex.renderToString(mathContent, {
+          displayMode: true,
+          throwOnError: false
+        });
+        return (
+          <div
+            key={index}
+            dangerouslySetInnerHTML={{ __html: html }}
+            style={{
+              fontSize: '18px',
+              color: '#007AFF',
+              margin: '8px 0',
+              textAlign: 'center'
+            }}
+          />
+        );
+      } catch (error) {
+        return <div key={index} style={{ color: 'red', textAlign: 'center' }}>[Math Error: {mathContent}]</div>;
+      }
+    }
+    // Check for $$...$$ (math converted format or standard display math)
+    else if (part.match(/^\$\$[^$]*\$\$$/)) {
+      const mathContent = part.slice(2, -2); // Remove $$ and $$
+      try {
+        const html = katex.renderToString(mathContent, {
+          displayMode: true,
+          throwOnError: false
+        });
+        return (
+          <div
+            key={index}
+            dangerouslySetInnerHTML={{ __html: html }}
+            style={{
+              fontSize: '18px',
+              color: '#007AFF',
+              margin: '8px 0',
+              textAlign: 'center'
+            }}
+          />
+        );
+      } catch (error) {
+        return <div key={index} style={{ color: 'red', textAlign: 'center' }}>[Math Error: {mathContent}]</div>;
+      }
+    }
+    // Check for $...$ (inline math)
+    else if (part.match(/^\$[^$]*\$$/)) {
+      const mathContent = part.slice(1, -1); // Remove $ and $
+      try {
+        const html = katex.renderToString(mathContent, {
+          displayMode: false,
+          throwOnError: false
+        });
+        return (
+          <span
+            key={index}
+            dangerouslySetInnerHTML={{ __html: html }}
+            style={{
+              fontSize: '16px',
+              color: '#007AFF'
+            }}
+          />
+        );
+      } catch (error) {
+        return <span key={index} style={{ color: 'red' }}>[Math Error: {mathContent}]</span>;
+      }
+    } else if (part.match(/^\*\*\*[^*]+\*\*\*$/)) {
+      // Bold and italic text (***text***)
+      const content = part.slice(3, -3);
+      return (
+        <strong key={index} style={{ fontWeight: 'bold', fontStyle: 'italic' }} className={textStyle}>
+          {content}
+        </strong>
+      );
+    } else if (part.match(/^\*\*[^*]+\*\*$/)) {
+      // Bold text (**text**)
+      const content = part.slice(2, -2);
+      return (
+        <strong key={index} style={{ fontWeight: 'bold' }} className={textStyle}>
+          {content}
+        </strong>
+      );
+    } else if (part.match(/^\*[^*]+\*$/)) {
+      // Italic text (*text*)
+      const content = part.slice(1, -1);
+      return (
+        <em key={index} style={{ fontStyle: 'italic' }} className={textStyle}>
+          {content}
+        </em>
+      );
+    } else {
+      // Regular text
+      return (
+        <span key={index} className={textStyle}>
+          {part}
+        </span>
+      );
+    }
+  });
+};
+
 // Function to preprocess content for better markdown rendering
 const preprocessContent = (content: string): string => {
   if (!content) return content;
   
-  // Minimal preprocessing to preserve markdown formatting
+  // Clean up content and ensure proper formatting
   let processed = content
-    // Fix math expressions only
+    // Fix math expressions - convert LaTeX to standard markdown math
     .replace(/\\\(/g, '$')
     .replace(/\\\)/g, '$')
     .replace(/\\\[/g, '$$')
     .replace(/\\\]/g, '$$')
-    // Preserve line breaks for markdown structure
-    .replace(/\n{3,}/g, '\n\n'); // Reduce excessive line breaks but preserve structure
+    // Handle custom math tags
+    .replace(/<math>([\s\S]*?)<\/math>/g, '$$$1$$')
+    .replace(/<math2>([\s\S]*?)<\/math2>/g, '$$$$1$$$$')
+    // Ensure proper line breaks for lists
+    .replace(/\n(\d+\.|\*|\-|\+)\s/g, '\n\n$1 ')
+    // Ensure proper spacing around headers
+    .replace(/([^\n])\n(#{1,6})\s/g, '$1\n\n$2 ')
+    // Make sure headings start with # and have a space after
+    .replace(/\n(#{1,6})([^\s])/g, '\n$1 $2')
+    // Ensure proper spacing for blockquotes
+    .replace(/\n>/g, '\n\n>')
+    // Preserve newlines for paragraph breaks
+    .replace(/\n\n\n+/g, '\n\n');
   
   return processed.trim();
 };
@@ -405,6 +675,7 @@ const TranscriptionPage: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState<string>('');
   const [isAssistantTyping, setIsAssistantTyping] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -458,7 +729,7 @@ const TranscriptionPage: React.FC = () => {
             content: [
               {
                 type: "text", 
-                text: t('transcription.systemPrompt')
+                text: "You are an AI tutor assistant helping students with their homework and studies. Provide helpful, educational responses with clear explanations and examples that students can easily understand. Use proper markdown formatting for better readability. IMPORTANT: When including mathematical expressions, please wrap inline math with <math>...</math> tags and display math (block equations) with <math2>...</math2> tags. For example: <math>x^2 + y^2 = z^2</math> for inline math, and <math2>\\int_0^1 x^2 dx = \\frac{1}{3}</math2> for display math. This helps with proper mathematical rendering."
               }
             ]
           },
@@ -905,12 +1176,15 @@ const TranscriptionPage: React.FC = () => {
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!chatInput.trim() || isAssistantTyping) return;
+    if (!chatInput.trim() || isAssistantTyping || isSubmitting) return;
+    
+    setIsSubmitting(true);
     
     // Check if user is logged in
     if (!user) {
       // Redirect to login page
       navigate('/login', { state: { from: location } });
+      setIsSubmitting(false);
       return;
     }
     
@@ -921,11 +1195,13 @@ const TranscriptionPage: React.FC = () => {
       
       if (!coinResponse.success) {
         alert(t('transcription.errors.failedToDeductCoins'));
+        setIsSubmitting(false);
         return;
       }
     } catch (error) {
       console.error('Error deducting coins:', error);
       alert(t('transcription.errors.insufficientBalance'));
+      setIsSubmitting(false);
       return;
     }
     
@@ -1024,6 +1300,7 @@ const TranscriptionPage: React.FC = () => {
       });
     } finally {
       setIsAssistantTyping(false);
+      setIsSubmitting(false);
     }
   };
   
@@ -2056,13 +2333,7 @@ const TranscriptionPage: React.FC = () => {
                               <FiZap className="mr-2" /> Key Points
                             </h4>
                             <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                              <ReactMarkdown 
-                                components={MarkdownComponents}
-                                remarkPlugins={[remarkGfm, remarkMath]}
-                                rehypePlugins={[rehypeKatex, rehypeRaw]}
-                              >
-                                {preprocessContent(chatResponses.keypoints)}
-                              </ReactMarkdown>
+                              {renderTextWithMath(chatResponses.keypoints, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
                             </div>
                           </div>
                         )}
@@ -2073,13 +2344,7 @@ const TranscriptionPage: React.FC = () => {
                               <FiFileText className="mr-2" /> Summary
                             </h4>
                             <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                              <ReactMarkdown 
-                                components={MarkdownComponents}
-                                remarkPlugins={[remarkGfm, remarkMath]}
-                                rehypePlugins={[rehypeKatex, rehypeRaw]}
-                              >
-                                {preprocessContent(chatResponses.summary)}
-                              </ReactMarkdown>
+                              {renderTextWithMath(chatResponses.summary, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
                             </div>
                           </div>
                         )}
@@ -2090,13 +2355,7 @@ const TranscriptionPage: React.FC = () => {
                               <FiBookmark className="mr-2" /> Translation ({translationLanguage})
                             </h4>
                             <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                              <ReactMarkdown 
-                                components={MarkdownComponents}
-                                remarkPlugins={[remarkGfm, remarkMath]}
-                                rehypePlugins={[rehypeKatex, rehypeRaw]}
-                              >
-                                {preprocessContent(chatResponses.translate)}
-                              </ReactMarkdown>
+                              {renderTextWithMath(chatResponses.translate, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
                             </div>
                           </div>
                         )}
@@ -2139,28 +2398,13 @@ const TranscriptionPage: React.FC = () => {
                                   <div className={`prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
                                     {message.isStreaming ? (
                                       <div className="streaming-content">
-                                        <ReactMarkdown 
-                                          components={MarkdownComponents}
-                                          remarkPlugins={[remarkGfm, remarkMath]}
-                                          rehypePlugins={[rehypeKatex, rehypeRaw]}
-                                        >
-                                          {preprocessContent(message.content)}
-                                        </ReactMarkdown>
+                                        {renderTextWithMath(message.content, theme, `text-gray-800 dark:text-gray-200 leading-relaxed text-sm`)}
                                         <span className="typing-cursor animate-pulse ml-1 text-blue-500">▋</span>
                                       </div>
                                     ) : (
                                       <div>
                                         {message.content ? (
-                                          <ReactMarkdown 
-                                            components={MarkdownComponents}
-                                            remarkPlugins={[remarkGfm, remarkMath]}
-                                            rehypePlugins={[rehypeKatex, rehypeRaw]}
-                                            remarkRehypeOptions={{
-                                              allowDangerousHtml: true
-                                            }}
-                                          >
-                                            {preprocessContent(message.content)}
-                                          </ReactMarkdown>
+                                          renderTextWithMath(message.content, theme, `text-gray-800 dark:text-gray-200 leading-relaxed text-sm`)
                                         ) : (
                                           <span>Loading content...</span>
                                         )}
@@ -2168,7 +2412,9 @@ const TranscriptionPage: React.FC = () => {
                                     )}
                                   </div>
                                 ) : (
-                                  <div className="whitespace-pre-wrap text-white leading-relaxed">{message.content}</div>
+                                  <div className="whitespace-pre-wrap text-white leading-relaxed">
+                                    {renderTextWithMath(message.content, theme, "text-white leading-relaxed")}
+                                  </div>
                                 )}
                                 
                                 {/* Enhanced Message Footer */}

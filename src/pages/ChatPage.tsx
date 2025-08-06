@@ -67,9 +67,16 @@ interface Chat {
 // Empty array for new chats - this should be used whenever creating a new chat
 const emptyInitialMessages: Message[] = [];
 
-// Enhanced Code Block Component
-const CodeBlock = ({ node, inline, className, children, language, value, ...props }: any) => {
-  const { darkMode } = useContext(ThemeContext);
+const ChatPage: React.FC = () => {
+  const { t } = useTranslation();
+  const { userData, isPro } = useUser();
+  const { user } = useAuth();
+  const { showSuccess, showError, showWarning } = useAlert();
+  const navigate = useNavigate();
+  const { darkMode, toggleDarkMode } = useContext(ThemeContext);
+  
+  // Enhanced Code Block Component
+  const CodeBlock = ({ node, inline, className, children, language, value, ...props }: any) => {
   const match = /language-(\w+)/.exec(className || '');
   const lang = language || (match ? match[1] : '');
   const codeString = value || String(children).replace(/\n$/, '');
@@ -166,52 +173,20 @@ const preprocessContent = (content: string): string => {
   
   // Clean up content and ensure proper formatting
   let processed = content
-    // Fix math expressions
+    // Fix math expressions - convert LaTeX to standard markdown math
     .replace(/\\\(/g, '$')
     .replace(/\\\)/g, '$')
     .replace(/\\\[/g, '$$')
     .replace(/\\\]/g, '$$')
+    // Handle custom math tags
+    .replace(/<math>([\s\S]*?)<\/math>/g, '$$$1$$')
+    .replace(/<math3>([\s\S]*?)<\/math3>/g, '$$$$1$$$$')
     // Ensure proper line breaks for lists
     .replace(/\n(\d+\.|\*|\-|\+)\s/g, '\n\n$1 ')
-    // Ensure proper spacing around headers - add newlines before headings
+    // Ensure proper spacing around headers
     .replace(/([^\n])\n(#{1,6})\s/g, '$1\n\n$2 ')
     // Make sure headings start with # and have a space after
     .replace(/\n(#{1,6})([^\s])/g, '\n$1 $2')
-    // Completely replace markdown heading syntax with custom icons
-    // First handle headings at the beginning of the content (without a preceding newline)
-    .replace(/^(#{1,6})\s(.*?)(?=\n|$)/g, (match, hashes, headingText) => {
-      const level = hashes.length as 1 | 2 | 3 | 4 | 5 | 6;
-      const icons: Record<1 | 2 | 3 | 4 | 5 | 6, string> = {
-        1: '◉', // Large filled circle for h1
-        2: '◆', // Diamond for h2
-        3: '▶', // Triangle for h3
-        4: '●', // Circle for h4
-        5: '■', // Square for h5
-        6: '✦'  // Star for h6
-      };
-      // Completely remove the # characters and replace with icon
-      return `${icons[level]} ${headingText}`;
-    })
-    // Then handle headings in the middle of the content (with a preceding newline)
-    .replace(/\n(#{1,6})\s(.*?)(?=\n|$)/g, (match, hashes, headingText) => {
-      const level = hashes.length as 1 | 2 | 3 | 4 | 5 | 6;
-      const icons: Record<1 | 2 | 3 | 4 | 5 | 6, string> = {
-        1: '◉', // Large filled circle for h1
-        2: '◆', // Diamond for h2
-        3: '▶', // Triangle for h3
-        4: '●', // Circle for h4
-        5: '■', // Square for h5
-        6: '✦'  // Star for h6
-      };
-      // Completely remove the # characters and replace with icon
-      return `\n${icons[level]} ${headingText}`;
-    })
-    // Additional passes to catch any remaining # characters that might be interpreted as headings
-    .replace(/(^|\n)#\s+/g, '$1')
-    // Remove any standalone # characters
-    .replace(/(?<![a-zA-Z0-9])#(?![a-zA-Z0-9])/g, '')
-    // Replace any # followed by text without space (which might be interpreted as a tag)
-    .replace(/(?<![a-zA-Z0-9])#([a-zA-Z0-9]+)/g, '$1')
     // Ensure proper spacing for blockquotes
     .replace(/\n>/g, '\n\n>')
     // Preserve newlines for paragraph breaks
@@ -220,13 +195,181 @@ const preprocessContent = (content: string): string => {
   return processed.trim();
 };
 
-const ChatPage: React.FC = () => {
-  const { t } = useTranslation();
-  const { userData, isPro } = useUser();
-  const { user } = useAuth();
-  const { showSuccess, showError, showWarning } = useAlert();
-  const navigate = useNavigate();
+// Function to render text with math expressions and markdown formatting
+const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) => {
+  if (!text) return null;
   
+  // Preprocess the content to handle math expressions and clean formatting
+  const processedText = preprocessContent(text);
+  
+  return (
+    <div className={`markdown-content ${darkMode ? 'dark' : ''}`} style={textStyle}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex, rehypeRaw]}
+        components={{
+          code: CodeBlock,
+          pre: ({ children }: any) => <div className="overflow-auto">{children}</div>,
+          h1: ({ children }: any) => {
+            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            return (
+              <h1 className={`text-2xl font-bold mb-4 mt-6 flex items-center gap-2 ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                <span className="text-blue-500">📋</span>
+                {cleanText}
+              </h1>
+            );
+          },
+          h2: ({ children }: any) => {
+            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            return (
+              <h2 className={`text-xl font-bold mb-3 mt-5 flex items-center gap-2 ${
+                darkMode ? 'text-gray-100' : 'text-gray-800'
+              }`}>
+                <span className="text-green-500">📝</span>
+                {cleanText}
+              </h2>
+            );
+          },
+          h3: ({ children }: any) => {
+            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            return (
+              <h3 className={`text-lg font-semibold mb-2 mt-4 flex items-center gap-2 ${
+                darkMode ? 'text-gray-200' : 'text-gray-700'
+              }`}>
+                <span className="text-purple-500">📌</span>
+                {cleanText}
+              </h3>
+            );
+          },
+          h4: ({ children }: any) => {
+            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            return (
+              <h4 className={`text-base font-semibold mb-2 mt-3 flex items-center gap-2 ${
+                darkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+                <span className="text-orange-500">🔸</span>
+                {cleanText}
+              </h4>
+            );
+          },
+          h5: ({ children }: any) => {
+            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            return (
+              <h5 className={`text-sm font-medium mb-1 mt-2 flex items-center gap-2 ${
+                darkMode ? 'text-gray-400' : 'text-gray-500'
+              }`}>
+                <span className="text-yellow-500">🔹</span>
+                {cleanText}
+              </h5>
+            );
+          },
+          h6: ({ children }: any) => {
+            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            return (
+              <h6 className={`text-xs font-medium mb-1 mt-2 flex items-center gap-2 ${
+                darkMode ? 'text-gray-500' : 'text-gray-400'
+              }`}>
+                <span className="text-gray-500">▪️</span>
+                {cleanText}
+              </h6>
+            );
+          },
+          p: ({ children }: any) => (
+            <p className={`mb-4 leading-relaxed ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              {children}
+            </p>
+          ),
+          ul: ({ children }: any) => (
+            <ul className={`mb-4 ml-6 space-y-1 list-disc ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              {children}
+            </ul>
+          ),
+          ol: ({ children }: any) => (
+            <ol className={`mb-4 ml-6 space-y-1 list-decimal ${
+              darkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              {children}
+            </ol>
+          ),
+          li: ({ children }: any) => (
+            <li className="mb-1">{children}</li>
+          ),
+          blockquote: ({ children }: any) => (
+            <blockquote className={`border-l-4 pl-4 py-2 my-4 italic ${
+              darkMode 
+                ? 'border-blue-400 bg-blue-900/20 text-blue-200' 
+                : 'border-blue-500 bg-blue-50 text-blue-800'
+            }`}>
+              {children}
+            </blockquote>
+          ),
+          strong: ({ children }: any) => (
+            <strong className={`font-semibold ${
+              darkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {children}
+            </strong>
+          ),
+          em: ({ children }: any) => (
+            <em className={`italic ${
+              darkMode ? 'text-gray-200' : 'text-gray-700'
+            }`}>
+              {children}
+            </em>
+          ),
+          a: ({ children, href }: any) => (
+            <a 
+              href={href}
+              className={`underline ${
+                darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'
+              }`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {children}
+            </a>
+          ),
+          table: ({ children }: any) => (
+            <div className="overflow-x-auto my-4">
+              <table className={`min-w-full border-collapse border ${
+                darkMode ? 'border-gray-600' : 'border-gray-300'
+              }`}>
+                {children}
+              </table>
+            </div>
+          ),
+          th: ({ children }: any) => (
+            <th className={`px-4 py-2 text-left font-semibold border ${
+              darkMode 
+                ? 'border-gray-600 bg-gray-800 text-gray-200' 
+                : 'border-gray-300 bg-gray-100 text-gray-800'
+            }`}>
+              {children}
+            </th>
+          ),
+          td: ({ children }: any) => (
+            <td className={`px-4 py-2 border ${
+              darkMode 
+                ? 'border-gray-600 text-gray-300' 
+                : 'border-gray-300 text-gray-700'
+            }`}>
+              {children}
+            </td>
+          ),
+        }}
+      >
+        {processedText}
+      </ReactMarkdown>
+    </div>
+  );
+};
+
   // Role options with translations
   const roleOptions = [
     { id: 'general', name: t('chat.roles.general.name'), description: t('chat.roles.general.description') },
@@ -251,13 +394,14 @@ const ChatPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState(roleOptions[0]);
   const [showRoleSelector, setShowRoleSelector] = useState(false);
-  const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const [showChatHistory, setShowChatHistory] = useState(false);
   const [showProAlert, setShowProAlert] = useState(false);
   const [freeMessagesLeft, setFreeMessagesLeft] = useState(5);
   const [freeUploadsLeft, setFreeUploadsLeft] = useState(2);
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState('');
+  const [userMessageCount, setUserMessageCount] = useState(0);
+  const [isMessageLimitReached, setIsMessageLimitReached] = useState(false);
   
   // Set CSS variables for sidebar widths on component mount
   useEffect(() => {
@@ -271,69 +415,7 @@ const ChatPage: React.FC = () => {
     };
   }, []);
   
-  // Markdown components configuration
-  const MarkdownComponents = {
-    code: CodeBlock,
-    pre: ({ children }: any) => <div className="overflow-auto">{children}</div>,
-    h1: ({ children }: any) => (
-      <h1 className="text-2xl font-bold mb-4 mt-6">
-        {children}
-      </h1>
-    ),
-    h2: ({ children }: any) => (
-      <h2 className="text-xl font-bold mb-3 mt-5">
-        {children}
-      </h2>
-    ),
-    h3: ({ children }: any) => (
-      <h3 className="text-lg font-semibold mb-2 mt-4">
-        {children}
-      </h3>
-    ),
-    p: ({ children }: any) => (
-      <p className="mb-4 leading-relaxed">
-        {children}
-      </p>
-    ),
-    ul: ({ children }: any) => (
-      <ul className="mb-4 ml-6 space-y-1">
-        {children}
-      </ul>
-    ),
-    ol: ({ children }: any) => (
-      <ol className="mb-4 ml-6 space-y-1 list-decimal">
-        {children}
-      </ol>
-    ),
-    li: ({ children }: any) => (
-      <li className="mb-1">{children}</li>
-    ),
-    blockquote: ({ children }: any) => (
-      <blockquote className={`border-l-4 pl-4 py-2 my-4 italic ${
-        darkMode 
-          ? 'border-blue-400 bg-blue-900/20 text-blue-200' 
-          : 'border-blue-500 bg-blue-50 text-blue-800'
-      }`}>
-        {children}
-      </blockquote>
-    ),
-    strong: ({ children }: any) => (
-      <strong className="font-semibold">
-        {children}
-      </strong>
-    ),
-    em: ({ children }: any) => (
-      <em className="italic">
-        {children}
-      </em>
-    ),
-    table: ({ children }: any) => <TableWrapper>{children}</TableWrapper>,
-    thead: ({ children }: any) => <TableHead>{children}</TableHead>,
-    tbody: ({ children }: any) => <TableBody>{children}</TableBody>,
-    tr: ({ children }: any) => <TableRow>{children}</TableRow>,
-    td: ({ children }: any) => <TableCell>{children}</TableCell>,
-    th: ({ children }: any) => <TableHeaderCell>{children}</TableHeaderCell>,
-  };
+
   const [groupedChatHistory, setGroupedChatHistory] = useState<{
     today: { id: string, title: string, role: string, roleName?: string }[],
     yesterday: { id: string, title: string, role: string, roleName?: string }[],
@@ -1038,41 +1120,62 @@ const ChatPage: React.FC = () => {
   const sendMessageToAI = async (message: string, imageUrl: string | null = null, onChunk?: (chunk: string) => void): Promise<string> => {
     return new Promise((resolve, reject) => {
       try {
-        // Get the current role context
-        const systemContent = `You are MatrixAI Bot, acting as a ${selectedRole.name}. ${selectedRole.description}`;
-
         // Prepare messages array
-        const messages = [
+        const apiMessages = [
           {
             role: "system",
             content: [
               {
-                type: "text", 
-                text: systemContent
+                type: "text",
+                text: "You are an AI tutor assistant helping students with their homework and studies. Provide helpful, educational responses with clear explanations and examples that students can easily understand. Use proper markdown formatting for better readability. IMPORTANT: When including mathematical expressions, please wrap inline math with <math>...</math> tags and display math (block equations) with <math3>...</math3> tags. For example: <math>x^2 + y^2 = z^2</math> for inline math, and <math3>\\int_0^1 x^2 dx = \\frac{1}{3}</math3> for display math. This helps with proper mathematical rendering."
               }
             ]
           },
           {
             role: "user",
-            content: [] as any[]
+            content: []
           }
         ];
 
+        // Add conversation history for memory (last 10 messages to avoid token limit)
+        const recentMessages = messages.slice(-10).filter(msg => msg.content.trim() !== '');
+        recentMessages.forEach(msg => {
+          if (msg.role === 'user' || msg.role === 'assistant') {
+            apiMessages.push({
+              role: msg.role,
+              content: [
+                {
+                  type: "text",
+                  text: msg.content
+                }
+              ]
+            });
+          }
+        });
+
+        // Add current user message
+        const currentUserMessage = {
+          role: "user",
+          content: [] as any[]
+        };
+
         // Add text content
-        messages[1].content.push({
+        currentUserMessage.content.push({
           type: "text",
-          text: `Please help me with this question or topic: ${message}`
+          text: message
         });
 
         // Add image if provided
         if (imageUrl) {
-          messages[1].content.push({
+          currentUserMessage.content.push({
             type: "image_url",
             image_url: {
               url: imageUrl
             }
           });
         }
+
+        apiMessages.push(currentUserMessage);
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', true);
@@ -1154,7 +1257,7 @@ const ChatPage: React.FC = () => {
 
         const requestBody = JSON.stringify({
           model: "qwen-vl-max",
-          messages: messages,
+          messages: apiMessages,
           stream: true
         });
 
@@ -1171,8 +1274,16 @@ const ChatPage: React.FC = () => {
   const handleSendMessage = async () => {
     if (!inputMessage.trim() && !selectedFile) return;
     
+    // Check if 40-message limit is reached for this chat
+    const currentUserMessages = messages.filter(m => m.role === 'user').length;
+    if (currentUserMessages >= 40) {
+      setIsMessageLimitReached(true);
+      showWarning('You have reached the 40-message limit for this chat. Please start a new chat to continue.');
+      return;
+    }
+    
     // Check if free trial limit is reached for messages
-    if (!isPro && messages.filter(m => m.role === 'user').length >= freeMessagesLeft) {
+    if (!isPro && currentUserMessages >= freeMessagesLeft) {
       setShowProAlert(true);
       return;
     }
@@ -1718,42 +1829,113 @@ const ChatPage: React.FC = () => {
 
   const handleSaveEdit = async () => {
     if (editingMessageId && editingContent.trim()) {
-      // Update the message content
-      setMessages(prev => prev.map(msg => 
-        msg.id === editingMessageId 
-          ? { ...msg, content: editingContent.trim() }
-          : msg
-      ));
-      
-      // Clear editing state
-      setEditingMessageId(null);
-      setEditingContent('');
-      
-      // Save to database if user is logged in
-      try {
-        const { data } = await supabase.auth.getSession();
-        if (data?.session?.user?.id) {
-          const updatedMessages = messages.map(msg => 
-            msg.id === editingMessageId 
-              ? { ...msg, content: editingContent.trim() }
-              : msg
-          );
-          
-          await supabase
-            .from('user_chats')
-            .update({ 
-              messages: updatedMessages.map(msg => ({
-                id: msg.id,
-                sender: msg.role === 'assistant' ? 'bot' : 'user',
-                text: msg.content,
-                timestamp: msg.timestamp
-              }))
-            })
-            .eq('chat_id', chatId)
-            .eq('user_id', data.session.user.id);
+      const editedMessage = messages.find(msg => msg.id === editingMessageId);
+      if (!editedMessage) return;
+
+      // Deduct 1 coin for editing a message
+      if (uid) {
+        try {
+          await userService.subtractCoins(uid, 1, 'edit_message');
+        } catch (coinError) {
+          console.error('Error deducting coins for edit:', coinError);
+          showWarning('Could not deduct coins. Please check your balance.');
+          return;
         }
-      } catch (error) {
-        console.error('Error saving edited message:', error);
+      }
+
+      // If editing a user message, remove all subsequent messages and regenerate AI response
+      if (editedMessage.role === 'user') {
+        const editedMessageIndex = messages.findIndex(msg => msg.id === editingMessageId);
+        const messagesUpToEdit = messages.slice(0, editedMessageIndex);
+        
+        // Add the edited user message
+        const updatedUserMessage = { ...editedMessage, content: editingContent.trim() };
+        const newMessages = [...messagesUpToEdit, updatedUserMessage];
+        setMessages(newMessages);
+        
+        // Clear editing state
+        setEditingMessageId(null);
+        setEditingContent('');
+        
+        // Generate new AI response
+        setIsLoading(true);
+        try {
+          const aiResponse = await sendMessageToAI(editingContent.trim());
+          
+          const newAiMessage: Message = {
+            id: Date.now() + 1,
+            role: 'assistant',
+            content: aiResponse,
+            timestamp: new Date().toISOString()
+          };
+          
+          setMessages(prev => [...prev, newAiMessage]);
+          
+          // Save to database if user is logged in
+          try {
+            const { data } = await supabase.auth.getSession();
+            if (data?.session?.user?.id) {
+              const finalMessages = [...newMessages, newAiMessage];
+              await supabase
+                .from('user_chats')
+                .update({ 
+                  messages: finalMessages.map(msg => ({
+                    id: msg.id,
+                    sender: msg.role === 'assistant' ? 'bot' : 'user',
+                    text: msg.content,
+                    timestamp: msg.timestamp
+                  }))
+                })
+                .eq('chat_id', chatId)
+                .eq('user_id', data.session.user.id);
+            }
+          } catch (error) {
+            console.error('Error saving edited conversation:', error);
+          }
+        } catch (error) {
+          console.error('Error generating AI response:', error);
+          showError('Failed to generate AI response');
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        // If editing an AI message, just update it
+        setMessages(prev => prev.map(msg => 
+          msg.id === editingMessageId 
+            ? { ...msg, content: editingContent.trim() }
+            : msg
+        ));
+        
+        // Clear editing state
+        setEditingMessageId(null);
+        setEditingContent('');
+        
+        // Save to database if user is logged in
+        try {
+          const { data } = await supabase.auth.getSession();
+          if (data?.session?.user?.id) {
+            const updatedMessages = messages.map(msg => 
+              msg.id === editingMessageId 
+                ? { ...msg, content: editingContent.trim() }
+                : msg
+            );
+            
+            await supabase
+              .from('user_chats')
+              .update({ 
+                messages: updatedMessages.map(msg => ({
+                  id: msg.id,
+                  sender: msg.role === 'assistant' ? 'bot' : 'user',
+                  text: msg.content,
+                  timestamp: msg.timestamp
+                }))
+              })
+              .eq('chat_id', chatId)
+              .eq('user_id', data.session.user.id);
+          }
+        } catch (error) {
+          console.error('Error saving edited message:', error);
+        }
       }
     }
   };
@@ -2041,6 +2223,8 @@ const ChatPage: React.FC = () => {
     setIsTyping({});
     setEditingMessageId(null);
     setEditingContent('');
+    setUserMessageCount(0);
+    setIsMessageLimitReached(false);
     
     // Create a new chat ID and update URL
     const newChatId = Date.now().toString();
@@ -2071,8 +2255,8 @@ const ChatPage: React.FC = () => {
   };
 
   // Calculate remaining messages for display
-  const userMessageCount = messages.filter(m => m.role === 'user').length;
-  const remainingMessages = Math.max(0, freeMessagesLeft - userMessageCount);
+  const currentUserMessages = messages.filter(m => m.role === 'user').length;
+        const remainingMessages = Math.max(0, freeMessagesLeft - currentUserMessages);
 
   // Load voices when component mounts
   useEffect(() => {
@@ -2366,6 +2550,8 @@ const ChatPage: React.FC = () => {
     setEditingContent('');
     setCoinsUsed({});
     setChats([]); // Clear local chats completely
+    setUserMessageCount(0);
+    setIsMessageLimitReached(false);
     
     setChatId(selectedChatId);
     setShowHistoryDropdown(false);
@@ -2811,21 +2997,17 @@ const ChatPage: React.FC = () => {
                     </div>
                   </div>
                 ) : message.isStreaming ? (
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm, remarkMath]}
-                    rehypePlugins={[rehypeRaw, rehypeKatex]}
-                    components={MarkdownComponents}
-                  >
-                    {preprocessContent(displayedText[message.id] || '')}
-                  </ReactMarkdown>
+                  <div className="prose prose-sm max-w-none">
+                    {renderTextWithMath(displayedText[message.id] || '', darkMode, {
+                      color: darkMode ? '#f3f4f6' : '#1f2937'
+                    })}
+                  </div>
                 ) : (
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm, remarkMath]}
-                    rehypePlugins={[rehypeRaw, rehypeKatex]}
-                    components={MarkdownComponents}
-                  >
-                    {preprocessContent(message.content)}
-                  </ReactMarkdown>
+                  <div className="prose prose-sm max-w-none">
+                    {renderTextWithMath(message.content, darkMode, {
+                      color: darkMode ? '#f3f4f6' : '#1f2937'
+                    })}
+                  </div>
                 )}
               </div>
                               
@@ -2864,7 +3046,7 @@ const ChatPage: React.FC = () => {
                                   >
                                     <FiCopy size={12} className="sm:w-3.5 sm:h-3.5" />
                                   </button>
-                                  {message.role === 'user' && (
+                                  {message.role === 'user' && !('fileContent' in message && message.fileContent) && (
                                     <button 
                                       onClick={() => handleEditMessage(message.id, message.content)}
                                       className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
@@ -2929,6 +3111,24 @@ const ChatPage: React.FC = () => {
                   
                   {/* Input area */}
                   <div className={`p-2 sm:p-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    {/* Message limit warning */}
+                    {isMessageLimitReached && (
+                      <div className={`mb-3 p-3 rounded-lg border ${darkMode ? 'bg-red-900/20 border-red-700 text-red-300' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                        <div className="flex items-center space-x-2">
+                          <FiMessageSquare className="w-4 h-4" />
+                          <span className="text-sm font-medium">
+                            You have reached the 40-message limit for this chat. Please start a new chat to continue.
+                          </span>
+                        </div>
+                        <button
+                          onClick={handleStartNewChat}
+                          className={`mt-2 px-3 py-1 text-xs rounded-md ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                        >
+                          Start New Chat
+                        </button>
+                      </div>
+                    )}
+                    
                     {selectedFile && (
                       <div className={`mb-2 p-2 rounded-lg flex items-center space-x-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                         <FiFile className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} w-4 h-4`} />
@@ -2941,15 +3141,16 @@ const ChatPage: React.FC = () => {
                         </AuthRequiredButton>
                       </div>
                     )}
-                    <div className={`flex items-end rounded-lg sm:rounded-xl ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border border-gray-300'} focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500`}>
+                    <div className={`flex items-end rounded-lg sm:rounded-xl ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border border-gray-300'} focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 ${isMessageLimitReached ? 'opacity-50' : ''}`}>
                       <textarea
                         ref={textareaRef}
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder={t('chat.placeholder')}
+                        placeholder={isMessageLimitReached ? 'Message limit reached. Start a new chat to continue.' : t('chat.placeholder')}
                         rows={1}
-                        className={`flex-1 py-2 sm:py-3 px-3 sm:px-4 bg-transparent focus:outline-none resize-none max-h-32 text-sm sm:text-base ${darkMode ? 'text-white placeholder-gray-400' : 'text-gray-700 placeholder-gray-400'}`}
+                        disabled={isMessageLimitReached}
+                        className={`flex-1 py-2 sm:py-3 px-3 sm:px-4 bg-transparent focus:outline-none resize-none max-h-32 text-sm sm:text-base ${darkMode ? 'text-white placeholder-gray-400' : 'text-gray-700 placeholder-gray-400'} ${isMessageLimitReached ? 'cursor-not-allowed' : ''}`}
                       />
                       <div className="flex items-center space-x-1 p-1.5 sm:p-2">
                         <input 
@@ -2968,9 +3169,9 @@ const ChatPage: React.FC = () => {
                         </AuthRequiredButton>
                         <AuthRequiredButton
                           onClick={handleSendMessage}
-                          disabled={!inputMessage.trim() && !selectedFile}
+                          disabled={(!inputMessage.trim() && !selectedFile) || isMessageLimitReached}
                           className={`p-1.5 sm:p-2 rounded-full ${
-                            !inputMessage.trim() && !selectedFile 
+                            (!inputMessage.trim() && !selectedFile) || isMessageLimitReached
                               ? (darkMode ? 'text-gray-500 bg-gray-800' : 'text-gray-400 bg-gray-100') 
                               : (darkMode ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600')
                           }`}

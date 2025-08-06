@@ -7,7 +7,7 @@ import re
 def read_excel_translations():
     try:
         # Open Excel file as ZIP
-        with zipfile.ZipFile('/Users/aadisrivastava/Downloads/project/MatrixAI/MatrixAI_Web/aiagent/t.xlsx', 'r') as z:
+        with zipfile.ZipFile('/Users/aadisrivastava/Downloads/project/MatrixAI/MatrixAI_Web/aiagent/t2.xlsx', 'r') as z:
             # Get list of worksheet files
             worksheet_files = [f for f in z.namelist() if f.startswith('xl/worksheets/sheet') and f.endswith('.xml')]
             print(f"Found worksheets: {worksheet_files}")
