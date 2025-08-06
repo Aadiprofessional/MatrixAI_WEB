@@ -1,58 +1,60 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FiPackage, FiSettings, FiShield, FiBarChart, FiMail, FiPhone, FiToggleLeft, FiToggleRight } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 const CookiesPage: React.FC = () => {
+  const { t } = useTranslation();
   const cookieTypes = [
     {
       id: 'essential',
-      title: 'Essential Cookies',
+      title: t('cookies.types.essential.title'),
       icon: <FiShield className="h-6 w-6" />,
-      description: 'These cookies are necessary for the website to function properly and cannot be disabled.',
+      description: t('cookies.types.essential.description'),
       examples: [
-        'Authentication cookies to keep you logged in',
-        'Security cookies to protect against attacks',
-        'Session cookies to maintain your preferences',
-        'Load balancing cookies for optimal performance'
+        t('cookies.types.essential.example1'),
+        t('cookies.types.essential.example2'),
+        t('cookies.types.essential.example3'),
+        t('cookies.types.essential.example4')
       ],
       required: true
     },
     {
       id: 'functional',
-      title: 'Functional Cookies',
+      title: t('cookies.types.functional.title'),
       icon: <FiSettings className="h-6 w-6" />,
-      description: 'These cookies enable enhanced functionality and personalization.',
+      description: t('cookies.types.functional.description'),
       examples: [
-        'Language and region preferences',
-        'Theme and display settings (dark/light mode)',
-        'Accessibility preferences',
-        'Customized dashboard layouts'
+        t('cookies.types.functional.example1'),
+        t('cookies.types.functional.example2'),
+        t('cookies.types.functional.example3'),
+        t('cookies.types.functional.example4')
       ],
       required: false
     },
     {
       id: 'analytics',
-      title: 'Analytics Cookies',
+      title: t('cookies.types.analytics.title'),
       icon: <FiBarChart className="h-6 w-6" />,
-      description: 'These cookies help us understand how visitors interact with our website.',
+      description: t('cookies.types.analytics.description'),
       examples: [
-        'Google Analytics for usage statistics',
-        'Performance monitoring cookies',
-        'A/B testing cookies for feature improvements',
-        'User behavior tracking (anonymized)'
+        t('cookies.types.analytics.example1'),
+        t('cookies.types.analytics.example2'),
+        t('cookies.types.analytics.example3'),
+        t('cookies.types.analytics.example4')
       ],
       required: false
     },
     {
       id: 'marketing',
-      title: 'Marketing Cookies',
+      title: t('cookies.types.marketing.title'),
       icon: <FiPackage className="h-6 w-6" />,
-      description: 'These cookies are used to deliver relevant advertisements and track campaign effectiveness.',
+      description: t('cookies.types.marketing.description'),
       examples: [
-        'Social media integration cookies',
-        'Advertising platform cookies',
-        'Remarketing and retargeting cookies',
-        'Campaign attribution cookies'
+        t('cookies.types.marketing.example1'),
+        t('cookies.types.marketing.example2'),
+        t('cookies.types.marketing.example3'),
+        t('cookies.types.marketing.example4')
       ],
       required: false
     }
@@ -60,31 +62,31 @@ const CookiesPage: React.FC = () => {
 
   const thirdPartyServices = [
     {
-      name: 'Google Analytics',
-      purpose: 'Website analytics and performance monitoring',
-      dataCollected: 'Usage patterns, page views, session duration',
-      retention: '26 months',
+      name: t('cookies.thirdParty.googleAnalytics.name'),
+      purpose: t('cookies.thirdParty.googleAnalytics.purpose'),
+      dataCollected: t('cookies.thirdParty.googleAnalytics.dataCollected'),
+      retention: t('cookies.thirdParty.googleAnalytics.retention'),
       optOut: 'https://tools.google.com/dlpage/gaoptout'
     },
     {
-      name: 'Stripe',
-      purpose: 'Payment processing and fraud prevention',
-      dataCollected: 'Payment information, transaction data',
-      retention: '7 years (regulatory requirement)',
-      optOut: 'N/A (essential for payment processing)'
+      name: t('cookies.thirdParty.stripe.name'),
+      purpose: t('cookies.thirdParty.stripe.purpose'),
+      dataCollected: t('cookies.thirdParty.stripe.dataCollected'),
+      retention: t('cookies.thirdParty.stripe.retention'),
+      optOut: t('cookies.thirdParty.stripe.optOut')
     },
     {
-      name: 'Intercom',
-      purpose: 'Customer support and communication',
-      dataCollected: 'Support conversations, user preferences',
-      retention: '2 years',
-      optOut: 'Contact support to disable'
+      name: t('cookies.thirdParty.intercom.name'),
+      purpose: t('cookies.thirdParty.intercom.purpose'),
+      dataCollected: t('cookies.thirdParty.intercom.dataCollected'),
+      retention: t('cookies.thirdParty.intercom.retention'),
+      optOut: t('cookies.thirdParty.intercom.optOut')
     },
     {
-      name: 'Hotjar',
-      purpose: 'User experience analysis and heatmaps',
-      dataCollected: 'Mouse movements, clicks, scroll behavior',
-      retention: '365 days',
+      name: t('cookies.thirdParty.hotjar.name'),
+      purpose: t('cookies.thirdParty.hotjar.purpose'),
+      dataCollected: t('cookies.thirdParty.hotjar.dataCollected'),
+      retention: t('cookies.thirdParty.hotjar.retention'),
       optOut: 'https://www.hotjar.com/legal/compliance/opt-out'
     }
   ];
@@ -102,14 +104,14 @@ const CookiesPage: React.FC = () => {
           >
             <FiPackage className="h-16 w-16 text-white mx-auto mb-6" />
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Cookie Policy
+              {t('cookies.title')}
             </h1>
             <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
-              Learn about how MatrixAI uses cookies and similar technologies to enhance your experience and provide our services.
+              {t('cookies.description')}
             </p>
             <div className="text-white/80">
-              <p className="mb-2">Last updated: January 15, 2024</p>
-              <p>Effective date: January 15, 2024</p>
+              <p className="mb-2">{t('cookies.lastUpdated')}</p>
+              <p>{t('cookies.effectiveDate')}</p>
             </div>
           </motion.div>
         </div>
@@ -126,14 +128,14 @@ const CookiesPage: React.FC = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-              What Are Cookies?
+              {t('cookies.whatAreCookies.title')}
             </h2>
             <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-8">
               <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-                Cookies are small text files that are stored on your device when you visit our website. They help us provide you with a better experience by remembering your preferences, keeping you logged in, and analyzing how you use our services.
+                {t('cookies.whatAreCookies.content1')}
               </p>
               <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-                We use both first-party cookies (set by MatrixAI) and third-party cookies (set by our partners) to enhance functionality, provide analytics, and deliver relevant content.
+                {t('cookies.whatAreCookies.content2')}
               </p>
             </div>
           </motion.div>
@@ -145,10 +147,10 @@ const CookiesPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Types of Cookies We Use
+              {t('cookies.typesSection.title')}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400">
-              We use different types of cookies for various purposes
+              {t('cookies.typesSection.description')}
             </p>
           </div>
 
@@ -173,11 +175,11 @@ const CookiesPage: React.FC = () => {
                     <div className="flex items-center gap-2 mt-2">
                       {type.required ? (
                         <span className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded text-sm">
-                          Required
+                          {t('cookies.labels.required')}
                         </span>
                       ) : (
                         <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded text-sm">
-                          Optional
+                          {t('cookies.labels.optional')}
                         </span>
                       )}
                     </div>
@@ -189,7 +191,7 @@ const CookiesPage: React.FC = () => {
                 </p>
                 
                 <div className="space-y-2">
-                  <h4 className="font-medium text-gray-900 dark:text-white">Examples:</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-white">{t('cookies.labels.examples')}</h4>
                   <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                     {type.examples.map((example, idx) => (
                       <li key={idx} className="flex items-center gap-2">
@@ -210,10 +212,10 @@ const CookiesPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Third-Party Services
+              {t('cookies.thirdPartySection.title')}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400">
-              We work with trusted partners who may also set cookies
+              {t('cookies.thirdPartySection.description')}
             </p>
           </div>
 
@@ -221,11 +223,11 @@ const CookiesPage: React.FC = () => {
             <table className="w-full bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden">
               <thead className="bg-gray-100 dark:bg-gray-800">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-white">Service</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-white">Purpose</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-white">Data Collected</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-white">Retention</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-white">Opt-Out</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-white">{t('cookies.table.service')}</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-white">{t('cookies.table.purpose')}</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-white">{t('cookies.table.dataCollected')}</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-white">{t('cookies.table.retention')}</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-900 dark:text-white">{t('cookies.table.optOut')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -257,7 +259,7 @@ const CookiesPage: React.FC = () => {
                           rel="noopener noreferrer"
                           className="text-orange-600 dark:text-orange-400 hover:underline"
                         >
-                          Opt-out link
+                          {t('cookies.table.optOutLink')}
                         </a>
                       ) : (
                         <span className="text-gray-600 dark:text-gray-400">
@@ -283,35 +285,35 @@ const CookiesPage: React.FC = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
-              Managing Your Cookie Preferences
+              {t('cookies.managingSection.title')}
             </h2>
             
             <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-md">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                    Browser Settings
+                    {t('cookies.managingSection.browserSettings.title')}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    You can control cookies through your browser settings:
+                    {t('cookies.managingSection.browserSettings.description')}
                   </p>
                   <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                    <li>• Block all cookies</li>
-                    <li>• Block third-party cookies only</li>
-                    <li>• Delete existing cookies</li>
-                    <li>• Set cookies to expire when you close your browser</li>
+                    <li>• {t('cookies.managingSection.browserSettings.option1')}</li>
+                    <li>• {t('cookies.managingSection.browserSettings.option2')}</li>
+                    <li>• {t('cookies.managingSection.browserSettings.option3')}</li>
+                    <li>• {t('cookies.managingSection.browserSettings.option4')}</li>
                   </ul>
                 </div>
                 
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                    Cookie Consent
+                    {t('cookies.managingSection.consent.title')}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    You can manage your cookie preferences at any time:
+                    {t('cookies.managingSection.consent.description')}
                   </p>
                   <button className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors">
-                    Cookie Preferences
+                    {t('cookies.managingSection.consent.button')}
                   </button>
                 </div>
               </div>
@@ -331,14 +333,14 @@ const CookiesPage: React.FC = () => {
             className="text-center"
           >
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-              Updates to This Policy
+              {t('cookies.updatesSection.title')}
             </h2>
             <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-8">
               <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-                We may update this Cookie Policy from time to time to reflect changes in our practices or applicable laws. We will notify you of any material changes by posting the updated policy on our website.
+                {t('cookies.updatesSection.content1')}
               </p>
               <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-                We encourage you to review this policy periodically to stay informed about how we use cookies and similar technologies.
+                {t('cookies.updatesSection.content2')}
               </p>
             </div>
           </motion.div>
@@ -355,25 +357,25 @@ const CookiesPage: React.FC = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-3xl font-bold text-white mb-4">
-              Questions About Cookies?
+              {t('cookies.contact.title')}
             </h2>
             <p className="text-xl text-orange-100 mb-8">
-              If you have any questions about our use of cookies or this Cookie Policy, please don't hesitate to contact us.
+              {t('cookies.contact.description')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:matrixai.global@gmail.com"
+                href="mailto:info@matrixaiglobal.com"
                 className="bg-white text-orange-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
               >
                 <FiMail className="h-5 w-5" />
-                Email Us
+                {t('cookies.contact.email')}
               </a>
               <a
                 href="/contact"
                 className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-orange-600 transition-colors flex items-center justify-center gap-2"
               >
                 <FiPhone className="h-5 w-5" />
-                Contact Form
+                {t('cookies.contact.form')}
               </a>
             </div>
           </motion.div>
@@ -383,4 +385,4 @@ const CookiesPage: React.FC = () => {
   );
 };
 
-export default CookiesPage; 
+export default CookiesPage;

@@ -536,9 +536,9 @@
         "title": "將圖像轉換為動態視頻"
       }
     },
-    "startCreating": "開始使用AI創建",
+    "startCreating": "開始使用AI進行創作",
     "title": "您的完整AI",
-    "titleSecondLine": "創意套房",
+    "titleSecondLine": "創意套件",
     "useCasesSection": {
       "aiChat": "AI聊天",
       "contentWriting": "內容寫作",
@@ -591,7 +591,7 @@
     "footer": {
       "categories": {
         "explore": "探索",
-        "features": "特徵",
+        "features": "功能",
         "help": "幫助",
         "resources": "資源",
         "tools": "工具"
@@ -600,9 +600,9 @@
         "aboutUs": "關於我們",
         "aiChat": "AI聊天",
         "blog": "部落格",
-        "careers": "職業",
+        "careers": "就業機會",
         "chat": "聊天",
-        "contact": "接觸",
+        "contact": "聯繫",
         "contentGeneration": "內容產生",
         "contentWriter": "內容作家",
         "cookiesPolicy": "Cookies政策",
@@ -887,7 +887,7 @@
     "chooseAiToolDesc": "從視頻創建，圖像生成，語音到文本，內容寫作或AI聊天中進行選擇 - 都在一個具有統一界面的平台中。",
     "describeWhatYouWant": "描述你想要什麼",
     "describeWhatYouWantDesc": "使用自然語言來解釋您的願景。我們的AI了解所有工具的上下文，樣式偏好和創造性方向。",
-    "description": "體驗即時AI驅動的創造力與您所有創意需求的老式生產頭痛之間的區別。",
+    "description": "體驗即時人工智能創意與傳統製作難題之間的區別，滿足您的所有創意需求。",
     "getProfessionalResults": "立即獲得專業成績",
     "getProfessionalResultsDesc": "我們的AI處理複雜的工作。無論是視頻，圖像，轉錄，內容還是聊天響應，都會在幾分鐘而不是幾天內獲得高質量的結果。",
     "learnComplexSoftware": "學習多個複雜的軟件接口",
@@ -896,7 +896,7 @@
     "payMultipleSubscriptions": "支付多個訂閱和服務",
     "payPremiumPrices": "為每種服務支付高級價格",
     "researchHireSpecialists": "研究和僱用不同專家為每項任務",
-    "title": "為什麼要等幾週？在幾分鐘而不是幾天之內使用AI創建",
+    "title": "何必等上幾周？幾分鐘內即可使用 AI 進行創作，無需幾天時間。MatrixAI 是滿足您所有需求的最佳平臺。",
     "titleSecondLine": "矩陣AI是滿足您所有需求的最佳平台",
     "traditionalTitle": "傳統的創意方法",
     "traditionalVideoProduction": "傳統的視頻製作",
@@ -917,7 +917,7 @@
     "creativeSuite": {
       "description": "一個集成平台中的所有創意AI工具。",
       "detailedDescription": "在一個無縫平台中訪問我們完整的AI創意工具套件。結合視頻生成，圖像創建，語音到文本，內容寫作和AI聊天，以質量穩定地進行全面的創意項目。",
-      "name": "創意套房"
+      "name": "創意套件"
     },
     "featureSections": {
       "aiChat": {
@@ -952,7 +952,7 @@
     },
     "speechToText": {
       "description": "將口語單詞轉換為準確的文本轉錄。",
-      "detailedDescription": "我們先進的語音識別技術能夠將音頻錄音轉換為精准的文本轉錄，準確率極高。非常適合會議、訪談、內容創作和無障礙訪問。結合我們的內容生成功能，可將您的口頭想法瞬間轉化為精美的書面內容。",
+      "detailedDescription": "高精度地將音頻轉換為文本。非常適合轉錄會議、採訪和其他音頻記錄。",
       "name": "對文字的講話"
     },
     "subtitle": "使用matrixai.asia，您始終擁有正確的工具 - 不僅僅是一個選項。立即在一個地方訪問視頻生成，圖像創建，語音到文本，內容寫作和AI聊天。",
@@ -1306,7 +1306,7 @@
       }
     },
     "contact": {
-      "email": "support@matrixaiglobal.com",
+      "email": "info@matrixaiglobal.com",
       "emailSupport": "電子郵件支持",
       "responseTime": "我們的團隊通常在24小時內做出回應",
       "title": "聯繫信息"
@@ -1616,7 +1616,7 @@
     },
     "settings": "設定",
     "share": "分享",
-    "subtitle": "使用高級AI，將您的音頻文件轉換為準確的文本轉錄",
+    "subtitle": "將音頻文件轉換為準確的文本轉錄。",
     "success": {
       "transcriptionCopied": "轉錄複製到剪貼板！"
     },
@@ -1652,10 +1652,10 @@
     }
   },
   "about": {
-    "description": "我們正在建立AI驅動的生產力工具的未來。我們的使命是使每個人都可以訪問先進的人工智能，從而使個人和企業能夠通過智能自動化獲得更多成就。",
+    "description": "我們正在構建 AI 賦能的生產力工具的未來。我們的使命是讓先進的人工智能惠及每個人，賦能個人和企業，讓他們能夠通過智能自動化實現更多成就。",
     "ourStory": {
-      "paragraph1": "Matrixai成立於2023年，源於一種簡單的信念：人工智能應提高人類的創造力和生產力，而不是取代它。我們的人工智能研究人員，工程師和設計師團隊融合了民主化使用強大的AI工具的共同願景。",
-      "paragraph2": "最初是一個小型項目來創建更好的AI寫作工具，已經發展成為一個為全球數千名用戶提供服務的綜合平台。我們已經構建了從智能聊天機器人到高級圖像生成系統的所有內容，始終在最前沿的用戶體驗。",
+      "paragraph1": "Matrixai成立於2023年，源於一種簡單的信念：人工智能應提高人類的創造力和生產力，而不是取代它。我們的團隊由 AI 研究人員、工程師和設計師組成，秉持著一個共同的願景：讓強大的 AI 工具普及大眾。",
+      "paragraph2": "我們最初只是一個旨在打造更佳 AI 寫作工具的小項目，如今已發展成為一個服務於全球數千名用戶的綜合平臺。從智能聊天機器人到先進的圖像生成系統，我們構建了各種產品，始終將用戶體驗放在首位。",
       "paragraph3": "如今，Matrixai繼續在AI上突破可能的界限，同時保持我們對道德發展和用戶隱私的承諾。我們認為，工作的未來是協作的 - 人類和人工智能共同努力，以取得非凡的成果。",
       "title": "我們的故事"
     },
@@ -1667,16 +1667,16 @@
         "title": "全球視角"
       },
       "openCommunication": {
-        "description": "我們在團隊內部和客戶中培養誠實和公開的對話，以建立信任並不斷提高。",
+        "description": "我們在團隊內部以及與客戶之間促進誠實和開放的對話，以建立信任並不斷改進。",
         "title": "開放溝通"
       },
       "responsibleAI": {
-        "description": "我們相信，在培訓模型和處理數據方面，以透明度在道德和負責任地開發AI系統。",
-        "title": "負責人AI"
+        "description": "我們相信以合乎道德和負責任的方式開發人工智能系統，並且我們訓練模型和處理數據的方式應保持透明。",
+        "title": "負責任的人工智能"
       },
       "title": "我們的價值觀",
       "userCentric": {
-        "description": "我們建立了AI，可以增強人類能力，而無需取代人類的聯繫。我們的產品旨在解決真正的人的真正問題。",
+        "description": "我們打造的人工智能能夠增強人類能力，但不會取代人際聯繫。我們的產品旨在解決真正的人的真正問題。",
         "title": "以用戶為中心的創新"
       }
     }
@@ -1690,7 +1690,18 @@
     "pageDescription": "洞察力，更新和深入研究AI技術的世界",
     "pageTitle": "Matrixai博客",
     "searchPlaceholder": "搜索文章...",
-    "title": "部落格"
+    "title": "部落格",
+    "articlePlural": "文章",
+    "articleSingular": "文章",
+    "enterEmail": "輸入您的電子郵件",
+    "found": "成立",
+    "latestArticles": "最新文章",
+    "noArticlesFound": "找不到文章",
+    "readMore": "閱讀更多",
+    "stayUpdated": "保持更新",
+    "subscribe": "訂閱",
+    "subscribeNewsletter": "訂閱我們的新聞通訊，以獲取最新的AI見解和更新",
+    "tryAdjusting": "嘗試調整搜索詞或類別過濾器"
   },
   "contact": {
     "agreeTerms": "我同意隱私政策和服務條款。",
@@ -1737,6 +1748,7 @@
     "contactUs": "聯繫我們"
   },
   "pricing": {
+    "subtitle": "選擇最適合您的方案。所有方案均包含我們全套 AI 工具的使用權。",
     "addonFeature1": "現有用戶的額外硬幣",
     "addonFeature2": "在月末過期",
     "addonFeature3": "增加當前餘額",
@@ -1750,7 +1762,7 @@
     "contactSales": "聯繫銷售",
     "contentWriting": "內容寫作",
     "faq": "常見問題",
-    "faqAnswer1": "我們的平台使用基於硬幣的系統，其中不同的AI服務消耗了不同數量的硬幣。您購買了一個計劃，可以為您提供一定數量的硬幣，然後您可以將其用於各種AI服務。",
+    "faqAnswer1": "我們的平台使用基於硬幣的系統，不同的AI服務消耗不同數量的硬幣。您購買一個計劃，為您提供一定數量的硬幣，然後您可以將其用於各種AI服務。",
     "faqAnswer2": "是的，每月計劃的硬幣在每個計費周期結束時到期。測試人員計劃的硬幣在15天后到期。 Addon Pack硬幣將於本月底到期。",
     "faqAnswer3": "是的，您可以隨時升級計劃。升級時，我們將為您當前計劃的剩餘價值進行籌集資金，並將其應用於您的新計劃。",
     "faqAnswer4": "我們接受主要的信用卡（Visa，萬事達卡），以及中國的支撐式香港和Alipay中國付款。",
@@ -1779,7 +1791,6 @@
     "save10": "節省10％",
     "signUpNow": "立即註冊",
     "subscribeNow": "立即訂閱",
-    "subtitle": "選擇最適合您的計劃。所有計劃都包括訪問我們的完整AI工具套件。",
     "tester": "測試儀",
     "testerFeature1": "非常適合嘗試我們的服務",
     "testerFeature2": "有效期15天",
@@ -1883,5 +1894,1035 @@
     "unlimitedTranscriptions": "無限抄錄",
     "uploadWait": "請在我們處理您的音頻文件時等待...",
     "uploading": "上傳"
+  },
+  "careers": {
+    "joinAiRevolution": "加入人工智能革命",
+    "helpBuildFuture": "與我們攜手共創人工智能的未來。攜手尖端科技與傑出人才，共同創造意義非凡的人工智能。",
+    "viewOpenPositions": "查看空缺職位",
+    "learnAboutCulture": "瞭解文化",
+    "teamMembers": "團隊成員",
+    "countries": "國家",
+    "aiInteractions": "人工智能交互",
+    "seriesAFunding": "A輪融資",
+    "whyWorkWithUs": "為什麼與我們合作？",
+    "competitiveBenefits": "我們提供有競爭力的福利和重視創新、成長和工作與生活平衡的文化。",
+    "healthWellness": "健康與保健",
+    "comprehensiveInsurance": "綜合健康、牙科和視力保險",
+    "flexibleWork": "彈性工作",
+    "remoteFirstCulture": "遠程優先文化和靈活的工作時間",
+    "learningBudget": "學習預算",
+    "annualBudget": "每年 3,000 美元的課程和會議預算",
+    "equityPackage": "股權方案",
+    "competitiveEquity": "快速發展的公司中的競爭股權",
+    "teamEvents": "團隊活動",
+    "regularTeamBuilding": "定期團隊建設和公司休假",
+    "latestTech": "最新科技",
+    "topTierEquipment": "適合您工作的頂級設備和工具",
+    "openPositions": "空缺職位",
+    "findCareerOpportunity": "與我們一起尋找您的下一個職業機會",
+    "dontSeeRightRole": "沒有看到正確的角色？",
+    "alwaysLookingTalented": "我們一直在尋找優秀人才。請發送您的簡歷，讓我們與您洽談！",
+    "sendResume": "發送簡歷",
+    "askQuestions": "提出問題",
+    "stats": {
+      "teamMembers": {
+        "number": "150+",
+        "label": "團隊成員"
+      },
+      "countries": {
+        "number": "25+",
+        "label": "國家"
+      },
+      "aiInteractions": {
+        "number": "10M+",
+        "label": "AI互動"
+      },
+      "funding": {
+        "number": "$50M",
+        "label": "A輪融資"
+      }
+    },
+    "benefitsDescription": "我們提供有競爭力的福利和重視創新、成長和工作生活平衡的文化。",
+    "findOpportunity": "在我們這裡找到您的下一個職業機會",
+    "departments": {
+      "all": "全部",
+      "engineering": "工程",
+      "design": "設計",
+      "marketing": "市場營銷",
+      "customerSuccess": "客戶成功"
+    },
+    "keyRequirements": "關鍵要求",
+    "posted": "發布於",
+    "applyNow": "立即申請",
+    "dontSeeRole": "沒有看到合適的職位？",
+    "alwaysLooking": "我們一直在尋找有才華的人。請發送您的履歷，讓我們聊聊！",
+    "benefits": {
+      "healthWellness": {
+        "title": "健康與福利",
+        "description": "全面的健康、牙科和視力保險"
+      },
+      "flexibleWork": {
+        "title": "靈活工作",
+        "description": "遠程優先的文化和靈活的工作時間"
+      },
+      "learningBudget": {
+        "title": "學習預算",
+        "description": "每年3000美元的課程和會議預算"
+      },
+      "equityPackage": {
+        "title": "股權包",
+        "description": "在快速成長公司中的有競爭力的股權"
+      },
+      "teamEvents": {
+        "title": "團隊活動",
+        "description": "定期的團隊建設和公司聚會"
+      },
+      "latestTech": {
+        "title": "最新技術",
+        "description": "為您的工作提供頂級設備和工具"
+      },
+      "workLifeBalance": {
+        "title": "工作生活平衡",
+        "description": "靈活的時間安排和遠程工作選擇，幫助您保持健康的工作生活平衡。"
+      }
+    }
+  },
+  "privacy": {
+    "title": "隱私政策",
+    "subtitle": "我們重視您的隱私。本政策解釋了您在使用 MatrixAI 時，我們如何收集、使用和保護您的個人信息。",
+    "lastUpdated": "最後更新: January 15, 2024",
+    "effectiveDate": "生效日期: January 15, 2024",
+    "tableOfContents": "目錄",
+    "informationCollection": {
+      "title": "我們收集的信息",
+      "content": "我們收集您直接提供給我們的信息，例如您創建帳戶、使用我們的服務或聯繫我們時提供的信息。這些信息包括：\n\n• 個人信息（姓名、電子郵件地址、電話號碼）\n• 帳戶憑證和偏好設置\n• 您使用我們的 AI 工具創建或上傳的內容\n• 付款信息（通過第三方提供商安全處理）\n• 與我們的支持團隊的溝通歷史\n\n我們還會自動收集有關您的設備和使用模式的某些信息，包括：\n\n• 設備信息（IP 地址、瀏覽器類型、操作系統）\n• 使用數據（使用的功能、花費的時間、交互模式）\n• 性能數據用於改進我們的 AI 模型\n• Cookie 和類似的追蹤技術"
+    },
+    "informationUse": {
+      "title": "我們如何使用您的信息",
+      "content": "我們將使用收集到的信息來：\n\n• 提供、維護和改進我們的人工智能服務\n• 處理交易並發送相關信息\n• 個性化您的體驗並提供相關內容\n• 訓練和改進我們的人工智能模型（採取適當的保護措施）\n• 與您溝通我們的服務、更新和優惠\n• 檢測、預防和解決技術問題和安全威脅\n• 遵守法律義務並保護我們的權利\n\n我們使用您的數據是為了讓我們的 AI 更加實用，同時尊重您的隱私。除非您明確選擇允許使用更多數據，否則我們僅會以匯總且匿名的方式使用您創建的內容來改進我們的模型。"
+    },
+    "informationSharing": {
+      "title": "信息共享與披露",
+      "content": "除以下情況外，我們不會出售、交易或以其他方式轉讓您的個人信息給第三方：\n\n• 服務提供商：我們可能會與幫助我們運營平臺（雲託管、支付處理、分析）的可信第三方服務提供商共享信息\n• 法律要求：如果法律、法院命令或政府要求，我們可能會披露信息\n• 業務轉移：信息可能會作為合併、收購或資產出售的一部分進行轉移\n• 權利保護：我們可能會共享信息以保護我們或我們用戶的權利、財產或安全\n• 同意：我們可能會在您明確同意的情況下共享信息\n\n所有第三方服務提供商均受保密協議的約束，禁止將您的信息用於任何其他目的。"
+    },
+    "dataSecurity": {
+      "title": "數據安全",
+      "content": "我們實施適當的技術和組織安全措施，以保護您的個人信息免遭未經授權的訪問、更改、披露或破壞：\n\n• 使用行業標準協議進行傳輸中和靜態加密\n• 定期安全審計和滲透測試\n• 對我們員工的訪問控制和身份驗證要求\n• 通過物理和環境保護來保護數據中心\n• 潛在安全漏洞的事件響應程序\n• 定期為員工提供安全培訓\n\n雖然我們努力保護您的信息，但沒有任何一種互聯網傳輸或電子存儲方式是 100% 安全的。我們無法保證絕對安全，但致力於採用行業最佳實踐來保護您的數據。"
+    },
+    "yourRights": {
+      "title": "您的權利和選擇",
+      "content": "您對您的個人信息擁有多項權利：\n\n• 訪問：索取我們持有的您的個人信息副本\n• 更正：請求更正不準確或不完整的信息\n• 刪除：請求刪除您的個人信息（有某些例外情況）\n• 可移植性：請求將您的數據傳輸到另一個服務提供商\n• 限制：請求限制處理您的個人信息\n• 反對：反對為特定目的處理您的個人信息\n• 撤回同意：在同意是法律依據的情況下撤回數據處理的同意\n\n如需行使這些權利，請通過 info@matrixaiglobal.com 與我們聯繫。我們將在 30 天內回復您的請求。"
+    },
+    "cookies": {
+      "title": "Cookie 和追蹤技術",
+      "content": "我們使用 Cookie 和類似的追蹤技術來收集和存儲有關您與我們服務互動的信息：\n\n• 基本 Cookie：基本功能和安全所需\n• 性能 Cookie：幫助我們瞭解您如何使用我們的服務\n• 功能性 Cookie：記住您的偏好和設置\n• 分析 Cookie：提供對使用模式和性能的洞察\n\n您可以通過瀏覽器設置控制 Cookie，但禁用某些 Cookie 可能會影響我們服務的功能。我們還使用本地存儲和類似技術來提升您的體驗。",
+      "contact": {
+        "description": "如果您對我們使用cookie或cookie政策有任何疑問，請與我們聯繫。",
+        "email": "給我們發電子郵件",
+        "form": "接觸表格",
+        "title": "聯繫我們"
+      },
+      "description": "該餅乾政策解釋了Matrixai如何使用cookie和類似技術來訪問我們的網站時識別您。",
+      "effectiveDate": "生效日期：2024年1月15日",
+      "labels": {
+        "examples": "例子",
+        "optional": "選修的",
+        "required": "必需的"
+      },
+      "lastUpdated": "最後更新：2024年1月15日",
+      "managingSection": {
+        "browserSettings": {
+          "description": "您可以以各種方式控制和管理cookie：",
+          "option1": "阻止所有餅乾",
+          "option2": "阻止第三方餅乾",
+          "option3": "關閉瀏覽器時清除餅乾",
+          "option4": "逐個站點管理餅乾",
+          "title": "瀏覽器設置"
+        },
+        "consent": {
+          "button": "管理cookie首選項",
+          "description": "您可以使用我們的同意工具來管理cookie首選項。",
+          "title": "餅乾同意"
+        },
+        "title": "管理您的cookie首選項"
+      },
+      "table": {
+        "dataCollected": "收集的數據",
+        "optOut": "選擇退出",
+        "optOutLink": "了解更多",
+        "purpose": "目的",
+        "retention": "保留期",
+        "service": "服務"
+      },
+      "thirdParty": {
+        "googleAnalytics": {
+          "dataCollected": "頁面視圖，用戶交互，設備信息",
+          "name": "Google Analytics（分析）",
+          "purpose": "網站分析和性能監控",
+          "retention": "26個月"
+        },
+        "hotjar": {
+          "dataCollected": "鼠標運動，點擊，滾動行為",
+          "name": "hotjar",
+          "purpose": "用戶經驗分析和熱圖",
+          "retention": "12個月"
+        },
+        "intercom": {
+          "dataCollected": "用戶互動，支持對話",
+          "name": "對講",
+          "optOut": "在聊天設置中禁用",
+          "purpose": "客戶支持和溝通",
+          "retention": "3年"
+        },
+        "stripe": {
+          "dataCollected": "付款信息，交易數據",
+          "name": "條紋",
+          "optOut": "直接接觸條紋",
+          "purpose": "付款處理和預防欺詐",
+          "retention": "7年"
+        }
+      },
+      "thirdPartySection": {
+        "description": "我們使用可能在您的設備上設置Cookie的各種第三方服務。",
+        "title": "第三方服務"
+      },
+      "types": {
+        "analytics": {
+          "description": "這些cookie可以通過匿名收集和報告信息來了解訪問者如何與我們的網站互動。",
+          "example1": "頁面查看跟踪",
+          "example2": "用戶行為分析",
+          "example3": "性能監控",
+          "example4": "錯誤跟踪",
+          "required": "錯誤的",
+          "title": "分析餅乾"
+        },
+        "essential": {
+          "description": "這些餅乾是嚴格必要的，對於通過我們的網站為您提供可用的服務並使用其一些功能是必要的。",
+          "example1": "身份驗證餅乾",
+          "example2": "安全餅乾",
+          "example3": "負載平衡餅乾",
+          "example4": "會話管理餅乾",
+          "required": "真的",
+          "title": "必不可少的餅乾"
+        },
+        "functional": {
+          "description": "這些Cookie使網站能夠提供增強的功能和個性化。",
+          "example1": "語言偏好",
+          "example2": "主題設置",
+          "example3": "用戶界面首選項",
+          "example4": "可訪問性設置",
+          "required": "錯誤的",
+          "title": "功能性餅乾"
+        },
+        "marketing": {
+          "description": "這些cookie用於跨網站跟踪訪問者，以顯示相關和引人入勝的廣告。",
+          "example1": "廣告定位",
+          "example2": "轉換跟踪",
+          "example3": "重新定位",
+          "example4": "社交媒體整合",
+          "required": "錯誤的",
+          "title": "營銷餅乾"
+        }
+      },
+      "typesSection": {
+        "description": "我們使用不同類型的cookie為您提供我們網站上最佳的體驗。",
+        "title": "我們使用的餅乾類型"
+      },
+      "updatesSection": {
+        "content1": "我們可能會不時更新該餅乾政策，以反映我們實踐的變化或其他操作，法律或監管原因。",
+        "content2": "請定期檢查此頁面是否有任何更改。我們將通過在此頁面上發布新的Cookie策略來通知您任何重大更改。",
+        "title": "更新此策略"
+      },
+      "whatAreCookies": {
+        "content1": "cookie是訪問網站時放置在計算機或移動設備上的小數據文件。 Cookie被網站所有者廣泛使用，以使其網站工作或更有效地工作，並提供報告信息。",
+        "content2": "網站所有者設定的cookie（在這種情況下為Matrixai）稱為“第一派對Cookies”。由網站所有者以外的各方設定的餅乾稱為“第三方cookies”。第三方Cookie可以在網站上或通過網站上提供第三方功能或功能（例如廣告，交互式內容和分析）。",
+        "title": "什麼是餅乾？"
+      }
+    },
+    "internationalTransfers": {
+      "title": "國際數據傳輸",
+      "content": "MatrixAI 在全球範圍內運營，您的信息可能會被傳輸到您所在國家/地區以外的國家/地區並在那裡進行處理。當我們進行國際個人信息傳輸時，我們確保採取適當的保障措施：\n\n• 經相關部門批准的標準合同條款\n• 承認同等保護水平的充分性決定\n• 集團內部轉移的約束性公司規則\n• 您對特定轉移的明確同意\n\n我們致力於保護您的信息，無論其在何處處理，並確保國際轉移符合適用的數據保護法。"
+    },
+    "childrenPrivacy": {
+      "title": "兒童隱私",
+      "content": "我們的服務不適用於13歲以下的兒童。我們不會故意收集13歲以下兒童的個人信息。如果您是父母或監護人，並且認為您的孩子向我們提供了個人信息，請立即聯繫我們。\n\n如果我們發現收集了13歲以下兒童的個人信息，我們將採取措施及時刪除此類信息。對於13至18歲的用戶，我們建議他們在家長的指導下使用我們的服務。"
+    },
+    "changes": {
+      "title": "本隱私政策的變更",
+      "content": "我們可能會不時更新本隱私政策，以反映我們的做法或適用法律的變化。我們將通過以下方式通知您任何重大變更：\n\n• 在我們的網站上發佈更新後的政策\n• 向註冊用戶發送電子郵件通知\n• 在我們的平臺上顯示醒目的通知\n\n除非另有說明，更新後的政策自發佈之日起生效。我們建議您定期查看本政策，以瞭解我們如何保護您的信息。"
+    },
+    "contact": {
+      "title": "對您的隱私有疑問？",
+      "description": "如果您對本隱私政策或我們如何處理您的個人信息有任何疑問，請隨時與我們聯繫。",
+      "emailUs": "給我們發電子郵件",
+      "contactForm": "聯繫表格"
+    }
+  },
+  "terms": {
+    "title": "服務條款",
+    "subtitle": "本條款約束您對 MatrixAI 服務的使用。請仔細閱讀，以瞭解您的權利和責任。",
+    "lastUpdated": "最後更新: January 15, 2024",
+    "effectiveDate": "生效日期: January 15, 2024",
+    "tableOfContents": "目錄",
+    "acceptance": {
+      "title": "接受條款",
+      "content1": "通過訪問或使用MatrixAI的服務，您同意受本服務條款以及所有適用法律法規的約束。如果您不同意本服務條款中的任何一項，您將被禁止使用或訪問我們的服務。",
+      "content2": "這些條款構成您與 MatrixAI 之間具有法律約束力的協議。您對我們服務的使用也受我們的隱私政策管轄，該政策通過引用納入本條款。"
+    },
+    "services": {
+      "title": "服務描述",
+      "content1": "MatrixAI 提供人工智能驅動的工具和服務，包括但不限於：",
+      "feature1": "• 人工智能聊天和對話界面",
+      "feature2": "• 圖像生成和編輯工具",
+      "feature3": "• 視頻創建和編輯功能",
+      "feature4": "• 內容寫作和文本生成",
+      "feature5": "• 為開發人員提供 API 訪問",
+      "content2": "我們的服務按“原樣”提供，我們保留隨時修改、暫停或終止我們任何方面服務的權利，恕不另行通知。"
+    },
+    "userAccounts": {
+      "title": "用戶帳戶和註冊",
+      "registrationTitle": "要訪問我們服務的某些功能，您必須創建一個帳戶。您同意：",
+      "registration1": "• 在註冊時提供準確、最新和完整的信息",
+      "registration2": "• 維護您的帳戶憑證的安全",
+      "registration3": "• 對您帳戶下發生的所有活動承擔責任",
+      "registration4": "• 如果您的帳戶有任何未經授權的使用，請立即通知我們",
+      "responsibilitiesTitle": "您必須年滿 13 歲才能創建帳戶。如果您未滿 18 歲，則必須獲得父母同意才能使用我們的服務。",
+      "responsibilities1": "• 不要與他人共享您的帳戶或允許他人訪問您的帳戶",
+      "suspensionTitle": "我們保留暫停或終止違反這些條款或從事禁止活動的帳戶的權利。",
+      "responsibilities2": "您必須立即將任何未經授權使用您的帳戶通知我們",
+      "responsibilities3": "您不得與他人分享您的帳戶憑據",
+      "responsibilities4": "您必須保持聯繫信息的最新信息",
+      "suspension1": "我們可能暫停或終止違反本條款的帳戶",
+      "suspension2": "我們可能會暫停賬目未付費",
+      "suspension3": "我們可能會暫停有關可疑或欺詐活動的帳戶",
+      "suspension4": "您將在可能的情況下通知您任何帳戶暫停"
+    },
+    "acceptableUse": {
+      "title": "可接受使用政策",
+      "content1": "您同意不將我們的服務用於任何非法或禁止的活動，包括但不限於：",
+      "prohibited1": "• 生成有害、非法或冒犯性內容",
+      "prohibited2": "• 嘗試對我們的人工智能模型進行逆向工程",
+      "prohibited3": "• 騷擾、威脅或恐嚇他人",
+      "prohibited4": "• 侵犯知識產權",
+      "prohibited5": "• 創建虛假賬戶或冒充他人",
+      "prohibited6": "• 發送垃圾郵件或未經請求的通信",
+      "content2": "我們保留監控使用情況並對違規行為採取適當行動的權利，包括暫停或終止帳戶。"
+    },
+    "contentPolicy": {
+      "title": "內容和知識產權",
+      "ownershipTitle": "內容所有權：",
+      "ownership1": "• 您保留使用我們的服務所創建內容的所有權",
+      "ownership2": "• 我們不主張對您生成的內容的所有權",
+      "ownership3": "• 您有責任確保您的內容符合適用法律",
+      "licenseTitle": "授予我們的許可：",
+      "license1": "• 您授予我們有限的許可，以處理您的內容來提供我們的服務",
+      "license2": "• 我們可能會使用匯總的匿名數據來改進我們的人工智能模型",
+      "license3": "• 未經您的同意，我們不會將您的內容用於營銷目的",
+      "ipTitle": "我們的知識產權：",
+      "ip1": "• 我們的人工智能模型、軟件和服務受知識產權法保護",
+      "ip2": "• 您不得複製、修改或分發我們的專有技術",
+      "ip3": "• 我們的商標和品牌受到保護，未經許可不得使用",
+      "ip4": "向我們的指定代理報告任何知識產權違規",
+      "license4": "您可以隨時刪除您的內容，但要受到技術限制",
+      "ownership4": "我們尊重知識產權並響應有效的DMCA通知"
+    },
+    "paymentTerms": {
+      "title": "付款和賬單",
+      "subscriptionTitle": "訂閱計劃：",
+      "subscription1": "• 我們提供具有不同功能和使用限制的各種訂閱計劃",
+      "subscription2": "• 訂閱費用將定期提前收取",
+      "subscription3": "• 除非法律要求，所有費用均不予退還",
+      "processingTitle": "付款處理：",
+      "processing1": "• 付款通過安全的第三方支付處理器進行處理",
+      "processing2": "• 您必須提供準確的付款信息",
+      "processing3": "• 您授權我們通過您的付款方式收取適用費用",
+      "pricingTitle": "定價變更：",
+      "pricing1": "• 我們可能會提前 30 天通知更改價格",
+      "pricing2": "• 價格變動不會影響您當前的計費週期",
+      "pricing3": "• 您可以在價格變動生效之前取消訂閱",
+      "limitsTitle": "使用限制：",
+      "limits1": "• 每個計劃都有特定的使用限制和功能",
+      "limits2": "• 超出限制可能會導致額外費用或服務限制",
+      "limits3": "• 當接近使用限制時，我們會通知您",
+      "limits4": "企業客戶可能具有自定義使用協議",
+      "pricing4": "稅收可能會根據您的位置和適用法律申請",
+      "processing4": "付款失敗可能導致服務暫停",
+      "subscription4": "您的訂閱更改在下一個計費周期生效"
+    },
+    "sections": {
+      "privacy": {
+        "title": "隱私和數據安全",
+        "dataProtectionTitle": "數據保護：",
+        "dataProtection1": "• 我們實施行業標準的安全措施來保護您的數據",
+        "dataProtection2": "• 您的個人信息將根據我們的隱私政策進行處理。",
+        "dataProtection3": "• 我們使用加密和安全協議進行數據傳輸和存儲",
+        "dataRetentionTitle": "數據保留：",
+        "dataRetention1": "• 我們僅在提供服務所需的時間內保留您的數據",
+        "dataRetention2": "• 您可以根據法律要求要求刪除您的數據",
+        "dataRetention3": "• 出於安全和法律合規目的，可能會保留某些數據",
+        "thirdPartyTitle": "第三方服務：",
+        "thirdParty1": "• 我們可能會使用第三方服務進行支付處理、分析和基礎設施",
+        "thirdParty2": "• 這些服務受保密協議約束",
+        "thirdParty3": "• 我們仔細審查所有第三方提供商的安全和隱私合規性",
+        "content1": "您的隱私對我們很重要。我們對您的個人信息的收集，使用和保護受我們的隱私政策的約束，該政策通過參考將其納入這些條款。",
+        "dataCollection1": "我們收集您直接提供給我們的信息",
+        "dataCollection2": "當您使用我們的服務時，我們可能會自動收集信息",
+        "dataCollection3": "我們使用您的信息來提供，維護和改善我們的服務",
+        "dataCollection4": "我們可能會使用您的信息與您溝通有關我們的服務",
+        "dataCollectionTitle": "數據收集和使用：",
+        "dataSecurity1": "我們實施適當的技術和組織安全措施",
+        "dataSecurity2": "我們在運輸和休息中加密敏感數據",
+        "dataSecurity3": "我們定期審查和更新我們的安全慣例",
+        "dataSecurity4": "我們將您的個人信息訪問僅限於授權人員",
+        "dataSecurityTitle": "數據安全：",
+        "rights1": "您有權訪問您的個人信息",
+        "rights2": "您可以要求糾正不准確的信息",
+        "rights3": "您可以要求刪除您的個人信息",
+        "rights4": "您可以選擇退出某些通訊",
+        "rightsTitle": "您的權利："
+      },
+      "disclaimers": {
+        "title": "免責聲明和限制",
+        "serviceAvailabilityTitle": "服務可用性：",
+        "serviceAvailability1": "• 我們的服務按“原樣”提供，不提供任何形式的擔保",
+        "serviceAvailability2": "• 我們不保證服務不中斷或無錯誤",
+        "serviceAvailability3": "• 定期維護可能會暫時影響服務可用性",
+        "aiLimitations": "人工智能的局限性：",
+        "contentAccuracy1": "• 人工智能生成的內容可能包含錯誤或不準確之處",
+        "contentAccuracy2": "• 您有責任審查和驗證人工智能生成的內容",
+        "contentAccuracy3": "• 我們不保證人工智能輸出的準確性、完整性或可靠性",
+        "liability": "責任限制：",
+        "damages1": "• 我們的責任僅限於您為我們的服務支付的金額",
+        "damages2": "• 我們不承擔間接、偶然或後果性損害的責任",
+        "damages3": "• 某些司法管轄區不允許某些限制，因此這些限制可能不適用於您",
+        "contentAccuracyTitle": "內容準確性：",
+        "thirdPartyContent1": "•我們不對第三方內容或服務負責",
+        "thirdPartyContent2": "•為方便起見提供了指向外部站點的鏈接",
+        "thirdPartyContent3": "•第三方集成受其條款和政策的約束",
+        "thirdPartyContentTitle": "第三方內容：",
+        "aiLimitations1": "AI生成的內容可能包含事實錯誤或不准確，應驗證",
+        "aiLimitations2": "AI模型可能在其培訓數據中表現出偏見",
+        "aiLimitations3": "AI生成的內容不是專業建議，不應取代人類專業知識",
+        "aiLimitationsTitle": "人工智能限制",
+        "damages4": "我們對服務的完整性，可靠性或準確性不保證",
+        "damagesTitle": "損害限制",
+        "indemnification1": "您同意賠償我們，以防您使用我們的服務引起的索賠",
+        "indemnification2": "這包括與您的內容，行為或違反這些條款有關的索賠",
+        "indemnification3": "您將支付捍衛此類索賠的合理律師費和費用",
+        "indemnification4": "我們保留以我們的費用辯護任何索賠的權利",
+        "indemnificationTitle": "保障",
+        "liability1": "我們的總責任不會超過您在索賠之前12個月內支付的金額",
+        "liability2": "我們對損失的利潤，數據或商機不承擔任何責任",
+        "liability3": "我們對第三方或不可抗力事件造成的損害不承擔任何責任",
+        "liabilityTitle": "責任限制"
+      },
+      "termination": {
+        "title": "終止",
+        "byYouTitle": "您終止：",
+        "byYou1": "• 您可以隨時通過您的帳戶設置終止您的帳戶",
+        "byYou2": "• 取消將在您當前計費週期結束時生效",
+        "byYou3": "• 您仍需承擔終止前產生的所有費用",
+        "byUsTitle": "由我們終止：",
+        "byUs1": "• 如果您違反這些條款，我們可能會終止您的帳戶",
+        "byUs2": "• 我們可能會因未付款而暫停或終止服務",
+        "byUs3": "• 我們將盡可能在終止合同前提供合理的通知",
+        "effectTitle": "終止的效力：",
+        "effect1": "• 您使用我們服務的權利將立即終止",
+        "effect2": "• 我們可能會在終止後刪除您的帳戶和數據",
+        "effect3": "• 本條款的某些規定在終止後仍然有效。"
+      },
+      "governingLaw": {
+        "title": "適用法律和爭議",
+        "lawTitle": "適用法律：",
+        "law1": "• 這些條款受 MatrixAI 註冊地法律管轄",
+        "law2": "• 任何爭議將由該管轄區的法院解決",
+        "law3": "• 您同意這些法院的管轄權和審判地",
+        "disputeTitle": "爭議解決：",
+        "dispute1": "• 我們鼓勵通過直接溝通解決爭議",
+        "dispute2": "• 對於正式爭議，我們可能要求進行具有約束力的仲裁",
+        "dispute3": "• 您可以在 30 天內以書面形式通知選擇退出仲裁",
+        "classActionTitle": "集體訴訟豁免：",
+        "classAction1": "• 您同意單獨解決爭議，而不是作為集體訴訟的一部分",
+        "classAction2": "• 此豁免適用於我們之間的所有索賠和糾紛",
+        "classAction3": "• 某些司法管轄區可能不允許集體訴訟豁免"
+      },
+      "aiLimitations": {
+        "bias1": "AI模型可能在其培訓數據中表現出偏見",
+        "bias2": "生成的內容可能不能平均代表所有觀點",
+        "bias3": "我們不斷努力改善公平並減少偏見",
+        "bias4": "向我們報告任何有關偏見或不適當內容的信息",
+        "biasTitle": "偏見與公平：",
+        "content1": "我們的AI服務是強大的工具，但是它們具有用戶應該理解的固有局限性：",
+        "contentAccuracy1": "AI生成的內容可能包含事實錯誤或不准確性",
+        "contentAccuracy2": "信息可能過時或基於不完整的培訓數據",
+        "contentAccuracy3": "始終從權威來源驗證重要信息",
+        "contentAccuracy4": "不要僅僅依靠AI生成的內容來進行關鍵決策",
+        "contentAccuracyTitle": "內容準確性：",
+        "professionalAdvice1": "AI生成的內容不是專業建議",
+        "professionalAdvice2": "諮詢合格的專業人員，以獲取法律，醫療或財務建議",
+        "professionalAdvice3": "AI無法取代專業領域的人類專業知識",
+        "professionalAdvice4": "使用AI生成的內容作為起點，而不是最終答案",
+        "professionalAdviceTitle": "專業建議：",
+        "title": "人工智能限制"
+      },
+      "liability": {
+        "content1": "在法律允許的最大範圍內，Matrixai及其分支機構，官員，僱員，代理人，合夥人和許可人對任何間接，偶然，特殊，後果或懲罰性損害均不承擔任何責任。",
+        "damages1": "我們的總責任不會超過您在索賠之前12個月內支付的金額",
+        "damages2": "我們對損失的利潤，數據或商機不承擔任何責任",
+        "damages3": "我們對第三方或不可抗力事件造成的損害不承擔任何責任",
+        "damages4": "某些司法管轄區不允許這些限制，因此它們可能不適用於您",
+        "damagesTitle": "損害限制：",
+        "indemnification1": "您同意賠償我們，以防您使用我們的服務引起的索賠",
+        "indemnification2": "這包括與您的內容，行為或違反這些條款有關的索賠",
+        "indemnification3": "您將支付捍衛此類索賠的合理律師費和費用",
+        "indemnification4": "我們保留以我們的費用辯護任何索賠的權利",
+        "indemnificationTitle": "保障：",
+        "title": "責任限制"
+      },
+      "acceptableUse": {
+        "content1": "您同意負責任地使用Matrixai的服務，並符合所有適用法律。禁止以下活動：",
+        "content2": "我們保留刪除內容並暫停違反該政策的帳戶的權利。鼓勵用戶舉報違規行為，以幫助維持安全和生產的環境。",
+        "prohibition1": "創建非法，有害或侵犯他人權利的內容",
+        "prohibition2": "試圖逆向工程或妥協我們的AI模型",
+        "prohibition3": "利用我們的服務垃圾郵件，騷擾或虐待他人",
+        "prohibition4": "生成侵犯知識產權的內容",
+        "prohibition5": "在沒有適當披露的情況下創建誤導性或欺騙性內容",
+        "prohibition6": "將我們的服務用於任何非法或欺詐目的",
+        "prohibition7": "試圖獲得未經授權的訪問我們的系統",
+        "prohibition8": "干擾我們服務的正常運作",
+        "title": "可接受的使用政策"
+      },
+      "acceptance": {
+        "content1": "通過訪問或使用Matrixai的服務，您同意受這些服務條款和所有適用法律法規的約束。如果您不同意這些條款的任何部分，則不得使用我們的服務。",
+        "content2": "這些條款適用於Matrixai的所有用戶，包括訪問者，註冊用戶和高級訂戶。通過創建帳戶或使用我們的服務，您確認您已經閱讀，理解並同意了這些條款。",
+        "content3": "我們保留隨時修改這些條款的權利。更改後繼續使用我們的服務構成了新術語的接受。",
+        "title": "接受條款"
+      },
+      "contentPolicy": {
+        "ip1": "我們的AI模型，算法和平台受知識產權法的保護",
+        "ip2": "您不得複制，修改或分發我們的專有技術",
+        "ip3": "我們尊重第三方知識產權，並期望用戶也這樣做",
+        "ipTitle": "知識產權保護：",
+        "license1": "您將授予我們全球，非排他性的許可，以使用您的內容進行服務提供",
+        "license2": "該許可包括存儲，處理和分析您的內容的權利",
+        "license3": "我們可能會使用匯總的匿名數據來改善我們的服務",
+        "licenseTitle": "使用的許可證：",
+        "ownership1": "您保留使用我們的服務創建的內容的所有權",
+        "ownership2": "您授予我們使用您的內容處理和改善我們的AI模型的許可",
+        "ownership3": "您有責任確保您擁有上傳的任何內容的權利",
+        "ownershipTitle": "內容所有權：",
+        "title": "內容和知識產權"
+      },
+      "description": {
+        "content1": "Matrixai提供人工智能驅動的工具和服務，包括但不限於：",
+        "content2": "我們的服務旨在通過先進的AI技術提高生產力和創造力。我們不斷更新並改善產品，以提供最佳的用戶體驗。",
+        "service1": "AI驅動的文本生成和編輯",
+        "service2": "圖像創建和操縱工具",
+        "service3": "視頻生成和編輯功能",
+        "service4": "數據分析和見解",
+        "service5": "定制AI模型培訓和部署",
+        "service6": "語音到文本和文本轉換轉換",
+        "service7": "內容寫作和人性化工具",
+        "title": "服務描述"
+      },
+      "paymentTerms": {
+        "limits1": "每個訂閱計劃包括特定的使用限制和功能",
+        "limits2": "超出限制可能會導致額外的費用或服務限制",
+        "limits3": "我們監視使用量以確保所有用戶的公平訪問",
+        "limitsTitle": "用法限制：",
+        "pricing1": "當前的定價可在我們的網站上找到，並且可能會隨通知而更改",
+        "pricing2": "除法律要求外，所有費用都是不退還的",
+        "pricing3": "超出計劃限制的額外用法可能會產生額外的費用",
+        "pricingTitle": "定價和費用：",
+        "processing1": "我們使用安全的第三方支付處理器來處理交易",
+        "processing2": "您授權我們收取您選擇的付款方式",
+        "processing3": "您有責任保留付款信息當前",
+        "processingTitle": "付款處理：",
+        "subscription1": "我們提供具有不同功能和使用限制的各種訂閱計劃",
+        "subscription2": "訂閱費預先賬單",
+        "subscription3": "您可以隨時升級，降級或取消訂閱",
+        "subscriptionTitle": "訂閱計劃：",
+        "title": "付款和計費"
+      },
+      "userAccounts": {
+        "content1": "要訪問我們服務的某些功能，您必須創建一個帳戶。創建帳戶時，您同意：",
+        "content2": "您應對您帳戶下發生的所有活動負責，並且必須立即通知我們任何未經授權的使用。",
+        "content3": "我們可能會暫停或終止違反這些條款，未支付費用或從事可疑或欺詐活動的帳戶。",
+        "requirement1": "提供準確，完整的信息",
+        "requirement2": "保持帳戶憑據的安全性",
+        "requirement3": "至少13歲以創建一個帳戶",
+        "requirement4": "每個人或實體不維持一個以上的免費帳戶",
+        "requirement5": "保持聯繫信息的最新信息",
+        "title": "用戶帳戶和註冊"
+      }
+    },
+    "contact": {
+      "title": "對這些條款有疑問嗎？",
+      "description": "如果您對本服務條款有任何疑問，請聯繫我們。我們將竭誠為您解答任何疑問。",
+      "email": "給我們發電子郵件",
+      "form": "聯繫表格"
+    },
+    "description": "歡迎來到Matrixai。這些服務條款控制著您對我們的AI驅動平台和服務的使用。"
+  },
+  "cookies": {
+    "title": "Cookie 政策",
+    "description": "了解我們如何使用 Cookie 來改善您的體驗。",
+    "lastUpdated": "最後更新",
+    "whatAreCookies": {
+      "title": "什麼是 Cookie？",
+      "content": "Cookie 是當您訪問網站時存儲在您設備上的小型文本文件。它們被廣泛用於使網站工作或更高效地工作，以及向網站所有者提供信息。",
+      "content1": "cookie是訪問網站時存儲在設備上的小文本文件。它們被廣泛用於使網站更有效地工作，並向網站所有者提供信息。",
+      "content2": "cookie可以是“持久”或“ session” cookie。離線時，持續的cookie保留在設備上，而關閉Web瀏覽器時會話cookie會刪除。"
+    },
+    "typesOfCookies": {
+      "title": "我們使用的 Cookie 類型",
+      "essential": {
+        "title": "必要 Cookie",
+        "description": "這些 Cookie 對於網站運行是必需的，無法在我們的系統中關閉。它們通常僅在響應您所做的相當於服務請求的操作時設置。"
+      },
+      "functional": {
+        "title": "功能性 Cookie",
+        "description": "這些 Cookie 使網站能夠提供增強的功能和個性化。它們可能由我們或我們已將其服務添加到我們頁面的第三方提供商設置。"
+      },
+      "analytics": {
+        "title": "分析 Cookie",
+        "description": "這些 Cookie 允許我們計算訪問量和流量來源，以便我們可以衡量和改善我們網站的性能。它們幫助我們了解哪些頁面最受歡迎和最不受歡迎。"
+      },
+      "marketing": {
+        "title": "營銷 Cookie",
+        "description": "這些 Cookie 可能由我們的廣告合作夥伴通過我們的網站設置。它們可能被這些公司用來建立您興趣的檔案並在其他網站上向您顯示相關廣告。"
+      }
+    },
+    "thirdPartyServices": {
+      "title": "第三方服務",
+      "description": "我們使用以下第三方服務，這些服務可能設置自己的 Cookie：",
+      "googleAnalytics": {
+        "name": "Google Analytics",
+        "purpose": "網站分析和性能監控"
+      },
+      "stripe": {
+        "name": "Stripe",
+        "purpose": "支付處理和交易安全"
+      },
+      "intercom": {
+        "name": "Intercom",
+        "purpose": "客戶支持和實時聊天"
+      },
+      "hotjar": {
+        "name": "Hotjar",
+        "purpose": "用戶行為分析和熱圖"
+      }
+    },
+    "managingCookies": {
+      "title": "管理 Cookie",
+      "content": "您可以通過瀏覽器設置控制和/或刪除 Cookie。有關詳細信息，請參閱 aboutcookies.org。您可以刪除計算機上已有的所有 Cookie，並且可以將大多數瀏覽器設置為阻止放置它們。",
+      "preferences": {
+        "title": "Cookie 偏好",
+        "description": "您可以隨時更改您的 Cookie 偏好：",
+        "acceptAll": "接受所有 Cookie",
+        "acceptEssential": "僅接受必要 Cookie",
+        "customizeSettings": "自定義設置"
+      }
+    },
+    "updates": {
+      "title": "政策更新",
+      "content": "我們可能會不時更新此 Cookie 政策。任何更改都將在此頁面上發布，並且如果更改很重要，我們將提供更突出的通知。"
+    },
+    "contact": {
+      "title": "聯繫我們",
+      "description": "如果您對我們的 Cookie 政策有任何疑問，請聯繫我們：",
+      "email": "電子郵件",
+      "form": "聯繫表格"
+    },
+    "effectiveDate": "生效日期：2024年1月15日",
+    "labels": {
+      "examples": "示例：",
+      "optional": "選修的",
+      "required": "必需的"
+    },
+    "managingSection": {
+      "browserSettings": {
+        "description": "您可以通過瀏覽器設置控制和管理cookie。大多數瀏覽器允許您：",
+        "option1": "查看並刪除餅乾",
+        "option2": "封鎖特定網站的cookie",
+        "option3": "阻止第三方餅乾",
+        "option4": "關閉瀏覽器時清除所有餅乾",
+        "option5": "設置餅乾時設置通知",
+        "title": "瀏覽器設置"
+      },
+      "consent": {
+        "button": "管理cookie首選項",
+        "description": "當您第一次訪問我們的網站時，您會看到Cookie同意書的橫幅。您可以隨時單擊下面的按鈕來管理您的首選項：",
+        "title": "餅乾同意"
+      },
+      "title": "管理您的cookie首選項"
+    },
+    "table": {
+      "dataCollected": "收集的數據",
+      "optOut": "選擇退出",
+      "optOutLink": "選擇退出鏈接",
+      "purpose": "目的",
+      "retention": "保留期",
+      "service": "服務"
+    },
+    "thirdParty": {
+      "googleAnalytics": {
+        "dataCollected": "頁面視圖，用戶交互，設備信息",
+        "name": "Google Analytics（分析）",
+        "purpose": "網站分析和性能監控",
+        "retention": "26個月"
+      },
+      "hotjar": {
+        "dataCollected": "鼠標運動，點擊，滾動行為",
+        "name": "hotjar",
+        "purpose": "用戶經驗分析和熱圖",
+        "retention": "12個月"
+      },
+      "intercom": {
+        "dataCollected": "用戶互動，支持對話",
+        "name": "對講",
+        "optOut": "禁用聊天小部件",
+        "purpose": "客戶支持和溝通",
+        "retention": "3年"
+      },
+      "stripe": {
+        "dataCollected": "付款信息，交易數據",
+        "name": "條紋",
+        "optOut": "接觸條紋支撐",
+        "purpose": "付款處理和預防欺詐",
+        "retention": "7年"
+      }
+    },
+    "thirdPartySection": {
+      "description": "我們使用幾種可能設置自己的cookie的第三方服務。這是我們使用的主要服務：",
+      "title": "第三方服務"
+    },
+    "types": {
+      "analytics": {
+        "description": "這些cookie可以通過匿名收集和報告信息來了解訪問者如何與我們的網站互動。",
+        "example1": "頁面視圖和用戶交互",
+        "example2": "流量來源和推薦數據",
+        "example3": "性能指標和負載時間",
+        "example4": "用戶旅程和行為分析",
+        "title": "分析餅乾"
+      },
+      "essential": {
+        "description": "這些cookie對於網站正常運行是必要的。它們啟用了基本功能，例如頁面導航，訪問安全區域和身份驗證。",
+        "example1": "會話管理和用戶身份驗證",
+        "example2": "安全令牌和CSRF保護",
+        "example3": "負載平衡和服務器路由",
+        "example4": "基本功能和導航",
+        "title": "必不可少的餅乾"
+      },
+      "functional": {
+        "description": "這些cookie實現了增強的功能和個性化，例如記住您的偏好和設置。",
+        "example1": "語言和區域偏好",
+        "example2": "主題和顯示設置",
+        "example3": "形成數據和用戶偏好",
+        "example4": "可訪問性功能和自定義",
+        "title": "功能性餅乾"
+      },
+      "marketing": {
+        "description": "這些cookie用於跨網站跟踪訪問者，以顯示相關和引人入勝的廣告。",
+        "example1": "廣告活動跟踪",
+        "example2": "轉換和歸因數據",
+        "example3": "受眾細分和定位",
+        "example4": "跨平台廣告優化",
+        "title": "營銷餅乾"
+      }
+    },
+    "typesSection": {
+      "description": "我們將不同類型的cookie用於各種目的。這是每種類型的作用：",
+      "title": "我們使用的餅乾類型"
+    },
+    "updatesSection": {
+      "content1": "我們可能會不時更新該餅乾政策，以反映我們實踐的變化或其他操作，法律或監管原因。",
+      "content2": "我們將通過在我們的網站上發布更新的策略並更新本政策頂部的“最後更新”日期，從而通知您任何重大更改。",
+      "title": "更新此策略"
+    }
+  },
+  "faq": {
+    "title": "常見問題",
+    "description": "查找有關 MatrixAI 和我們服務的常見問題答案",
+    "sections": {
+      "general": {
+        "title": "一般問題",
+        "questions": {
+          "whatIsMatrixAI": {
+            "question": "什麼是 MatrixAI？",
+            "answer": "MatrixAI 是一個先進的人工智能平台，為企業和個人提供尖端的 AI 解決方案。我們的平台提供全面的 AI 工具套件，包括自然語言處理、計算機視覺、預測分析和機器學習功能。"
+          },
+          "howToGetStarted": {
+            "question": "如何開始使用 MatrixAI？",
+            "answer": "開始很簡單！只需註冊一個賬戶，選擇適合您需求的訂閱計劃，您就可以立即訪問我們的 AI 工具和 API。我們還提供全面的文檔和教程來幫助您集成我們的服務。"
+          },
+          "suitableForBeginners": {
+            "question": "MatrixAI 適合初學者嗎？",
+            "answer": "當然！MatrixAI 設計為對初學者和專家都友好。我們提供直觀的界面、詳細的文檔和分步指南，幫助各種技能水平的用戶利用 AI 的力量。"
+          }
+        }
+      },
+      "subscription": {
+        "title": "訂閱和定價",
+        "questions": {
+          "subscriptionPlans": {
+            "question": "你們提供什麼訂閱計劃？",
+            "answer": "我們提供靈活的訂閱計劃以滿足不同需求：基礎使用的免費層、高級功能的專業計劃和大規模部署的企業計劃。每個計劃包含不同的使用限制和功能。"
+          },
+          "upgradeDowngrade": {
+            "question": "我可以升級或降級我的訂閱嗎？",
+            "answer": "是的，您可以隨時更改訂閱計劃。升級立即生效，而降級將在當前計費週期結束時生效。升級時您只需支付按比例計算的差額。"
+          },
+          "refunds": {
+            "question": "你們提供退款嗎？",
+            "answer": "我們為所有付費計劃提供 30 天退款保證。如果您在前 30 天內對我們的服務不滿意，請聯繫我們的支持團隊獲得全額退款。"
+          }
+        }
+      },
+      "support": {
+        "title": "技術支持",
+        "questions": {
+          "responseTime": {
+            "question": "你們多快回復支持請求？",
+            "answer": "我們努力在 24 小時內回復所有支持請求。高級和企業客戶享有優先支持，響應時間更快。"
+          },
+          "knowledgeBase": {
+            "question": "你們有知識庫或文檔嗎？",
+            "answer": "是的，我們維護全面的文檔、API 參考、教程和可搜索的知識庫。您可以在我們的幫助中心找到大多數常見問題的答案。"
+          },
+          "partnership": {
+            "question": "你們提供合作機會嗎？",
+            "answer": "我們始終對戰略合作夥伴關係和集成感興趣。請聯繫我們的業務發展團隊討論潛在的合作機會。"
+          }
+        }
+      }
+    }
+  },
+  "status": {
+    "title": "系統狀態",
+    "description": "所有 MatrixAI 服務的實時狀態和性能指標。",
+    "currentStatus": "當前狀態",
+    "lastUpdated": "最後更新",
+    "overallStatus": {
+      "operational": "所有系統運行正常",
+      "allOperational": "所有系統運行正常",
+      "disruption": "服務中斷",
+      "serviceDisruption": "服務中斷",
+      "degraded": "部分服務降級",
+      "partialDegradation": "部分服務降級"
+    },
+    "sections": {
+      "serviceStatus": {
+        "title": "服務狀態",
+        "description": "所有 MatrixAI 服務和組件的當前運行狀態。"
+      },
+      "services": {
+        "title": "服務狀態",
+        "description": "所有 MatrixAI 服務和組件的當前運行狀態。"
+      },
+      "incidents": {
+        "title": "最近事件",
+        "description": "最新事件及其解決狀態。"
+      },
+      "metrics": {
+        "title": "性能指標",
+        "description": "過去 30 天的關鍵性能指標"
+      }
+    },
+    "services": {
+      "api": {
+        "name": "API 網關",
+        "description": "核心 API 服務和端點"
+      },
+      "chat": {
+        "name": "聊天界面",
+        "description": "實時聊天和消息系統"
+      },
+      "imageGen": {
+        "name": "圖像生成",
+        "description": "AI 驅動的圖像創建和處理"
+      },
+      "imageGeneration": {
+        "name": "圖像生成",
+        "description": "AI 驅動的圖像創建和處理"
+      },
+      "database": {
+        "name": "數據庫",
+        "description": "數據存儲和檢索系統"
+      },
+      "cdn": {
+        "name": "內容分發",
+        "description": "全球內容分發網絡"
+      },
+      "auth": {
+        "name": "身份驗證",
+        "description": "用戶身份驗證和授權"
+      }
+    },
+    "labels": {
+      "status": "狀態",
+      "uptime": "正常運行時間",
+      "responseTime": "響應時間",
+      "started": "開始時間",
+      "resolved": "解決時間",
+      "updates": "更新"
+    },
+    "serviceStatus": {
+      "operational": "運行正常",
+      "degraded": "性能降級",
+      "partial": "部分中斷",
+      "major": "重大中斷"
+    },
+    "incidents": {
+      "incident1": {
+        "title": "API 響應時間降級",
+        "description": "部分用戶可能遇到比正常情況慢的 API 響應時間。",
+        "updates": {
+          "update1": "我們正在調查 API 響應時間增加的報告。",
+          "update2": "我們已經確定了原因並正在修復。",
+          "update3": "問題已解決，API 性能恢復正常。",
+          "update4": "繼續監控以確保穩定性。"
+        }
+      },
+      "incident2": {
+        "title": "計劃數據庫維護",
+        "description": "數據庫優化的計劃維護窗口。",
+        "updates": {
+          "update1": "維護已安排並將很快開始。",
+          "update2": "計劃維護已成功完成。"
+        }
+      },
+      "apiSlowdown": {
+        "description": "一些用戶的經歷可能比普通API響應時間慢。",
+        "title": "API響應時間降解",
+        "updates": {
+          "identified": "我們已經確定了原因並正在解決修復。",
+          "investigating": "我們正在研究API響應時間增加的報告。",
+          "resolved": "該問題已經解決，API性能恢復正常。"
+        }
+      },
+      "scheduledMaintenance": {
+        "description": "數據庫優化的計劃維護窗口。",
+        "title": "計劃的數據庫維護",
+        "updates": {
+          "completed": "預定的維護已成功完成。",
+          "inProgress": "維護目前正在進行中。",
+          "scheduled": "維護已安排，並將很快開始。"
+        }
+      }
+    },
+    "metrics": {
+      "overallUptime": "總體正常運行時間",
+      "avgResponseTime": "平均響應時間",
+      "apiRequests": "API 請求",
+      "successRate": "成功率"
+    },
+    "contact": {
+      "title": "需要幫助或有疑問？",
+      "description": "如果您遇到此頁面未反映的問題，請聯繫我們的支持團隊。",
+      "emailSupport": "電子郵件支持",
+      "contactForm": "聯繫表格"
+    }
+  },
+  "systemStatus": {
+    "title": "系統狀態",
+    "subtitle": "所有 MatrixAI 服務和基礎設施的實時狀態和性能指標。",
+    "currentStatus": {
+      "label": "當前狀態：",
+      "status": "所有系統運行正常",
+      "lastUpdated": "最近更新時間"
+    },
+    "serviceStatus": {
+      "title": "服務狀態",
+      "description": "所有 MatrixAI 服務和基礎設施的當前狀態",
+      "services": [
+        {
+          "name": "API 服務",
+          "description": "核心 API 端點和 AI 模型訪問",
+          "status": "操作"
+        },
+        {
+          "name": "聊天界面",
+          "description": "實時聊天和對話功能",
+          "status": "操作"
+        },
+        {
+          "name": "圖像生成",
+          "description": "人工智能驅動的圖像創建和編輯",
+          "status": "操作"
+        },
+        {
+          "name": "數據庫",
+          "description": "用戶數據和內容存儲",
+          "status": "操作"
+        },
+        {
+          "name": "驗證",
+          "description": "用戶登錄和安全服務",
+          "status": "操作"
+        },
+        {
+          "name": "內容交付",
+          "description": "全球內容分發網絡",
+          "status": "操作"
+        }
+      ]
+    },
+    "recentIncidents": {
+      "title": "近期事件",
+      "description": "過去事件及其解決情況",
+      "incidents": [
+        {
+          "title": "已解決：間歇性 API 超時",
+          "severity": "中等的",
+          "description": "一些用戶在高峰時段遇到響應時間較慢的情況",
+          "startedLabel": "開始時間",
+          "resolvedLabel": "解決時間",
+          "updatesLabel": "更新：",
+          "updates": [
+            "問題已完全解決。所有服務均正常運行。",
+            "我們已經實施修復並正在監控情況。",
+            "我們已經確定原因是流量負載增加，並且正在擴展我們的基礎設施。",
+            "我們正在調查有關 API 響應時間較慢的報告。"
+          ]
+        },
+        {
+          "title": "定期維護：數據庫優化",
+          "severity": "低的",
+          "description": "定期維護數據庫以提高性能",
+          "startedLabel": "開始時間",
+          "resolvedLabel": "解決時間",
+          "updatesLabel": "更新：",
+          "updates": [
+            "維護成功完成。所有系統均已完全正常運行。",
+            "計劃維護已開始。某些功能可能暫時不可用。"
+          ]
+        }
+      ]
+    },
+    "performanceMetrics": {
+      "title": "績效指標",
+      "description": "過去 30 天的關鍵績效指標",
+      "metrics": [
+        {
+          "name": "總體正常運行時間"
+        },
+        {
+          "name": "平均響應時間"
+        },
+        {
+          "name": "API 請求"
+        },
+        {
+          "name": "成功率"
+        }
+      ]
+    },
+    "contact": {
+      "title": "需要幫助或有疑問嗎？",
+      "description": "如果您遇到此頁面未反映的問題，請聯繫我們的支持團隊。",
+      "email": "電子郵件支持",
+      "form": "聯繫表格"
+    }
   }
 }

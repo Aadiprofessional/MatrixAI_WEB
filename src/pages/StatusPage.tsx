@@ -15,6 +15,7 @@ import {
   FiTrendingUp,
   FiZap
 } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 interface ServiceStatus {
   id: string;
@@ -42,6 +43,7 @@ interface Incident {
 }
 
 const StatusPage: React.FC = () => {
+  const { t } = useTranslation();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -55,54 +57,54 @@ const StatusPage: React.FC = () => {
   const services: ServiceStatus[] = [
     {
       id: 'api',
-      name: 'API Services',
+      name: t('status.services.api.name'),
       status: 'operational',
-      description: 'Core API endpoints and AI model access',
+      description: t('status.services.api.description'),
       uptime: 99.98,
       responseTime: 245,
       icon: <FiServer className="h-6 w-6" />
     },
     {
       id: 'chat',
-      name: 'Chat Interface',
+      name: t('status.services.chat.name'),
       status: 'operational',
-      description: 'Real-time chat and conversation features',
+      description: t('status.services.chat.description'),
       uptime: 99.95,
       responseTime: 180,
       icon: <FiActivity className="h-6 w-6" />
     },
     {
       id: 'image-gen',
-      name: 'Image Generation',
+      name: t('status.services.imageGen.name'),
       status: 'operational',
-      description: 'AI-powered image creation and editing',
+      description: t('status.services.imageGen.description'),
       uptime: 99.92,
       responseTime: 3200,
       icon: <FiZap className="h-6 w-6" />
     },
     {
       id: 'database',
-      name: 'Database',
+      name: t('status.services.database.name'),
       status: 'operational',
-      description: 'User data and content storage',
+      description: t('status.services.database.description'),
       uptime: 99.99,
       responseTime: 95,
       icon: <FiDatabase className="h-6 w-6" />
     },
     {
       id: 'cdn',
-      name: 'Content Delivery',
+      name: t('status.services.cdn.name'),
       status: 'operational',
-      description: 'Global content distribution network',
+      description: t('status.services.cdn.description'),
       uptime: 99.97,
       responseTime: 120,
       icon: <FiGlobe className="h-6 w-6" />
     },
     {
       id: 'auth',
-      name: 'Authentication',
+      name: t('status.services.auth.name'),
       status: 'operational',
-      description: 'User login and security services',
+      description: t('status.services.auth.description'),
       uptime: 99.96,
       responseTime: 210,
       icon: <FiShield className="h-6 w-6" />
@@ -112,8 +114,8 @@ const StatusPage: React.FC = () => {
   const incidents: Incident[] = [
     {
       id: '1',
-      title: 'Resolved: Intermittent API Timeouts',
-      description: 'Some users experienced slower response times during peak hours',
+      title: t('status.incidents.incident1.title'),
+      description: t('status.incidents.incident1.description'),
       status: 'resolved',
       severity: 'medium',
       startTime: '2024-01-14T10:30:00Z',
@@ -121,30 +123,30 @@ const StatusPage: React.FC = () => {
       updates: [
         {
           time: '2024-01-14T11:45:00Z',
-          message: 'Issue has been fully resolved. All services are operating normally.',
+          message: t('status.incidents.incident1.updates.update1'),
           status: 'resolved'
         },
         {
           time: '2024-01-14T11:15:00Z',
-          message: 'We have implemented a fix and are monitoring the situation.',
+          message: t('status.incidents.incident1.updates.update2'),
           status: 'monitoring'
         },
         {
           time: '2024-01-14T10:45:00Z',
-          message: 'We have identified the cause as increased traffic load and are scaling our infrastructure.',
+          message: t('status.incidents.incident1.updates.update3'),
           status: 'identified'
         },
         {
           time: '2024-01-14T10:30:00Z',
-          message: 'We are investigating reports of slower API response times.',
+          message: t('status.incidents.incident1.updates.update4'),
           status: 'investigating'
         }
       ]
     },
     {
       id: '2',
-      title: 'Scheduled Maintenance: Database Optimization',
-      description: 'Routine database maintenance to improve performance',
+      title: t('status.incidents.incident2.title'),
+      description: t('status.incidents.incident2.description'),
       status: 'resolved',
       severity: 'low',
       startTime: '2024-01-12T02:00:00Z',
@@ -152,12 +154,12 @@ const StatusPage: React.FC = () => {
       updates: [
         {
           time: '2024-01-12T04:30:00Z',
-          message: 'Maintenance completed successfully. All systems are fully operational.',
+          message: t('status.incidents.incident2.updates.update1'),
           status: 'resolved'
         },
         {
           time: '2024-01-12T02:00:00Z',
-          message: 'Scheduled maintenance has begun. Some features may be temporarily unavailable.',
+          message: t('status.incidents.incident2.updates.update2'),
           status: 'monitoring'
         }
       ]
@@ -214,10 +216,10 @@ const StatusPage: React.FC = () => {
   };
 
   const overallStatus = services.every(service => service.status === 'operational') 
-    ? 'All Systems Operational' 
+    ? t('status.overallStatus.allOperational')
     : services.some(service => service.status === 'outage')
-    ? 'Service Disruption'
-    : 'Partial Service Degradation';
+    ? t('status.overallStatus.serviceDisruption')
+    : t('status.overallStatus.partialDegradation');
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -232,14 +234,14 @@ const StatusPage: React.FC = () => {
           >
             <FiActivity className="h-16 w-16 text-white mx-auto mb-6" />
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              System Status
+              {t('status.title')}
             </h1>
             <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
-              Real-time status and performance metrics for all MatrixAI services and infrastructure.
+              {t('status.description')}
             </p>
             <div className="text-white/80">
-              <p className="mb-2">Current Status: <span className="font-semibold">{overallStatus}</span></p>
-              <p>Last Updated: {currentTime.toLocaleString()}</p>
+              <p className="mb-2">{t('status.currentStatus')}: <span className="font-semibold">{overallStatus}</span></p>
+              <p>{t('status.lastUpdated')}: {currentTime.toLocaleString()}</p>
             </div>
           </motion.div>
         </div>
@@ -273,10 +275,10 @@ const StatusPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Service Status
+              {t('status.sections.services.title')}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400">
-              Current status of all MatrixAI services and infrastructure
+              {t('status.sections.services.description')}
             </p>
           </div>
 
@@ -307,19 +309,19 @@ const StatusPage: React.FC = () => {
                 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Status:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('status.labels.status')}:</span>
                     <span className={`text-sm font-medium capitalize ${getStatusColor(service.status)}`}>
-                      {service.status}
+                      {t(`status.statusTypes.${service.status}`)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Uptime:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('status.labels.uptime')}:</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {service.uptime}%
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Response Time:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('status.labels.responseTime')}:</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {service.responseTime}ms
                     </span>
@@ -336,10 +338,10 @@ const StatusPage: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Recent Incidents
+              {t('status.sections.incidents.title')}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400">
-              Past incidents and their resolution status
+              {t('status.sections.incidents.description')}
             </p>
           </div>
 
@@ -367,9 +369,9 @@ const StatusPage: React.FC = () => {
                       {incident.description}
                     </p>
                     <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                      <span>Started: {formatTime(incident.startTime)}</span>
+                      <span>{t('status.labels.started')}: {formatTime(incident.startTime)}</span>
                       {incident.endTime && (
-                        <span>Resolved: {formatTime(incident.endTime)}</span>
+                        <span>{t('status.labels.resolved')}: {formatTime(incident.endTime)}</span>
                       )}
                     </div>
                   </div>
@@ -377,7 +379,7 @@ const StatusPage: React.FC = () => {
                 </div>
                 
                 <div className="space-y-3">
-                  <h4 className="font-medium text-gray-900 dark:text-white">Updates:</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-white">{t('status.labels.updates')}:</h4>
                   {incident.updates.map((update, updateIndex) => (
                     <div key={updateIndex} className="flex gap-3 text-sm">
                       <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">
@@ -400,10 +402,10 @@ const StatusPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Performance Metrics
+              {t('status.sections.metrics.title')}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400">
-              Key performance indicators for the past 30 days
+              {t('status.sections.metrics.description')}
             </p>
           </div>
 
@@ -417,7 +419,7 @@ const StatusPage: React.FC = () => {
             >
               <FiTrendingUp className="h-8 w-8 text-green-600 dark:text-green-400 mx-auto mb-4" />
               <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">99.97%</div>
-              <div className="text-gray-600 dark:text-gray-400">Overall Uptime</div>
+              <div className="text-gray-600 dark:text-gray-400">{t('status.metrics.overallUptime')}</div>
             </motion.div>
             
             <motion.div
@@ -429,7 +431,7 @@ const StatusPage: React.FC = () => {
             >
               <FiZap className="h-8 w-8 text-blue-600 dark:text-blue-400 mx-auto mb-4" />
               <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">185ms</div>
-              <div className="text-gray-600 dark:text-gray-400">Avg Response Time</div>
+              <div className="text-gray-600 dark:text-gray-400">{t('status.metrics.avgResponseTime')}</div>
             </motion.div>
             
             <motion.div
@@ -441,7 +443,7 @@ const StatusPage: React.FC = () => {
             >
               <FiServer className="h-8 w-8 text-purple-600 dark:text-purple-400 mx-auto mb-4" />
               <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">2.1M</div>
-              <div className="text-gray-600 dark:text-gray-400">API Requests</div>
+              <div className="text-gray-600 dark:text-gray-400">{t('status.metrics.apiRequests')}</div>
             </motion.div>
             
             <motion.div
@@ -453,7 +455,7 @@ const StatusPage: React.FC = () => {
             >
               <FiCheckCircle className="h-8 w-8 text-green-600 dark:text-green-400 mx-auto mb-4" />
               <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">99.8%</div>
-              <div className="text-gray-600 dark:text-gray-400">Success Rate</div>
+              <div className="text-gray-600 dark:text-gray-400">{t('status.metrics.successRate')}</div>
             </motion.div>
           </div>
         </div>
@@ -469,25 +471,25 @@ const StatusPage: React.FC = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-3xl font-bold text-white mb-4">
-              Need Help or Have Questions?
+              {t('status.contact.title')}
             </h2>
             <p className="text-xl text-blue-100 mb-8">
-              If you're experiencing issues not reflected on this page, please contact our support team.
+              {t('status.contact.description')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:matrixai.global@gmail.com"
+                href="mailto:info@matrixaiglobal.com"
                 className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
               >
                 <FiMail className="h-5 w-5" />
-                Email Support
+                {t('status.contact.emailSupport')}
               </a>
               <a
                 href="/contact"
                 className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
               >
                 <FiPhone className="h-5 w-5" />
-                Contact Form
+                {t('status.contact.contactForm')}
               </a>
             </div>
           </motion.div>
@@ -497,4 +499,4 @@ const StatusPage: React.FC = () => {
   );
 };
 
-export default StatusPage; 
+export default StatusPage;

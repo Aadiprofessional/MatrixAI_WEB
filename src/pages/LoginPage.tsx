@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import matrix from '../assets/matrix.png';
 import LanguageSelector from '../components/LanguageSelector';
-import ReCAPTCHA from 'react-google-recaptcha';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -15,8 +15,8 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<any>(null);
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const { signIn, signInWithGoogle, signInWithApple, error, setError, user } = useAuth();
@@ -56,9 +56,9 @@ const LoginPage: React.FC = () => {
       return;
     }
 
-    // Skip reCAPTCHA validation for localhost
-    if (!isLocalhost && !recaptchaToken) {
-      setError('Please complete the reCAPTCHA verification');
+    // Skip Turnstile validation for localhost
+    if (!isLocalhost && !turnstileToken) {
+      setError('Please complete the Turnstile verification');
       return;
     }
 
@@ -69,21 +69,26 @@ const LoginPage: React.FC = () => {
     } catch (err) {
       // Error is already set in the auth context
       console.error('Login error:', err);
-      // Reset reCAPTCHA on error (only if not localhost)
-      if (!isLocalhost && recaptchaRef.current) {
-        recaptchaRef.current.reset();
-        setRecaptchaToken(null);
+      // Reset Turnstile on error (only if not localhost)
+      if (!isLocalhost && turnstileRef.current) {
+        turnstileRef.current.reset();
+        setTurnstileToken(null);
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRecaptchaChange = (token: string | null) => {
-    setRecaptchaToken(token);
+  const handleTurnstileSuccess = (token: string) => {
+    setTurnstileToken(token);
     if (error && token) {
       setError('');
     }
+  };
+
+  const handleTurnstileError = () => {
+    setTurnstileToken(null);
+    setError('Turnstile verification failed. Please try again.');
   };
 
   return (
@@ -322,7 +327,7 @@ const LoginPage: React.FC = () => {
                 </div>
               </motion.div>
               
-              {/* reCAPTCHA - Only show in production */}
+              {/* Turnstile - Only show in production */}
               {!isLocalhost && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -330,11 +335,14 @@ const LoginPage: React.FC = () => {
                   transition={{ delay: 0.65, duration: 0.5 }}
                   className="mt-6 flex justify-center"
                 >
-                  <ReCAPTCHA
-                    ref={recaptchaRef}
-                    sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || ''}
-                    onChange={handleRecaptchaChange}
-                    theme={darkMode ? 'dark' : 'light'}
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={process.env.REACT_APP_TURNSTILE_SITE_KEY || ''}
+                    onSuccess={handleTurnstileSuccess}
+                    onError={handleTurnstileError}
+                    options={{
+                      theme: darkMode ? 'dark' : 'light'
+                    }}
                   />
                 </motion.div>
               )}
@@ -348,7 +356,7 @@ const LoginPage: React.FC = () => {
                   className="mt-6 flex justify-center"
                 >
                   <div className="text-sm text-yellow-400 bg-yellow-900/20 px-3 py-2 rounded-lg border border-yellow-500/30">
-                    Development Mode: reCAPTCHA bypassed for localhost
+                    Development Mode: Turnstile bypassed for localhost
                   </div>
                 </motion.div>
               )}

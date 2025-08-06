@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase, signInWithApple } from '../supabaseClient';
 import matrix from '../assets/matrix.png';
 import LanguageSelector from '../components/LanguageSelector';
-import ReCAPTCHA from 'react-google-recaptcha';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 // Default language constant
 const DEFAULT_LANGUAGE = 'English';
@@ -27,8 +27,8 @@ const SignupPage: React.FC = () => {
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<any>(null);
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const { error, setError, user, signInWithGoogle, signInWithApple } = useAuth();
@@ -184,8 +184,8 @@ const SignupPage: React.FC = () => {
       return;
     }
 
-    if (!recaptchaToken) {
-      setError('Please complete the reCAPTCHA verification');
+    if (!turnstileToken) {
+      setError('Please complete the Turnstile verification');
       return;
     }
     
@@ -234,21 +234,26 @@ const SignupPage: React.FC = () => {
     } catch (err: any) {
       console.error('Signup error:', err);
       setError(err.message || 'An error occurred during signup');
-      // Reset reCAPTCHA on error
-      if (recaptchaRef.current) {
-        recaptchaRef.current.reset();
-        setRecaptchaToken(null);
+      // Reset Turnstile on error
+      if (turnstileRef.current) {
+        turnstileRef.current.reset();
+        setTurnstileToken(null);
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRecaptchaChange = (token: string | null) => {
-    setRecaptchaToken(token);
+  const handleTurnstileSuccess = (token: string) => {
+    setTurnstileToken(token);
     if (error && token) {
       setError('');
     }
+  };
+
+  const handleTurnstileError = () => {
+    setTurnstileToken(null);
+    setError('Turnstile verification failed. Please try again.');
   };
 
   return (
@@ -643,18 +648,21 @@ const SignupPage: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* reCAPTCHA */}
+            {/* Turnstile */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.05, duration: 0.5 }}
               className="mt-6 flex justify-center"
             >
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || ''}
-                onChange={handleRecaptchaChange}
-                theme={darkMode ? 'dark' : 'light'}
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={process.env.REACT_APP_TURNSTILE_SITE_KEY || ''}
+                onSuccess={handleTurnstileSuccess}
+                onError={handleTurnstileError}
+                options={{
+                  theme: darkMode ? 'dark' : 'light'
+                }}
               />
             </motion.div>
 
@@ -667,9 +675,9 @@ const SignupPage: React.FC = () => {
             >
               <button
                 type="submit"
-                disabled={loading || !agreeToTerms || !recaptchaToken}
+                disabled={loading || !agreeToTerms || !turnstileToken}
                 className={`w-full flex justify-center py-3.5 px-4 border border-white/20 rounded-xl shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  loading || !agreeToTerms || !recaptchaToken
+                  loading || !agreeToTerms || !turnstileToken
                     ? 'bg-gradient-to-r from-purple-600/50 to-indigo-600/50 cursor-not-allowed'
                     : 'bg-gradient-to-r from-purple-600/90 to-indigo-600/90 hover:from-purple-700/90 hover:to-indigo-700/90 focus:ring-purple-500'
                 } backdrop-blur-md`}

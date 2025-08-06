@@ -3,9 +3,11 @@ import { motion } from 'framer-motion';
 import { FiHelpCircle } from 'react-icons/fi';
 import { HomeNavbar } from '../components';
 import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 const FAQPage: React.FC = () => {
   const { darkMode } = useTheme();
+  const { t } = useTranslation();
   
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-black text-white' : 'bg-white text-gray-800'}`}>
@@ -41,9 +43,9 @@ const FAQPage: React.FC = () => {
                     <FiHelpCircle className="h-10 w-10 text-purple-400" />
                   </div>
                 </div>
-                <h1 className={`text-4xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'} mb-4`}>Frequently Asked Questions</h1>
+                <h1 className={`text-4xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'} mb-4`}>{t('faq.title')}</h1>
                 <p className={`mt-4 text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-2xl mx-auto`}>
-                  Find answers to common questions about MatrixAI's services, features, and capabilities.
+                  {t('faq.description')}
                 </p>
               </motion.div>
             </div>
@@ -56,20 +58,20 @@ const FAQPage: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
               >
-                <h2 className={`text-2xl font-semibold ${darkMode ? 'text-purple-400' : 'text-purple-600'} mb-6`}>General Questions</h2>
+                <h2 className={`text-2xl font-semibold ${darkMode ? 'text-purple-400' : 'text-purple-600'} mb-6`}>{t('faq.sections.general.title')}</h2>
                 <div className="space-y-6">
                   {[
                     {
-                      question: 'What is MatrixAI?',
-                      answer: 'MatrixAI is a comprehensive AI platform that offers a suite of tools for content creation, image generation, video production, and more. Our platform is designed to help individuals and businesses leverage the power of artificial intelligence to enhance their creative and professional workflows.'
+                      question: t('faq.sections.general.questions.whatIsMatrixAI.question'),
+                      answer: t('faq.sections.general.questions.whatIsMatrixAI.answer')
                     },
                     {
-                      question: 'How do I get started with MatrixAI?',
-                      answer: 'Getting started is easy! Simply sign up for an account, choose a subscription plan that fits your needs, and you\'ll have immediate access to our AI tools. We offer a user-friendly interface and comprehensive tutorials to help you make the most of our platform.'
+                      question: t('faq.sections.general.questions.howToGetStarted.question'),
+                      answer: t('faq.sections.general.questions.howToGetStarted.answer')
                     },
                     {
-                      question: 'Is MatrixAI suitable for beginners?',
-                      answer: 'Absolutely! MatrixAI is designed to be accessible to users of all skill levels. Our intuitive interface and guided workflows make it easy for beginners to create professional-quality content, while advanced users will appreciate the depth of customization options available.'
+                      question: t('faq.sections.general.questions.suitableForBeginners.question'),
+                      answer: t('faq.sections.general.questions.suitableForBeginners.answer')
                     },
                   ].map((faq, index) => (
                     <motion.div
@@ -94,20 +96,20 @@ const FAQPage: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <h2 className={`text-2xl font-semibold ${darkMode ? 'text-purple-400' : 'text-purple-600'} mb-6`}>Subscription & Pricing</h2>
+                <h2 className={`text-2xl font-semibold ${darkMode ? 'text-purple-400' : 'text-purple-600'} mb-6`}>{t('faq.sections.subscription.title')}</h2>
                 <div className="space-y-6">
                   {[
                     {
-                      question: 'What subscription plans do you offer?',
-                      answer: 'We offer several subscription tiers to meet different needs and budgets. Our plans range from a free tier with basic functionality to premium plans with advanced features, higher usage limits, and priority support. Visit our Pricing page for detailed information on each plan.'
+                      question: t('faq.sections.subscription.questions.subscriptionPlans.question'),
+                      answer: t('faq.sections.subscription.questions.subscriptionPlans.answer')
                     },
                     {
-                      question: 'Can I upgrade or downgrade my subscription?',
-                      answer: 'Yes, you can change your subscription plan at any time. When upgrading, you\'ll have immediate access to the additional features. When downgrading, the changes will take effect at the end of your current billing cycle.'
+                      question: t('faq.sections.subscription.questions.upgradeDowngrade.question'),
+                      answer: t('faq.sections.subscription.questions.upgradeDowngrade.answer')
                     },
                     {
-                      question: 'Do you offer refunds?',
-                      answer: 'We offer a 7-day money-back guarantee for new subscribers. If you\'re not satisfied with our service within the first week, contact our support team for a full refund. After this period, refunds are handled on a case-by-case basis.'
+                      question: t('faq.sections.subscription.questions.refunds.question'),
+                      answer: t('faq.sections.subscription.questions.refunds.answer')
                     },
                   ].map((faq, index) => (
                     <motion.div
@@ -132,21 +134,21 @@ const FAQPage: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
-                <h2 className={`text-2xl font-semibold ${darkMode ? 'text-purple-400' : 'text-purple-600'} mb-6`}>Technical Support</h2>
+                <h2 className={`text-2xl font-semibold ${darkMode ? 'text-purple-400' : 'text-purple-600'} mb-6`}>{t('faq.sections.support.title')}</h2>
                 <div className="space-y-6">
                   {[
                     {
-                      question: 'How quickly will I receive a response to my support request?',
-                      answer: 'We aim to respond to all inquiries within 24 hours during business days. For urgent support issues, premium and enterprise customers have access to expedited response times.'
+                      question: t('faq.sections.support.questions.responseTime.question'),
+                      answer: t('faq.sections.support.questions.responseTime.answer')
                     },
                    
                     {
-                      question: 'Do you have a knowledge base or help center?',
-                      answer: 'Yes, we have an extensive knowledge base with tutorials, guides, and FAQs at help.matrixai.asia. It\'s a great first stop for common questions and learning how to use our platform effectively.'
+                      question: t('faq.sections.support.questions.knowledgeBase.question'),
+                      answer: t('faq.sections.support.questions.knowledgeBase.answer')
                     },
                     {
-                      question: 'I\'m interested in a partnership. Who should I contact?',
-                      answer: 'For partnership inquiries, please visit our Contact page and select "General Inquiries" and mention partnership in your message. Our business development team will get back to you promptly.'
+                      question: t('faq.sections.support.questions.partnership.question'),
+                      answer: t('faq.sections.support.questions.partnership.answer')
                     }
                   ].map((faq, index) => (
                     <motion.div

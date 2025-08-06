@@ -1524,7 +1524,7 @@
       "title": "Contact Information",
       "emailSupport": "Email Support",
       "responseTime": "Our team typically responds within 24 hours",
-      "email": "support@matrixaiglobal.com"
+      "email": "info@matrixaiglobal.com"
     }
   },
   "transactions": {
@@ -1904,5 +1904,937 @@
       },
       "title": "Speech to Text & Content Writing",
       "description": "Transcribe audio with 95%+ accuracy and generate compelling content for blogs, marketing, and more—all powered by advanced AI models."
+    },
+  "careers": {
+    "joinAiRevolution": "Join the AI Revolution",
+    "helpBuildFuture": "Help us build the future of artificial intelligence. Work with cutting-edge technology and brilliant minds to create AI that makes a difference.",
+    "viewOpenPositions": "View open positions",
+    "learnAboutCulture": "Learn about culture",
+    "teamMembers": "Team Members",
+    "countries": "Countries",
+    "aiInteractions": "AI Interactions",
+    "seriesAFunding": "Series A Funding",
+    "whyWorkWithUs": "Why Work With Us?",
+    "competitiveBenefits": "We offer competitive benefits and a culture that values innovation, growth, and work-life balance.",
+    "healthWellness": "Health & Wellness",
+    "comprehensiveInsurance": "Comprehensive health, dental, and vision insurance",
+    "flexibleWork": "Flexible Work",
+    "remoteFirstCulture": "Remote-first culture with flexible hours",
+    "learningBudget": "Learning Budget",
+    "annualBudget": "$3,000 annual budget for courses and conferences",
+    "equityPackage": "Equity Package",
+    "competitiveEquity": "Competitive equity in a fast-growing company",
+    "teamEvents": "Team Events",
+    "regularTeamBuilding": "Regular team building and company retreats",
+    "latestTech": "Latest Tech",
+    "topTierEquipment": "Top-tier equipment and tools for your work",
+    "openPositions": "Open Positions",
+    "findCareerOpportunity": "Find your next career opportunity with us",
+    "dontSeeRightRole": "Don't See the Right Role?",
+    "alwaysLookingTalented": "We're always looking for talented people. Send us your resume and let's talk!",
+    "sendResume": "Send Resume",
+    "askQuestions": "Ask Questions",
+    "stats": {
+      "teamMembers": {
+        "number": "150+",
+        "label": "Team Members"
+      },
+      "countries": {
+        "number": "25+",
+        "label": "Countries"
+      },
+      "aiInteractions": {
+        "number": "10M+",
+        "label": "AI Interactions"
+      },
+      "funding": {
+        "number": "$50M",
+        "label": "Series A Funding"
+      }
+    },
+    "benefitsDescription": "We offer competitive benefits and a culture that values innovation, growth, and work-life balance.",
+    "findOpportunity": "Find your next career opportunity with us",
+    "departments": {
+      "all": "All",
+      "engineering": "Engineering",
+      "design": "Design",
+      "marketing": "Marketing",
+      "customerSuccess": "Customer Success"
+    },
+    "keyRequirements": "Key Requirements",
+    "posted": "Posted",
+    "applyNow": "Apply Now",
+    "dontSeeRole": "Don't See the Right Role?",
+    "alwaysLooking": "We're always looking for talented people. Send us your resume and let's talk!",
+    "benefits": {
+      "healthWellness": {
+        "title": "Health & Wellness",
+        "description": "Comprehensive health, dental, and vision insurance"
+      },
+      "flexibleWork": {
+        "title": "Flexible Work",
+        "description": "Remote-first culture with flexible hours"
+      },
+      "learningBudget": {
+        "title": "Learning Budget",
+        "description": "$3,000 annual budget for courses and conferences"
+      },
+      "equityPackage": {
+        "title": "Equity Package",
+        "description": "Competitive equity in a fast-growing company"
+      },
+      "teamEvents": {
+        "title": "Team Events",
+        "description": "Regular team building and company retreats"
+      },
+      "latestTech": {
+        "title": "Latest Tech",
+        "description": "Top-tier equipment and tools for your work"
+      },
+      "workLifeBalance": {
+        "title": "Work-Life Balance",
+        "description": "Flexible schedules and remote work options to help you maintain a healthy work-life balance."
+      }
     }
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "description": "Welcome to MatrixAI. These Terms of Service govern your use of our AI-powered platform and services.",
+    "lastUpdated": "Last updated: January 15, 2024",
+    "effectiveDate": "Effective date: January 15, 2024",
+    "tableOfContents": "Table of Contents",
+    "acceptance": {
+      "title": "Acceptance of Terms",
+      "content1": "By accessing or using MatrixAI's services, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any part of these terms, you may not use our services.",
+      "content2": "These terms apply to all users of MatrixAI, including visitors, registered users, and premium subscribers. By creating an account or using our services, you confirm that you have read, understood, and agree to these terms."
+    },
+    "services": {
+      "title": "Description of Services",
+      "content1": "MatrixAI provides artificial intelligence-powered tools and services, including but not limited to:",
+      "feature1": "AI-powered text generation and editing",
+      "feature2": "Image creation and manipulation tools",
+      "feature3": "Video generation and editing capabilities",
+      "feature4": "Data analysis and insights",
+      "feature5": "Custom AI model training and deployment",
+      "content2": "Our services are designed to enhance productivity and creativity through advanced AI technology. We continuously update and improve our offerings to provide the best possible user experience."
+    },
+    "userAccounts": {
+      "title": "User Accounts and Registration",
+      "registrationTitle": "Account Registration:",
+      "registration1": "You must provide accurate and complete information when creating an account",
+      "registration2": "You are responsible for maintaining the security of your account credentials",
+      "registration3": "You must be at least 13 years old to create an account",
+      "registration4": "One person or entity may not maintain more than one free account",
+      "responsibilitiesTitle": "Account Responsibilities:",
+      "responsibilities1": "You are responsible for all activities that occur under your account",
+      "responsibilities2": "You must notify us immediately of any unauthorized use of your account",
+      "responsibilities3": "You must not share your account credentials with others",
+      "responsibilities4": "You must keep your contact information up to date",
+      "suspensionTitle": "Account Suspension:",
+      "suspension1": "We may suspend or terminate accounts that violate these terms",
+      "suspension2": "We may suspend accounts for non-payment of fees",
+      "suspension3": "We may suspend accounts for suspicious or fraudulent activity",
+      "suspension4": "You will be notified of any account suspension when possible"
+    },
+    "acceptableUse": {
+      "title": "Acceptable Use Policy",
+      "content1": "You agree to use MatrixAI's services responsibly and in compliance with all applicable laws. The following activities are prohibited:",
+      "prohibited1": "Creating content that is illegal, harmful, or violates others' rights",
+      "prohibited2": "Attempting to reverse engineer or compromise our AI models",
+      "prohibited3": "Using our services to spam, harass, or abuse others",
+      "prohibited4": "Generating content that infringes on intellectual property rights",
+      "prohibited5": "Creating misleading or deceptive content without proper disclosure",
+      "prohibited6": "Using our services for any unlawful or fraudulent purposes",
+      "content2": "We reserve the right to remove content and suspend accounts that violate this policy. Users are encouraged to report violations to help maintain a safe and productive environment."
+    },
+    "contentPolicy": {
+      "title": "Content and Intellectual Property",
+      "ownershipTitle": "Content Ownership:",
+      "ownership1": "You retain ownership of content you create using our services",
+      "ownership2": "You grant us a license to process and improve our AI models with your content",
+      "ownership3": "You are responsible for ensuring you have rights to any content you upload",
+      "ownership4": "We respect intellectual property rights and respond to valid DMCA notices",
+      "licenseTitle": "License to Use:",
+      "license1": "You grant us a worldwide, non-exclusive license to use your content for service provision",
+      "license2": "This license includes the right to store, process, and analyze your content",
+      "license3": "We may use aggregated, anonymized data to improve our services",
+      "license4": "You can delete your content at any time, subject to technical limitations",
+      "ipTitle": "Intellectual Property Protection:",
+      "ip1": "Our AI models, algorithms, and platform are protected by intellectual property laws",
+      "ip2": "You may not copy, modify, or distribute our proprietary technology",
+      "ip3": "We respect third-party intellectual property and expect users to do the same",
+      "ip4": "Report any intellectual property violations to our designated agent"
+    },
+    "paymentTerms": {
+      "title": "Payment and Billing",
+      "subscriptionTitle": "Subscription Plans:",
+      "subscription1": "We offer various subscription plans with different features and usage limits",
+      "subscription2": "Subscription fees are billed in advance on a recurring basis",
+      "subscription3": "You can upgrade, downgrade, or cancel your subscription at any time",
+      "subscription4": "Changes to your subscription take effect at the next billing cycle",
+      "processingTitle": "Payment Processing:",
+      "processing1": "We use secure third-party payment processors to handle transactions",
+      "processing2": "You authorize us to charge your selected payment method",
+      "processing3": "You are responsible for keeping your payment information current",
+      "processing4": "Failed payments may result in service suspension",
+      "pricingTitle": "Pricing and Fees:",
+      "pricing1": "Current pricing is available on our website and may change with notice",
+      "pricing2": "All fees are non-refundable except as required by law",
+      "pricing3": "Additional usage beyond plan limits may incur extra charges",
+      "pricing4": "Taxes may apply based on your location and applicable laws",
+      "limitsTitle": "Usage Limits:",
+      "limits1": "Each subscription plan includes specific usage limits and features",
+      "limits2": "Exceeding limits may result in additional charges or service restrictions",
+      "limits3": "We monitor usage to ensure fair access for all users",
+      "limits4": "Enterprise customers may have custom usage agreements"
+    },
+    "sections": {
+      "acceptance": {
+        "title": "Acceptance of Terms",
+        "content1": "By accessing or using MatrixAI's services, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any part of these terms, you may not use our services.",
+        "content2": "These terms apply to all users of MatrixAI, including visitors, registered users, and premium subscribers. By creating an account or using our services, you confirm that you have read, understood, and agree to these terms.",
+        "content3": "We reserve the right to modify these terms at any time. Continued use of our services after changes constitutes acceptance of the new terms."
+      },
+      "description": {
+        "title": "Description of Services",
+        "content1": "MatrixAI provides artificial intelligence-powered tools and services, including but not limited to:",
+        "service1": "AI-powered text generation and editing",
+        "service2": "Image creation and manipulation tools",
+        "service3": "Video generation and editing capabilities",
+        "service4": "Data analysis and insights",
+        "service5": "Custom AI model training and deployment",
+        "service6": "Speech-to-text and text-to-speech conversion",
+        "service7": "Content writing and humanization tools",
+        "content2": "Our services are designed to enhance productivity and creativity through advanced AI technology. We continuously update and improve our offerings to provide the best possible user experience."
+      },
+      "userAccounts": {
+        "title": "User Accounts and Registration",
+        "content1": "To access certain features of our services, you must create an account. When creating an account, you agree to:",
+        "requirement1": "Provide accurate and complete information",
+        "requirement2": "Maintain the security of your account credentials",
+        "requirement3": "Be at least 13 years old to create an account",
+        "requirement4": "Not maintain more than one free account per person or entity",
+        "requirement5": "Keep your contact information up to date",
+        "content2": "You are responsible for all activities that occur under your account and must notify us immediately of any unauthorized use.",
+        "content3": "We may suspend or terminate accounts that violate these terms, fail to pay fees, or engage in suspicious or fraudulent activity."
+      },
+      "acceptableUse": {
+        "title": "Acceptable Use Policy",
+        "content1": "You agree to use MatrixAI's services responsibly and in compliance with all applicable laws. The following activities are prohibited:",
+        "prohibition1": "Creating content that is illegal, harmful, or violates others' rights",
+        "prohibition2": "Attempting to reverse engineer or compromise our AI models",
+        "prohibition3": "Using our services to spam, harass, or abuse others",
+        "prohibition4": "Generating content that infringes on intellectual property rights",
+        "prohibition5": "Creating misleading or deceptive content without proper disclosure",
+        "prohibition6": "Using our services for any unlawful or fraudulent purposes",
+        "prohibition7": "Attempting to gain unauthorized access to our systems",
+        "prohibition8": "Interfering with the proper functioning of our services",
+        "content2": "We reserve the right to remove content and suspend accounts that violate this policy. Users are encouraged to report violations to help maintain a safe and productive environment."
+      },
+      "contentPolicy": {
+        "title": "Content and Intellectual Property",
+        "ownershipTitle": "Content Ownership:",
+        "ownership1": "You retain ownership of content you create using our services",
+        "ownership2": "You grant us a license to process and improve our AI models with your content",
+        "ownership3": "You are responsible for ensuring you have rights to any content you upload",
+        "licenseTitle": "License to Use:",
+        "license1": "You grant us a worldwide, non-exclusive license to use your content for service provision",
+        "license2": "This license includes the right to store, process, and analyze your content",
+        "license3": "We may use aggregated, anonymized data to improve our services",
+        "ipTitle": "Intellectual Property Protection:",
+        "ip1": "Our AI models, algorithms, and platform are protected by intellectual property laws",
+        "ip2": "You may not copy, modify, or distribute our proprietary technology",
+        "ip3": "We respect third-party intellectual property and expect users to do the same"
+      },
+      "paymentTerms": {
+        "title": "Payment and Billing",
+        "subscriptionTitle": "Subscription Plans:",
+        "subscription1": "We offer various subscription plans with different features and usage limits",
+        "subscription2": "Subscription fees are billed in advance on a recurring basis",
+        "subscription3": "You can upgrade, downgrade, or cancel your subscription at any time",
+        "processingTitle": "Payment Processing:",
+        "processing1": "We use secure third-party payment processors to handle transactions",
+        "processing2": "You authorize us to charge your selected payment method",
+        "processing3": "You are responsible for keeping your payment information current",
+        "pricingTitle": "Pricing and Fees:",
+        "pricing1": "Current pricing is available on our website and may change with notice",
+        "pricing2": "All fees are non-refundable except as required by law",
+        "pricing3": "Additional usage beyond plan limits may incur extra charges",
+        "limitsTitle": "Usage Limits:",
+        "limits1": "Each subscription plan includes specific usage limits and features",
+        "limits2": "Exceeding limits may result in additional charges or service restrictions",
+        "limits3": "We monitor usage to ensure fair access for all users"
+      },
+      "privacy": {
+        "title": "Privacy and Data Security",
+        "content1": "Your privacy is important to us. Our collection, use, and protection of your personal information is governed by our Privacy Policy, which is incorporated into these Terms by reference.",
+        "dataCollectionTitle": "Data Collection and Use:",
+        "dataCollection1": "We collect information you provide directly to us",
+        "dataCollection2": "We may collect information automatically when you use our services",
+        "dataCollection3": "We use your information to provide, maintain, and improve our services",
+        "dataCollection4": "We may use your information to communicate with you about our services",
+        "dataSecurityTitle": "Data Security:",
+        "dataSecurity1": "We implement appropriate technical and organizational security measures",
+        "dataSecurity2": "We encrypt sensitive data in transit and at rest",
+        "dataSecurity3": "We regularly review and update our security practices",
+        "dataSecurity4": "We limit access to your personal information to authorized personnel only",
+        "rightsTitle": "Your Rights:",
+        "rights1": "You have the right to access your personal information",
+        "rights2": "You can request correction of inaccurate information",
+        "rights3": "You may request deletion of your personal information",
+        "rights4": "You can opt-out of certain communications",
+        "dataProtectionTitle": "Data Protection:",
+        "dataProtection1": "• We implement industry-standard security measures to protect your data",
+        "dataProtection2": "• Your personal information is handled according to our Privacy Policy",
+        "dataProtection3": "• We use encryption and secure protocols for data transmission and storage",
+        "dataRetentionTitle": "Data Retention:",
+        "dataRetention1": "• We retain your data only as long as necessary to provide our services",
+        "dataRetention2": "• You may request deletion of your data subject to legal requirements",
+        "dataRetention3": "• Some data may be retained for security and legal compliance purposes",
+        "thirdPartyTitle": "Third-Party Services:",
+        "thirdParty1": "• We may use third-party services for payment processing, analytics, and infrastructure",
+        "thirdParty2": "• These services are bound by confidentiality agreements",
+        "thirdParty3": "• We carefully vet all third-party providers for security and privacy compliance"
+      },
+      "disclaimers": {
+        "title": "Disclaimers and Limitations",
+        "serviceAvailabilityTitle": "Service Availability:",
+        "serviceAvailability1": "• Our services are provided \"as is\" without warranties of any kind",
+        "serviceAvailability2": "• We do not guarantee uninterrupted or error-free service",
+        "serviceAvailability3": "• Scheduled maintenance may temporarily affect service availability",
+        "contentAccuracyTitle": "Content Accuracy:",
+        "contentAccuracy1": "• AI-generated content may contain errors or inaccuracies",
+        "contentAccuracy2": "• Users are responsible for reviewing and verifying all generated content",
+        "contentAccuracy3": "• We do not guarantee the accuracy or reliability of AI outputs",
+        "thirdPartyContentTitle": "Third-Party Content:",
+        "thirdPartyContent1": "• We are not responsible for third-party content or services",
+        "thirdPartyContent2": "• Links to external sites are provided for convenience only",
+        "thirdPartyContent3": "• Third-party integrations are subject to their own terms and policies",
+        "aiLimitationsTitle": "AI Limitations",
+        "aiLimitations1": "AI-generated content may contain factual errors or inaccuracies and should be verified",
+        "aiLimitations2": "AI models may exhibit biases present in their training data",
+        "aiLimitations3": "AI-generated content is not professional advice and should not replace human expertise",
+        "liabilityTitle": "Limitation of Liability",
+        "liability1": "Our total liability will not exceed the amount you paid us in the 12 months preceding the claim",
+        "liability2": "We are not liable for lost profits, data, or business opportunities",
+        "liability3": "We are not responsible for damages caused by third parties or force majeure events",
+        "damagesTitle": "Damages Limitation",
+        "damages1": "To the maximum extent permitted by law, we will not be liable for indirect, incidental, special, consequential, or punitive damages",
+        "damages2": "Some jurisdictions do not allow these limitations, so they may not apply to you",
+        "damages3": "You agree to use our services at your own risk",
+        "damages4": "We make no warranties about the completeness, reliability, or accuracy of our services",
+        "indemnificationTitle": "Indemnification",
+        "indemnification1": "You agree to indemnify us against claims arising from your use of our services",
+        "indemnification2": "This includes claims related to your content, conduct, or violations of these terms",
+        "indemnification3": "You will cover reasonable attorney fees and costs in defending such claims",
+        "indemnification4": "We reserve the right to assume defense of any claim at our expense"
+      },
+      "aiLimitations": {
+        "title": "AI Limitations",
+        "content1": "Our AI services are powerful tools, but they have inherent limitations that users should understand:",
+        "contentAccuracyTitle": "Content Accuracy:",
+        "contentAccuracy1": "AI-generated content may contain factual errors or inaccuracies",
+        "contentAccuracy2": "Information may be outdated or based on incomplete training data",
+        "contentAccuracy3": "Always verify important information from authoritative sources",
+        "contentAccuracy4": "Do not rely solely on AI-generated content for critical decisions",
+        "biasTitle": "Bias and Fairness:",
+        "bias1": "AI models may exhibit biases present in their training data",
+        "bias2": "Generated content may not represent all perspectives equally",
+        "bias3": "We continuously work to improve fairness and reduce bias",
+        "bias4": "Report any concerning bias or inappropriate content to us",
+        "professionalAdviceTitle": "Professional Advice:",
+        "professionalAdvice1": "AI-generated content is not professional advice",
+        "professionalAdvice2": "Consult qualified professionals for legal, medical, or financial advice",
+        "professionalAdvice3": "AI cannot replace human expertise in specialized fields",
+        "professionalAdvice4": "Use AI-generated content as a starting point, not a final answer"
+      },
+      "liability": {
+        "title": "Limitation of Liability",
+        "content1": "To the maximum extent permitted by law, MatrixAI and its affiliates, officers, employees, agents, partners, and licensors will not be liable for any indirect, incidental, special, consequential, or punitive damages.",
+        "damagesTitle": "Damages Limitation:",
+        "damages1": "Our total liability will not exceed the amount you paid us in the 12 months preceding the claim",
+        "damages2": "We are not liable for lost profits, data, or business opportunities",
+        "damages3": "We are not responsible for damages caused by third parties or force majeure events",
+        "damages4": "Some jurisdictions do not allow these limitations, so they may not apply to you",
+        "indemnificationTitle": "Indemnification:",
+        "indemnification1": "You agree to indemnify us against claims arising from your use of our services",
+        "indemnification2": "This includes claims related to your content, conduct, or violations of these terms",
+        "indemnification3": "You will cover reasonable attorney fees and costs in defending such claims",
+        "indemnification4": "We reserve the right to assume defense of any claim at our expense"
+      },
+      "termination": {
+        "title": "Termination",
+        "byYouTitle": "Termination by You:",
+        "byYou1": "• You may terminate your account at any time through your account settings",
+        "byYou2": "• Cancellation will take effect at the end of your current billing period",
+        "byYou3": "• You remain responsible for all charges incurred before termination",
+        "byUsTitle": "Termination by Us:",
+        "byUs1": "• We may terminate your account for violations of these terms",
+        "byUs2": "• We may suspend or terminate services for non-payment",
+        "byUs3": "• We will provide reasonable notice before termination when possible",
+        "effectTitle": "Effect of Termination:",
+        "effect1": "• Your right to use our services will cease immediately",
+        "effect2": "• We may delete your account and data after termination",
+        "effect3": "• Certain provisions of these terms will survive termination"
+      },
+      "governingLaw": {
+        "title": "Governing Law and Disputes",
+        "lawTitle": "Governing Law:",
+        "law1": "• These terms are governed by the laws of the jurisdiction where MatrixAI is incorporated",
+        "law2": "• Any disputes will be resolved in the courts of that jurisdiction",
+        "law3": "• You consent to the jurisdiction and venue of these courts",
+        "disputeTitle": "Dispute Resolution:",
+        "dispute1": "• We encourage resolving disputes through direct communication",
+        "dispute2": "• For formal disputes, we may require binding arbitration",
+        "dispute3": "• You may opt out of arbitration by providing written notice within 30 days",
+        "classActionTitle": "Class Action Waiver:",
+        "classAction1": "• You agree to resolve disputes individually, not as part of a class action",
+        "classAction2": "• This waiver applies to all claims and disputes between us",
+        "classAction3": "• Some jurisdictions may not allow class action waivers"
+      }
+    },
+    "contact": {
+      "title": "Questions About These Terms?",
+      "description": "If you have any questions about these Terms of Service, please contact us. We're here to help clarify any concerns.",
+      "email": "Email Us",
+      "form": "Contact Form"
+    }
+  },
+  "cookies": {
+    "title": "Cookie Policy",
+    "description": "This Cookie Policy explains how MatrixAI uses cookies and similar technologies to recognize you when you visit our website and use our services.",
+    "lastUpdated": "Last updated: January 15, 2024",
+    "effectiveDate": "Effective date: January 15, 2024",
+    "whatAreCookies": {
+      "title": "What Are Cookies?",
+      "content1": "Cookies are small text files that are stored on your device when you visit a website. They are widely used to make websites work more efficiently and to provide information to website owners.",
+      "content2": "Cookies can be \"persistent\" or \"session\" cookies. Persistent cookies remain on your device when you go offline, while session cookies are deleted when you close your web browser."
+    },
+    "typesSection": {
+      "title": "Types of Cookies We Use",
+      "description": "We use different types of cookies for various purposes. Here's what each type does:"
+    },
+    "types": {
+      "essential": {
+        "title": "Essential Cookies",
+        "description": "These cookies are necessary for the website to function properly. They enable basic functions like page navigation, access to secure areas, and authentication.",
+        "example1": "Session management and user authentication",
+        "example2": "Security tokens and CSRF protection",
+        "example3": "Load balancing and server routing",
+        "example4": "Basic functionality and navigation"
+      },
+      "functional": {
+        "title": "Functional Cookies",
+        "description": "These cookies enable enhanced functionality and personalization, such as remembering your preferences and settings.",
+        "example1": "Language and region preferences",
+        "example2": "Theme and display settings",
+        "example3": "Form data and user preferences",
+        "example4": "Accessibility features and customizations"
+      },
+      "analytics": {
+        "title": "Analytics Cookies",
+        "description": "These cookies help us understand how visitors interact with our website by collecting and reporting information anonymously.",
+        "example1": "Page views and user interactions",
+        "example2": "Traffic sources and referral data",
+        "example3": "Performance metrics and load times",
+        "example4": "User journey and behavior analysis"
+      },
+      "marketing": {
+        "title": "Marketing Cookies",
+        "description": "These cookies are used to track visitors across websites to display relevant and engaging advertisements.",
+        "example1": "Advertising campaign tracking",
+        "example2": "Conversion and attribution data",
+        "example3": "Audience segmentation and targeting",
+        "example4": "Cross-platform advertising optimization"
+      }
+    },
+    "labels": {
+      "required": "Required",
+      "optional": "Optional",
+      "examples": "Examples:"
+    },
+    "thirdPartySection": {
+      "title": "Third-Party Services",
+      "description": "We use several third-party services that may set their own cookies. Here are the main services we use:"
+    },
+    "thirdParty": {
+      "googleAnalytics": {
+        "name": "Google Analytics",
+        "purpose": "Website analytics and performance monitoring",
+        "dataCollected": "Page views, user interactions, device information",
+        "retention": "26 months"
+      },
+      "stripe": {
+        "name": "Stripe",
+        "purpose": "Payment processing and fraud prevention",
+        "dataCollected": "Payment information, transaction data",
+        "retention": "7 years",
+        "optOut": "Contact Stripe support"
+      },
+      "intercom": {
+        "name": "Intercom",
+        "purpose": "Customer support and communication",
+        "dataCollected": "User interactions, support conversations",
+        "retention": "3 years",
+        "optOut": "Disable chat widget"
+      },
+      "hotjar": {
+        "name": "Hotjar",
+        "purpose": "User experience analysis and heatmaps",
+        "dataCollected": "Mouse movements, clicks, scrolling behavior",
+        "retention": "12 months"
+      }
+    },
+    "table": {
+      "service": "Service",
+      "purpose": "Purpose",
+      "dataCollected": "Data Collected",
+      "retention": "Retention Period",
+      "optOut": "Opt-Out",
+      "optOutLink": "Opt-out link"
+    },
+    "managingSection": {
+      "title": "Managing Your Cookie Preferences",
+      "browserSettings": {
+        "title": "Browser Settings",
+        "description": "You can control and manage cookies through your browser settings. Most browsers allow you to:",
+        "option1": "View and delete cookies",
+        "option2": "Block cookies from specific websites",
+        "option3": "Block third-party cookies",
+        "option4": "Clear all cookies when you close the browser",
+        "option5": "Set up notifications when cookies are being set"
+      },
+      "consent": {
+        "title": "Cookie Consent",
+        "description": "When you first visit our website, you'll see a cookie consent banner. You can manage your preferences at any time by clicking the button below:",
+        "button": "Manage Cookie Preferences"
+      }
+    },
+    "updatesSection": {
+      "title": "Updates to This Policy",
+      "content1": "We may update this Cookie Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons.",
+      "content2": "We will notify you of any material changes by posting the updated policy on our website and updating the \"Last updated\" date at the top of this policy."
+    },
+    "contact": {
+      "title": "Questions About Cookies?",
+      "description": "If you have any questions about our use of cookies or this Cookie Policy, please don't hesitate to contact us.",
+      "email": "Email Us",
+      "form": "Contact Form"
+    }
+  },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "description": "Find answers to common questions about MatrixAI and our services.",
+      "sections": {
+        "general": {
+          "title": "General Questions",
+          "questions": {
+            "whatIsMatrixAI": {
+              "question": "What is MatrixAI?",
+              "answer": "MatrixAI is an advanced artificial intelligence platform that provides cutting-edge AI solutions for businesses and individuals. Our platform offers a comprehensive suite of AI tools including natural language processing, computer vision, predictive analytics, and machine learning capabilities."
+            },
+            "howToGetStarted": {
+              "question": "How do I get started with MatrixAI?",
+              "answer": "Getting started is easy! Simply sign up for an account, choose a subscription plan that fits your needs, and you'll have immediate access to our AI tools and APIs. We also provide comprehensive documentation and tutorials to help you integrate our services."
+            },
+            "suitableForBeginners": {
+              "question": "Is MatrixAI suitable for beginners?",
+              "answer": "Absolutely! MatrixAI is designed to be user-friendly for both beginners and experts. We provide intuitive interfaces, detailed documentation, and step-by-step guides to help users of all skill levels harness the power of AI."
+            }
+          }
+        },
+        "subscription": {
+          "title": "Subscription & Pricing",
+          "questions": {
+            "subscriptionPlans": {
+              "question": "What subscription plans do you offer?",
+              "answer": "We offer flexible subscription plans to meet different needs: Free tier for basic usage, Pro plan for advanced features, and Enterprise plan for large-scale deployments. Each plan includes different usage limits and features."
+            },
+            "upgradeDowngrade": {
+              "question": "Can I upgrade or downgrade my subscription?",
+              "answer": "Yes, you can change your subscription plan at any time. Upgrades take effect immediately, while downgrades will take effect at the end of your current billing cycle. You'll only pay the prorated difference for upgrades."
+            },
+            "refunds": {
+              "question": "Do you offer refunds?",
+              "answer": "We offer a 30-day money-back guarantee for all paid plans. If you're not satisfied with our service within the first 30 days, contact our support team for a full refund."
+            }
+          }
+        },
+        "support": {
+          "title": "Technical Support",
+          "questions": {
+            "responseTime": {
+              "question": "How quickly do you respond to support requests?",
+              "answer": "We strive to respond to all support requests within 24 hours. Premium and Enterprise customers receive priority support with faster response times."
+            },
+            "knowledgeBase": {
+              "question": "Do you have a knowledge base or documentation?",
+              "answer": "Yes, we maintain comprehensive documentation, API references, tutorials, and a searchable knowledge base. You can find answers to most common questions in our help center."
+            },
+            "partnership": {
+              "question": "Do you offer partnership opportunities?",
+              "answer": "We're always interested in strategic partnerships and integrations. Please contact our business development team to discuss potential collaboration opportunities."
+            },
+            "partnerships": {
+              "question": "Do you offer partnership opportunities?",
+              "answer": "We're always interested in strategic partnerships and integrations. Please contact our business development team to discuss potential collaboration opportunities."
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "title": "System Status",
+      "description": "Real-time status and performance metrics for all MatrixAI services.",
+      "currentStatus": "Current Status",
+      "lastUpdated": "Last Updated",
+      "overallStatus": {
+        "operational": "All Systems Operational",
+        "allOperational": "All Systems Operational",
+        "disruption": "Service Disruption",
+        "serviceDisruption": "Service Disruption",
+        "degraded": "Partial Service Degradation",
+        "partialDegradation": "Partial Service Degradation"
+      },
+      "sections": {
+        "serviceStatus": {
+          "title": "Service Status",
+          "description": "Current operational status of all MatrixAI services and components."
+        },
+        "services": {
+          "title": "Service Status",
+          "description": "Current operational status of all MatrixAI services and components."
+        },
+        "incidents": {
+          "title": "Recent Incidents",
+          "description": "Latest incidents and their resolution status."
+        },
+        "metrics": {
+          "title": "Performance Metrics",
+          "description": "Key performance indicators for the past 30 days"
+        }
+      },
+      "services": {
+        "api": {
+          "name": "API Gateway",
+          "description": "Core API services and endpoints"
+        },
+        "chat": {
+          "name": "Chat Interface",
+          "description": "Real-time chat and messaging system"
+        },
+        "imageGen": {
+          "name": "Image Generation",
+          "description": "AI-powered image creation and processing"
+        },
+        "imageGeneration": {
+          "name": "Image Generation",
+          "description": "AI-powered image creation and processing"
+        },
+        "database": {
+          "name": "Database",
+          "description": "Data storage and retrieval systems"
+        },
+        "cdn": {
+          "name": "Content Delivery",
+          "description": "Global content distribution network"
+        },
+        "auth": {
+          "name": "Authentication",
+          "description": "User authentication and authorization"
+        }
+      },
+      "labels": {
+        "status": "Status",
+        "uptime": "Uptime",
+        "responseTime": "Response Time",
+        "started": "Started",
+        "resolved": "Resolved",
+        "updates": "Updates"
+      },
+      "serviceStatus": {
+        "operational": "Operational",
+        "degraded": "Degraded Performance",
+        "partial": "Partial Outage",
+        "major": "Major Outage"
+      },
+      "incidents": {
+        "incident1": {
+          "title": "API Response Time Degradation",
+          "description": "Some users may experience slower than normal API response times.",
+          "updates": {
+            "update1": "We are investigating reports of increased API response times.",
+            "update2": "We have identified the cause and are working on a fix.",
+            "update3": "The issue has been resolved and API performance is back to normal.",
+            "update4": "Monitoring continues to ensure stability."
+          }
+        },
+        "incident2": {
+          "title": "Scheduled Database Maintenance",
+          "description": "Planned maintenance window for database optimization.",
+          "updates": {
+            "update1": "Maintenance is scheduled and will begin shortly.",
+            "update2": "Scheduled maintenance has been completed successfully."
+          }
+        },
+        "apiSlowdown": {
+          "title": "API Response Time Degradation",
+          "description": "Some users may experience slower than normal API response times.",
+          "updates": {
+            "investigating": "We are investigating reports of increased API response times.",
+            "identified": "We have identified the cause and are working on a fix.",
+            "resolved": "The issue has been resolved and API performance is back to normal."
+          }
+        },
+        "scheduledMaintenance": {
+          "title": "Scheduled Database Maintenance",
+          "description": "Planned maintenance window for database optimization.",
+          "updates": {
+            "scheduled": "Maintenance is scheduled and will begin shortly.",
+            "inProgress": "Maintenance is currently in progress.",
+            "completed": "Scheduled maintenance has been completed successfully."
+          }
+        }
+      },
+      "metrics": {
+        "overallUptime": "Overall Uptime",
+        "avgResponseTime": "Avg Response Time",
+        "apiRequests": "API Requests",
+        "successRate": "Success Rate"
+      },
+      "contact": {
+        "title": "Need Help or Have Questions?",
+        "description": "If you're experiencing issues not reflected on this page, please contact our support team.",
+        "emailSupport": "Email Support",
+        "contactForm": "Contact Form"
+      }
+    },
+    "privacy": {
+    "title": "Privacy Policy",
+    "subtitle": "Your privacy is important to us. This policy explains how we collect, use, and protect your personal information when you use MatrixAI.",
+    "lastUpdated": "Last updated: January 15, 2024",
+    "effectiveDate": "Effective date: January 15, 2024",
+    "tableOfContents": "Table of Contents",
+    "informationCollection": {
+      "title": "Information We Collect",
+      "content": "We collect information you provide directly to us, such as when you create an account, use our services, or contact us. This includes:\n\n• Personal information (name, email address, phone number)\n• Account credentials and preferences\n• Content you create or upload using our AI tools\n• Payment information (processed securely through third-party providers)\n• Communication history with our support team\n\nWe also automatically collect certain information about your device and usage patterns, including:\n\n• Device information (IP address, browser type, operating system)\n• Usage data (features used, time spent, interaction patterns)\n• Performance data to improve our AI models\n• Cookies and similar tracking technologies"
+    },
+    "informationUse": {
+      "title": "How We Use Your Information",
+      "content": "We use the information we collect to:\n\n• Provide, maintain, and improve our AI services\n• Process transactions and send related information\n• Personalize your experience and provide relevant content\n• Train and improve our AI models (with appropriate safeguards)\n• Communicate with you about our services, updates, and offers\n• Detect, prevent, and address technical issues and security threats\n• Comply with legal obligations and protect our rights\n\nWe use your data to make our AI more helpful while respecting your privacy. Content you create is used to improve our models only in aggregated, anonymized ways unless you explicitly opt-in to additional data usage."
+    },
+    "informationSharing": {
+      "title": "Information Sharing and Disclosure",
+      "content": "We do not sell, trade, or otherwise transfer your personal information to third parties except in the following circumstances:\n\n• Service Providers: We may share information with trusted third-party service providers who help us operate our platform (cloud hosting, payment processing, analytics)\n• Legal Requirements: We may disclose information if required by law, court order, or government request\n• Business Transfers: Information may be transferred as part of a merger, acquisition, or sale of assets\n• Protection of Rights: We may share information to protect our rights, property, or safety, or that of our users\n• Consent: We may share information with your explicit consent\n\nAll third-party service providers are bound by confidentiality agreements and are prohibited from using your information for any other purpose."
+    },
+    "dataSecurity": {
+      "title": "Data Security",
+      "content": "We implement appropriate technical and organizational security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction:\n\n• Encryption in transit and at rest using industry-standard protocols\n• Regular security audits and penetration testing\n• Access controls and authentication requirements for our staff\n• Secure data centers with physical and environmental protections\n• Incident response procedures for potential security breaches\n• Regular security training for our employees\n\nWhile we strive to protect your information, no method of transmission over the internet or electronic storage is 100% secure. We cannot guarantee absolute security but are committed to protecting your data using industry best practices."
+    },
+    "yourRights": {
+      "title": "Your Rights and Choices",
+      "content": "You have several rights regarding your personal information:\n\n• Access: Request a copy of the personal information we hold about you\n• Correction: Request correction of inaccurate or incomplete information\n• Deletion: Request deletion of your personal information (subject to certain exceptions)\n• Portability: Request transfer of your data to another service provider\n• Restriction: Request limitation of processing of your personal information\n• Objection: Object to processing of your personal information for certain purposes\n• Withdraw Consent: Withdraw consent for data processing where consent is the legal basis\n\nTo exercise these rights, please contact us at info@matrixaiglobal.com. We will respond to your request within 30 days."
+    },
+    "cookies": {
+      "title": "Cookie Policy",
+      "description": "This Cookie Policy explains how MatrixAI uses cookies and similar technologies to recognize you when you visit our website.",
+      "lastUpdated": "Last updated: January 15, 2024",
+      "effectiveDate": "Effective date: January 15, 2024",
+      "whatAreCookies": {
+        "title": "What Are Cookies?",
+        "content1": "Cookies are small data files that are placed on your computer or mobile device when you visit a website. Cookies are widely used by website owners to make their websites work, or to work more efficiently, as well as to provide reporting information.",
+        "content2": "Cookies set by the website owner (in this case, MatrixAI) are called 'first party cookies'. Cookies set by parties other than the website owner are called 'third party cookies'. Third party cookies enable third party features or functionality to be provided on or through the website (e.g. like advertising, interactive content and analytics)."
+      },
+      "typesSection": {
+        "title": "Types of Cookies We Use",
+        "description": "We use different types of cookies to provide you with the best possible experience on our website."
+      },
+      "types": {
+        "essential": {
+          "title": "Essential Cookies",
+          "required": true,
+          "description": "These cookies are strictly necessary to provide you with services available through our website and to use some of its features.",
+          "example1": "Authentication cookies",
+          "example2": "Security cookies",
+          "example3": "Load balancing cookies",
+          "example4": "Session management cookies"
+        },
+        "functional": {
+          "title": "Functional Cookies",
+          "required": false,
+          "description": "These cookies enable the website to provide enhanced functionality and personalization.",
+          "example1": "Language preferences",
+          "example2": "Theme settings",
+          "example3": "User interface preferences",
+          "example4": "Accessibility settings"
+        },
+        "analytics": {
+          "title": "Analytics Cookies",
+          "required": false,
+          "description": "These cookies help us understand how visitors interact with our website by collecting and reporting information anonymously.",
+          "example1": "Page view tracking",
+          "example2": "User behavior analysis",
+          "example3": "Performance monitoring",
+          "example4": "Error tracking"
+        },
+        "marketing": {
+          "title": "Marketing Cookies",
+          "required": false,
+          "description": "These cookies are used to track visitors across websites to display relevant and engaging advertisements.",
+          "example1": "Ad targeting",
+          "example2": "Conversion tracking",
+          "example3": "Retargeting",
+          "example4": "Social media integration"
+        }
+      },
+      "labels": {
+        "required": "Required",
+        "optional": "Optional",
+        "examples": "Examples"
+      },
+      "thirdPartySection": {
+        "title": "Third-Party Services",
+        "description": "We use various third-party services that may set cookies on your device."
+      },
+      "thirdParty": {
+        "googleAnalytics": {
+          "name": "Google Analytics",
+          "purpose": "Website analytics and performance monitoring",
+          "dataCollected": "Page views, user interactions, device information",
+          "retention": "26 months"
+        },
+        "stripe": {
+          "name": "Stripe",
+          "purpose": "Payment processing and fraud prevention",
+          "dataCollected": "Payment information, transaction data",
+          "retention": "7 years",
+          "optOut": "Contact Stripe directly"
+        },
+        "intercom": {
+          "name": "Intercom",
+          "purpose": "Customer support and communication",
+          "dataCollected": "User interactions, support conversations",
+          "retention": "3 years",
+          "optOut": "Disable in chat settings"
+        },
+        "hotjar": {
+          "name": "Hotjar",
+          "purpose": "User experience analysis and heatmaps",
+          "dataCollected": "Mouse movements, clicks, scrolling behavior",
+          "retention": "12 months"
+        }
+      },
+      "table": {
+        "service": "Service",
+        "purpose": "Purpose",
+        "dataCollected": "Data Collected",
+        "retention": "Retention Period",
+        "optOut": "Opt-Out",
+        "optOutLink": "Learn more"
+      },
+      "managingSection": {
+        "title": "Managing Your Cookie Preferences",
+        "browserSettings": {
+          "title": "Browser Settings",
+          "description": "You can control and manage cookies in various ways:",
+          "option1": "Block all cookies",
+          "option2": "Block third-party cookies",
+          "option3": "Clear cookies when you close your browser",
+          "option4": "Manage cookies on a site-by-site basis"
+        },
+        "consent": {
+          "title": "Cookie Consent",
+          "description": "You can manage your cookie preferences using our consent tool.",
+          "button": "Manage Cookie Preferences"
+        }
+      },
+      "updatesSection": {
+        "title": "Updates to This Policy",
+        "content1": "We may update this Cookie Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons.",
+        "content2": "Please check this page periodically for any changes. We will notify you of any material changes by posting the new Cookie Policy on this page."
+      },
+      "contact": {
+        "title": "Contact Us",
+        "description": "If you have any questions about our use of cookies or this Cookie Policy, please contact us.",
+        "email": "Email Us",
+        "form": "Contact Form"
+      },
+      "content": "We use cookies and similar tracking technologies to collect and store information about your interactions with our services:\n\n• Essential Cookies: Required for basic functionality and security\n• Performance Cookies: Help us understand how you use our services\n• Functionality Cookies: Remember your preferences and settings\n• Analytics Cookies: Provide insights into usage patterns and performance\n\nYou can control cookies through your browser settings, but disabling certain cookies may affect the functionality of our services. We also use local storage and similar technologies to enhance your experience."
+    },
+    "internationalTransfers": {
+      "title": "International Data Transfers",
+      "content": "MatrixAI operates globally, and your information may be transferred to and processed in countries other than your own. When we transfer personal information internationally, we ensure appropriate safeguards are in place:\n\n• Standard Contractual Clauses approved by relevant authorities\n• Adequacy decisions recognizing equivalent protection levels\n• Binding corporate rules for intra-group transfers\n• Your explicit consent for specific transfers\n\nWe are committed to protecting your information regardless of where it is processed and ensure that international transfers comply with applicable data protection laws."
+    },
+    "childrenPrivacy": {
+      "title": "Children's Privacy",
+      "content": "Our services are not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided us with personal information, please contact us immediately.\n\nIf we discover that we have collected personal information from a child under 13, we will take steps to delete such information promptly. For users between 13 and 18, we recommend parental guidance when using our services."
+    },
+    "changes": {
+      "title": "Changes to This Privacy Policy",
+      "content": "We may update this Privacy Policy from time to time to reflect changes in our practices or applicable laws. We will notify you of any material changes by:\n\n• Posting the updated policy on our website\n• Sending an email notification to registered users\n• Displaying a prominent notice on our platform\n\nThe updated policy will be effective when posted unless otherwise specified. We encourage you to review this policy periodically to stay informed about how we protect your information."
+    },
+    "contact": {
+      "title": "Questions About Your Privacy?",
+      "description": "If you have any questions about this Privacy Policy or how we handle your personal information, please don't hesitate to contact us.",
+      "emailUs": "Email Us",
+      "contactForm": "Contact Form"
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "description": "Find answers to common questions about MatrixAI and our services",
+    "sections": {
+      "general": {
+        "title": "General Questions",
+        "questions": {
+          "whatIsMatrixAI": {
+            "question": "What is MatrixAI?",
+            "answer": "MatrixAI is an advanced artificial intelligence platform that provides cutting-edge AI solutions for businesses and individuals. Our platform offers a comprehensive suite of AI tools including natural language processing, computer vision, predictive analytics, and machine learning capabilities."
+          },
+          "howToGetStarted": {
+            "question": "How do I get started with MatrixAI?",
+            "answer": "Getting started is easy! Simply sign up for an account, choose a subscription plan that fits your needs, and you'll have immediate access to our AI tools and APIs. We also provide comprehensive documentation and tutorials to help you integrate our services."
+          },
+          "suitableForBeginners": {
+            "question": "Is MatrixAI suitable for beginners?",
+            "answer": "Absolutely! MatrixAI is designed to be user-friendly for both beginners and experts. We provide intuitive interfaces, detailed documentation, and step-by-step guides to help users of all skill levels harness the power of AI."
+          }
+        }
+      },
+      "subscription": {
+        "title": "Subscription & Pricing",
+        "questions": {
+          "subscriptionPlans": {
+            "question": "What subscription plans do you offer?",
+            "answer": "We offer flexible subscription plans to meet different needs: Free tier for basic usage, Pro plan for advanced features, and Enterprise plan for large-scale deployments. Each plan includes different usage limits and features."
+          },
+          "upgradeDowngrade": {
+            "question": "Can I upgrade or downgrade my subscription?",
+            "answer": "Yes, you can change your subscription plan at any time. Upgrades take effect immediately, while downgrades will take effect at the end of your current billing cycle. You'll only pay the prorated difference for upgrades."
+          },
+          "refunds": {
+            "question": "Do you offer refunds?",
+            "answer": "We offer a 30-day money-back guarantee for all paid plans. If you're not satisfied with our service within the first 30 days, contact our support team for a full refund."
+          }
+        }
+      },
+      "support": {
+        "title": "Technical Support",
+        "questions": {
+          "responseTime": {
+            "question": "How quickly do you respond to support requests?",
+            "answer": "We strive to respond to all support requests within 24 hours. Premium and Enterprise customers receive priority support with faster response times."
+          },
+          "knowledgeBase": {
+            "question": "Do you have a knowledge base or documentation?",
+            "answer": "Yes, we maintain comprehensive documentation, API references, tutorials, and a searchable knowledge base. You can find answers to most common questions in our help center."
+          },
+          "partnership": {
+            "question": "Do you offer partnership opportunities?",
+            "answer": "We're always interested in strategic partnerships and integrations. Please contact our business development team to discuss potential collaboration opportunities."
+          }
+        }
+      }
+    }
+  }
 }

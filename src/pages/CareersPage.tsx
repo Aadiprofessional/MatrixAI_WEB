@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { 
   FiMapPin, 
   FiClock, 
@@ -17,6 +18,7 @@ import {
 } from 'react-icons/fi';
 
 const CareersPage: React.FC = () => {
+  const { t } = useTranslation();
   const [selectedDepartment, setSelectedDepartment] = useState<string>('All');
 
   const jobOpenings = [
@@ -88,37 +90,43 @@ const CareersPage: React.FC = () => {
     }
   ];
 
-  const departments = ['All', 'Engineering', 'Design', 'Marketing', 'Customer Success'];
+  const departments = [
+    { key: 'All', label: t('careers.departments.all') },
+    { key: 'Engineering', label: t('careers.departments.engineering') },
+    { key: 'Design', label: t('careers.departments.design') },
+    { key: 'Marketing', label: t('careers.departments.marketing') },
+    { key: 'Customer Success', label: t('careers.departments.customerSuccess') }
+  ];
 
   const benefits = [
     {
-      title: 'Health & Wellness',
-      description: 'Comprehensive health, dental, and vision insurance',
+      title: t('careers.benefits.healthWellness.title'),
+      description: t('careers.benefits.healthWellness.description'),
       icon: <FiHeart className="h-6 w-6" />
     },
     {
-      title: 'Flexible Work',
-      description: 'Remote-first culture with flexible hours',
+      title: t('careers.benefits.flexibleWork.title'),
+      description: t('careers.benefits.flexibleWork.description'),
       icon: <FiGlobe className="h-6 w-6" />
     },
     {
-      title: 'Learning Budget',
-      description: '$3,000 annual budget for courses and conferences',
+      title: t('careers.benefits.learningBudget.title'),
+      description: t('careers.benefits.learningBudget.description'),
       icon: <FiTrendingUp className="h-6 w-6" />
     },
     {
-      title: 'Equity Package',
-      description: 'Competitive equity in a fast-growing company',
+      title: t('careers.benefits.equityPackage.title'),
+      description: t('careers.benefits.equityPackage.description'),
       icon: <FiPieChart className="h-6 w-6" />
     },
     {
-      title: 'Team Events',
-      description: 'Regular team building and company retreats',
+      title: t('careers.benefits.teamEvents.title'),
+      description: t('careers.benefits.teamEvents.description'),
       icon: <FiUsers className="h-6 w-6" />
     },
     {
-      title: 'Latest Tech',
-      description: 'Top-tier equipment and tools for your work',
+      title: t('careers.benefits.latestTech.title'),
+      description: t('careers.benefits.latestTech.description'),
       icon: <FiCode className="h-6 w-6" />
     }
   ];
@@ -139,18 +147,17 @@ const CareersPage: React.FC = () => {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Join the AI Revolution
+              {t('careers.joinAiRevolution')}
             </h1>
             <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
-              Help us build the future of artificial intelligence. Work with cutting-edge technology 
-              and brilliant minds to create AI that makes a difference.
+              {t('careers.helpBuildFuture')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button className="bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                View Open Positions
+                {t('careers.viewOpenPositions')}
               </button>
               <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors">
-                Learn About Culture
+                {t('careers.learnAboutCulture')}
               </button>
             </div>
           </motion.div>
@@ -167,8 +174,8 @@ const CareersPage: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">50+</div>
-              <div className="text-gray-600 dark:text-gray-400 mt-2">Team Members</div>
+              <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">{t('careers.stats.teamMembers.number')}</div>
+              <div className="text-gray-600 dark:text-gray-400 mt-2">{t('careers.stats.teamMembers.label')}</div>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -176,8 +183,8 @@ const CareersPage: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <div className="text-4xl font-bold text-purple-600 dark:text-purple-400">15</div>
-              <div className="text-gray-600 dark:text-gray-400 mt-2">Countries</div>
+              <div className="text-4xl font-bold text-purple-600 dark:text-purple-400">{t('careers.stats.countries.number')}</div>
+              <div className="text-gray-600 dark:text-gray-400 mt-2">{t('careers.stats.countries.label')}</div>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -185,8 +192,8 @@ const CareersPage: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <div className="text-4xl font-bold text-pink-600 dark:text-pink-400">100M+</div>
-              <div className="text-gray-600 dark:text-gray-400 mt-2">AI Interactions</div>
+              <div className="text-4xl font-bold text-pink-600 dark:text-pink-400">{t('careers.stats.aiInteractions.number')}</div>
+              <div className="text-gray-600 dark:text-gray-400 mt-2">{t('careers.stats.aiInteractions.label')}</div>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -194,8 +201,8 @@ const CareersPage: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <div className="text-4xl font-bold text-green-600 dark:text-green-400">$50M</div>
-              <div className="text-gray-600 dark:text-gray-400 mt-2">Series A Funding</div>
+              <div className="text-4xl font-bold text-green-600 dark:text-green-400">{t('careers.stats.funding.number')}</div>
+              <div className="text-gray-600 dark:text-gray-400 mt-2">{t('careers.stats.funding.label')}</div>
             </motion.div>
           </div>
         </div>
@@ -206,10 +213,10 @@ const CareersPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Why Work With Us?
+              {t('careers.whyWorkWithUs')}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              We offer competitive benefits and a culture that values innovation, growth, and work-life balance.
+              {t('careers.benefitsDescription')}
             </p>
           </div>
           
@@ -243,10 +250,10 @@ const CareersPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Open Positions
+              {t('careers.openPositions')}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400">
-              Find your next career opportunity with us
+              {t('careers.findOpportunity')}
             </p>
           </div>
 
@@ -254,15 +261,15 @@ const CareersPage: React.FC = () => {
           <div className="flex flex-wrap justify-center gap-4 mb-8">
             {departments.map((dept) => (
               <button
-                key={dept}
-                onClick={() => setSelectedDepartment(dept)}
+                key={dept.key}
+                onClick={() => setSelectedDepartment(dept.key)}
                 className={`px-6 py-2 rounded-full font-medium transition-colors ${
-                  selectedDepartment === dept
+                  selectedDepartment === dept.key
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
-                {dept}
+                {dept.label}
               </button>
             ))}
           </div>
@@ -308,7 +315,7 @@ const CareersPage: React.FC = () => {
                 </p>
                 
                 <div className="mb-4">
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">Key Requirements:</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">{t('careers.keyRequirements')}:</h4>
                   <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                     {job.requirements.map((req, idx) => (
                       <li key={idx} className="flex items-center gap-2">
@@ -321,10 +328,10 @@ const CareersPage: React.FC = () => {
                 
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Posted {job.posted}
+                    {t('careers.posted')} {job.posted}
                   </span>
                   <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-                    Apply Now
+                    {t('careers.applyNow')}
                     <FiExternalLink className="h-4 w-4" />
                   </button>
                 </div>
@@ -344,25 +351,25 @@ const CareersPage: React.FC = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Don't See the Right Role?
+              {t('careers.dontSeeRole')}
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-              We're always looking for talented people. Send us your resume and let's talk!
+              {t('careers.alwaysLooking')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:matrixai.global@gmail.com"
+                href="mailto:info@matrixaiglobal.com"
                 className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
               >
                 <FiMail className="h-5 w-5" />
-                Send Resume
+                {t('careers.sendResume')}
               </a>
               <a
-                href="mailto:matrixai.global@gmail.com"
+                href="mailto:info@matrixaiglobal.com"
                 className="border-2 border-blue-600 text-blue-600 dark:text-blue-400 px-8 py-3 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition-colors flex items-center justify-center gap-2"
               >
                 <FiMessageSquare className="h-5 w-5" />
-                Ask Questions
+                {t('careers.askQuestions')}
               </a>
             </div>
           </motion.div>
@@ -372,4 +379,4 @@ const CareersPage: React.FC = () => {
   );
 };
 
-export default CareersPage; 
+export default CareersPage;

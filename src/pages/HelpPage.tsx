@@ -324,14 +324,14 @@ const HelpPage: React.FC = () => {
                       {t('help.contact.responseTime')}
                     </p>
                     <a 
-                      href="mailto:support@matrixaiglobal.com"
+                      href="mailto:info@matrixaiglobal.com"
                       className={`mt-2 inline-block font-medium ${
                         darkMode 
                           ? 'text-blue-400 hover:text-blue-300' 
                           : 'text-blue-600 hover:text-blue-700'
                       }`}
                     >
-                      support@matrixaiglobal.com
+                      info@matrixaiglobal.com
                     </a>
                   </div>
                 </div>

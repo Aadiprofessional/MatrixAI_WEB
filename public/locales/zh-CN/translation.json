@@ -536,9 +536,9 @@
         "title": "将图像转换为动态视频"
       }
     },
-    "startCreating": "开始使用AI创建",
+    "startCreating": "开始使用AI进行创作",
     "title": "您的完整AI",
-    "titleSecondLine": "创意套房",
+    "titleSecondLine": "创意套件",
     "useCasesSection": {
       "aiChat": "AI聊天",
       "contentWriting": "内容写作",
@@ -591,7 +591,7 @@
     "footer": {
       "categories": {
         "explore": "探索",
-        "features": "特征",
+        "features": "功能",
         "help": "帮助",
         "resources": "资源",
         "tools": "工具"
@@ -600,9 +600,9 @@
         "aboutUs": "关于我们",
         "aiChat": "AI聊天",
         "blog": "博客",
-        "careers": "职业",
+        "careers": "就业机会",
         "chat": "聊天",
-        "contact": "接触",
+        "contact": "联系",
         "contentGeneration": "内容产生",
         "contentWriter": "内容作家",
         "cookiesPolicy": "Cookies政策",
@@ -887,7 +887,7 @@
     "chooseAiToolDesc": "从视频创建，图像生成，语音到文本，内容写作或AI聊天中进行选择 - 都在一个具有统一界面的平台中。",
     "describeWhatYouWant": "描述你想要什么",
     "describeWhatYouWantDesc": "使用自然语言来解释您的愿景。\n我们的AI了解所有工具的上下文，样式偏好和创造性方向。",
-    "description": "体验即时AI驱动的创造力与您所有创意需求的老式生产头痛之间的区别。",
+    "description": "体验即时人工智能创意与传统制作难题之间的区别，满足您的所有创意需求。",
     "getProfessionalResults": "立即获得专业成绩",
     "getProfessionalResultsDesc": "我们的AI处理复杂的工作。\n无论是视频，图像，转录，内容还是聊天响应，都会在几分钟而不是几天内获得高质量的结果。",
     "learnComplexSoftware": "学习多个复杂的软件接口",
@@ -896,7 +896,7 @@
     "payMultipleSubscriptions": "支付多个订阅和服务",
     "payPremiumPrices": "为每种服务支付高级价格",
     "researchHireSpecialists": "研究和雇用不同专家为每项任务",
-    "title": "为什么要等几周？\n在几分钟而不是几天之内使用AI创建",
+    "title": "何必等上几周？几分钟内即可使用 AI 进行创作，无需几天时间。MatrixAI 是满足您所有需求的最佳平台。",
     "titleSecondLine": "矩阵AI是满足您所有需求的最佳平台",
     "traditionalTitle": "传统的创意方法",
     "traditionalVideoProduction": "传统的视频制作",
@@ -917,7 +917,7 @@
     "creativeSuite": {
       "description": "一个集成平台中的所有创意AI工具。",
       "detailedDescription": "在一个无缝平台中访问我们完整的AI创意工具套件。\n结合视频生成，图像创建，语音到文本，内容写作和AI聊天，以质量稳定地进行全面的创意项目。",
-      "name": "创意套房"
+      "name": "创意套件"
     },
     "featureSections": {
       "aiChat": {
@@ -952,7 +952,7 @@
     },
     "speechToText": {
       "description": "将口语单词转换为准确的文本转录。",
-      "detailedDescription": "我们先进的语音识别技术能够将音频录音转换为精准的文本转录，准确率极高。非常适合会议、访谈、内容创作和无障碍访问。结合我们的内容生成功能，可将您的口头想法瞬间转化为精美的书面内容。",
+      "detailedDescription": "高精度地将音频转换为文本。非常适合转录会议、采访和其他音频记录。",
       "name": "对文字的讲话"
     },
     "subtitle": "使用matrixai.asia，您始终拥有正确的工具 - 不仅仅是一个选项。\n立即在一个地方访问视频生成，图像创建，语音到文本，内容写作和AI聊天。",
@@ -1306,7 +1306,7 @@
       }
     },
     "contact": {
-      "email": "support@matrixaiglobal.com",
+      "email": "info@matrixaiglobal.com",
       "emailSupport": "电子邮件支持",
       "responseTime": "我们的团队通常在24小时内做出回应",
       "title": "联系信息"
@@ -1616,7 +1616,7 @@
     },
     "settings": "设置",
     "share": "分享",
-    "subtitle": "使用高级AI，将您的音频文件转换为准确的文本转录",
+    "subtitle": "将音频文件转换为准确的文本转录。",
     "success": {
       "transcriptionCopied": "转录复制到剪贴板！"
     },
@@ -1652,10 +1652,10 @@
     }
   },
   "about": {
-    "description": "我们正在建立AI驱动的生产力工具的未来。\n我们的使命是使每个人都可以访问先进的人工智能，从而使个人和企业能够通过智能自动化获得更多成就。",
+    "description": "我们正在构建 AI 赋能的生产力工具的未来。我们的使命是让先进的人工智能惠及每个人，赋能个人和企业，让他们能够通过智能自动化实现更多成就。",
     "ourStory": {
-      "paragraph1": "Matrixai成立于2023年，源于一种简单的信念：人工智能应提高人类的创造力和生产力，而不是取代它。\n我们的人工智能研究人员，工程师和设计师团队融合了民主化使用强大的AI工具的共同愿景。",
-      "paragraph2": "最初是一个小型项目来创建更好的AI写作工具，已经发展成为一个为全球数千名用户提供服务的综合平台。\n我们已经构建了从智能聊天机器人到高级图像生成系统的所有内容，始终在最前沿的用户体验。",
+      "paragraph1": "Matrixai成立于2023年，源于一种简单的信念：人工智能应提高人类的创造力和生产力，而不是取代它。我们的团队由 AI 研究人员、工程师和设计师组成，秉持着一个共同的愿景：让强大的 AI 工具普及大众。",
+      "paragraph2": "我们最初只是一个旨在打造更佳 AI 写作工具的小项目，如今已发展成为一个服务于全球数千名用户的综合平台。从智能聊天机器人到先进的图像生成系统，我们构建了各种产品，始终将用户体验放在首位。",
       "paragraph3": "如今，Matrixai继续在AI上突破可能的界限，同时保持我们对道德发展和用户隐私的承诺。\n我们认为，工作的未来是协作的 - 人类和人工智能共同努力，以取得非凡的成果。",
       "title": "我们的故事"
     },
@@ -1667,16 +1667,16 @@
         "title": "全球视角"
       },
       "openCommunication": {
-        "description": "我们在团队内部和客户中培养诚实和公开的对话，以建立信任并不断提高。",
+        "description": "我们在团队内部以及与客户之间促进诚实和开放的对话，以建立信任并不断改进。",
         "title": "开放沟通"
       },
       "responsibleAI": {
-        "description": "我们相信，在培训模型和处理数据方面，以透明度在道德和负责任地开发AI系统。",
-        "title": "负责人AI"
+        "description": "我们相信以合乎道德和负责任的方式开发人工智能系统，并且我们训练模型和处理数据的方式应保持透明。",
+        "title": "负责任的人工智能"
       },
       "title": "我们的价值观",
       "userCentric": {
-        "description": "我们建立了AI，可以增强人类能力，而无需取代人类的联系。\n我们的产品旨在解决真正的人的真正问题。",
+        "description": "我们打造的人工智能能够增强人类能力，但不会取代人际联系。我们的产品旨在解决真正的人的真正问题。",
         "title": "以用户为中心的创新"
       }
     }
@@ -1690,7 +1690,18 @@
     "pageDescription": "洞察力，更新和深入研究AI技术的世界",
     "pageTitle": "Matrixai博客",
     "searchPlaceholder": "搜索文章...",
-    "title": "博客"
+    "title": "博客",
+    "articlePlural": "文章",
+    "articleSingular": "文章",
+    "enterEmail": "输入您的电子邮件",
+    "found": "成立",
+    "latestArticles": "最新文章",
+    "noArticlesFound": "找不到文章",
+    "readMore": "阅读更多",
+    "stayUpdated": "保持更新",
+    "subscribe": "订阅",
+    "subscribeNewsletter": "订阅我们的新闻通讯，以获取最新的AI见解和更新",
+    "tryAdjusting": "尝试调整搜索词或类别过滤器"
   },
   "contact": {
     "agreeTerms": "我同意隐私政策和服务条款。",
@@ -1737,6 +1748,7 @@
     "description": "您要寻找的页面不存在或已移动。"
   },
   "pricing": {
+    "subtitle": "选择最适合您的方案。所有方案均包含我们全套 AI 工具的使用权。",
     "addonFeature1": "现有用户的额外硬币",
     "addonFeature2": "在月末过期",
     "addonFeature3": "增加当前余额",
@@ -1750,7 +1762,7 @@
     "contactSales": "联系销售",
     "contentWriting": "内容写作",
     "faq": "常见问题",
-    "faqAnswer1": "我们的平台使用基于硬币的系统，其中不同的AI服务消耗了不同数量的硬币。\n您购买了一个计划，可以为您提供一定数量的硬币，然后您可以将其用于各种AI服务。",
+    "faqAnswer1": "我们的平台使用基于硬币的系统，不同的AI服务消耗不同数量的硬币。您购买一个计划，为您提供一定数量的硬币，然后您可以将其用于各种AI服务。",
     "faqAnswer2": "是的，每月计划的硬币在每个计费周期结束时到期。\n测试人员计划的硬币在15天后到期。 \nAddon Pack硬币将于本月底到期。",
     "faqAnswer3": "是的，您可以随时升级计划。\n升级时，我们将为您当前计划的剩余价值进行筹集资金，并将其应用于您的新计划。",
     "faqAnswer4": "我们接受主要的信用卡（Visa，万事达卡），以及中国的支撑式香港和Alipay中国付款。",
@@ -1779,7 +1791,6 @@
     "save10": "节省10％",
     "signUpNow": "立即注册",
     "subscribeNow": "立即订阅",
-    "subtitle": "选择最适合您的计划。\n所有计划都包括访问我们的完整AI工具套件。",
     "tester": "测试仪",
     "testerFeature1": "非常适合尝试我们的服务",
     "testerFeature2": "有效期15天",
@@ -1883,5 +1894,1035 @@
     "cancel": "取消",
     "close": "关闭",
     "convertToText": "转换为文字"
+  },
+  "careers": {
+    "joinAiRevolution": "加入人工智能革命",
+    "helpBuildFuture": "与我们携手共创人工智能的未来。携手尖端科技与杰出人才，共同创造意义非凡的人工智能。",
+    "viewOpenPositions": "查看空缺职位",
+    "learnAboutCulture": "了解文化",
+    "teamMembers": "团队成员",
+    "countries": "国家",
+    "aiInteractions": "人工智能交互",
+    "seriesAFunding": "A轮融资",
+    "whyWorkWithUs": "为什么与我们合作？",
+    "competitiveBenefits": "我们提供有竞争力的福利和重视创新、成长和工作与生活平衡的文化。",
+    "healthWellness": "健康与保健",
+    "comprehensiveInsurance": "综合健康、牙科和视力保险",
+    "flexibleWork": "弹性工作",
+    "remoteFirstCulture": "远程优先文化和灵活的工作时间",
+    "learningBudget": "学习预算",
+    "annualBudget": "每年 3,000 美元的课程和会议预算",
+    "equityPackage": "股权方案",
+    "competitiveEquity": "快速发展的公司中的竞争股权",
+    "teamEvents": "团队活动",
+    "regularTeamBuilding": "定期团队建设和公司休假",
+    "latestTech": "最新科技",
+    "topTierEquipment": "适合您工作的顶级设备和工具",
+    "openPositions": "空缺职位",
+    "findCareerOpportunity": "与我们一起寻找您的下一个职业机会",
+    "dontSeeRightRole": "没有看到正确的角色？",
+    "alwaysLookingTalented": "我们一直在寻找优秀人才。请发送您的简历，让我们与您洽谈！",
+    "sendResume": "发送简历",
+    "askQuestions": "咨询问题",
+    "stats": {
+      "teamMembers": {
+        "number": "150+",
+        "label": "团队成员"
+      },
+      "countries": {
+        "number": "25+",
+        "label": "国家"
+      },
+      "aiInteractions": {
+        "number": "10M+",
+        "label": "AI交互"
+      },
+      "funding": {
+        "number": "$50M",
+        "label": "A轮融资"
+      }
+    },
+    "benefitsDescription": "我们提供有竞争力的福利和重视创新、成长和工作生活平衡的文化。",
+    "findOpportunity": "在我们这里找到您的下一个职业机会",
+    "departments": {
+      "all": "全部",
+      "engineering": "工程",
+      "design": "设计",
+      "marketing": "市场营销",
+      "customerSuccess": "客户成功"
+    },
+    "keyRequirements": "关键要求",
+    "posted": "发布于",
+    "applyNow": "立即申请",
+    "dontSeeRole": "没有看到合适的职位？",
+    "alwaysLooking": "我们一直在寻找有才华的人。请发送您的简历，让我们聊聊！",
+    "benefits": {
+      "healthWellness": {
+        "title": "健康与福利",
+        "description": "全面的健康、牙科和视力保险"
+      },
+      "flexibleWork": {
+        "title": "灵活工作",
+        "description": "远程优先的文化和灵活的工作时间"
+      },
+      "learningBudget": {
+        "title": "学习预算",
+        "description": "每年3000美元的课程和会议预算"
+      },
+      "equityPackage": {
+        "title": "股权包",
+        "description": "在快速成长公司中的有竞争力的股权"
+      },
+      "teamEvents": {
+        "title": "团队活动",
+        "description": "定期的团队建设和公司聚会"
+      },
+      "latestTech": {
+        "title": "最新技术",
+        "description": "为您的工作提供顶级设备和工具"
+      },
+      "workLifeBalance": {
+        "title": "工作生活平衡",
+        "description": "灵活的时间安排和远程工作选择，帮助您保持健康的工作生活平衡。"
+      }
+    }
+  },
+  "terms": {
+    "title": "服务条款",
+    "subtitle": "本条款约束您对 MatrixAI 服务的使用。请仔细阅读，以了解您的权利和责任。",
+    "lastUpdated": "最后更新: January 15, 2024",
+    "effectiveDate": "生效日期: January 15, 2024",
+    "tableOfContents": "目录",
+    "sections": {
+      "privacy": {
+        "title": "隐私和数据安全",
+        "dataProtectionTitle": "数据保护：",
+        "dataProtection1": "• 我们实施行业标准的安全措施来保护您的数据",
+        "dataProtection2": "• 您的个人信息将根据我们的隐私政策进行处理。",
+        "dataProtection3": "• 我们使用加密和安全协议进行数据传输和存储",
+        "dataRetentionTitle": "数据保留：",
+        "dataRetention1": "• 我们仅在提供服务所需的时间内保留您的数据",
+        "dataRetention2": "• 您可以根据法律要求要求删除您的数据",
+        "dataRetention3": "• 出于安全和法律合规目的，可能会保留某些数据",
+        "thirdPartyTitle": "第三方服务：",
+        "thirdParty1": "• 我们可能会使用第三方服务进行支付处理、分析和基础设施",
+        "thirdParty2": "• 这些服务受保密协议约束",
+        "thirdParty3": "• 我们仔细审查所有第三方提供商的安全和隐私合规性",
+        "content1": "您的隐私对我们很重要。\n我们对您的个人信息的收集，使用和保护受我们的隐私政策的约束，该政策通过参考将其纳入这些条款。",
+        "dataCollection1": "我们收集您直接提供给我们的信息",
+        "dataCollection2": "当您使用我们的服务时，我们可能会自动收集信息",
+        "dataCollection3": "我们使用您的信息来提供，维护和改善我们的服务",
+        "dataCollection4": "我们可能会使用您的信息与您沟通有关我们的服务",
+        "dataCollectionTitle": "数据收集和使用：",
+        "dataSecurity1": "我们实施适当的技术和组织安全措施",
+        "dataSecurity2": "我们在运输和休息中加密敏感数据",
+        "dataSecurity3": "我们定期审查和更新我们的安全惯例",
+        "dataSecurity4": "我们将您的个人信息访问仅限于授权人员",
+        "dataSecurityTitle": "数据安全：",
+        "rights1": "您有权访问您的个人信息",
+        "rights2": "您可以要求纠正不准确的信息",
+        "rights3": "您可以要求删除您的个人信息",
+        "rights4": "您可以选择退出某些通讯",
+        "rightsTitle": "您的权利："
+      },
+      "disclaimers": {
+        "title": "免责声明和限制",
+        "serviceAvailabilityTitle": "服务可用性：",
+        "serviceAvailability1": "• 我们的服务按“原样”提供，不提供任何形式的担保",
+        "serviceAvailability2": "• 我们不保证服务不中断或无错误",
+        "serviceAvailability3": "• 定期维护可能会暂时影响服务可用性",
+        "aiLimitations": "人工智能的局限性：",
+        "contentAccuracy1": "• 人工智能生成的内容可能包含错误或不准确之处",
+        "contentAccuracy2": "• 您有责任审查和验证人工智能生成的内容",
+        "contentAccuracy3": "• 我们不保证人工智能输出的准确性、完整性或可靠性",
+        "liability": "责任限制：",
+        "damages1": "• 我们的责任仅限于您为我们的服务支付的金额",
+        "damages2": "• 我们不承担间接、偶然或后果性损害的责任",
+        "damages3": "• 某些司法管辖区不允许某些限制，因此这些限制可能不适用于您",
+        "contentAccuracyTitle": "内容准确性：",
+        "thirdPartyContent1": "•我们不对第三方内容或服务负责",
+        "thirdPartyContent2": "•为方便起见提供了指向外部站点的链接",
+        "thirdPartyContent3": "•第三方集成受其条款和政策的约束",
+        "thirdPartyContentTitle": "第三方内容：",
+        "aiLimitations1": "AI生成的内容可能包含事实错误或不准确，应验证",
+        "aiLimitations2": "AI模型可能在其培训数据中表现出偏见",
+        "aiLimitations3": "AI生成的内容不是专业建议，不应取代人类专业知识",
+        "aiLimitationsTitle": "人工智能限制",
+        "damages4": "我们对服务的完整性，可靠性或准确性不保证",
+        "damagesTitle": "损害限制",
+        "indemnification1": "您同意赔偿我们，以防您使用我们的服务引起的索赔",
+        "indemnification2": "这包括与您的内容，行为或违反这些条款有关的索赔",
+        "indemnification3": "您将支付捍卫此类索赔的合理律师费和费用",
+        "indemnification4": "我们保留以我们的费用辩护任何索赔的权利",
+        "indemnificationTitle": "保障",
+        "liability1": "我们的总责任不会超过您在索赔之前12个月内支付的金额",
+        "liability2": "我们对损失的利润，数据或商机不承担任何责任",
+        "liability3": "我们对第三方或不可抗力事件造成的损害不承担任何责任",
+        "liabilityTitle": "责任限制"
+      },
+      "termination": {
+        "title": "终止",
+        "byYouTitle": "您终止：",
+        "byYou1": "• 您可以随时通过您的帐户设置终止您的帐户",
+        "byYou2": "• 取消将在您当前计费周期结束时生效",
+        "byYou3": "• 您仍需承担终止前产生的所有费用",
+        "byUsTitle": "由我们终止：",
+        "byUs1": "• 如果您违反这些条款，我们可能会终止您的帐户",
+        "byUs2": "• 我们可能会因未付款而暂停或终止服务",
+        "byUs3": "• 我们将尽可能在终止合同前提供合理的通知",
+        "effectTitle": "终止的效力：",
+        "effect1": "• 您使用我们服务的权利将立即终止",
+        "effect2": "• 我们可能会在终止后删除您的帐户和数据",
+        "effect3": "• 本条款的某些规定在终止后仍然有效。"
+      },
+      "governingLaw": {
+        "title": "适用法律和争议",
+        "lawTitle": "适用法律：",
+        "law1": "• 这些条款受 MatrixAI 注册地法律管辖",
+        "law2": "• 任何争议将由该管辖区的法院解决",
+        "law3": "• 您同意这些法院的管辖权和审判地",
+        "disputeTitle": "争议解决：",
+        "dispute1": "• 我们鼓励通过直接沟通解决争议",
+        "dispute2": "• 对于正式争议，我们可能要求进行具有约束力的仲裁",
+        "dispute3": "• 您可以在 30 天内以书面形式通知选择退出仲裁",
+        "classActionTitle": "集体诉讼豁免：",
+        "classAction1": "• 您同意单独解决争议，而不是作为集体诉讼的一部分",
+        "classAction2": "• 此豁免适用于我们之间的所有索赔和纠纷",
+        "classAction3": "• 某些司法管辖区可能不允许集体诉讼豁免"
+      },
+      "aiLimitations": {
+        "bias1": "AI模型可能在其培训数据中表现出偏见",
+        "bias2": "生成的内容可能不能平均代表所有观点",
+        "bias3": "我们不断努力改善公平并减少偏见",
+        "bias4": "向我们报告任何有关偏见或不适当内容的信息",
+        "biasTitle": "偏见与公平：",
+        "content1": "我们的AI服务是强大的工具，但是它们具有用户应该理解的固有局限性：",
+        "contentAccuracy1": "AI生成的内容可能包含事实错误或不准确性",
+        "contentAccuracy2": "信息可能过时或基于不完整的培训数据",
+        "contentAccuracy3": "始终从权威来源验证重要信息",
+        "contentAccuracy4": "不要仅仅依靠AI生成的内容来进行关键决策",
+        "contentAccuracyTitle": "内容准确性：",
+        "professionalAdvice1": "AI生成的内容不是专业建议",
+        "professionalAdvice2": "咨询合格的专业人员，以获取法律，医疗或财务建议",
+        "professionalAdvice3": "AI无法取代专业领域的人类专业知识",
+        "professionalAdvice4": "使用AI生成的内容作为起点，而不是最终答案",
+        "professionalAdviceTitle": "专业建议：",
+        "title": "人工智能限制"
+      },
+      "liability": {
+        "content1": "在法律允许的最大范围内，Matrixai及其分支机构，官员，雇员，代理人，合伙人和许可人对任何间接，偶然，特殊，后果或惩罚性损害均不承担任何责任。",
+        "damages1": "我们的总责任不会超过您在索赔之前12个月内支付的金额",
+        "damages2": "我们对损失的利润，数据或商机不承担任何责任",
+        "damages3": "我们对第三方或不可抗力事件造成的损害不承担任何责任",
+        "damages4": "某些司法管辖区不允许这些限制，因此它们可能不适用于您",
+        "damagesTitle": "损害限制：",
+        "indemnification1": "您同意赔偿我们，以防您使用我们的服务引起的索赔",
+        "indemnification2": "这包括与您的内容，行为或违反这些条款有关的索赔",
+        "indemnification3": "您将支付捍卫此类索赔的合理律师费和费用",
+        "indemnification4": "我们保留以我们的费用辩护任何索赔的权利",
+        "indemnificationTitle": "保障：",
+        "title": "责任限制"
+      },
+      "acceptableUse": {
+        "content2": "我们保留删除内容并暂停违反该政策的帐户的权利。\n鼓励用户举报违规行为，以帮助维持安全和生产的环境。",
+        "prohibition1": "创建非法，有害或侵犯他人权利的内容",
+        "prohibition2": "试图逆向工程或妥协我们的AI模型",
+        "prohibition3": "利用我们的服务垃圾邮件，骚扰或虐待他人",
+        "prohibition4": "生成侵犯知识产权的内容",
+        "prohibition5": "在没有适当披露的情况下创建误导性或欺骗性内容",
+        "prohibition6": "将我们的服务用于任何非法或欺诈目的",
+        "prohibition7": "试图获得未经授权的访问我们的系统",
+        "prohibition8": "干扰我们服务的正常运作",
+        "title": "可接受的使用政策",
+        "content1": "您同意负责任地使用Matrixai的服务，并符合所有适用法律。\n禁止以下活动："
+      },
+      "acceptance": {
+        "content1": "通过访问或使用Matrixai的服务，您同意受这些服务条款和所有适用法律法规的约束。\n如果您不同意这些条款的任何部分，则不得使用我们的服务。",
+        "content2": "这些条款适用于Matrixai的所有用户，包括访问者，注册用户和高级订户。\n通过创建帐户或使用我们的服务，您确认您已经阅读，理解并同意了这些条款。",
+        "content3": "我们保留随时修改这些条款的权利。\n更改后继续使用我们的服务构成了新术语的接受。",
+        "title": "接受条款"
+      },
+      "contentPolicy": {
+        "ip1": "我们的AI模型，算法和平台受知识产权法的保护",
+        "ip2": "您不得复制，修改或分发我们的专有技术",
+        "ip3": "我们尊重第三方知识产权，并期望用户也这样做",
+        "ipTitle": "知识产权保护：",
+        "license1": "您将授予我们全球，非排他性的许可，以使用您的内容进行服务提供",
+        "license2": "该许可包括存储，处理和分析您的内容的权利",
+        "license3": "我们可能会使用汇总的匿名数据来改善我们的服务",
+        "licenseTitle": "使用的许可证：",
+        "ownership1": "您保留使用我们的服务创建的内容的所有权",
+        "ownership2": "您授予我们使用您的内容处理和改善我们的AI模型的许可",
+        "ownership3": "您有责任确保您拥有上传的任何内容的权利",
+        "ownershipTitle": "内容所有权：",
+        "title": "内容和知识产权"
+      },
+      "description": {
+        "content1": "Matrixai提供人工智能驱动的工具和服务，包括但不限于：",
+        "content2": "我们的服务旨在通过先进的AI技术提高生产力和创造力。\n我们不断更新并改善产品，以提供最佳的用户体验。",
+        "service1": "AI驱动的文本生成和编辑",
+        "service2": "图像创建和操纵工具",
+        "service3": "视频生成和编辑功能",
+        "service4": "数据分析和见解",
+        "service5": "定制AI模型培训和部署",
+        "service6": "语音到文本和文本转换转换",
+        "service7": "内容写作和人性化工具",
+        "title": "服务描述"
+      },
+      "paymentTerms": {
+        "limits1": "每个订阅计划包括特定的使用限制和功能",
+        "limits2": "超出限制可能会导致额外的费用或服务限制",
+        "limits3": "我们监视使用量以确保所有用户的公平访问",
+        "limitsTitle": "用法限制：",
+        "pricing1": "当前的定价可在我们的网站上找到，并且可能会随通知而更改",
+        "pricing2": "除法律要求外，所有费用都是不退还的",
+        "pricing3": "超出计划限制的额外用法可能会产生额外的费用",
+        "pricingTitle": "定价和费用：",
+        "processing1": "我们使用安全的第三方支付处理器来处理交易",
+        "processing2": "您授权我们收取您选择的付款方式",
+        "processing3": "您有责任保留付款信息当前",
+        "processingTitle": "付款处理：",
+        "subscription1": "我们提供具有不同功能和使用限制的各种订阅计划",
+        "subscription2": "订阅费预先账单",
+        "subscription3": "您可以随时升级，降级或取消订阅",
+        "subscriptionTitle": "订阅计划：",
+        "title": "付款和计费"
+      },
+      "userAccounts": {
+        "content1": "要访问我们服务的某些功能，您必须创建一个帐户。\n创建帐户时，您同意：",
+        "content2": "您应对您帐户下发生的所有活动负责，并且必须立即通知我们任何未经授权的使用。",
+        "content3": "我们可能会暂停或终止违反这些条款，未支付费用或从事可疑或欺诈活动的帐户。",
+        "requirement1": "提供准确，完整的信息",
+        "requirement2": "保持帐户凭据的安全性",
+        "requirement3": "至少13岁以创建一个帐户",
+        "requirement4": "每个人或实体不维持一个以上的免费帐户",
+        "requirement5": "保持联系信息的最新信息",
+        "title": "用户帐户和注册"
+      }
+    },
+    "contentPolicy": {
+      "title": "内容和知识产权",
+      "ownershipTitle": "内容所有权：",
+      "ownership1": "• 您保留使用我们的服务所创建内容的所有权",
+      "ownership2": "• 我们不主张对您生成的内容的所有权",
+      "ownership3": "• 您有责任确保您的内容符合适用法律",
+      "licenseTitle": "授予我们的许可：",
+      "license1": "• 您授予我们有限的许可，以处理您的内容来提供我们的服务",
+      "license2": "• 我们可能会使用汇总的匿名数据来改进我们的人工智能模型",
+      "license3": "• 未经您的同意，我们不会将您的内容用于营销目的",
+      "ipTitle": "我们的知识产权：",
+      "ip1": "• 我们的人工智能模型、软件和服务受知识产权法保护",
+      "ip2": "• 您不得复制、修改或分发我们的专有技术",
+      "ip3": "• 我们的商标和品牌受到保护，未经许可不得使用",
+      "ip4": "向我们的指定代理报告任何知识产权违规",
+      "license4": "您可以随时删除您的内容，但要受到技术限制",
+      "ownership4": "我们尊重知识产权并响应有效的DMCA通知"
+    },
+    "paymentTerms": {
+      "title": "付款和账单",
+      "subscriptionTitle": "订阅计划：",
+      "subscription1": "• 我们提供具有不同功能和使用限制的各种订阅计划",
+      "subscription2": "• 订阅费用将定期提前收取",
+      "subscription3": "• 除非法律要求，所有费用均不予退还",
+      "processingTitle": "付款处理：",
+      "processing1": "• 付款通过安全的第三方支付处理器进行处理",
+      "processing2": "• 您必须提供准确的付款信息",
+      "processing3": "• 您授权我们通过您的付款方式收取适用费用",
+      "pricingTitle": "定价变更：",
+      "pricing1": "• 我们可能会提前 30 天通知更改价格",
+      "pricing2": "• 价格变动不会影响您当前的计费周期",
+      "pricing3": "• 您可以在价格变动生效之前取消订阅",
+      "limitsTitle": "使用限制：",
+      "limits1": "• 每个计划都有特定的使用限制和功能",
+      "limits2": "• 超出限制可能会导致额外费用或服务限制",
+      "limits3": "• 当接近使用限制时，我们会通知您",
+      "limits4": "企业客户可能具有自定义使用协议",
+      "pricing4": "税收可能会根据您的位置和适用法律申请",
+      "processing4": "付款失败可能导致服务暂停",
+      "subscription4": "您的订阅更改在下一个计费周期生效"
+    },
+    "contact": {
+      "title": "对这些条款有疑问吗？",
+      "description": "如果您对本服务条款有任何疑问，请联系我们。我们将竭诚为您解答任何疑问。",
+      "email": "给我们发电子邮件",
+      "form": "联系表格"
+    },
+    "acceptableUse": {
+      "content1": "您同意负责任地使用Matrixai的服务，并符合所有适用法律。\n禁止以下活动：",
+      "content2": "我们保留删除内容并暂停违反该政策的帐户的权利。\n鼓励用户举报违规行为，以帮助维持安全和生产的环境。",
+      "prohibited1": "创建非法，有害或侵犯他人权利的内容",
+      "prohibited2": "试图逆向工程或妥协我们的AI模型",
+      "prohibited3": "利用我们的服务垃圾邮件，骚扰或虐待他人",
+      "prohibited4": "生成侵犯知识产权的内容",
+      "prohibited5": "在没有适当披露的情况下创建误导性或欺骗性内容",
+      "prohibited6": "将我们的服务用于任何非法或欺诈目的",
+      "title": "可接受的使用政策"
+    },
+    "acceptance": {
+      "content1": "通过访问或使用Matrixai的服务，您同意受这些服务条款和所有适用法律法规的约束。\n如果您不同意这些条款的任何部分，则不得使用我们的服务。",
+      "content2": "这些条款适用于Matrixai的所有用户，包括访问者，注册用户和高级订户。\n通过创建帐户或使用我们的服务，您确认您已经阅读，理解并同意了这些条款。",
+      "title": "接受条款"
+    },
+    "services": {
+      "content1": "Matrixai提供人工智能驱动的工具和服务，包括但不限于：",
+      "content2": "我们的服务旨在通过先进的AI技术提高生产力和创造力。\n我们不断更新并改善产品，以提供最佳的用户体验。",
+      "feature1": "AI驱动的文本生成和编辑",
+      "feature2": "图像创建和操纵工具",
+      "feature3": "视频生成和编辑功能",
+      "feature4": "数据分析和见解",
+      "feature5": "定制AI模型培训和部署",
+      "title": "服务描述"
+    },
+    "userAccounts": {
+      "registration1": "创建帐户时，您必须提供准确而完整的信息",
+      "registration2": "您有责任维护帐户凭据的安全性",
+      "registration3": "您必须年满13岁才能创建一个帐户",
+      "registration4": "一个人或实体可能不会维持一个以上的免费帐户",
+      "registrationTitle": "帐户注册：",
+      "responsibilities1": "您应对您帐户下发生的所有活动负责",
+      "responsibilities2": "您必须立即将任何未经授权使用您的帐户通知我们",
+      "responsibilities3": "您不得与他人分享您的帐户凭据",
+      "responsibilities4": "您必须保持联系信息的最新信息",
+      "responsibilitiesTitle": "帐户责任：",
+      "suspension1": "我们可能暂停或终止违反本条款的帐户",
+      "suspension2": "我们可能会暂停账目未付费",
+      "suspension3": "我们可能会暂停有关可疑或欺诈活动的帐户",
+      "suspension4": "您将在可能的情况下通知您任何帐户暂停",
+      "suspensionTitle": "帐户暂停：",
+      "title": "用户帐户和注册"
+    },
+    "description": "欢迎来到Matrixai。\n这些服务条款控制着您对我们的AI驱动平台和服务的使用。"
+  },
+  "privacy": {
+    "title": "隐私政策",
+    "subtitle": "我们重视您的隐私。本政策解释了您在使用 MatrixAI 时，我们如何收集、使用和保护您的个人信息。",
+    "lastUpdated": "最后更新: January 15, 2024",
+    "effectiveDate": "生效日期: January 15, 2024",
+    "tableOfContents": "目录",
+    "informationCollection": {
+      "title": "我们收集的信息",
+      "content": "我们收集您直接提供给我们的信息，例如您创建帐户、使用我们的服务或联系我们时提供的信息。这些信息包括：\n\n• 个人信息（姓名、电子邮件地址、电话号码）\n• 帐户凭证和偏好设置\n• 您使用我们的 AI 工具创建或上传的内容\n• 付款信息（通过第三方提供商安全处理）\n• 与我们的支持团队的沟通历史\n\n我们还会自动收集有关您的设备和使用模式的某些信息，包括：\n\n• 设备信息（IP 地址、浏览器类型、操作系统）\n• 使用数据（使用的功能、花费的时间、交互模式）\n• 性能数据用于改进我们的 AI 模型\n• Cookie 和类似的追踪技术"
+    },
+    "informationUse": {
+      "title": "我们如何使用您的信息",
+      "content": "我们将使用收集到的信息来：\n\n• 提供、维护和改进我们的人工智能服务\n• 处理交易并发送相关信息\n• 个性化您的体验并提供相关内容\n• 训练和改进我们的人工智能模型（采取适当的保护措施）\n• 与您沟通我们的服务、更新和优惠\n• 检测、预防和解决技术问题和安全威胁\n• 遵守法律义务并保护我们的权利\n\n我们使用您的数据是为了让我们的 AI 更加实用，同时尊重您的隐私。除非您明确选择允许使用更多数据，否则我们仅会以汇总且匿名的方式使用您创建的内容来改进我们的模型。"
+    },
+    "informationSharing": {
+      "title": "信息共享与披露",
+      "content": "除以下情况外，我们不会出售、交易或以其他方式转让您的个人信息给第三方：\n\n• 服务提供商：我们可能会与帮助我们运营平台（云托管、支付处理、分析）的可信第三方服务提供商共享信息\n• 法律要求：如果法律、法院命令或政府要求，我们可能会披露信息\n• 业务转移：信息可能会作为合并、收购或资产出售的一部分进行转移\n• 权利保护：我们可能会共享信息以保护我们或我们用户的权利、财产或安全\n• 同意：我们可能会在您明确同意的情况下共享信息\n\n所有第三方服务提供商均受保密协议的约束，禁止将您的信息用于任何其他目的。"
+    },
+    "dataSecurity": {
+      "title": "数据安全",
+      "content": "我们实施适当的技术和组织安全措施，以保护您的个人信息免遭未经授权的访问、更改、披露或破坏：\n\n• 使用行业标准协议进行传输中和静态加密\n• 定期安全审计和渗透测试\n• 对我们员工的访问控制和身份验证要求\n• 通过物理和环境保护来保护数据中心\n• 潜在安全漏洞的事件响应程序\n• 定期为员工提供安全培训\n\n虽然我们努力保护您的信息，但没有任何一种互联网传输或电子存储方式是 100% 安全的。我们无法保证绝对安全，但致力于采用行业最佳实践来保护您的数据。"
+    },
+    "yourRights": {
+      "title": "您的权利和选择",
+      "content": "您对您的个人信息拥有多项权利：\n\n• 访问：索取我们持有的您的个人信息副本\n• 更正：请求更正不准确或不完整的信息\n• 删除：请求删除您的个人信息（有某些例外情况）\n• 可移植性：请求将您的数据传输到另一个服务提供商\n• 限制：请求限制处理您的个人信息\n• 反对：反对为特定目的处理您的个人信息\n• 撤回同意：在同意是法律依据的情况下撤回数据处理的同意\n\n如需行使这些权利，请通过 info@matrixaiglobal.com 与我们联系。我们将在 30 天内回复您的请求。"
+    },
+    "cookies": {
+      "title": "Cookie 和追踪技术",
+      "content": "我们使用 Cookie 和类似的追踪技术来收集和存储有关您与我们服务互动的信息：\n\n• 基本 Cookie：基本功能和安全所需\n• 性能 Cookie：帮助我们了解您如何使用我们的服务\n• 功能性 Cookie：记住您的偏好和设置\n• 分析 Cookie：提供对使用模式和性能的洞察\n\n您可以通过浏览器设置控制 Cookie，但禁用某些 Cookie 可能会影响我们服务的功能。我们还使用本地存储和类似技术来提升您的体验。",
+      "contact": {
+        "description": "如果您对我们使用cookie或cookie政策有任何疑问，请与我们联系。",
+        "email": "给我们发电子邮件",
+        "form": "接触表格",
+        "title": "联系我们"
+      },
+      "description": "该饼干政策解释了Matrixai如何使用cookie和类似技术来访问我们的网站时识别您。",
+      "effectiveDate": "生效日期：2024年1月15日",
+      "labels": {
+        "examples": "例子",
+        "optional": "选修的",
+        "required": "必需的"
+      },
+      "lastUpdated": "最后更新：2024年1月15日",
+      "managingSection": {
+        "browserSettings": {
+          "description": "您可以以各种方式控制和管理cookie：",
+          "option1": "阻止所有饼干",
+          "option2": "阻止第三方饼干",
+          "option3": "关闭浏览器时清除饼干",
+          "option4": "逐个站点管理饼干",
+          "title": "浏览器设置"
+        },
+        "consent": {
+          "button": "管理cookie首选项",
+          "description": "您可以使用我们的同意工具来管理cookie首选项。",
+          "title": "饼干同意"
+        },
+        "title": "管理您的cookie首选项"
+      },
+      "table": {
+        "dataCollected": "收集的数据",
+        "optOut": "选择退出",
+        "optOutLink": "了解更多",
+        "purpose": "目的",
+        "retention": "保留期",
+        "service": "服务"
+      },
+      "thirdParty": {
+        "googleAnalytics": {
+          "dataCollected": "页面视图，用户交互，设备信息",
+          "name": "Google Analytics（分析）",
+          "purpose": "网站分析和性能监控",
+          "retention": "26个月"
+        },
+        "hotjar": {
+          "dataCollected": "鼠标运动，点击，滚动行为",
+          "name": "hotjar",
+          "purpose": "用户经验分析和热图",
+          "retention": "12个月"
+        },
+        "intercom": {
+          "dataCollected": "用户互动，支持对话",
+          "name": "对讲",
+          "optOut": "在聊天设置中禁用",
+          "purpose": "客户支持和沟通",
+          "retention": "3年"
+        },
+        "stripe": {
+          "dataCollected": "付款信息，交易数据",
+          "name": "条纹",
+          "optOut": "直接接触条纹",
+          "purpose": "付款处理和预防欺诈",
+          "retention": "7年"
+        }
+      },
+      "thirdPartySection": {
+        "description": "我们使用可能在您的设备上设置Cookie的各种第三方服务。",
+        "title": "第三方服务"
+      },
+      "types": {
+        "analytics": {
+          "description": "这些cookie可以通过匿名收集和报告信息来了解访问者如何与我们的网站互动。",
+          "example1": "页面查看跟踪",
+          "example2": "用户行为分析",
+          "example3": "性能监控",
+          "example4": "错误跟踪",
+          "required": "错误的",
+          "title": "分析饼干"
+        },
+        "essential": {
+          "description": "这些饼干是严格必要的，对于通过我们的网站为您提供可用的服务并使用其一些功能是必要的。",
+          "example1": "身份验证饼干",
+          "example2": "安全饼干",
+          "example3": "负载平衡饼干",
+          "example4": "会话管理饼干",
+          "required": "真的",
+          "title": "必不可少的饼干"
+        },
+        "functional": {
+          "description": "这些Cookie使网站能够提供增强的功能和个性化。",
+          "example1": "语言偏好",
+          "example2": "主题设置",
+          "example3": "用户界面首选项",
+          "example4": "可访问性设置",
+          "required": "错误的",
+          "title": "功能性饼干"
+        },
+        "marketing": {
+          "description": "这些cookie用于跨网站跟踪访问者，以显示相关和引人入胜的广告。",
+          "example1": "广告定位",
+          "example2": "转换跟踪",
+          "example3": "重新定位",
+          "example4": "社交媒体整合",
+          "required": "错误的",
+          "title": "营销饼干"
+        }
+      },
+      "typesSection": {
+        "description": "我们使用不同类型的cookie为您提供我们网站上最佳的体验。",
+        "title": "我们使用的饼干类型"
+      },
+      "updatesSection": {
+        "content1": "我们可能会不时更新该饼干政策，以反映我们实践的变化或其他操作，法律或监管原因。",
+        "content2": "请定期检查此页面是否有任何更改。\n我们将通过在此页面上发布新的Cookie策略来通知您任何重大更改。",
+        "title": "更新此策略"
+      },
+      "whatAreCookies": {
+        "content1": "cookie是访问网站时放置在计算机或移动设备上的小数据文件。 \nCookie被网站所有者广泛使用，以使其网站工作或更有效地工作，并提供报告信息。",
+        "content2": "网站所有者设定的cookie（在这种情况下为Matrixai）称为“第一派对Cookies”。\n由网站所有者以外的各方设定的饼干称为“第三方cookies”。\n第三方Cookie可以在网站上或通过网站上提供第三方功能或功能（例如广告，交互式内容和分析）。",
+        "title": "什么是饼干？"
+      }
+    },
+    "internationalTransfers": {
+      "title": "国际数据传输",
+      "content": "MatrixAI 在全球范围内运营，您的信息可能会被传输到您所在国家/地区以外的国家/地区并在那里进行处理。当我们进行国际个人信息传输时，我们确保采取适当的保障措施：\n\n• 经相关部门批准的标准合同条款\n• 承认同等保护水平的充分性决定\n• 集团内部转移的约束性公司规则\n• 您对特定转移的明确同意\n\n我们致力于保护您的信息，无论其在何处处理，并确保国际转移符合适用的数据保护法。"
+    },
+    "childrenPrivacy": {
+      "title": "儿童隐私",
+      "content": "我们的服务不适用于13岁以下的儿童。我们不会故意收集13岁以下儿童的个人信息。如果您是父母或监护人，并且认为您的孩子向我们提供了个人信息，请立即联系我们。\n\n如果我们发现收集了13岁以下儿童的个人信息，我们将采取措施及时删除此类信息。对于13至18岁的用户，我们建议他们在家长的指导下使用我们的服务。"
+    },
+    "changes": {
+      "title": "本隐私政策的变更",
+      "content": "我们可能会不时更新本隐私政策，以反映我们的做法或适用法律的变化。我们将通过以下方式通知您任何重大变更：\n\n• 在我们的网站上发布更新后的政策\n• 向注册用户发送电子邮件通知\n• 在我们的平台上显示醒目的通知\n\n除非另有说明，更新后的政策自发布之日起生效。我们建议您定期查看本政策，以了解我们如何保护您的信息。"
+    },
+    "contact": {
+      "title": "对您的隐私有疑问？",
+      "description": "如果您对本隐私政策或我们如何处理您的个人信息有任何疑问，请随时与我们联系。",
+      "emailUs": "给我们发电子邮件",
+      "contactForm": "联系表格"
+    }
+  },
+  "cookies": {
+    "title": "Cookie 政策",
+    "description": "了解我们如何使用 Cookie 来改善您的体验。",
+    "lastUpdated": "最后更新",
+    "whatAreCookies": {
+      "title": "什么是 Cookie？",
+      "content": "Cookie 是当您访问网站时存储在您设备上的小型文本文件。它们被广泛用于使网站工作或更高效地工作，以及向网站所有者提供信息。",
+      "content1": "cookie是访问网站时存储在设备上的小文本文件。\n它们被广泛用于使网站更有效地工作，并向网站所有者提供信息。",
+      "content2": "cookie可以是“持久”或“ session” cookie。\n离线时，持续的cookie保留在设备上，而关闭Web浏览器时会话cookie会删除。"
+    },
+    "typesOfCookies": {
+      "title": "我们使用的 Cookie 类型",
+      "essential": {
+        "title": "必要 Cookie",
+        "description": "这些 Cookie 对于网站运行是必需的，无法在我们的系统中关闭。它们通常仅在响应您所做的相当于服务请求的操作时设置。"
+      },
+      "functional": {
+        "title": "功能性 Cookie",
+        "description": "这些 Cookie 使网站能够提供增强的功能和个性化。它们可能由我们或我们已将其服务添加到我们页面的第三方提供商设置。"
+      },
+      "analytics": {
+        "title": "分析 Cookie",
+        "description": "这些 Cookie 允许我们计算访问量和流量来源，以便我们可以衡量和改善我们网站的性能。它们帮助我们了解哪些页面最受欢迎和最不受欢迎。"
+      },
+      "marketing": {
+        "title": "营销 Cookie",
+        "description": "这些 Cookie 可能由我们的广告合作伙伴通过我们的网站设置。它们可能被这些公司用来建立您兴趣的档案并在其他网站上向您显示相关广告。"
+      }
+    },
+    "thirdPartyServices": {
+      "title": "第三方服务",
+      "description": "我们使用以下第三方服务，这些服务可能设置自己的 Cookie：",
+      "googleAnalytics": {
+        "name": "Google Analytics",
+        "purpose": "网站分析和性能监控"
+      },
+      "stripe": {
+        "name": "Stripe",
+        "purpose": "支付处理和交易安全"
+      },
+      "intercom": {
+        "name": "Intercom",
+        "purpose": "客户支持和实时聊天"
+      },
+      "hotjar": {
+        "name": "Hotjar",
+        "purpose": "用户行为分析和热图"
+      }
+    },
+    "managingCookies": {
+      "title": "管理 Cookie",
+      "content": "您可以通过浏览器设置控制和/或删除 Cookie。有关详细信息，请参阅 aboutcookies.org。您可以删除计算机上已有的所有 Cookie，并且可以将大多数浏览器设置为阻止放置它们。",
+      "preferences": {
+        "title": "Cookie 偏好",
+        "description": "您可以随时更改您的 Cookie 偏好：",
+        "acceptAll": "接受所有 Cookie",
+        "acceptEssential": "仅接受必要 Cookie",
+        "customizeSettings": "自定义设置"
+      }
+    },
+    "updates": {
+      "title": "政策更新",
+      "content": "我们可能会不时更新此 Cookie 政策。任何更改都将在此页面上发布，并且如果更改很重要，我们将提供更突出的通知。"
+    },
+    "contact": {
+      "title": "联系我们",
+      "description": "如果您对我们的 Cookie 政策有任何疑问，请联系我们：",
+      "email": "电子邮件",
+      "form": "联系表格"
+    },
+    "effectiveDate": "生效日期：2024年1月15日",
+    "labels": {
+      "examples": "示例：",
+      "optional": "选修的",
+      "required": "必需的"
+    },
+    "managingSection": {
+      "browserSettings": {
+        "description": "您可以通过浏览器设置控制和管理cookie。\n大多数浏览器允许您：",
+        "option1": "查看并删除饼干",
+        "option2": "封锁特定网站的cookie",
+        "option3": "阻止第三方饼干",
+        "option4": "关闭浏览器时清除所有饼干",
+        "option5": "设置饼干时设置通知",
+        "title": "浏览器设置"
+      },
+      "consent": {
+        "button": "管理cookie首选项",
+        "description": "当您第一次访问我们的网站时，您会看到Cookie同意书的横幅。\n您可以随时单击下面的按钮来管理您的首选项：",
+        "title": "饼干同意"
+      },
+      "title": "管理您的cookie首选项"
+    },
+    "table": {
+      "dataCollected": "收集的数据",
+      "optOut": "选择退出",
+      "optOutLink": "选择退出链接",
+      "purpose": "目的",
+      "retention": "保留期",
+      "service": "服务"
+    },
+    "thirdParty": {
+      "googleAnalytics": {
+        "dataCollected": "页面视图，用户交互，设备信息",
+        "name": "Google Analytics（分析）",
+        "purpose": "网站分析和性能监控",
+        "retention": "26个月"
+      },
+      "hotjar": {
+        "dataCollected": "鼠标运动，点击，滚动行为",
+        "name": "hotjar",
+        "purpose": "用户经验分析和热图",
+        "retention": "12个月"
+      },
+      "intercom": {
+        "dataCollected": "用户互动，支持对话",
+        "name": "对讲",
+        "optOut": "禁用聊天小部件",
+        "purpose": "客户支持和沟通",
+        "retention": "3年"
+      },
+      "stripe": {
+        "dataCollected": "付款信息，交易数据",
+        "name": "条纹",
+        "optOut": "接触条纹支撑",
+        "purpose": "付款处理和预防欺诈",
+        "retention": "7年"
+      }
+    },
+    "thirdPartySection": {
+      "description": "我们使用几种可能设置自己的cookie的第三方服务。\n这是我们使用的主要服务：",
+      "title": "第三方服务"
+    },
+    "types": {
+      "analytics": {
+        "description": "这些cookie可以通过匿名收集和报告信息来了解访问者如何与我们的网站互动。",
+        "example1": "页面视图和用户交互",
+        "example2": "流量来源和推荐数据",
+        "example3": "性能指标和负载时间",
+        "example4": "用户旅程和行为分析",
+        "title": "分析饼干"
+      },
+      "essential": {
+        "description": "这些cookie对于网站正常运行是必要的。\n它们启用了基本功能，例如页面导航，访问安全区域和身份验证。",
+        "example1": "会话管理和用户身份验证",
+        "example2": "安全令牌和CSRF保护",
+        "example3": "负载平衡和服务器路由",
+        "example4": "基本功能和导航",
+        "title": "必不可少的饼干"
+      },
+      "functional": {
+        "description": "这些cookie实现了增强的功能和个性化，例如记住您的偏好和设置。",
+        "example1": "语言和区域偏好",
+        "example2": "主题和显示设置",
+        "example3": "形成数据和用户偏好",
+        "example4": "可访问性功能和自定义",
+        "title": "功能性饼干"
+      },
+      "marketing": {
+        "description": "这些cookie用于跨网站跟踪访问者，以显示相关和引人入胜的广告。",
+        "example1": "广告活动跟踪",
+        "example2": "转换和归因数据",
+        "example3": "受众细分和定位",
+        "example4": "跨平台广告优化",
+        "title": "营销饼干"
+      }
+    },
+    "typesSection": {
+      "description": "我们将不同类型的cookie用于各种目的。\n这是每种类型的作用：",
+      "title": "我们使用的饼干类型"
+    },
+    "updatesSection": {
+      "content1": "我们可能会不时更新该饼干政策，以反映我们实践的变化或其他操作，法律或监管原因。",
+      "content2": "我们将通过在我们的网站上发布更新的策略并更新本政策顶部的“最后更新”日期，从而通知您任何重大更改。",
+      "title": "更新此策略"
+    }
+  },
+  "faq": {
+    "title": "常见问题",
+    "description": "查找有关 MatrixAI 和我们服务的常见问题答案",
+    "sections": {
+      "general": {
+        "title": "一般问题",
+        "questions": {
+          "whatIsMatrixAI": {
+            "question": "什么是 MatrixAI？",
+            "answer": "MatrixAI 是一个先进的人工智能平台，为企业和个人提供尖端的 AI 解决方案。我们的平台提供全面的 AI 工具套件，包括自然语言处理、计算机视觉、预测分析和机器学习功能。"
+          },
+          "howToGetStarted": {
+            "question": "如何开始使用 MatrixAI？",
+            "answer": "开始很简单！只需注册一个账户，选择适合您需求的订阅计划，您就可以立即访问我们的 AI 工具和 API。我们还提供全面的文档和教程来帮助您集成我们的服务。"
+          },
+          "suitableForBeginners": {
+            "question": "MatrixAI 适合初学者吗？",
+            "answer": "当然！MatrixAI 设计为对初学者和专家都友好。我们提供直观的界面、详细的文档和分步指南，帮助各种技能水平的用户利用 AI 的力量。"
+          }
+        }
+      },
+      "subscription": {
+        "title": "订阅和定价",
+        "questions": {
+          "subscriptionPlans": {
+            "question": "你们提供什么订阅计划？",
+            "answer": "我们提供灵活的订阅计划以满足不同需求：基础使用的免费层、高级功能的专业计划和大规模部署的企业计划。每个计划包含不同的使用限制和功能。"
+          },
+          "upgradeDowngrade": {
+            "question": "我可以升级或降级我的订阅吗？",
+            "answer": "是的，您可以随时更改订阅计划。升级立即生效，而降级将在当前计费周期结束时生效。升级时您只需支付按比例计算的差额。"
+          },
+          "refunds": {
+            "question": "你们提供退款吗？",
+            "answer": "我们为所有付费计划提供 30 天退款保证。如果您在前 30 天内对我们的服务不满意，请联系我们的支持团队获得全额退款。"
+          }
+        }
+      },
+      "support": {
+        "title": "技术支持",
+        "questions": {
+          "responseTime": {
+            "question": "你们多快回复支持请求？",
+            "answer": "我们努力在 24 小时内回复所有支持请求。高级和企业客户享有优先支持，响应时间更快。"
+          },
+          "knowledgeBase": {
+            "question": "你们有知识库或文档吗？",
+            "answer": "是的，我们维护全面的文档、API 参考、教程和可搜索的知识库。您可以在我们的帮助中心找到大多数常见问题的答案。"
+          },
+          "partnership": {
+            "question": "你们提供合作机会吗？",
+            "answer": "我们始终对战略合作伙伴关系和集成感兴趣。请联系我们的业务发展团队讨论潜在的合作机会。"
+          }
+        }
+      }
+    }
+  },
+  "status": {
+    "title": "系统状态",
+    "description": "所有 MatrixAI 服务的实时状态和性能指标。",
+    "currentStatus": "当前状态",
+    "lastUpdated": "最后更新",
+    "overallStatus": {
+      "operational": "所有系统运行正常",
+      "allOperational": "所有系统运行正常",
+      "disruption": "服务中断",
+      "serviceDisruption": "服务中断",
+      "degraded": "部分服务降级",
+      "partialDegradation": "部分服务降级"
+    },
+    "sections": {
+      "serviceStatus": {
+        "title": "服务状态",
+        "description": "所有 MatrixAI 服务和组件的当前运行状态。"
+      },
+      "services": {
+        "title": "服务状态",
+        "description": "所有 MatrixAI 服务和组件的当前运行状态。"
+      },
+      "incidents": {
+        "title": "最近事件",
+        "description": "最新事件及其解决状态。"
+      },
+      "metrics": {
+        "title": "性能指标",
+        "description": "过去 30 天的关键性能指标"
+      }
+    },
+    "services": {
+      "api": {
+        "name": "API 网关",
+        "description": "核心 API 服务和端点"
+      },
+      "chat": {
+        "name": "聊天界面",
+        "description": "实时聊天和消息系统"
+      },
+      "imageGen": {
+        "name": "图像生成",
+        "description": "AI 驱动的图像创建和处理"
+      },
+      "imageGeneration": {
+        "name": "图像生成",
+        "description": "AI 驱动的图像创建和处理"
+      },
+      "database": {
+        "name": "数据库",
+        "description": "数据存储和检索系统"
+      },
+      "cdn": {
+        "name": "内容分发",
+        "description": "全球内容分发网络"
+      },
+      "auth": {
+        "name": "身份验证",
+        "description": "用户身份验证和授权"
+      }
+    },
+    "labels": {
+      "status": "状态",
+      "uptime": "正常运行时间",
+      "responseTime": "响应时间",
+      "started": "开始时间",
+      "resolved": "解决时间",
+      "updates": "更新"
+    },
+    "serviceStatus": {
+      "operational": "运行正常",
+      "degraded": "性能降级",
+      "partial": "部分中断",
+      "major": "重大中断"
+    },
+    "incidents": {
+      "incident1": {
+        "title": "API 响应时间降级",
+        "description": "部分用户可能遇到比正常情况慢的 API 响应时间。",
+        "updates": {
+          "update1": "我们正在调查 API 响应时间增加的报告。",
+          "update2": "我们已经确定了原因并正在修复。",
+          "update3": "问题已解决，API 性能恢复正常。",
+          "update4": "继续监控以确保稳定性。"
+        }
+      },
+      "incident2": {
+        "title": "计划数据库维护",
+        "description": "数据库优化的计划维护窗口。",
+        "updates": {
+          "update1": "维护已安排并将很快开始。",
+          "update2": "计划维护已成功完成。"
+        }
+      },
+      "apiSlowdown": {
+        "description": "一些用户的经历可能比普通API响应时间慢。",
+        "title": "API响应时间降解",
+        "updates": {
+          "identified": "我们已经确定了原因并正在解决修复。",
+          "investigating": "我们正在研究API响应时间增加的报告。",
+          "resolved": "该问题已经解决，API性能恢复正常。"
+        }
+      },
+      "scheduledMaintenance": {
+        "description": "数据库优化的计划维护窗口。",
+        "title": "计划的数据库维护",
+        "updates": {
+          "completed": "预定的维护已成功完成。",
+          "inProgress": "维护目前正在进行中。",
+          "scheduled": "维护已安排，并将很快开始。"
+        }
+      }
+    },
+    "metrics": {
+      "overallUptime": "总体正常运行时间",
+      "avgResponseTime": "平均响应时间",
+      "apiRequests": "API 请求",
+      "successRate": "成功率"
+    },
+    "contact": {
+      "title": "需要帮助或有疑问？",
+      "description": "如果您遇到此页面未反映的问题，请联系我们的支持团队。",
+      "emailSupport": "电子邮件支持",
+      "contactForm": "联系表格"
+    }
+  },
+  "systemStatus": {
+    "title": "系统状态",
+    "subtitle": "所有 MatrixAI 服务和基础设施的实时状态和性能指标。",
+    "currentStatus": {
+      "label": "当前状态：",
+      "status": "所有系统运行正常",
+      "lastUpdated": "最近更新时间"
+    },
+    "serviceStatus": {
+      "title": "服务状态",
+      "description": "所有 MatrixAI 服务和基础设施的当前状态",
+      "services": [
+        {
+          "name": "API 服务",
+          "description": "核心 API 端点和 AI 模型访问",
+          "status": "操作"
+        },
+        {
+          "name": "聊天界面",
+          "description": "实时聊天和对话功能",
+          "status": "操作"
+        },
+        {
+          "name": "图像生成",
+          "description": "人工智能驱动的图像创建和编辑",
+          "status": "操作"
+        },
+        {
+          "name": "数据库",
+          "description": "用户数据和内容存储",
+          "status": "操作"
+        },
+        {
+          "name": "验证",
+          "description": "用户登录和安全服务",
+          "status": "操作"
+        },
+        {
+          "name": "内容交付",
+          "description": "全球内容分发网络",
+          "status": "操作"
+        }
+      ]
+    },
+    "recentIncidents": {
+      "title": "近期事件",
+      "description": "过去事件及其解决情况",
+      "incidents": [
+        {
+          "title": "已解决：间歇性 API 超时",
+          "severity": "中等的",
+          "description": "一些用户在高峰时段遇到响应时间较慢的情况",
+          "startedLabel": "开始时间",
+          "resolvedLabel": "解决时间",
+          "updatesLabel": "更新：",
+          "updates": [
+            "问题已完全解决。所有服务均正常运行。",
+            "我们已经实施修复并正在监控情况。",
+            "我们已经确定原因是流量负载增加，并且正在扩展我们的基础设施。",
+            "我们正在调查有关 API 响应时间较慢的报告。"
+          ]
+        },
+        {
+          "title": "定期维护：数据库优化",
+          "severity": "低的",
+          "description": "定期维护数据库以提高性能",
+          "startedLabel": "开始时间",
+          "resolvedLabel": "解决时间",
+          "updatesLabel": "更新：",
+          "updates": [
+            "维护成功完成。所有系统均已完全正常运行。",
+            "计划维护已开始。某些功能可能暂时不可用。"
+          ]
+        }
+      ]
+    },
+    "performanceMetrics": {
+      "title": "绩效指标",
+      "description": "过去 30 天的关键绩效指标",
+      "metrics": [
+        {
+          "name": "总体正常运行时间"
+        },
+        {
+          "name": "平均响应时间"
+        },
+        {
+          "name": "API 请求"
+        },
+        {
+          "name": "成功率"
+        }
+      ]
+    },
+    "contact": {
+      "title": "需要帮助或有疑问吗？",
+      "description": "如果您遇到此页面未反映的问题，请联系我们的支持团队。",
+      "email": "电子邮件支持",
+      "form": "联系表格"
+    }
   }
 }
