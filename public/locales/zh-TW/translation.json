@@ -231,9 +231,9 @@
     "insufficientCoins": "硬幣不足",
     "needMoreCoins": "您需要更多的硬幣來生成內容",
     "noHistory": "還沒有內容世代的歷史",
-    "prompt": "迅速的",
+    "prompt": "指令",
     "promptPlaceholder": "描述您要生成的內容...",
-    "title": "內容作家",
+    "title": "內容創作器",
     "tone": "語氣",
     "wordCount": "字數",
     "categories": {
@@ -341,7 +341,7 @@
     "startNewChat": "開始新聊天",
     "startUsingTools": "開始使用AI工具在這裡查看您的活動",
     "subscription": "訂閱",
-    "subscriptionActive": "積極的",
+    "subscriptionActive": "有效",
     "subtitle": "以下是您的AI工具今天發生的事情",
     "thisMonth": "本月",
     "tools": {
@@ -351,7 +351,7 @@
       },
       "contentWriter": {
         "description": "生成高質量的文章，論文和內容。",
-        "title": "內容作家"
+        "title": "內容創作器"
       },
       "speechToText": {
         "description": "高精度地將音頻轉換為文本。非常適合轉錄會議、採訪和其他音頻記錄。",
@@ -525,7 +525,7 @@
       },
       "speechToText": {
         "description": "我們的高級語音識別技術以高精度將錄音轉換為精確的文本轉錄。",
-        "subtitle": "對文字的講話",
+        "subtitle": "語音轉文字與內容撰寫",
         "title": "將語音轉換為準確的文字"
       },
       "title": "一個平台上的所有領先的AI模型和功能",
@@ -604,7 +604,7 @@
         "chat": "聊天",
         "contact": "聯繫",
         "contentGeneration": "內容產生",
-        "contentWriter": "內容作家",
+        "contentWriter": "內容創作器",
         "cookiesPolicy": "Cookies政策",
         "enterprise": "企業",
         "faq": "常問問題",
@@ -1177,19 +1177,19 @@
     "theme": "主題",
     "themeDark": "深色",
     "themeLight": "淺色",
-    "themeSystem": "使用系統偏好",
+    "themeSystem": "使用系統偏好設置",
     "title": "設定",
     "weeklyActivityDigest": "每週活動消化",
     "weeklyActivityDigestDescription": "收到您的帳戶活動和使用的每週摘要",
     "account": "帳戶",
     "accountDeletionInitiated": "啟動帳戶刪除。您將收到一封確認電子郵件。",
     "accountSettings": "帳戶設置",
-    "appearance": "外貌",
+    "appearance": "外觀",
     "appearanceSettings": "外觀設置",
     "autoSave": "自動保存",
     "autoSaveDescription": "自動保存您的工作",
-    "cookieAll": "所有餅乾",
-    "cookieEssentialOnly": "僅重要的",
+    "cookieAll": "所有 Cookie",
+    "cookieEssentialOnly": "僅必要",
     "cookieFunctional": "功能（推薦）",
     "cookiePreferences": "cookie首選項",
     "customizeExperience": "自定義您在Matrixai的體驗",
@@ -1295,7 +1295,7 @@
         "title": "聯繫支持"
       },
       "documentation": {
-        "description": "全面的指南和API文檔",
+        "description": "綜合指南與 API 文檔",
         "linkText": "查看文檔",
         "title": "文件"
       },
@@ -1575,7 +1575,7 @@
       "igbo": "伊博",
       "indonesian": "印度尼西亞",
       "italian": "意大利人",
-      "japanese": "日語",
+      "japanese": "日文",
       "kannada": "卡納達語",
       "korean": "韓國人",
       "latvian": "拉脫維亞",
@@ -1694,7 +1694,7 @@
     "articlePlural": "文章",
     "articleSingular": "文章",
     "enterEmail": "輸入您的電子郵件",
-    "found": "成立",
+    "found": "找到",
     "latestArticles": "最新文章",
     "noArticlesFound": "找不到文章",
     "readMore": "閱讀更多",
@@ -1716,7 +1716,7 @@
     "messagePlaceholder": "我們該如何幫助您？",
     "ourOffices": "我們的辦公室",
     "phone": "電話",
-    "sales": "銷售量",
+    "sales": "銷售諮詢",
     "salesDesc": "與我們的銷售團隊談談您的需求",
     "select": "選擇",
     "selectReason": "請選擇上面的聯繫理由並填寫以下表格。",
@@ -1731,7 +1731,7 @@
     "supportDesc": "在您現有帳戶中獲得幫助",
     "thankYou": "謝謝你！",
     "title": "取得聯繫",
-    "visitOffices": "在我們的全球辦事處之一拜訪我們",
+    "visitOffices": "前往我們的任一全球辦事處",
     "form": {
       "namePlaceholder": "您的姓名",
       "emailPlaceholder": "您的電子郵箱",
@@ -1809,6 +1809,8 @@
     "yearlyFeature5": "10％折扣"
   },
   "speechToText": {
+    "modalTitle": "MatrixAI 語音轉文字",
+    "modalDescription": "快速精准地將音頻轉換為文字",
     "browseFiles": "瀏覽文件",
     "cancel": "取消",
     "close": "關閉",
@@ -1817,7 +1819,7 @@
     "deleteConfirmation": "刪除確認",
     "deleteConfirmationMessage": "您確定要刪除此音頻文件嗎？該動作不能撤消。",
     "description": "以95％的精度轉錄音頻，並為博客，營銷等產生引人注目的內容，所有這些內容都由先進的AI模型提供支持。",
-    "dragDropText": "將您的音頻文件拖放到此處，或單擊以瀏覽",
+    "dragDropText": "將音頻文件拖放至此處",
     "editName": "編輯名稱",
     "editNameModalTitle": "編輯音頻名稱",
     "enterNewName": "輸入新名稱",
@@ -2022,7 +2024,7 @@
         "form": "接觸表格",
         "title": "聯繫我們"
       },
-      "description": "該餅乾政策解釋了Matrixai如何使用cookie和類似技術來訪問我們的網站時識別您。",
+      "description": "本 Cookie 政策說明當你訪問我們的網站並使用我們的服務時，MatrixAI 如何使用 Cookie 及類似技術來識別你 。",
       "effectiveDate": "生效日期：2024年1月15日",
       "labels": {
         "examples": "例子",
@@ -2421,7 +2423,7 @@
         "service3": "視頻生成和編輯功能",
         "service4": "數據分析和見解",
         "service5": "定制AI模型培訓和部署",
-        "service6": "語音到文本和文本轉換轉換",
+        "service6": "語音轉文本和文本轉語音轉換",
         "service7": "內容寫作和人性化工具",
         "title": "服務描述"
       },

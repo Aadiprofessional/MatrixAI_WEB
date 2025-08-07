@@ -424,9 +424,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpe
                     <FiMic className="text-white" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-lg">MatrixAI Speech to Text</h3>
+                    <h3 className="font-medium text-lg">{t('speechToText.modalTitle')}</h3>
                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      Convert audio to text quickly and accurately
+                      {t('speechToText.modalDescription')}
                     </p>
                   </div>
                 </div>

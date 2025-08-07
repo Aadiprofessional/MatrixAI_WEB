@@ -1560,7 +1560,7 @@ const TranscriptionPage: React.FC = () => {
     for (let i = 0; i < wordsData.length; i += groupSize) {
       const group = wordsData.slice(i, i + groupSize);
       const startTime = group[0].start;
-      const endTime = group[group.length - 1].end;
+      const endTime = group[group.length - 1].end + 1.5; // Add 1.5 seconds to subtitle display duration
       
       // Get text with punctuation if available, otherwise use word
       let text = group.map(w => w.punctuated_word || w.word).join(' ');

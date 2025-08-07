@@ -4,6 +4,7 @@ import { FiMail, FiMapPin, FiPhone, FiHelpCircle, FiMessageSquare, FiUsers } fro
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ThemeContext } from '../context/ThemeContext';
+import ShenzhenImage from '../assets/Shenzhen.jpeg';
 
 const offices = [
  
@@ -21,7 +22,7 @@ const offices = [
     address: '前海桂湾三路深港青年夢工場, 香港大學青年科創學院4樓',
     phone: '+86 13266989879',
     email: 'info@matrixaiglobal.com',
-    image: 'https://images.unsplash.com/photo-1474181487882-5abf3f0ba6c2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80',
+    image: ShenzhenImage,
   },
 ];
 

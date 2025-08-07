@@ -1222,52 +1222,80 @@ const SpeechToTextPage: React.FC = () => {
                 exit={{ opacity: 0, y: -20 }}
                 className="mt-6 p-6 m-2 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:border dark:border-gray-700"
               >
-                <h3 className="text-lg font-medium mb-6 dark:text-gray-300 border-b pb-3 dark:border-gray-700">{t('speechToText.transcriptionOptions')}</h3>
-                <div>
-                  <label className="block text-sm font-medium mb-2 dark:text-gray-300">{t('speechToText.language')}</label>
-                  <div className="relative max-w-md">
-                    <select 
-                      value={selectedLanguage}
-                      onChange={(e) => setSelectedLanguage(e.target.value)}
-                      className="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    >
-                      {languages.map(language => (
-                        <option key={language.value} value={language.value}>
-                          {language.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <FiChevronLeft className="transform rotate-90 text-gray-400" />
+                <div className="relative">
+                  <h3 className="text-xl font-semibold mb-6 dark:text-gray-200 text-gray-800 flex items-center">
+                    <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full mr-3"></div>
+                    {t('speechToText.transcriptionOptions')}
+                  </h3>
+                  
+                  {/* Guidance Text */}
+                  <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-700/50">
+                    <div className="flex items-center mb-2">
+                      <FiInfo className="text-blue-500 mr-2 flex-shrink-0" />
+                      <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                        Please select the language in which you want the transcription
+                      </p>
+                    </div>
+                    <p className="text-xs text-blue-600 dark:text-blue-300 ml-6">
+                      Choose the primary language spoken in your audio file for best results
+                    </p>
+                  </div>
+
+                  {/* Language Selector and Convert Button in Same Line */}
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+                    {/* Language Selector with Animation */}
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-sm font-medium mb-3 dark:text-gray-300 text-gray-700">
+                        <FiGlobe className="inline mr-2 text-blue-500" />
+                        {t('speechToText.language')}
+                      </label>
+                      <div className="relative">
+                        {/* Animated Border */}
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-lg opacity-30 animate-pulse"></div>
+                        <div className="relative">
+                          <select 
+                            value={selectedLanguage}
+                            onChange={(e) => setSelectedLanguage(e.target.value)}
+                            className="w-full p-4 border-2 rounded-lg dark:bg-gray-700 dark:border-gray-600 bg-white border-gray-300 text-gray-800 dark:text-gray-200 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-500 font-medium"
+                          >
+                            {languages.map(language => (
+                              <option key={language.value} value={language.value}>
+                                {language.label}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                            <FiChevronLeft className="transform rotate-90 text-gray-400 w-5 h-5" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Convert Button */}
+                    <div className="w-full sm:w-auto">
+                      <AuthRequiredButton
+                        onClick={handleUpload}
+                        disabled={isUploading}
+                        className={`w-full sm:w-auto px-8 py-4 rounded-lg font-semibold shadow-lg flex items-center justify-center min-w-[200px] ${
+                          isUploading
+                            ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:shadow-xl hover:scale-105 animate-gradient-x'
+                        } transition-all duration-300`}
+                      >
+                        {isUploading ? (
+                          <>
+                            <FiLoader className="animate-spin -ml-1 mr-3 h-5 w-5" />
+                            <span>{t('speechToText.uploading')}...</span>
+                          </>
+                        ) : (
+                          <>
+                            <FiZap className="mr-3 h-5 w-5" />
+                            <span>{t('speechToText.convertToText')}</span>
+                          </>
+                        )}
+                      </AuthRequiredButton>
                     </div>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {t('speechToText.selectPrimaryLanguage')}
-                  </p>
-                </div>
-                
-                <div className="mt-8 flex justify-end">
-                  <AuthRequiredButton
-                    onClick={handleUpload}
-                    disabled={isUploading}
-                    className={`px-8 py-3 rounded-lg font-medium shadow-md flex items-center ${
-                      isUploading
-                        ? 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-                        : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:shadow-lg'
-                    } transition-all`}
-                  >
-                    {isUploading ? (
-                      <>
-                        <FiLoader className="animate-spin -ml-1 mr-2 h-5 w-5" />
-                        {t('speechToText.uploading')}...
-                      </>
-                    ) : (
-                      <>
-                        <FiZap className="mr-2" />
-                        {t('speechToText.convertToText')}
-                      </>
-                    )}
-                  </AuthRequiredButton>
                 </div>
               </motion.div>
             )}

@@ -35,6 +35,7 @@ const UseCasesSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('video-creation');
   const videoRef = useRef<HTMLVideoElement>(null);
   const [currentPlayPromise, setCurrentPlayPromise] = useState<Promise<void> | null>(null);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   
   const useCases = [
     { id: 'video-creation', label: t('useCasesSection.videoCreation', 'Video Creation'), route: '/tools/video-creator' },
@@ -63,6 +64,7 @@ const UseCasesSection: React.FC = () => {
       // Find current index and move to next tab
       const currentIndex = useCases.findIndex(useCase => useCase.id === activeTab);
       const nextIndex = (currentIndex + 1) % useCases.length;
+      setSlideDirection('right');
       setActiveTab(useCases[nextIndex].id);
     };
     
@@ -142,6 +144,7 @@ const UseCasesSection: React.FC = () => {
     const interval = setInterval(() => {
       const currentIndex = useCases.findIndex(useCase => useCase.id === activeTab);
       const nextIndex = (currentIndex + 1) % useCases.length;
+      setSlideDirection('right');
       setActiveTab(useCases[nextIndex].id);
     }, 10000);
     
@@ -152,12 +155,14 @@ const UseCasesSection: React.FC = () => {
   const goToPrevious = () => {
     const currentIndex = useCases.findIndex(useCase => useCase.id === activeTab);
     const prevIndex = currentIndex === 0 ? useCases.length - 1 : currentIndex - 1;
+    setSlideDirection('left');
     setActiveTab(useCases[prevIndex].id);
   };
 
   const goToNext = () => {
     const currentIndex = useCases.findIndex(useCase => useCase.id === activeTab);
     const nextIndex = (currentIndex + 1) % useCases.length;
+    setSlideDirection('right');
     setActiveTab(useCases[nextIndex].id);
   };
 
@@ -307,13 +312,27 @@ const UseCasesSection: React.FC = () => {
              </button>
 
              {/* Active Use Case Display - Center Only */}
-              <div className="flex justify-center px-8">
+              <div className="flex justify-center px-8 overflow-hidden">
                 <motion.div 
                   key={activeTab}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  initial={{ 
+                    x: slideDirection === 'right' ? 300 : -300,
+                    opacity: 0
+                  }}
+                  animate={{ 
+                    x: 0,
+                    opacity: 1
+                  }}
+                  exit={{ 
+                    x: slideDirection === 'right' ? -300 : 300,
+                    opacity: 0
+                  }}
+                  transition={{ 
+                    type: "spring",
+                    stiffness: 500,
+                    damping: 20,
+                    duration: 0.3
+                  }}
                   className={`p-4 rounded-lg border-2 transition-all duration-200 min-w-[260px] max-w-[280px] ${
                     darkMode 
                       ? 'border-indigo-500 bg-gray-800/50' 
@@ -369,12 +388,27 @@ const UseCasesSection: React.FC = () => {
                  : 'from-gray-100/10 to-transparent'
              }`}></div>
              
-             <div className="relative z-10 p-4 h-full flex items-center justify-center">
+             <div className="relative z-10 p-4 h-full flex items-center justify-center overflow-hidden">
                <motion.div
                  key={activeTab}
-                 initial={{ opacity: 0, y: 50 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ duration: 0.5, ease: "easeOut" }}
+                 initial={{ 
+                   x: slideDirection === 'right' ? '100%' : '-100%',
+                   opacity: 0
+                 }}
+                 animate={{ 
+                   x: 0,
+                   opacity: 1
+                 }}
+                 exit={{ 
+                   x: slideDirection === 'right' ? '-100%' : '100%',
+                   opacity: 0
+                 }}
+                 transition={{ 
+                   type: "spring",
+                   stiffness: 400,
+                   damping: 18,
+                   duration: 0.35
+                 }}
                  className="w-full h-full"
                >
                  <video 

@@ -231,9 +231,9 @@
     "insufficientCoins": "硬币不足",
     "needMoreCoins": "您需要更多的硬币来生成内容",
     "noHistory": "还没有内容世代的历史",
-    "prompt": "迅速的",
+    "prompt": "指令",
     "promptPlaceholder": "描述您要生成的内容...",
-    "title": "内容作家",
+    "title": "内容创作器",
     "tone": "语气",
     "wordCount": "字数",
     "categories": {
@@ -341,7 +341,7 @@
     "startNewChat": "开始新聊天",
     "startUsingTools": "开始使用AI工具在这里查看您的活动",
     "subscription": "订阅",
-    "subscriptionActive": "积极的",
+    "subscriptionActive": "有效",
     "subtitle": "以下是您的AI工具今天发生的事情",
     "thisMonth": "本月",
     "tools": {
@@ -351,7 +351,7 @@
       },
       "contentWriter": {
         "description": "生成高质量的文章，论文和内容。",
-        "title": "内容作家"
+        "title": "内容创作器"
       },
       "speechToText": {
         "description": "高精度地将音频转换为文本。非常适合转录会议、采访和其他音频记录。",
@@ -525,7 +525,7 @@
       },
       "speechToText": {
         "description": "我们的高级语音识别技术以高精度将录音转换为精确的文本转录。",
-        "subtitle": "对文字的讲话",
+        "subtitle": "语音转文字与内容撰写",
         "title": "将语音转换为准确的文字"
       },
       "title": "一个平台上的所有领先的AI模型和功能",
@@ -604,7 +604,7 @@
         "chat": "聊天",
         "contact": "联系",
         "contentGeneration": "内容产生",
-        "contentWriter": "内容作家",
+        "contentWriter": "内容创作器",
         "cookiesPolicy": "Cookies政策",
         "enterprise": "企业",
         "faq": "常问问题",
@@ -1177,19 +1177,19 @@
     "theme": "主题",
     "themeDark": "深色",
     "themeLight": "浅色",
-    "themeSystem": "使用系统偏好",
+    "themeSystem": "使用系统偏好设置",
     "title": "设置",
     "weeklyActivityDigest": "每周活动消化",
     "weeklyActivityDigestDescription": "收到您的帐户活动和使用的每周摘要",
     "account": "帐户",
     "accountDeletionInitiated": "启动帐户删除。\n您将收到一封确认电子邮件。",
     "accountSettings": "帐户设置",
-    "appearance": "外貌",
+    "appearance": "外观",
     "appearanceSettings": "外观设置",
     "autoSave": "自动保存",
     "autoSaveDescription": "自动保存您的工作",
-    "cookieAll": "所有饼干",
-    "cookieEssentialOnly": "仅重要的",
+    "cookieAll": "所有 Cookie",
+    "cookieEssentialOnly": "仅必要",
     "cookieFunctional": "功能（推荐）",
     "cookiePreferences": "cookie首选项",
     "customizeExperience": "自定义您在Matrixai的体验",
@@ -1295,7 +1295,7 @@
         "title": "联系支持"
       },
       "documentation": {
-        "description": "全面的指南和API文档",
+        "description": "综合指南与 API 文档",
         "linkText": "查看文档",
         "title": "文档"
       },
@@ -1575,7 +1575,7 @@
       "igbo": "伊博",
       "indonesian": "印度尼西亚",
       "italian": "意大利人",
-      "japanese": "日语",
+      "japanese": "日文",
       "kannada": "卡纳达语",
       "korean": "韩国人",
       "latvian": "拉脱维亚",
@@ -1694,7 +1694,7 @@
     "articlePlural": "文章",
     "articleSingular": "文章",
     "enterEmail": "输入您的电子邮件",
-    "found": "成立",
+    "found": "找到",
     "latestArticles": "最新文章",
     "noArticlesFound": "找不到文章",
     "readMore": "阅读更多",
@@ -1716,7 +1716,7 @@
     "messagePlaceholder": "我们该如何帮助您？",
     "ourOffices": "我们的办公室",
     "phone": "电话",
-    "sales": "销售量",
+    "sales": "销售咨询",
     "salesDesc": "与我们的销售团队谈谈您的需求",
     "select": "选择",
     "selectReason": "请选择上面的联系理由并填写以下表格。",
@@ -1731,7 +1731,7 @@
     "supportDesc": "在您现有帐户中获得帮助",
     "thankYou": "谢谢你！",
     "title": "取得联系",
-    "visitOffices": "在我们的全球办事处之一拜访我们",
+    "visitOffices": "前往我们的任一全球办事处",
     "form": {
       "namePlaceholder": "您的姓名",
       "emailPlaceholder": "您的电子邮箱",
@@ -1809,11 +1809,13 @@
     "yearlyFeature5": "10％折扣"
   },
   "speechToText": {
+    "modalTitle": "MatrixAI 语音转文字",
+    "modalDescription": "快速精准地将音频转换为文字",
     "delete": "删除",
     "deleteConfirmation": "删除确认",
     "deleteConfirmationMessage": "您确定要删除此音频文件吗？\n该动作不能撤消。",
     "description": "以95％的精度转录音频，并为博客，营销等产生引人注目的内容，所有这些内容都由先进的AI模型提供支持。",
-    "dragDropText": "将您的音频文件拖放到此处，或单击以浏览",
+    "dragDropText": "将音频文件拖放至此处",
     "editName": "编辑名称",
     "editNameModalTitle": "编辑音频名称",
     "enterNewName": "输入新名称",
@@ -2165,7 +2167,7 @@
         "service3": "视频生成和编辑功能",
         "service4": "数据分析和见解",
         "service5": "定制AI模型培训和部署",
-        "service6": "语音到文本和文本转换转换",
+        "service6": "语音转文本和文本转语音转换",
         "service7": "内容写作和人性化工具",
         "title": "服务描述"
       },
@@ -2328,7 +2330,7 @@
         "form": "接触表格",
         "title": "联系我们"
       },
-      "description": "该饼干政策解释了Matrixai如何使用cookie和类似技术来访问我们的网站时识别您。",
+      "description": "本 Cookie 政策说明当你访问我们的网站并使用我们的服务时，MatrixAI 如何使用 Cookie 及类似技术来识别你 。",
       "effectiveDate": "生效日期：2024年1月15日",
       "labels": {
         "examples": "例子",

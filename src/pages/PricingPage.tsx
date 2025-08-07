@@ -81,7 +81,6 @@ const PricingPage: React.FC = () => {
       coins: 1380,
       price: 1490,
       currency: 'HKD',
-      period: t('pricing.perMonth'),
       originalPrice: 1656,
       discount: t('pricing.save10'),
       features: [
@@ -98,7 +97,7 @@ const PricingPage: React.FC = () => {
     {
       id: 'addon',
       name: t('pricing.addonPack'),
-      coins: 550,
+      coins: 500,
       price: 50,
       currency: 'HKD',
       features: [
@@ -253,9 +252,6 @@ const PricingPage: React.FC = () => {
                   <div className="flex items-baseline">
                     <span className="text-4xl font-bold text-white">{plan.price}</span>
                     <span className="ml-1 text-lg text-white opacity-80">{plan.currency}</span>
-                    {plan.period && (
-                      <span className="ml-1 text-sm text-white opacity-70">{plan.period}</span>
-                    )}
                   </div>
                   
                   {plan.originalPrice && (
@@ -274,6 +270,9 @@ const PricingPage: React.FC = () => {
                     <div>
                       <span className="text-2xl font-bold text-amber-400">{plan.coins}</span>
                       <span className={`ml-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{t('pricing.coins')}</span>
+                      {plan.id === 'yearly' && (
+                        <span className={`ml-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('pricing.perMonth')}</span>
+                      )}
                     </div>
                   </div>
                 </div>

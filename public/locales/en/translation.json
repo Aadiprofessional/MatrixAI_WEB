@@ -1818,6 +1818,8 @@
   },
 
      "speechToText": {
+      "modalTitle": "MatrixAI Speech to Text",
+      "modalDescription": "Convert audio to text quickly and accurately",
       "dragDropText": "Drag and drop your audio file here, or click to browse",
       "supportedFormats": "Supports MP3, WAV, M4A, AAC, OGG, FLAC and more audio formats",
       "browseFiles": "Browse Files",
