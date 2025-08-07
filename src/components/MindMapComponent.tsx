@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import OpenAI from 'openai';
 import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
 import { useTheme } from '../context/ThemeContext';
@@ -38,12 +37,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
   const [currentXmlData, setCurrentXmlData] = useState<string | null>(xmlData || null);
   const webViewRef = useRef<HTMLIFrameElement>(null);
 
-  // Initialize OpenAI with Deepseek configuration
-  const openai = new OpenAI({
-    baseURL: 'https://api.deepseek.com',
-    apiKey: 'sk-fed0eb08e6ad4f1aabe2b0c27c643816',
-    dangerouslyAllowBrowser: true
-  });
+  // No longer using OpenAI client - using XMLHttpRequest instead
 
   const parseXMLData = (xmlString: string) => {
     const parser = new XMLParser({ 
@@ -136,8 +130,42 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     
     setLoading(true);
     try {
-      const response = await openai.chat.completions.create({
-        model: "deepseek-chat",
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', true);
+      xhr.setRequestHeader('Authorization', `Bearer ${process.env.REACT_APP_ALIYUN_API_KEY}`);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+
+      let fullContent = '';
+      
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              const content = response.choices[0]?.message?.content;
+              if (content) {
+                console.log('XML Response from API:', content);
+                setCurrentXmlData(content);
+                if (onXmlDataGenerated) {
+                  onXmlDataGenerated(content);
+                }
+                sendXmlGraphData(content);
+                parseXMLData(content);
+              } else {
+                console.error('No valid response from API');
+              }
+            } catch (parseError) {
+              console.error('Error parsing response:', parseError);
+            }
+          } else {
+            console.error('API request failed:', xhr.status, xhr.statusText);
+          }
+          setLoading(false);
+        }
+      };
+
+      const requestBody = {
+        model: "qwen-plus",
         messages: [
           {
             role: "user",
@@ -166,23 +194,11 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
         ],
         temperature: 0.7,
         max_tokens: 2048
-      });
+      };
 
-      const content = response.choices[0]?.message?.content;
-      if (content) {
-        console.log('XML Response from API:', content);
-        setCurrentXmlData(content);
-        if (onXmlDataGenerated) {
-          onXmlDataGenerated(content);
-        }
-        sendXmlGraphData(content);
-        parseXMLData(content);
-      } else {
-        console.error('No valid response from API');
-      }
+      xhr.send(JSON.stringify(requestBody));
     } catch (error) {
       console.error('Error fetching graph data:', error);
-    } finally {
       setLoading(false);
     }
   };
@@ -194,7 +210,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     }
 
     try {
-      const response = await axios.post('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/sendXmlGraph', {
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_URL}/api/audio/sendXmlGraph`, {
         uid,
         audioid,
         xmlData: xmlDataToSend,
@@ -389,23 +405,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     }
   };
 
-  const saveMindMap = async () => {
-    if (!currentXmlData || !uid || !audioid) return;
-    
-    try {
-      const response = await axios.post('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/sendXmlGraph', {
-        uid,
-        audioid,
-        xmlData: currentXmlData,
-      });
-      
-      console.log('Mind map saved successfully:', response.data);
-      alert('Mind map saved successfully!');
-    } catch (error) {
-      console.error('Error saving mind map:', error);
-      alert('Failed to save mind map.');
-    }
-  };
+  // saveMindMap function removed - functionality merged with sendXmlGraphData
 
   const regenerateMindMap = () => {
     if (transcription) {
@@ -835,13 +835,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
           >
             <FiRefreshCw className={loading ? "animate-spin" : ""} />
           </button>
-          <button 
-            onClick={saveMindMap}
-            className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
-            title="Save mind map"
-          >
-            <FiSave />
-          </button>
+          {/* Save button removed - mind map is automatically saved when generated */}
           <button 
             onClick={downloadPDFDirectly} /* Changed to use the direct PDF generation method */
             disabled={isDownloading}

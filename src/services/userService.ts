@@ -80,7 +80,7 @@ interface EditUserResponse {
   message: string;
 }
 
-const API_BASE_URL = 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
 export const userService = {
   // Get user profile information
@@ -251,4 +251,4 @@ export const userService = {
 
     return response.json();
   }
-}; 
+};

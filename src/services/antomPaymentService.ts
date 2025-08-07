@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 
 // Configuration
 const USE_MOCK_MODE = process.env.NODE_ENV === 'development';
-const API_BASE_URL = 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
 // Types
 interface ApiErrorResponse {

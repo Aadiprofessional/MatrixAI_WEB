@@ -5,7 +5,7 @@ import axios, { AxiosError } from 'axios';
 const USE_MOCK_MODE = process.env.NODE_ENV === 'development';
 
 // API base URL
-const API_BASE_URL = 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
 interface ApiErrorResponse {
   message: string;
@@ -308,7 +308,7 @@ export const confirmSubscriptionPurchase = async (
     }
     
     // Always call the real backend API to update coins, even in mock mode
-    const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/user/BuySubscription', {
+    const response = await fetch(`${process.env.REACT_APP_BACKEND_API_URL}/api/user/BuySubscription`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

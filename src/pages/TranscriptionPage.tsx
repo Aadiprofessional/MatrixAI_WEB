@@ -607,12 +607,6 @@ const TranscriptionPage: React.FC = () => {
     { label: t('transcription.languages.hindi'), value: 'hi' },
   ];
 
-  // Initialize OpenAI with Deepseek configuration
-  const openai = new OpenAI({
-    baseURL: 'https://api.deepseek.com',
-    apiKey: 'sk-fed0eb08e6ad4f1aabe2b0c27c643816',
-    dangerouslyAllowBrowser: true // Allow running in browser environment
-  });
 
   // Audio player state
   const [audioUrl, setAudioUrl] = useState<string>('');
@@ -746,7 +740,7 @@ const TranscriptionPage: React.FC = () => {
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', true);
-        xhr.setRequestHeader('Authorization', 'Bearer sk-256fda005a1445628fe2ceafcda9e389');
+        xhr.setRequestHeader('Authorization', `Bearer ${process.env.REACT_APP_ALIYUN_API_KEY}`);
         xhr.setRequestHeader('Content-Type', 'application/json');
 
         let fullContent = '';

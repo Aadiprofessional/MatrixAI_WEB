@@ -82,7 +82,7 @@ interface XmlGraphResponse {
   data: any;
 }
 
-const API_BASE_URL = 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
 export const audioService = {
   // Upload audio URL for transcription

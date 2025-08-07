@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import * as paymentService from '../services/paymentService';
 
 // Configuration
-const API_BASE_URL = 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 
 // Payment method types
 interface PaymentMethod {

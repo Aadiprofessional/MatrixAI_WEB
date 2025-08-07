@@ -1179,7 +1179,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', true);
-        xhr.setRequestHeader('Authorization', 'Bearer sk-256fda005a1445628fe2ceafcda9e389');
+        xhr.setRequestHeader('Authorization', `Bearer ${process.env.REACT_APP_ALIYUN_API_KEY}`);
         xhr.setRequestHeader('Content-Type', 'application/json');
 
         let fullContent = '';
