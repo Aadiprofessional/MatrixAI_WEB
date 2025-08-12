@@ -1,3 +1,5 @@
+import { handleAuthError } from '../utils/authErrorHandler';
+
 interface UserInfo {
   name: string;
   age: number;
@@ -85,19 +87,74 @@ const API_BASE_URL = process.env.REACT_APP_BACKEND_API_URL;
 export const userService = {
   // Get user profile information
   getUserInfo: async (uid: string): Promise<UserInfoResponse> => {
-    const response = await fetch(`${API_BASE_URL}/api/user/userinfo`, {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user/userinfo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid
+        }),
+      });
+
+      if (!response.ok) {
+        // Handle auth errors
+        if (response.status === 401 || response.status === 403) {
+          await handleAuthError({ response });
+        }
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || 'Failed to get user info');
+      }
+
+      return response.json();
+    } catch (error) {
+      // Handle network errors and other auth-related errors
+      await handleAuthError(error, false); // Don't redirect for this call
+      throw error;
+    }
+  },
+  
+  // Submit feedback
+  submitFeedback: async (uid: string, issue: string, description: string): Promise<{success: boolean; message: string}> => {
+    const response = await fetch(`${API_BASE_URL}/api/user/submitFeedback`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        uid
+        uid,
+        issue,
+        description
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || errorData.error || 'Failed to get user info');
+      throw new Error(errorData.message || errorData.error || 'Failed to submit feedback');
+    }
+
+    return response.json();
+  },
+  
+  // Get help with order
+  getHelp: async (uid: string, issue: string, description: string, orderId: string): Promise<{success: boolean; message: string}> => {
+    const response = await fetch(`${API_BASE_URL}/api/user/getHelp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        uid,
+        issue,
+        description,
+        orderId
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || 'Failed to submit help request');
     }
 
     return response.json();
@@ -105,22 +162,32 @@ export const userService = {
 
   // Get user's current coin balance
   getUserCoins: async (uid: string): Promise<UserCoinsResponse> => {
-    const response = await fetch(`${API_BASE_URL}/api/user/getUserCoins`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        uid
-      }),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user/getUserCoins`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid
+        }),
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || errorData.error || 'Failed to get user coins');
+      if (!response.ok) {
+        // Handle auth errors
+        if (response.status === 401 || response.status === 403) {
+          await handleAuthError({ response });
+        }
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || 'Failed to get user coins');
+      }
+
+      return response.json();
+    } catch (error) {
+      // Handle network errors and other auth-related errors
+      await handleAuthError(error, false); // Don't redirect for this call
+      throw error;
     }
-
-    return response.json();
   },
 
   // Get user's transaction history

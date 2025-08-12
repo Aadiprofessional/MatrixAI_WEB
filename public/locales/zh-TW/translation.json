@@ -1,4 +1,39 @@
 {
+  "feedback": {
+    "title": "反饋",
+    "subtitle": "您對我們的應用有何看法？",
+    "issueOptions": {
+      "greatExperience": "很好的體驗，很有幫助",
+      "goodExperience": "良好的體驗，但可以改進",
+      "couldBeBetter": "可以更好",
+      "notHelpful": "完全沒有幫助",
+      "otherIssues": "其他問題"
+    },
+    "describeIssue": "描述您的問題",
+    "descriptionPlaceholder": "請提供有關您問題的詳細信息...",
+    "submitButton": "提交請求",
+    "successMessage": "感謝您的反饋！",
+    "errorMessage": "提交反饋失敗。請重試。"
+  },
+  "help": {
+    "getHelp": "獲取幫助",
+    "helpWithOrder": "訂單幫助",
+    "orderNumber": "訂單號",
+    "selectIssue": "選擇問題",
+    "issueOptions": {
+      "technical": "技術問題",
+      "billing": "賬單問題",
+      "subscription": "訂閱問題",
+      "feature": "功能請求",
+      "other": "其他"
+    },
+    "submitButton": "提交",
+    "cancelButton": "取消",
+    "successMessage": "您的幫助請求已成功提交！",
+    "errorMessage": "提交幫助請求失敗。請重試。",
+    "descriptionRequired": "請提供您問題的描述",
+    "issueRequired": "請選擇一個問題"
+  },
   "0-0-24-24": "0 0 24 24",
   "addSlide": "添加幻燈片",
   "allTemplates": "所有模板",
@@ -897,7 +932,7 @@
     "payPremiumPrices": "為每種服務支付高級價格",
     "researchHireSpecialists": "研究和僱用不同專家為每項任務",
     "title": "何必等上幾周？幾分鐘內即可使用 AI 進行創作，無需幾天時間。MatrixAI 是滿足您所有需求的最佳平臺。",
-    "titleSecondLine": "矩陣AI是滿足您所有需求的最佳平台",
+    "titleSecondLine": "MatrixAI 是滿足您所有需求的最佳平臺。",
     "traditionalTitle": "傳統的創意方法",
     "traditionalVideoProduction": "傳統的視頻製作",
     "vs": "vs",
@@ -1614,6 +1649,20 @@
       "summary": "請提供有關此轉錄的全面摘要，並將其格式化為結構良好的Markdown文檔：\n\n**轉錄：**\n{{轉錄}}\n\n請在適當的情況下使用標題，部分和重點進行適當的降級格式創建詳細的摘要。",
       "translate": "請將此轉錄轉換為{{translationLanguage}}，並將其格式化為結構良好的標記文檔：\n\n**原始轉錄：**\n{{轉錄}}\n\n在適當的情況下，請提供準確的翻譯，同時使用標題，部分和重點進行適當的降級格式。"
     },
+    "srt": {
+      "translateAll": "翻譯所有片段",
+      "showOriginal": "顯示原文",
+      "showTranslated": "顯示翻譯",
+      "translating": "翻譯中...",
+      "notTranslated": "未翻譯",
+      "copySegment": "複製片段",
+      "allSegmentsTranslated": "所有片段已翻譯！",
+      "confirmTranslateAll": "翻譯所有片段需要1個硬幣？",
+      "translationFailed": "翻譯失敗，請重試。",
+      "originalLabel": "原文：",
+      "translationLabel": "翻譯：",
+      "noTranslationAvailable": "尚無翻譯。點擊「翻譯所有片段」生成翻譯。"
+    },
     "settings": "設定",
     "share": "分享",
     "subtitle": "將音頻文件轉換為準確的文本轉錄。",
@@ -1710,6 +1759,7 @@
     "email": "電子郵件",
     "firstName": "名",
     "generalInquiries": "一般查詢",
+    "generalInquiriesSelected": "您已經選擇了一般查詢。 填寫下面的表格，我們將盡快與您聯繫。",
     "generalInquiriesDesc": "有關我們的產品或服務的問題",
     "lastName": "姓",
     "message": "信息",
@@ -1717,10 +1767,11 @@
     "ourOffices": "我們的辦公室",
     "phone": "電話",
     "sales": "銷售諮詢",
+    "salesSelected": "您已經選擇了銷售諮詢。 填寫下面的表格，我們將盡快與您聯繫。",
     "salesDesc": "與我們的銷售團隊談談您的需求",
     "select": "選擇",
     "selectReason": "請選擇上面的聯繫理由並填寫以下表格。",
-    "selectedReason": "您已經選擇了{{{原因}}。\n填寫下面的表格，我們將盡快與您聯繫。",
+    "selectedReason": "您已經選擇了{{reason}}。\n填寫下面的表格，我們將盡快與您聯繫。",
     "sendAnother": "發送另一個消息",
     "sendButton": "發送消息",
     "sendMessage": "向我們發送消息",
@@ -1728,6 +1779,7 @@
     "subtitle": "有問題還是需要幫助？\n我們在這裡為您服務。\n與我們的團隊聯繫，我們很快就會與您聯繫。",
     "successMessage": "您的消息已成功發送。\n我們將盡快與您聯繫。",
     "support": "支持",
+    "supportSelected": "您已經選擇了支持。 填寫下面的表格，我們將盡快與您聯繫。",
     "supportDesc": "在您現有帳戶中獲得幫助",
     "thankYou": "謝謝你！",
     "title": "取得聯繫",
@@ -2523,12 +2575,16 @@
         "description": "您可以隨時更改您的 Cookie 偏好：",
         "acceptAll": "接受所有 Cookie",
         "acceptEssential": "僅接受必要 Cookie",
-        "customizeSettings": "自定義設置"
+        "customizeSettings": "自定義設置",
+        "blockAll": "阻止所有 Cookie",
+        "blockThirdParty": "僅阻止第三方 Cookie",
+        "deleteExisting": "刪除現有的 Cookie",
+        "expireOnClose": "設置 Cookie 在您關閉瀏覽器時過期"
       }
     },
     "updates": {
       "title": "政策更新",
-      "content": "我們可能會不時更新此 Cookie 政策。任何更改都將在此頁面上發布，並且如果更改很重要，我們將提供更突出的通知。"
+      "content": "我們可能會不時更新本 Cookie 政策，以反映我們的做法或適用法律的變化。我們將通過在我們的網站上發佈更新後的政策來通知您任何重大變更。"
     },
     "contact": {
       "title": "聯繫我們",
@@ -2555,7 +2611,7 @@
       "consent": {
         "button": "管理cookie首選項",
         "description": "當您第一次訪問我們的網站時，您會看到Cookie同意書的橫幅。您可以隨時單擊下面的按鈕來管理您的首選項：",
-        "title": "餅乾同意"
+        "title": "Cookie 同意"
       },
       "title": "管理您的cookie首選項"
     },

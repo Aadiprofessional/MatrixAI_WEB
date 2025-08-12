@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import './styles/CommonStyles.css';
+import { handleAuthError } from './utils/authErrorHandler';
+import './utils/axiosInterceptor'; // Initialize axios interceptor
 
 // Import pages
 import { 
@@ -160,10 +162,32 @@ const App: React.FC = () => {
       }
     };
     
+    // Global error handler for unhandled authentication errors
+    const handleGlobalError = (event: ErrorEvent) => {
+      const error = event.error;
+      if (error && (error.message?.includes('403') || error.message?.includes('Auth session missing'))) {
+        console.log('Global auth error detected:', error);
+        handleAuthError(error, true);
+      }
+    };
+    
+    // Global promise rejection handler
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const error = event.reason;
+      if (error && (error.message?.includes('403') || error.message?.includes('Auth session missing'))) {
+        console.log('Global auth promise rejection detected:', error);
+        handleAuthError(error, true);
+      }
+    };
+    
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('error', handleGlobalError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('error', handleGlobalError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
 

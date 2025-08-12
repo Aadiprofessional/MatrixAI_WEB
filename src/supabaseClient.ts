@@ -104,9 +104,25 @@ export const signInWithApple = async () => {
 
 // Sign out
 export const signOut = async () => {
-  const { error } = await supabase.auth.signOut();
-  
-  if (error) {
+  try {
+    // Check if there's an active session before attempting to sign out
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        throw error;
+      }
+    }
+    // If no session exists, we consider the sign out successful
+    // since the user is already signed out
+  } catch (error: any) {
+    // If the error is about missing session, we can ignore it
+    // since the user is already signed out
+    if (error.message && error.message.includes('Auth session missing')) {
+      console.log('No active session to sign out from');
+      return;
+    }
     throw error;
   }
 };

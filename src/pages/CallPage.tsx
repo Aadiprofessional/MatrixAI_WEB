@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 // @ts-ignore
 import Lottie from 'react-lottie-player';
 import matrixAnimation from '../assets/Animation - 1740689806927.json';
-import axios from 'axios';
+import axios from '../utils/axiosInterceptor';
 import { useTheme } from '../context/ThemeContext';
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';

@@ -1,38 +1,89 @@
 {
   "sheet1": {
-    "active": {
-      "en": "active",
-      "zh-CN": "有效",
-      "zh-TW": "有效"
+    "MatrixAl Bot": {
+      "en": "MatrixAl Bot",
+      "zh-CN": "MatrixAl机器人",
+      "zh-TW": "MatrixAl機器人"
     },
-    "content writer": {
-      "en": "content writer",
-      "zh-CN": "内容创作器",
-      "zh-TW": "內容創作器"
+    "Hi,I'm MatrixAI Bot.": {
+      "en": "Hi,I'm MatrixAI Bot.",
+      "zh-CN": "你好，我是 MatrixAl机器人。",
+      "zh-TW": "你好，我是 MatrixAl機器人。"
+    },
+    "How can l help you today?": {
+      "en": "How can l help you today?",
+      "zh-CN": "今天我能帮你什么?",
+      "zh-TW": "今天我能幫你什麼?"
+    },
+    "You can ask me any question or you can select the below role": {
+      "en": "You can ask me any question or you can select the below role",
+      "zh-CN": "你可以问我任何问题，或者选择以下角色",
+      "zh-TW": "你可以問我任何問題，或者選擇以下角色"
+    },
+    "Doctor": {
+      "en": "Doctor",
+      "zh-CN": "医生",
+      "zh-TW": "醫生"
+    },
+    "Lawyer": {
+      "en": "Lawyer",
+      "zh-CN": "律师",
+      "zh-TW": "律師"
+    },
+    "Engineer": {
+      "en": "Engineer",
+      "zh-CN": "工程师",
+      "zh-TW": "工程師"
+    },
+    "Teacher": {
+      "en": "Teacher",
+      "zh-CN": "教师",
+      "zh-TW": "教師"
+    },
+    "Psychologist": {
+      "en": "Psychologist",
+      "zh-CN": "心理学家",
+      "zh-TW": "心理學家"
+    },
+    "Surveyor": {
+      "en": "Surveyor",
+      "zh-CN": "测量师",
+      "zh-TW": "測量師"
+    },
+    "Architect": {
+      "en": "Architect",
+      "zh-CN": "建筑师",
+      "zh-TW": "建築師"
+    },
+    "Financial Advisor": {
+      "en": "Financial Advisor",
+      "zh-CN": "财务顾问",
+      "zh-TW": "財務顧問"
+    },
+    "New Chat": {
+      "en": "New Chat",
+      "zh-CN": "新聊天",
+      "zh-TW": "新聊天"
+    },
+    "Send a message": {
+      "en": "Send a message",
+      "zh-CN": "发送消息",
+      "zh-TW": "發送消息"
     }
   },
   "sheet10": {
-    "5 articles found": {
-      "en": "5 articles found",
-      "zh-CN": "找到 5 篇文章",
-      "zh-TW": "找到 5 篇文章"
+    "Drag & drop your audio file here": {
+      "en": "Drag & drop your audio file here",
+      "zh-CN": "将音频文件拖放至此处",
+      "zh-TW": "將音頻文件拖放至此處"
+    },
+    "Browse Files": {
+      "en": "Browse Files",
+      "zh-CN": "浏览文件",
+      "zh-TW": "瀏覽文件"
     }
   },
   "sheet11": {
-    "Sales": {
-      "en": "Sales",
-      "zh-CN": "销售咨询",
-      "zh-TW": "銷售諮詢"
-    }
-  },
-  "sheet12": {
-    "Visit us at one of our global offices": {
-      "en": "Visit us at one of our global offices",
-      "zh-CN": "前往我们的任一全球办事处",
-      "zh-TW": "前往我們的任一全球辦事處"
-    }
-  },
-  "sheet13": {
     "This Cookie Policy explains how MatrixAI uses cookies and similar technologies to recognize you when you visit our website and use our services.": {
       "en": "This Cookie Policy explains how MatrixAI uses cookies and similar technologies to recognize you when you visit our website and use our services.",
       "zh-CN": "本 Cookie 政策说明当你访问我们的网站并使用我们的服务时，MatrixAI 如何使用 Cookie 及类似技术来识别你 。",
@@ -42,39 +93,9 @@
       "en": "Cookies can be \"persistent\" or \"session\" cookies. Persistent cookies remain on your device when you go offline, while session cookies are deleted when you close your web browser.",
       "zh-CN": "Cookie 可分为 “持久型” 或 “会话型” Cookie 。持久型 Cookie 在你离线时仍会保留在设备上，而会话型 Cookie 在你关闭网络浏览器时会被删除 。",
       "zh-TW": "Cookie 可分為 “持久型” 或 “會話型” Cookie 。持久型 Cookie 在你離線時仍會保留在設備上，而會話型 Cookie 在你關閉網絡瀏覽器時會被刪除 。"
-    },
-    "Types of Cookies We Use": {
-      "en": "Types of Cookies We Use",
-      "zh-CN": "我们使用的 Cookie 类型",
-      "zh-TW": "我們使用的 Cookie 類型"
     }
   },
-  "sheet14": {},
-  "sheet15": {
-    "Matrix AI is the best platform for all your needs": {
-      "en": "Matrix AI is the best platform for all your needs",
-      "zh-CN": "MatrixAI 是满足您所有需求的最佳平台。",
-      "zh-TW": "MatrixAI 是滿足您所有需求的最佳平臺。"
-    }
-  },
-  "sheet16": {
-    "You've selected General Inquiries. Fill out the form below and we'll get back to you as soon as possible.": {
-      "en": "You've selected General Inquiries. Fill out the form below and we'll get back to you as soon as possible.",
-      "zh-CN": "您已经选择了一般查询。 填写下面的表格，我们将尽快与您联系。",
-      "zh-TW": "您已經選擇了一般查詢。 填寫下面的表格，我們將儘快與您聯繫。"
-    },
-    "You've selected Sales. Fill out the form below and we'll get back to you as soon as possible.": {
-      "en": "You've selected Sales. Fill out the form below and we'll get back to you as soon as possible.",
-      "zh-CN": "您已经选择了销售咨询。 填写下面的表格，我们将尽快与您联系。",
-      "zh-TW": "您已經選擇了銷售諮詢。 填寫下面的表格，我們將儘快與您聯繫。"
-    },
-    "You've selected Support. Fill out the form below and we'll get back to you as soon as possible.": {
-      "en": "You've selected Support. Fill out the form below and we'll get back to you as soon as possible.",
-      "zh-CN": "您已经选择了支持。 填写下面的表格，我们将尽快与您联系。",
-      "zh-TW": "您已經選擇了支持。 填寫下面的表格，我們將儘快與您聯繫。"
-    }
-  },
-  "sheet17": {
+  "sheet12": {
     "Types of Cookies We Use": {
       "en": "Types of Cookies We Use",
       "zh-CN": "我们使用的 Cookie 类型",
@@ -99,7 +120,33 @@
       "en": "Marketing Cookies",
       "zh-CN": "推广 Cookies",
       "zh-TW": "推廣 Cookies"
+    }
+  },
+  "sheet13": {
+    "Matrix AI is the best platform for all your needs": {
+      "en": "Matrix AI is the best platform for all your needs",
+      "zh-CN": "MatrixAI 是满足您所有需求的最佳平台。",
+      "zh-TW": "MatrixAI 是滿足您所有需求的最佳平臺。"
+    }
+  },
+  "sheet14": {
+    "You've selected General Inquiries. Fill out the form below and we'll get back to you as soon as possible.": {
+      "en": "You've selected General Inquiries. Fill out the form below and we'll get back to you as soon as possible.",
+      "zh-CN": "您已经选择了一般查询。 填写下面的表格，我们将尽快与您联系。",
+      "zh-TW": "您已經選擇了一般查詢。 填寫下面的表格，我們將儘快與您聯繫。"
     },
+    "You've selected Sales. Fill out the form below and we'll get back to you as soon as possible.": {
+      "en": "You've selected Sales. Fill out the form below and we'll get back to you as soon as possible.",
+      "zh-CN": "您已经选择了销售咨询。 填写下面的表格，我们将尽快与您联系。",
+      "zh-TW": "您已經選擇了銷售諮詢。 填寫下面的表格，我們將儘快與您聯繫。"
+    },
+    "You've selected Support. Fill out the form below and we'll get back to you as soon as possible.": {
+      "en": "You've selected Support. Fill out the form below and we'll get back to you as soon as possible.",
+      "zh-CN": "您已经选择了支持。 填写下面的表格，我们将尽快与您联系。",
+      "zh-TW": "您已經選擇了支持。 填寫下面的表格，我們將儘快與您聯繫。"
+    }
+  },
+  "sheet15": {
     "Cookie Consent": {
       "en": "Cookie Consent",
       "zh-CN": "Cookie 同意",
@@ -131,28 +178,112 @@
       "zh-TW": "我們可能會不時更新本 Cookie 政策，以反映我們的做法或適用法律的變化。我們將通過在我們的網站上發佈更新後的政策來通知您任何重大變更。"
     }
   },
-  "sheet2": {
+  "sheet2": {},
+  "sheet3": {
+    "SRT Subtitles": {
+      "en": "SRT Subtitles",
+      "zh-CN": "字幕",
+      "zh-TW": "字幕"
+    },
+    "Translate": {
+      "en": "Translate",
+      "zh-CN": "翻译",
+      "zh-TW": "翻譯"
+    },
+    "Target Language": {
+      "en": "Target Language",
+      "zh-CN": "目标语言",
+      "zh-TW": "目標語言"
+    },
+    "English": {
+      "en": "English",
+      "zh-CN": "英语",
+      "zh-TW": "英語"
+    },
+    "Chinese": {
+      "en": "Chinese",
+      "zh-CN": "中文",
+      "zh-TW": "中文"
+    },
+    "Spanish": {
+      "en": "Spanish",
+      "zh-CN": "西班牙语",
+      "zh-TW": "西班牙語"
+    },
+    "French": {
+      "en": "French",
+      "zh-CN": "法语",
+      "zh-TW": "法語"
+    },
+    "German": {
+      "en": "German",
+      "zh-CN": "德语",
+      "zh-TW": "德語"
+    },
+    "Japanese": {
+      "en": "Japanese",
+      "zh-CN": "日语",
+      "zh-TW": "日語"
+    }
+  },
+  "sheet4": {
+    "Creative": {
+      "en": "Creative",
+      "zh-CN": "创意",
+      "zh-TW": "創意"
+    },
+    "Persuasive": {
+      "en": "Persuasive",
+      "zh-CN": "说服性",
+      "zh-TW": "說服性"
+    }
+  },
+  "sheet5": {
+    "Refer Your Friends": {
+      "en": "Refer Your Friends",
+      "zh-CN": "邀请您的好友",
+      "zh-TW": "邀請您的好友"
+    },
+    "Get 50 Coins for Each Invite": {
+      "en": "Get 50 Coins for Each Invite",
+      "zh-CN": "每次邀请可获得50个硬币",
+      "zh-TW": "每次邀請可獲得50個硬幣"
+    },
+    "Total Coins": {
+      "en": "Total Coins",
+      "zh-CN": "总硬币数",
+      "zh-TW": "總硬幣數"
+    },
+    "Invite your friends to join MatrixAl and get 50 coins for each invite": {
+      "en": "Invite your friends to join MatrixAl and get 50 coins for each invite",
+      "zh-CN": "邀请您的好友加入MatrixAl，每次邀请获得50个硬币",
+      "zh-TW": "邀請您的好友加入MatrixAl，每次邀請獲得50個硬幣"
+    },
+    "Friend Signup Reward": {
+      "en": "Friend Signup Reward",
+      "zh-CN": "好友注册奖励",
+      "zh-TW": "好友註冊獎勵"
+    },
+    "Your Referral Code": {
+      "en": "Your Referral Code",
+      "zh-CN": "您的推荐码",
+      "zh-TW": "您的推薦碼"
+    },
+    "Invite Friend": {
+      "en": "Invite Friend",
+      "zh-CN": "邀请好友",
+      "zh-TW": "邀請好友"
+    }
+  },
+  "sheet6": {},
+  "sheet7": {
     "content writer": {
       "en": "content writer",
       "zh-CN": "内容创作器",
       "zh-TW": "內容創作器"
     }
   },
-  "sheet3": {
-    "Prompt": {
-      "en": "Prompt",
-      "zh-CN": "指令",
-      "zh-TW": "指令"
-    }
-  },
-  "sheet4": {
-    "Speech to Text & Content Writing": {
-      "en": "Speech to Text & Content Writing",
-      "zh-CN": "语音转文字与内容撰写",
-      "zh-TW": "語音轉文字與內容撰寫"
-    }
-  },
-  "sheet5": {
+  "sheet8": {
     "Appearance": {
       "en": "Appearance",
       "zh-CN": "外观",
@@ -179,19 +310,7 @@
       "zh-TW": "使用系統偏好設置"
     }
   },
-  "sheet6": {
-    "Essential Only": {
-      "en": "Essential Only",
-      "zh-CN": "仅必要",
-      "zh-TW": "僅必要"
-    },
-    "All Cookies": {
-      "en": "All Cookies",
-      "zh-CN": "所有 Cookie",
-      "zh-TW": "所有 Cookie"
-    }
-  },
-  "sheet7": {
+  "sheet9": {
     "Japanese": {
       "en": "Japanese",
       "zh-CN": "日文",
@@ -201,35 +320,6 @@
       "en": "Chinese",
       "zh-CN": "中文",
       "zh-TW": "中文"
-    }
-  },
-  "sheet8": {
-    "Comprehensive guides and API documentation": {
-      "en": "Comprehensive guides and API documentation",
-      "zh-CN": "综合指南与 API 文档",
-      "zh-TW": "綜合指南與 API 文檔"
-    }
-  },
-  "sheet9": {
-    "MatrixAI Speech to Text": {
-      "en": "MatrixAI Speech to Text",
-      "zh-CN": "MatrixAI 语音转文字",
-      "zh-TW": "MatrixAI 語音轉文字"
-    },
-    "Convert audio to text quickly and accurately": {
-      "en": "Convert audio to text quickly and accurately",
-      "zh-CN": "快速精准地将音频转换为文字",
-      "zh-TW": "快速精准地將音頻轉換為文字"
-    },
-    "Drag & drop your audio file here": {
-      "en": "Drag & drop your audio file here",
-      "zh-CN": "将音频文件拖放至此处",
-      "zh-TW": "將音頻文件拖放至此處"
-    },
-    "Browse Files": {
-      "en": "Browse Files",
-      "zh-CN": "浏览文件",
-      "zh-TW": "瀏覽文件"
     }
   }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiMoon, FiSun } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
@@ -16,11 +16,29 @@ const LoginPage: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
   const turnstileRef = useRef<any>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const { signIn, signInWithGoogle, signInWithApple, error, setError, user } = useAuth();
   const { t } = useTranslation();
+
+  // Handle pre-filled credentials from signup
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.email) {
+      setEmail(state.email);
+    }
+    if (state?.password) {
+      setPassword(state.password);
+    }
+    if (state?.showEmailVerificationAlert && state?.alertMessage) {
+      setShowAlert(true);
+      setAlertMessage(state.alertMessage);
+    }
+  }, [location.state]);
 
   // If user is already logged in, redirect to dashboard
   useEffect(() => {
@@ -63,12 +81,18 @@ const LoginPage: React.FC = () => {
     }
 
     try {
-      setLoading(true);
-      await signIn(email, password);
+      console.log('Attempting login with AuthContext...');
+      
+      // Use AuthContext signIn method
+      const result = await signIn(email.trim(), password);
+      
+      console.log('Login successful:', result);
+      
+      // Navigate to dashboard
       navigate('/dashboard');
-    } catch (err) {
-      // Error is already set in the auth context
+    } catch (err: any) {
       console.error('Login error:', err);
+      setError(err.message || 'Login failed');
       // Reset Turnstile on error (only if not localhost)
       if (!isLocalhost && turnstileRef.current) {
         turnstileRef.current.reset();
@@ -237,6 +261,25 @@ const LoginPage: React.FC = () => {
               className="p-3 rounded-lg mb-6 text-sm text-center bg-red-900/40 text-red-200 backdrop-blur-sm border border-red-500/30"
             >
               {error}
+            </motion.div>
+          )}
+          
+          {showAlert && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-lg mb-6 text-sm text-center bg-blue-900/40 text-blue-200 backdrop-blur-sm border border-blue-500/30"
+            >
+              <div className="flex items-center justify-between">
+                <span>{alertMessage}</span>
+                <button
+                  type="button"
+                  onClick={() => setShowAlert(false)}
+                  className="ml-2 text-blue-300 hover:text-blue-100 transition-colors"
+                >
+                  ×
+                </button>
+              </div>
             </motion.div>
           )}
           

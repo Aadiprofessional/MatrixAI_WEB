@@ -41,14 +41,14 @@ const Navbar: React.FC<NavbarProps> = ({ onMobileSidebarToggle, isMobileSidebarO
   const { userData, refreshUserData } = useUser();
   const { isPro } = useUser();
   const { t } = useTranslation();
-  const [localCoins, setLocalCoins] = useState<number | undefined>(userData?.user_coins);
+  const [localCoins, setLocalCoins] = useState<number | undefined>(userData?.coins);
 
   // Set up real-time subscription to user coins
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.uid) return;
     
     // Initialize local coins from userData
-    setLocalCoins(userData?.user_coins);
+    setLocalCoins(userData?.coins);
     
     // Set up real-time subscription to the users table
     const subscription = supabase
@@ -58,11 +58,13 @@ const Navbar: React.FC<NavbarProps> = ({ onMobileSidebarToggle, isMobileSidebarO
           event: 'UPDATE', 
           schema: 'public', 
           table: 'users',
-          filter: `uid=eq.${user.id}`
+          filter: `uid=eq.${user.uid}`
         }, 
         (payload) => {
+          console.log('Supabase real-time update received:', payload);
           // Update local coins state when changes occur
           if (payload.new && payload.new.user_coins !== undefined) {
+            console.log('Updating coins from:', localCoins, 'to:', payload.new.user_coins);
             setLocalCoins(payload.new.user_coins);
             // Also refresh the full user data in context
             refreshUserData();
@@ -71,21 +73,30 @@ const Navbar: React.FC<NavbarProps> = ({ onMobileSidebarToggle, isMobileSidebarO
       )
       .subscribe();
     
+    console.log('Supabase real-time subscription set up for user:', user.uid, 'with filter:', `uid=eq.${user.uid}`);
+    
     // Clean up subscription on unmount
     return () => {
+      console.log('Cleaning up Supabase real-time subscription');
       subscription.unsubscribe();
     };
-  }, [user?.id, refreshUserData]);
+  }, [user?.uid, refreshUserData]);
 
   // Debug logging
-  console.log('Navbar render:', { showChargeModal, userData: !!userData, isPro, localCoins });
+  console.log('Navbar render:', { showChargeModal, userData: !!userData, isPro, localCoins, userDataCoins: userData?.coins });
 
   const handleLogout = async () => {
     try {
       await signOut();
       navigate('/login');
-    } catch (error) {
-      console.error('Error signing out:', error);
+    } catch (error: any) {
+      // Only log actual errors, not session missing errors
+      if (error.message && !error.message.includes('Auth session missing')) {
+        console.error('Error signing out:', error);
+      }
+      // Always navigate to login regardless of error
+      // since the user intent is to sign out
+      navigate('/login');
     }
   };
 
@@ -183,7 +194,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMobileSidebarToggle, isMobileSidebarO
             </button>
           )}
           
-          {isPro && user && (localCoins !== undefined ? localCoins < 200 : (userData?.user_coins || 0) < 200) && (
+          {isPro && user && (localCoins !== undefined ? localCoins < 200 : (userData?.coins || 0) < 200) && (
             <button
               onClick={() => {
                 console.log('Buy Coins button clicked, opening charge modal');
@@ -211,7 +222,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMobileSidebarToggle, isMobileSidebarO
               title={t('dashboard.clickToBuyCoins')}
             >
               <img src={coinImage} alt="Coin" className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
-              <span className="font-medium">{localCoins !== undefined ? localCoins : (userData?.user_coins || 0)}</span>
+              <span className="font-medium">{localCoins !== undefined ? localCoins : (userData?.coins || 0)}</span>
             </button>
           )}
 
@@ -352,7 +363,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMobileSidebarToggle, isMobileSidebarO
       <ChargeModal
         isOpen={showChargeModal}
         onClose={() => setShowChargeModal(false)}
-        currentCoins={userData?.user_coins || 0}
+        currentCoins={userData?.coins || 0}
       />
     </nav>
   );

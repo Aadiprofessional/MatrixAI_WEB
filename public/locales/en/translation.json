@@ -1,4 +1,39 @@
 {
+  "feedback": {
+    "title": "Feedback",
+    "subtitle": "What do you think about our app?",
+    "issueOptions": {
+      "greatExperience": "Great experience and helpful",
+      "goodExperience": "Good experience but could be improved",
+      "couldBeBetter": "Could be better",
+      "notHelpful": "Not helpful at all",
+      "otherIssues": "Other issues"
+    },
+    "describeIssue": "Describe your issue",
+    "descriptionPlaceholder": "Please provide details about your issue...",
+    "submitButton": "Submit Request",
+    "successMessage": "Thank you for your feedback!",
+    "errorMessage": "Failed to submit feedback. Please try again."
+  },
+  "help": {
+    "getHelp": "Get Help",
+    "helpWithOrder": "Help with Order",
+    "orderNumber": "Order Number",
+    "selectIssue": "Select an issue",
+    "issueOptions": {
+      "technical": "Technical issue",
+      "billing": "Billing issue",
+      "subscription": "Subscription issue",
+      "feature": "Feature request",
+      "other": "Other"
+    },
+    "submitButton": "Submit",
+    "cancelButton": "Cancel",
+    "successMessage": "Your help request has been submitted successfully!",
+    "errorMessage": "Failed to submit help request. Please try again.",
+    "descriptionRequired": "Please provide a description of your issue",
+    "issueRequired": "Please select an issue"
+  },
   "charge": {
     "processing": "Processing payment...",
     "purchase": "Purchase",
@@ -833,7 +868,21 @@
     "prompts": {
       "keypoints": "Please extract the key points from this transcription and format them as a well-structured markdown document:\n\n**Transcription:**\n{{transcription}}\n\nPlease organize the key points using proper markdown formatting with headings, bullet points, and emphasis where appropriate.",
       "summary": "Please provide a comprehensive summary of this transcription and format it as a well-structured markdown document:\n\n**Transcription:**\n{{transcription}}\n\nPlease create a detailed summary using proper markdown formatting with headings, sections, and emphasis where appropriate.",
-      "translate": "Please translate this transcription to {{translationLanguage}} and format it as a well-structured markdown document:\n\n**Original Transcription:**\n{{transcription}}\n\nPlease provide an accurate translation while maintaining proper markdown formatting with headings, sections, and emphasis where appropriate."
+      "translate": "Please translate this transcription to {{translationLanguage}} and format it as a well-structured markdown document:\n\n**Original Transcription:**\n{{transcription}}\n\nPlease provide an accurate translation while maintaining proper markdown formatting with headings, sections, and emphasis where appropriate." 
+    },
+    "srt": {
+      "translateAll": "Translate All Segments",
+      "showOriginal": "Show Original",
+      "showTranslated": "Show Translated",
+      "translating": "Translating...",
+      "notTranslated": "Not translated",
+      "copySegment": "Copy segment",
+      "allSegmentsTranslated": "All segments are already translated!",
+      "confirmTranslateAll": "Translate all segments for 1 coin?",
+      "translationFailed": "Translation failed. Please try again.",
+      "originalLabel": "Original:",
+      "translationLabel": "Translation:",
+      "noTranslationAvailable": "No translation available. Click 'Translate All Segments' to generate translations."
     },
     "languages": {
       "english": "English",
@@ -946,7 +995,7 @@
     "generationPlaceholder": "A futuristic city with flying cars and neon lights...",
     "uploadImageOptional": "Upload an image to enhance (optional)",
     "clickToUpload": "Click to upload an image",
-    "fileFormats": "JPG, PNG, GIF (max 5MB)",
+    "fileFormats": "JPG, PNG, GIF, HEIC (max 5MB)",
     "pleaseUploadImageFile": "Please upload an image file",
     "imageSizeLimit": "Image size should be less than 5MB",
     "uploading": "Uploading... {{uploadProgress}}%",
@@ -968,6 +1017,9 @@
     "failedToRemoveImage": "Failed to remove image",
     "imageDownloadedSuccess": "Image downloaded successfully!",
     "failedToDownloadImage": "Failed to download image. Please try right-click and save.",
+    "convertingHeicToJpg": "Converting HEIC to JPG format...",
+    "conversionSuccess": "Successfully converted to JPG format",
+    "conversionFailed": "Failed to convert HEIC image. Please try another image.",
     "matrixAIGeneratedImage": "MatrixAI Generated Image",
     "imageUrlCopied": "Image URL copied to clipboard!",
     "failedToShareImage": "Failed to share image. Please try again.",
@@ -1820,7 +1872,7 @@
      "speechToText": {
       "modalTitle": "MatrixAI Speech to Text",
       "modalDescription": "Convert audio to text quickly and accurately",
-      "dragDropText": "Drag and drop your audio file here, or click to browse",
+      "dragDropText": "Drag & drop your audio file here",
       "supportedFormats": "Supports MP3, WAV, M4A, AAC, OGG, FLAC and more audio formats",
       "browseFiles": "Browse Files",
       "uploading": "Uploading",

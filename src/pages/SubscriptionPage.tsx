@@ -263,7 +263,7 @@ const SubscriptionPage: React.FC = () => {
     // Navigate to payment page with plan details
     navigate('/payment', { 
       state: { 
-        uid: user?.id,
+        uid: user?.uid,
         plan: plan,
         price: plan === 'Tester' ? '50 HKD' : plan === 'Monthly' ? '138 HKD' : '1490 HKD',
         isAddon: false
@@ -275,7 +275,7 @@ const SubscriptionPage: React.FC = () => {
     // Navigate to payment page with addon details
     navigate('/payment', { 
       state: { 
-        uid: user?.id,
+        uid: user?.uid,
         plan: 'Addon',
         price: '50 HKD',
         isAddon: true

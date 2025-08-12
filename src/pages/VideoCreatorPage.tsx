@@ -506,7 +506,7 @@ const VideoCreatorPage: React.FC = () => {
     // Deduct coins - 70 for premium templates, 25 for regular
     const coinCost = isPremiumTemplate ? 55 : 30;
     try {
-      await userService.subtractCoins(user.id, coinCost, 'video_generation');
+      await userService.subtractCoins(user.uid, coinCost, 'video_generation');
       console.log(`Coins deducted successfully: ${coinCost}`);
     } catch (error) {
       console.error('Error deducting coins:', error);
@@ -573,7 +573,7 @@ const VideoCreatorPage: React.FC = () => {
               // Option 1: Template-based Generation with direct file upload
               console.log('Using template-based generation with template:', template);
               response = await videoService.createVideoWithImage(
-                user.id,
+                user.uid,
                 uploadedImage,
                 template,
                 "", // Empty prompt for template-based generation
@@ -583,7 +583,7 @@ const VideoCreatorPage: React.FC = () => {
               // Option 2: Text-to-Video with direct file upload
               console.log('Using text-to-video with prompt:', prompt);
               response = await videoService.createVideoWithImage(
-                user.id,
+                user.uid,
                 uploadedImage,
                 undefined, // No template
                 prompt,

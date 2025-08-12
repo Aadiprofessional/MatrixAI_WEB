@@ -76,8 +76,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpe
     try {
       await signOut();
       navigate('/login');
-    } catch (error) {
-      console.error('Error signing out:', error);
+    } catch (error: any) {
+      // Only log actual errors, not session missing errors
+      if (error.message && !error.message.includes('Auth session missing')) {
+        console.error('Error signing out:', error);
+      }
+      // Always navigate to login regardless of error
+      // since the user intent is to sign out
+      navigate('/login');
     }
   };
 
@@ -453,7 +459,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpe
                         <FiUpload className="h-8 w-8 text-blue-500 dark:text-blue-400" />
                       </div>
                       <h3 className="text-lg font-medium mb-2">
-                        Drag & drop your audio file here
+                        {t('speechToText.drag')}
                       </h3>
                       <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
                         WAV, MP3, MP4, M4A, AAC, OGG, FLAC

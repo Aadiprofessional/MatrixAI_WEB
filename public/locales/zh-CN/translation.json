@@ -1,4 +1,39 @@
 {
+  "feedback": {
+    "title": "反馈",
+    "subtitle": "您对我们的应用有何看法？",
+    "issueOptions": {
+      "greatExperience": "很好的体验，很有帮助",
+      "goodExperience": "良好的体验，但可以改进",
+      "couldBeBetter": "可以更好",
+      "notHelpful": "完全没有帮助",
+      "otherIssues": "其他问题"
+    },
+    "describeIssue": "描述您的问题",
+    "descriptionPlaceholder": "请提供有关您问题的详细信息...",
+    "submitButton": "提交请求",
+    "successMessage": "感谢您的反馈！",
+    "errorMessage": "提交反馈失败。请重试。"
+  },
+  "help": {
+    "getHelp": "获取帮助",
+    "helpWithOrder": "订单帮助",
+    "orderNumber": "订单号",
+    "selectIssue": "选择问题",
+    "issueOptions": {
+      "technical": "技术问题",
+      "billing": "账单问题",
+      "subscription": "订阅问题",
+      "feature": "功能请求",
+      "other": "其他"
+    },
+    "submitButton": "提交",
+    "cancelButton": "取消",
+    "successMessage": "您的帮助请求已成功提交！",
+    "errorMessage": "提交帮助请求失败。请重试。",
+    "descriptionRequired": "请提供您问题的描述",
+    "issueRequired": "请选择一个问题"
+  },
   "0-0-24-24": "0 0 24 24",
   "addSlide": "添加幻灯片",
   "allTemplates": "所有模板",
@@ -396,6 +431,11 @@
     "sensitivity": "检测灵敏度",
     "title": "AI内容检测器",
     "subtitle": "检查文字是由AI还是人撰写的",
+    "ranges": {
+      "human": "人类撰写",
+      "mixed": "混合内容",
+      "ai": "AI生成"
+    },
     "historyItems": {
       "checkEssay": "检查本文是否为AI生成",
       "detectReview": "在本产品评论中检测AI",
@@ -897,7 +937,7 @@
     "payPremiumPrices": "为每种服务支付高级价格",
     "researchHireSpecialists": "研究和雇用不同专家为每项任务",
     "title": "何必等上几周？几分钟内即可使用 AI 进行创作，无需几天时间。MatrixAI 是满足您所有需求的最佳平台。",
-    "titleSecondLine": "矩阵AI是满足您所有需求的最佳平台",
+    "titleSecondLine": "MatrixAI 是满足您所有需求的最佳平台。",
     "traditionalTitle": "传统的创意方法",
     "traditionalVideoProduction": "传统的视频制作",
     "vs": "vs",
@@ -1614,6 +1654,20 @@
       "summary": "请提供有关此转录的全面摘要，并将其格式化为结构良好的Markdown文档：\n\n\n**转录：**\n\n{{转录}}\n\n\n请在适当的情况下使用标题，部分和重点进行适当的降级格式创建详细的摘要。",
       "translate": "请将此转录转换为{{translationLanguage}}，并将其格式化为结构良好的标记文档：\n\n\n**原始转录：**\n\n{{转录}}\n\n\n在适当的情况下，请提供准确的翻译，同时使用标题，部分和重点进行适当的降级格式。"
     },
+    "srt": {
+      "translateAll": "翻译所有片段",
+      "showOriginal": "显示原文",
+      "showTranslated": "显示翻译",
+      "translating": "翻译中...",
+      "notTranslated": "未翻译",
+      "copySegment": "复制片段",
+      "allSegmentsTranslated": "所有片段已翻译！",
+      "confirmTranslateAll": "翻译所有片段需要1个硬币？",
+      "translationFailed": "翻译失败，请重试。",
+      "originalLabel": "原文：",
+      "translationLabel": "翻译：",
+      "noTranslationAvailable": "尚无翻译。点击「翻译所有片段」生成翻译。"
+    },
     "settings": "设置",
     "share": "分享",
     "subtitle": "将音频文件转换为准确的文本转录。",
@@ -1710,6 +1764,7 @@
     "email": "电子邮件",
     "firstName": "名",
     "generalInquiries": "一般查询",
+    "generalInquiriesSelected": "您已经选择了一般查询。 填写下面的表格，我们将尽快与您联系。",
     "generalInquiriesDesc": "有关我们的产品或服务的问题",
     "lastName": "姓",
     "message": "信息",
@@ -1717,10 +1772,11 @@
     "ourOffices": "我们的办公室",
     "phone": "电话",
     "sales": "销售咨询",
+    "salesSelected": "您已经选择了销售咨询。 填写下面的表格，我们将尽快与您联系。",
     "salesDesc": "与我们的销售团队谈谈您的需求",
     "select": "选择",
     "selectReason": "请选择上面的联系理由并填写以下表格。",
-    "selectedReason": "您已经选择了{{{原因}}。\n填写下面的表格，我们将尽快与您联系。",
+    "selectedReason": "您已经选择了{{reason}}。\n填写下面的表格，我们将尽快与您联系。",
     "sendAnother": "发送另一个消息",
     "sendButton": "发送消息",
     "sendMessage": "向我们发送消息",
@@ -1728,6 +1784,7 @@
     "subtitle": "有问题还是需要帮助？\n我们在这里为您服务。\n与我们的团队联系，我们很快就会与您联系。",
     "successMessage": "您的消息已成功发送。\n我们将尽快与您联系。",
     "support": "支持",
+    "supportSelected": "您已经选择了支持。 填写下面的表格，我们将尽快与您联系。",
     "supportDesc": "在您现有帐户中获得帮助",
     "thankYou": "谢谢你！",
     "title": "取得联系",
@@ -1811,6 +1868,7 @@
   "speechToText": {
     "modalTitle": "MatrixAI 语音转文字",
     "modalDescription": "快速精准地将音频转换为文字",
+    "browseFiles": "浏览文件",
     "delete": "删除",
     "deleteConfirmation": "删除确认",
     "deleteConfirmationMessage": "您确定要删除此音频文件吗？\n该动作不能撤消。",
@@ -2523,12 +2581,16 @@
         "description": "您可以随时更改您的 Cookie 偏好：",
         "acceptAll": "接受所有 Cookie",
         "acceptEssential": "仅接受必要 Cookie",
-        "customizeSettings": "自定义设置"
+        "customizeSettings": "自定义设置",
+        "blockAll": "阻止所有 Cookie",
+        "blockThirdParty": "仅阻止第三方 Cookie",
+        "deleteExisting": "删除现有的 Cookie",
+        "expireOnClose": "设置 Cookie 在您关闭浏览器时过期"
       }
     },
     "updates": {
       "title": "政策更新",
-      "content": "我们可能会不时更新此 Cookie 政策。任何更改都将在此页面上发布，并且如果更改很重要，我们将提供更突出的通知。"
+      "content": "我们可能会不时更新本 Cookie 政策，以反映我们的做法或适用法律的变化。我们将通过在我们的网站上发布更新后的政策来通知您任何重大变更。"
     },
     "contact": {
       "title": "联系我们",
@@ -2545,17 +2607,17 @@
     "managingSection": {
       "browserSettings": {
         "description": "您可以通过浏览器设置控制和管理cookie。\n大多数浏览器允许您：",
-        "option1": "查看并删除饼干",
-        "option2": "封锁特定网站的cookie",
-        "option3": "阻止第三方饼干",
-        "option4": "关闭浏览器时清除所有饼干",
-        "option5": "设置饼干时设置通知",
+        "option1": "查看并删除 Cookie",
+        "option2": "封锁特定网站的 Cookie",
+        "option3": "阻止第三方 Cookie",
+        "option4": "关闭浏览器时清除所有 Cookie",
+        "option5": "设置 Cookie 时设置通知",
         "title": "浏览器设置"
       },
       "consent": {
         "button": "管理cookie首选项",
         "description": "当您第一次访问我们的网站时，您会看到Cookie同意书的横幅。\n您可以随时单击下面的按钮来管理您的首选项：",
-        "title": "饼干同意"
+        "title": "Cookie 同意"
       },
       "title": "管理您的cookie首选项"
     },

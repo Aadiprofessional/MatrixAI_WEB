@@ -54,7 +54,7 @@ const PresentationCreatorPage: React.FC = () => {
   const { darkMode } = useTheme();
   const { showAlert, showSuccess, showError, showInfo, showWarning, showConfirmation } = useAlert();
   const { t } = useTranslation();
-  const uid = user?.id || '';
+  const uid = user?.uid || '';
 
   // State for presentation generation
   const [description, setDescription] = useState('');

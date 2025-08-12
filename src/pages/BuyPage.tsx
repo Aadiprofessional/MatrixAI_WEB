@@ -24,7 +24,7 @@ const BuyPage: React.FC = () => {
   const { t } = useTranslation();
   
   // Always set plan to Addon since this is specifically for addon purchases
-  const uid = user?.id;
+  const uid = user?.uid;
   const plan = t('payment.addon', 'Addon');
   const price = '50 HKD';
   

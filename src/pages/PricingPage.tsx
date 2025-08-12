@@ -173,7 +173,7 @@ const PricingPage: React.FC = () => {
     // Navigate to payment page with plan details
     navigate('/payment', { 
       state: { 
-        uid: user.id,
+        uid: user.uid,
         plan: plan,
         price: plan === 'Tester' ? '50 HKD' : plan === 'Monthly' ? '138 HKD' : plan === 'Yearly' ? '1490 HKD' : '50 HKD',
         isAddon: plan === 'Addon'

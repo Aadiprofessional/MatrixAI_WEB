@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import axios from '../utils/axiosInterceptor';
 import OpenAI from 'openai';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -13,7 +13,7 @@ import {
   FiVolume, FiFile
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, User } from '../context/AuthContext';
 import coinImage from '../assets/coin.png';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../supabaseClient';
@@ -71,7 +71,7 @@ const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const { userData, isPro } = useUser();
   const { user } = useAuth();
-  const { showSuccess, showError, showWarning } = useAlert();
+  const { showSuccess, showError, showWarning, showConfirmation } = useAlert();
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   
@@ -388,7 +388,6 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   // Removed createInitialMessages function - using empty arrays for truly empty chats
   const location = useLocation();
   const { chatId: routeChatId } = useParams<{ chatId: string }>();
-  const uid = user?.id;
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -462,10 +461,13 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session?.user?.id) {
+        console.error('No valid session or user ID found');
         return [];
       }
       
+      // Get the user ID from the session
       const userId = session.user.id;
+      console.log('Fetching chats for user ID:', userId);
       
       // Query all chats for this user
       const { data: userChats, error: chatsError } = await supabase
@@ -473,6 +475,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         .select('*')
         .eq('user_id', userId)
         .order('updated_at', { ascending: false });
+      
+      console.log('Fetched chats count:', userChats?.length || 0);
       
       if (chatsError || !userChats || userChats.length === 0) {
         return [];
@@ -573,7 +577,165 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   const fetchUserChats = async () => {
     try {
       setIsLoadingChats(true);
-      // Get current user session
+      
+      // First check if we have a user from AuthContext
+      if (user && user.uid) {
+        console.log('Using authenticated user from AuthContext:', user.uid);
+        
+        // Query all chats for this user using the uid from AuthContext
+        const { data: userChats, error: chatsError } = await supabase
+          .from('user_chats')
+          .select('*')
+          .eq('user_id', user.uid)
+          .order('updated_at', { ascending: false });
+        
+        console.log('Fetched chats count from AuthContext user:', userChats?.length || 0);
+        
+        if (chatsError) {
+          console.error('Error fetching user chats:', chatsError);
+          setIsLoadingChats(false);
+          
+          // Use local chat in case of fetch error
+          const localChatId = routeChatId || Date.now().toString();
+          setChatId(localChatId);
+          setChats([{
+            id: localChatId,
+            title: 'Local Chat',
+            messages: [],
+            role: 'general',
+            description: 'Connection error - working offline'
+          }]);
+          
+          return;
+        }
+        
+        if (userChats && userChats.length > 0) {
+          // Format chats for our UI
+          const formattedChats = userChats.map(chat => {
+            // Process messages to handle images and format correctly
+            const processedMessages = (chat.messages || []).map((msg: any) => {
+              // Check if this is an image message
+              if (msg.text && typeof msg.text === 'string' && 
+                  msg.text.includes('supabase.co/storage/v1/')) {
+                return {
+                  id: msg.id || Date.now().toString(),
+                  role: msg.sender === 'bot' ? 'assistant' : 'user',
+                  content: '', // Empty content for image messages
+                  timestamp: msg.timestamp || new Date().toISOString(),
+                  fileContent: msg.text, // Use the URL as fileContent
+                  fileName: 'Image'
+                };
+              }
+              
+              // Regular text message
+              return {
+                id: msg.id || Date.now().toString(),
+                role: msg.sender === 'bot' ? 'assistant' : 'user',
+                content: msg.text || '',
+                timestamp: msg.timestamp || new Date().toISOString()
+              };
+            });
+            
+            return {
+              id: chat.chat_id,
+              title: chat.name || 'New Chat',
+              messages: processedMessages || [],
+              role: chat.role || 'general',
+              roleDescription: chat.role_description || '',
+              description: chat.description || ''
+            };
+          });
+          
+          // Group chats by recency
+           const todayChats: {id: string, title: string, role: string}[] = [];
+           const yesterdayChats: {id: string, title: string, role: string}[] = [];
+           const lastWeekChats: {id: string, title: string, role: string}[] = [];
+           const lastMonthChats: {id: string, title: string, role: string}[] = [];
+           const olderChats: {id: string, title: string, role: string}[] = [];
+           
+           // Process each chat to determine its recency group
+           formattedChats.forEach(chat => {
+             const chatInfo = {
+               id: chat.id,
+               title: chat.title,
+               role: chat.role || 'general'
+             };
+             
+             // Get the latest message timestamp or use the current time
+             const latestMessage = chat.messages && chat.messages.length > 0 ? 
+               chat.messages[chat.messages.length - 1] : null;
+             const timestamp = latestMessage?.timestamp || new Date().toISOString();
+             const messageDate = new Date(timestamp);
+             const currentDate = new Date();
+             
+             // Calculate days difference
+             const daysDiff = Math.floor((currentDate.getTime() - messageDate.getTime()) / (1000 * 60 * 60 * 24));
+             
+             // Group by recency
+             if (daysDiff < 1) {
+               todayChats.push(chatInfo);
+             } else if (daysDiff < 2) {
+               yesterdayChats.push(chatInfo);
+             } else if (daysDiff < 7) {
+               lastWeekChats.push(chatInfo);
+             } else if (daysDiff < 30) {
+               lastMonthChats.push(chatInfo);
+             } else {
+               olderChats.push(chatInfo);
+             }
+          });
+          
+          // Update state with grouped chat history
+           setGroupedChatHistory({
+             today: todayChats,
+             yesterday: yesterdayChats,
+             lastWeek: lastWeekChats,
+             lastMonth: lastMonthChats,
+             older: olderChats
+           });
+          
+          // Update chats state with all formatted chats
+          setChats(formattedChats);
+          
+          // If a specific chat ID was provided in the route, load that chat
+          if (routeChatId) {
+            const targetChat = formattedChats.find(c => c.id === routeChatId);
+            if (targetChat) {
+              setChatId(routeChatId);
+               setMessages(targetChat.messages || []);
+               setSelectedRole(roleOptions.find(r => r.id === (targetChat.role || 'general')) || roleOptions[0]);
+            } else {
+              // If the requested chat doesn't exist, load the most recent one
+              if (formattedChats.length > 0) {
+                const mostRecentChat = formattedChats[0];
+                 setChatId(mostRecentChat.id);
+                 setMessages(mostRecentChat.messages || []);
+                 setSelectedRole(roleOptions.find(r => r.id === (mostRecentChat.role || 'general')) || roleOptions[0]);
+                 // Update URL to match the loaded chat
+                 navigate(`/chat/${mostRecentChat.id}`);
+              }
+            }
+          } else if (formattedChats.length > 0) {
+            // If no specific chat was requested, load the most recent one
+            const mostRecentChat = formattedChats[0];
+            setChatId(mostRecentChat.id);
+            setMessages(mostRecentChat.messages || []);
+            setSelectedRole(roleOptions.find(r => r.id === (mostRecentChat.role || 'general')) || roleOptions[0]);
+            // Update URL to match the loaded chat
+            navigate(`/chat/${mostRecentChat.id}`);
+          }
+          
+          setIsLoadingChats(false);
+          return; // Exit early since we've handled everything
+        } else {
+          // No chats found for this user, try Supabase session as fallback
+          console.log('No chats found for AuthContext user, trying Supabase session...');
+        }
+      } else {
+        console.log('No user in AuthContext, trying Supabase session...');
+      }
+      
+      // Fallback to Supabase session if AuthContext user didn't work
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
@@ -621,7 +783,9 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         return;
       }
       
+      // Get the user ID from the session
       const userId = session.user.id;
+      console.log('fetchUserChats - User ID from session:', userId);
       
       // Query all chats for this user
       const { data: userChats, error: chatsError } = await supabase
@@ -629,6 +793,11 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         .select('*')
         .eq('user_id', userId)
         .order('updated_at', { ascending: false });
+      
+      console.log('fetchUserChats - Fetched chats count:', userChats?.length || 0);
+      if (chatsError) {
+        console.error('fetchUserChats - Error details:', chatsError);
+      }
       
       if (chatsError) {
         console.error('Error fetching user chats:', chatsError);
@@ -1047,8 +1216,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
       
       if (routeChatId) {
         // User already accessed a specific chat via URL, no redirect needed
-        // Only fetch chats for history, don't load messages (selectChat will handle that)
-        await fetchUserChatsWithoutMessageUpdate();
+        // Use fetchUserChats to properly load messages and history
+        await fetchUserChats();
         // Store this as the last active chat
         localStorage.setItem('lastActiveChatId', routeChatId);
       } else if (lastActiveChatId) {
@@ -1440,14 +1609,14 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
               ));
               
               // Store coins used for this message (only if user is authenticated)
-              if (uid) {
+              if (user?.id) {
                 // 2 coins per page
                 const coinsToDeduct = 2 * pdfImageFiles.length;
                 setCoinsUsed(prev => ({ ...prev, [streamingMessageId]: coinsToDeduct }));
-                
+
                 // Deduct coins
                 try {
-                  await userService.subtractCoins(uid, coinsToDeduct, 'ai_chat_with_pdf');
+                  await userService.subtractCoins(user.id as string, coinsToDeduct, 'ai_chat_with_pdf');
                 } catch (coinError) {
                   console.error('Error deducting coins:', coinError);
                   showWarning('Could not deduct coins. Please check your balance.');
@@ -1669,9 +1838,9 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         }
         
         // Only deduct coins if user is authenticated
-        if (uid) {
+        if (user?.id) {
           try {
-            await userService.subtractCoins(uid, coinsToDeduct, imageUrl ? 'ai_chat_with_image' : 'ai_chat_message');
+            await userService.subtractCoins(user.id as string, coinsToDeduct, imageUrl ? 'ai_chat_with_image' : 'ai_chat_message');
           } catch (coinError) {
             console.error('Error deducting coins:', coinError);
             // If coin deduction fails, still continue but show warning
@@ -1694,7 +1863,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         ));
         
         // Store coins used for this message (only if user is authenticated)
-        if (uid) {
+        if (user?.id) {
           setCoinsUsed(prev => ({ ...prev, [streamingMessageId]: coinsToDeduct }));
         }
         
@@ -1833,9 +2002,9 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
       if (!editedMessage) return;
 
       // Deduct 1 coin for editing a message
-      if (uid) {
+      if (user?.id) {
         try {
-          await userService.subtractCoins(uid, 1, 'edit_message');
+          await userService.subtractCoins(user.id as string, 1, 'edit_message');
         } catch (coinError) {
           console.error('Error deducting coins for edit:', coinError);
           showWarning('Could not deduct coins. Please check your balance.');
@@ -1949,7 +2118,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   const handleDeleteChat = async (chatIdToDelete: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent chat selection when clicking delete
     
-    if (!uid) {
+    if (!user?.id) {
       showError('You must be logged in to delete chats');
       return;
     }
@@ -1960,7 +2129,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         .from('user_chats')
         .delete()
         .eq('chat_id', chatIdToDelete)
-        .eq('user_id', uid);
+        .eq('user_id', user.id as string);
 
       if (error) {
         console.error('Error deleting chat:', error);
@@ -2498,9 +2667,9 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         <button
           onClick={(e) => {
             e.stopPropagation();
-            if (window.confirm('Are you sure you want to delete this chat?')) {
+            showConfirmation('Are you sure you want to delete this chat?', () => {
               handleDeleteChat(chat.id, e);
-            }
+            });
           }}
           className={`p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 ${
             darkMode 
@@ -3012,7 +3181,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
               </div>
                               
                               {/* Coin usage display for AI messages */}
-                              {message.role === 'assistant' && uid && coinsUsed[message.id] && (
+                              {message.role === 'assistant' && user?.id && coinsUsed[message.id] && (
                                 <div className={`mt-2 sm:mt-3 pt-2 border-t ${
                                   darkMode ? 'border-gray-700' : 'border-gray-200'
                                 } flex items-center space-x-1 sm:space-x-2`}>
@@ -3167,18 +3336,32 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                         >
                           <FiFile className="w-4 h-4 sm:w-5 sm:h-5" />
                         </AuthRequiredButton>
-                        <AuthRequiredButton
-                          onClick={handleSendMessage}
-                          disabled={(!inputMessage.trim() && !selectedFile) || isMessageLimitReached}
-                          className={`p-1.5 sm:p-2 rounded-full ${
-                            (!inputMessage.trim() && !selectedFile) || isMessageLimitReached
-                              ? (darkMode ? 'text-gray-500 bg-gray-800' : 'text-gray-400 bg-gray-100') 
-                              : (darkMode ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600')
-                          }`}
-                          aria-label={t('chat.sendMessage')}
-                        >
-                          <FiSend className="w-4 h-4 sm:w-5 sm:h-5" />
-                        </AuthRequiredButton>
+                        <div className="relative">
+                          <AuthRequiredButton
+                            onClick={handleSendMessage}
+                            disabled={(!inputMessage.trim() && !selectedFile) || isMessageLimitReached}
+                            className={`p-1.5 sm:p-2 rounded-full flex items-center ${
+                              (!inputMessage.trim() && !selectedFile) || isMessageLimitReached
+                                ? (darkMode ? 'text-gray-500 bg-gray-800' : 'text-gray-400 bg-gray-100') 
+                                : (darkMode ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600')
+                            }`}
+                            aria-label={t('chat.sendMessage')}
+                          >
+                            <FiSend className="w-4 h-4 sm:w-5 sm:h-5" />
+                            {((inputMessage.trim() || selectedFile) && !isMessageLimitReached) && (
+                              <span className="ml-1 text-xs bg-orange-500/20 px-1.5 py-0.5 rounded-full flex items-center">
+                                -{selectedFile ? (
+                                  selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf') ||
+                                  selectedFile.type === 'application/msword' || 
+                                  selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                                  selectedFile.name.toLowerCase().endsWith('.doc') || selectedFile.name.toLowerCase().endsWith('.docx')
+                                    ? '2p' : '2'
+                                ) : '1'}
+                                <img src={coinImage} alt="coin" className="w-3 h-3 ml-0.5" />
+                              </span>
+                            )}
+                          </AuthRequiredButton>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -3193,7 +3376,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
       <ChargeModal
         isOpen={showChargeModal}
         onClose={() => setShowChargeModal(false)}
-        currentCoins={userData?.user_coins || 0}
+        currentCoins={userData?.coins || 0}
       />
     </div>
   );

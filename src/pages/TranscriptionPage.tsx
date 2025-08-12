@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import axios from '../utils/axiosInterceptor';
 import OpenAI from 'openai';
 import { userService } from '../services/userService';
 import { supabase } from '../supabaseClient';
@@ -17,6 +17,7 @@ import {
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useAlert } from '../context/AlertContext';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
@@ -27,6 +28,7 @@ import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/pris
 import 'katex/dist/katex.min.css';
 import katex from 'katex';
 import MindMapComponent from '../components/MindMapComponent';
+import coinIcon from '../assets/coin.png';
 
 // Define types for word timings
 interface WordTiming {
@@ -593,7 +595,8 @@ const TranscriptionPage: React.FC = () => {
   const { isPro } = useUser();
   const { user } = useAuth();
   const { theme, getThemeColors } = useTheme();
-  const uid = user?.id;
+  const { showSuccess, showError, showWarning, showConfirmation } = useAlert();
+  const uid = user?.uid;
   const colors = getThemeColors();
 
   // Languages array with internationalization
@@ -631,6 +634,15 @@ const TranscriptionPage: React.FC = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<string>('es');
   const [translations, setTranslations] = useState<string[]>([]);
   const [translatingIndex, setTranslatingIndex] = useState<number>(-1);
+  
+  // SRT Translation state
+  const [srtTranslations, setSrtTranslations] = useState<{[key: number]: string}>({});
+  const [srtTranslatingIndex, setSrtTranslatingIndex] = useState<number>(-1);
+  const [srtSelectedLanguage, setSrtSelectedLanguage] = useState<string>('es');
+  // Removed showOriginalSrt toggle as we now show both original and translated text together
+  const [srtSegments, setSrtSegments] = useState<Array<{id: number, startTime: string, endTime: string, text: string}>>([]);
+  const [userCoins, setUserCoins] = useState<number>(0);
+  const [isTranslatingSubtitle, setIsTranslatingSubtitle] = useState<boolean>(false);
 
   // UI state
   const [activeTab, setActiveTab] = useState<'transcript' | 'mindmap' | 'chat' | 'wordsdata'>('transcript');
@@ -952,11 +964,11 @@ const TranscriptionPage: React.FC = () => {
       
       try {
         // Deduct 1 coin for translation
-        const response = await userService.subtractCoins(uid, 1, 'transcription_translation');
+        const response = await userService.subtractCoins(uid!, 1, 'transcription_translation');
         
         if (!response.success) {
           // Show warning if coin deduction failed
-          alert(t('transcription.errors.failedToDeductCoins'));
+          showError(t('transcription.errors.failedToDeductCoins'));
           return;
         }
         
@@ -971,10 +983,10 @@ const TranscriptionPage: React.FC = () => {
       } catch (error: any) {
         // Check if error is due to insufficient coins
         if (error.message && error.message.includes('insufficient')) {
-          alert(t('transcription.errors.insufficientCoins'));
+          showError(t('transcription.errors.insufficientCoins'));
         } else {
           console.error('Error during translation:', error);
-          alert(t('transcription.errors.translationError'));
+          showError(t('transcription.errors.translationError'));
         }
       }
     } else {
@@ -1087,11 +1099,11 @@ const TranscriptionPage: React.FC = () => {
         }));
       } else {
         console.error(t('transcription.errors.audioMetadata'), data.error || data.message);
-        alert(t('transcription.errors.failedToLoadAudio'));
+        showError(t('transcription.errors.failedToLoadAudio'));
       }
     } catch (error) {
       console.error(t('transcription.errors.fetchAudioMetadata'), error);
-      alert(t('transcription.errors.unexpectedError'));
+      showError(t('transcription.errors.unexpectedError'));
     } finally {
       setIsLoading(false);
     }
@@ -1142,7 +1154,7 @@ const TranscriptionPage: React.FC = () => {
     const formattedTranscription = formatChineseText(transcription);
     navigator.clipboard.writeText(formattedTranscription);
     // Could show a toast notification here
-    alert(t('transcription.success.transcriptionCopied'));
+    showSuccess(t('transcription.success.transcriptionCopied'));
   };
 
   // Visualize audio data for waveform (placeholder)
@@ -1185,16 +1197,16 @@ const TranscriptionPage: React.FC = () => {
     // Deduct coins for chat
     try {
       // Deduct 1 coin for chat
-      const coinResponse = await userService.subtractCoins(uid, 1, 'transcription_chat');
+      const coinResponse = await userService.subtractCoins(uid!, 1, 'transcription_chat');
       
       if (!coinResponse.success) {
-        alert(t('transcription.errors.failedToDeductCoins'));
+        showError(t('transcription.errors.failedToDeductCoins'));
         setIsSubmitting(false);
         return;
       }
     } catch (error) {
       console.error('Error deducting coins:', error);
-      alert(t('transcription.errors.insufficientBalance'));
+      showError(t('transcription.errors.insufficientBalance'));
       setIsSubmitting(false);
       return;
     }
@@ -1409,10 +1421,146 @@ const TranscriptionPage: React.FC = () => {
   };
   
   const resetChat = () => {
-    if (chatMessages.length > 0 && window.confirm(t('transcription.chat.confirmClearHistory'))) {
-      setChatMessages([]);
+    if (chatMessages.length > 0) {
+      showConfirmation(
+        t('transcription.chat.confirmClearHistory'),
+        () => {
+          setChatMessages([]);
+        }
+      );
     }
   };
+
+  // Function to translate SRT subtitle segment
+  // Function to translate all SRT segments
+  const translateAllSrtSegments = async () => {
+    if (!user) {
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+
+    const segments = parseSrtToSegments(convertToSRT(wordsData));
+    const untranslatedSegments = segments.filter((_, index) => !srtTranslations[index]);
+    
+    if (untranslatedSegments.length === 0) {
+      showWarning(t('transcription.srt.allSegmentsTranslated'));
+      return;
+    }
+
+    // Fixed cost of 1 coin for all segments
+    showConfirmation(
+      t('transcription.srt.confirmTranslateAll'),
+      async () => {
+        try {
+          setIsTranslatingSubtitle(true);
+
+          // Deduct 1 coin for all translations
+          const coinResponse = await userService.subtractCoins(uid!, 1, 'srt_translation_bulk');
+          
+          if (!coinResponse.success) {
+            showError(t('transcription.errors.failedToDeductCoins'));
+            setIsTranslatingSubtitle(false);
+            return;
+          }
+          
+          // Update user coins
+          setUserCoins(prev => prev - 1);
+
+          // Translate all segments
+          const newTranslations = { ...srtTranslations };
+          
+          for (let i = 0; i < segments.length; i++) {
+            if (!srtTranslations[i]) {
+              setSrtTranslatingIndex(i);
+              
+              try {
+                const response = await axios.post(
+                  `${azureEndpoint}/translate?api-version=3.0&to=${srtSelectedLanguage}`,
+                  [{ text: segments[i].text }],
+                  {
+                    headers: {
+                      'Ocp-Apim-Subscription-Key': azureKey,
+                      'Ocp-Apim-Subscription-Region': region,
+                      'Content-Type': 'application/json'
+                    }
+                  }
+                );
+
+                newTranslations[i] = response.data[0].translations[0].text;
+              } catch (error) {
+                console.error(`Translation error for segment ${i}:`, error);
+              }
+            }
+          }
+
+          setSrtTranslations(newTranslations);
+
+        } catch (error) {
+          console.error('Bulk translation error:', error);
+          showError(t('transcription.errors.translationFailed'));
+        } finally {
+          setSrtTranslatingIndex(-1);
+          setIsTranslatingSubtitle(false);
+        }
+      },
+      () => {
+        // User canceled, do nothing
+      }
+    );
+    return;
+  };
+
+  // Function to parse SRT content into segments
+  const parseSrtToSegments = (srtContent: string) => {
+    const segments = [];
+    const lines = srtContent.split('\n');
+    let currentSegment = { id: 0, startTime: '', endTime: '', text: '' };
+    let lineIndex = 0;
+
+    while (lineIndex < lines.length) {
+      const line = lines[lineIndex].trim();
+      
+      if (line && !isNaN(parseInt(line))) {
+        // Segment number
+        currentSegment.id = parseInt(line);
+        lineIndex++;
+        
+        // Time range
+        const timeLine = lines[lineIndex]?.trim();
+        if (timeLine && timeLine.includes('-->')) {
+          const [start, end] = timeLine.split(' --> ');
+          currentSegment.startTime = start;
+          currentSegment.endTime = end;
+          lineIndex++;
+          
+          // Text content
+          let text = '';
+          while (lineIndex < lines.length && lines[lineIndex].trim() !== '') {
+            text += lines[lineIndex].trim() + ' ';
+            lineIndex++;
+          }
+          currentSegment.text = text.trim();
+          
+          segments.push({ ...currentSegment });
+          currentSegment = { id: 0, startTime: '', endTime: '', text: '' };
+        }
+      }
+      lineIndex++;
+    }
+    
+    return segments;
+  };
+
+  // Function to copy segment text
+  const copySegmentText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      console.log('Text copied to clipboard');
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
   
   // Use transcription as context
   const setTranscriptionAsContext = () => {
@@ -1547,33 +1695,49 @@ const TranscriptionPage: React.FC = () => {
   };
 
   // Convert words data to SRT format
-  const convertToSRT = (wordsData: any[], groupSize: number = 5) => {
+  const convertToSRT = (wordsData: any[], segmentDuration: number = 8) => {
     if (!wordsData || wordsData.length === 0) return '';
     
+    // Convert seconds to SRT time format (HH:MM:SS,mmm)
+    const formatSRTTime = (seconds: number) => {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+      const ms = Math.floor((seconds % 1) * 1000);
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')},${ms.toString().padStart(3, '0')}`;
+    };
+    
     let srtContent = '';
-    for (let i = 0; i < wordsData.length; i += groupSize) {
-      const group = wordsData.slice(i, i + groupSize);
-      const startTime = group[0].start;
-      const endTime = group[group.length - 1].end + 1.5; // Add 1.5 seconds to subtitle display duration
+    let segmentIndex = 1;
+    let currentSegmentStart = 0;
+    
+    // Create segments based on 8-second intervals
+    while (currentSegmentStart < wordsData[wordsData.length - 1]?.end || 0) {
+      const segmentEnd = currentSegmentStart + segmentDuration;
       
-      // Get text with punctuation if available, otherwise use word
-      let text = group.map(w => w.punctuated_word || w.word).join(' ');
+      // Find words that fall within this time segment
+      const wordsInSegment = wordsData.filter(word => 
+        word.start >= currentSegmentStart && word.start < segmentEnd
+      );
       
-      // Clean Chinese text for SRT (remove spaces and punctuation)
-      text = cleanChineseForSRT(text);
+      if (wordsInSegment.length > 0) {
+        // Get text with punctuation if available, otherwise use word
+        let text = wordsInSegment.map(w => w.punctuated_word || w.word).join(' ');
+        
+        // Clean Chinese text for SRT (remove spaces and punctuation)
+        text = cleanChineseForSRT(text);
+        
+        const actualStartTime = wordsInSegment[0].start;
+        const actualEndTime = Math.min(segmentEnd, wordsInSegment[wordsInSegment.length - 1].end + 1.5);
+        
+        srtContent += `${segmentIndex}\n`;
+        srtContent += `${formatSRTTime(actualStartTime)} --> ${formatSRTTime(actualEndTime)}\n`;
+        srtContent += `${text}\n\n`;
+        
+        segmentIndex++;
+      }
       
-      // Convert seconds to SRT time format (HH:MM:SS,mmm)
-      const formatSRTTime = (seconds: number) => {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = Math.floor(seconds % 60);
-        const ms = Math.floor((seconds % 1) * 1000);
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')},${ms.toString().padStart(3, '0')}`;
-      };
-      
-      srtContent += `${Math.floor(i / groupSize) + 1}\n`;
-      srtContent += `${formatSRTTime(startTime)} --> ${formatSRTTime(endTime)}\n`;
-      srtContent += `${text}\n\n`;
+      currentSegmentStart = segmentEnd;
     }
     
     return srtContent.trim();
@@ -1666,11 +1830,26 @@ const TranscriptionPage: React.FC = () => {
     }
   };
 
+  // Function to fetch user coins
+  const fetchUserCoins = async () => {
+    if (!uid) return;
+    
+    try {
+      const response = await userService.getUserCoins(uid);
+      if (response.success) {
+        setUserCoins(response.coins);
+      }
+    } catch (error) {
+      console.error('Error fetching user coins:', error);
+    }
+  };
+
   // Fetch transcription data and chat history
   useEffect(() => {
     if (uid && audioid) {
       fetchAudioMetadata(uid, audioid);
       loadChatFromDatabase(); // Load chat history
+      fetchUserCoins(); // Fetch user coins
     } else if (locationState?.transcription && locationState?.audio_url) {
       // Use data passed from the previous page if available
       setTranscription(locationState.transcription);
@@ -2059,24 +2238,32 @@ const TranscriptionPage: React.FC = () => {
                   <div className="p-2 sm:p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
-                        <button
-                          onClick={toggleTranslation}
-                          className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all text-xs sm:text-sm ${
-                            isTranslationEnabled
-                              ? 'bg-green-500 hover:bg-green-600 text-white'
-                              : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200'
-                          }`}
-                          disabled={translatingIndex !== -1}
-                        >
-                          <FiGlobe className="w-3 h-3 sm:w-4 sm:h-4" />
-                          {isTranslationEnabled ? (
-                            <FiToggleRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                          ) : (
-                            <FiToggleLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-                          )}
-                          <span className="hidden sm:inline">{isTranslationEnabled ? t('transcription.translationOn') : t('transcription.enableTranslation')}</span>
-                          <span className="sm:hidden">{isTranslationEnabled ? 'ON' : 'OFF'}</span>
-                        </button>
+                        <div className="relative">
+                          <button
+                            onClick={toggleTranslation}
+                            className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all text-xs sm:text-sm ${
+                              isTranslationEnabled
+                                ? 'bg-green-500 hover:bg-green-600 text-white'
+                                : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200'
+                            }`}
+                            disabled={translatingIndex !== -1}
+                          >
+                            <FiGlobe className="w-3 h-3 sm:w-4 sm:h-4" />
+                            {isTranslationEnabled ? (
+                              <FiToggleRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                            ) : (
+                              <FiToggleLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                            )}
+                            <span className="hidden sm:inline">{isTranslationEnabled ? t('transcription.translationOn') : t('transcription.enableTranslation')}</span>
+                            <span className="sm:hidden">{isTranslationEnabled ? 'ON' : 'OFF'}</span>
+                            {!isTranslationEnabled && (
+                              <span className="flex items-center ml-1 text-orange-600 dark:text-orange-400 text-xs font-medium">
+                                <span className="mr-1">-1</span>
+                                <img src={coinIcon} alt="coin" className="w-3 h-3" />
+                              </span>
+                            )}
+                          </button>
+                        </div>
                         
                         <select
                           value={selectedLanguage}
@@ -2505,21 +2692,30 @@ const TranscriptionPage: React.FC = () => {
                         className="flex-1 px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 text-sm sm:text-base"
                         disabled={isAssistantTyping}
                       />
-                      <button
-                        type="submit"
-                        disabled={!chatInput.trim() || isAssistantTyping}
-                        className={`px-3 sm:px-4 py-2 rounded-lg transition-colors ${
-                          !chatInput.trim() || isAssistantTyping
-                            ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
-                            : 'bg-blue-500 hover:bg-blue-600 text-white'
-                        }`}
-                      >
-                        {isAssistantTyping ? (
-                          <FiLoader className="animate-spin w-4 h-4 sm:w-5 sm:h-5" />
-                        ) : (
-                          t('transcription.chat.send')
-                        )}
-                      </button>
+                      <div className="relative">
+                        <button
+                          type="submit"
+                          disabled={!chatInput.trim() || isAssistantTyping}
+                          className={`px-3 sm:px-4 py-2 rounded-lg transition-colors ${
+                            !chatInput.trim() || isAssistantTyping
+                              ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                              : 'bg-blue-500 hover:bg-blue-600 text-white'
+                          }`}
+                        >
+                          {isAssistantTyping ? (
+                            <FiLoader className="animate-spin w-4 h-4 sm:w-5 sm:h-5" />
+                          ) : (
+                            <>
+                              {t('transcription.chat.send')}
+                              {chatInput.trim() && (
+                                <span className="ml-1 text-xs bg-orange-500/20 px-1.5 py-0.5 rounded-full flex items-center">
+                                  -1 <img src={coinIcon} alt="coin" className="w-3 h-3 ml-0.5" />
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </form>
                   </div>
                 </motion.div>
@@ -2543,7 +2739,7 @@ const TranscriptionPage: React.FC = () => {
                               onClick={() => {
                                 const srtContent = convertToSRT(wordsData);
                                 navigator.clipboard.writeText(srtContent);
-                                alert(t('transcription.wordsData.srtCopied'));
+                                showSuccess(t('transcription.wordsData.srtCopied'));
                               }}
                               className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                               title="Copy as SRT"
@@ -2569,7 +2765,7 @@ const TranscriptionPage: React.FC = () => {
                             <button 
                               onClick={() => {
                                 navigator.clipboard.writeText(JSON.stringify(wordsData, null, 2));
-                                alert(t('transcription.wordsData.jsonCopied'));
+                                showSuccess(t('transcription.wordsData.jsonCopied'));
                               }}
                               className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
                               title="Copy JSON"
@@ -2623,15 +2819,128 @@ const TranscriptionPage: React.FC = () => {
                           </div>
                         </div>
                         
-                        {/* SRT Format Display */}
+                        {/* SRT Format Display with Translation */}
                         <div className="mb-6">
-                          <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">
-                            {t('transcription.wordsData.srtSubtitles')}
-                          </h3>
-                          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 font-mono text-sm max-h-96 overflow-auto">
-                            <pre className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                              {convertToSRT(wordsData)}
-                            </pre>
+                          <div className="flex justify-between items-center mb-3">
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                              {t('transcription.wordsData.srtSubtitles')}
+                            </h3>
+                            <div className="flex items-center space-x-3">
+                              {/* Language Selector */}
+                              <select
+                                value={srtSelectedLanguage}
+                                onChange={(e) => setSrtSelectedLanguage(e.target.value)}
+                                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              >
+                                {languages.map(lang => (
+                                  <option key={lang.value} value={lang.value}>
+                                    {lang.label}
+                                  </option>
+                                ))}
+                              </select>
+                              
+                              {/* AI-Enhanced Translate All Button */}
+                              <button
+                                onClick={translateAllSrtSegments}
+                                disabled={isTranslatingSubtitle}
+                                className="relative flex items-center space-x-2 px-6 py-3 text-sm font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 text-white rounded-xl hover:from-purple-700 hover:via-blue-700 hover:to-cyan-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-2xl transform hover:scale-105 overflow-hidden group"
+                                style={{
+                                  background: isTranslatingSubtitle 
+                                    ? 'linear-gradient(45deg, #8b5cf6, #3b82f6, #06b6d4)' 
+                                    : undefined,
+                                  animation: isTranslatingSubtitle ? 'pulse 2s infinite' : undefined
+                                }}
+                              >
+                                {/* AI Glow Effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 opacity-30 blur-xl group-hover:opacity-50 transition-opacity duration-300"></div>
+                                
+                                {/* Animated Background Particles */}
+                                <div className="absolute inset-0 overflow-hidden">
+                                  <div className="absolute w-2 h-2 bg-white rounded-full opacity-20 animate-ping" style={{top: '20%', left: '15%', animationDelay: '0s'}}></div>
+                                  <div className="absolute w-1 h-1 bg-cyan-300 rounded-full opacity-40 animate-ping" style={{top: '60%', left: '80%', animationDelay: '1s'}}></div>
+                                  <div className="absolute w-1.5 h-1.5 bg-purple-300 rounded-full opacity-30 animate-ping" style={{top: '40%', left: '60%', animationDelay: '2s'}}></div>
+                                </div>
+                                
+                                {/* Content */}
+                                <div className="relative z-10 flex items-center space-x-2">
+                                  <img src={coinIcon} alt="Cost" className="w-4 h-4" />
+                                  <span className="font-bold text-yellow-300">1</span>
+                                  {isTranslatingSubtitle ? (
+                                    <div className="flex items-center space-x-1">
+                                      <FiLoader className="w-4 h-4 animate-spin" />
+                                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.3s'}}></div>
+                                    </div>
+                                  ) : (
+                                    <FiGlobe className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
+                                  )}
+                                  <span className="font-semibold">{isTranslatingSubtitle ? t('transcription.srt.translating') : t('transcription.srt.translateAll')}</span>
+                                </div>
+                              </button>
+                              
+                              {/* Removed toggle button as we now show both original and translated text */}
+                            </div>
+                          </div>
+                          
+                          {/* SRT Segments with Translation */}
+                          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 max-h-96 overflow-auto">
+                            {parseSrtToSegments(convertToSRT(wordsData)).map((segment, index) => (
+                              <div key={index} className="mb-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                {/* Segment Header */}
+                                <div className="flex justify-between items-center mb-2">
+                                  <div className="flex items-center space-x-2">
+                                    <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded font-mono">
+                                      #{segment.id}
+                                    </span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                                      {segment.startTime} → {segment.endTime}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    {/* AI-Enhanced Copy Button */}
+                                    <button
+                                      onClick={() => copySegmentText(srtTranslations[index] ? `${t('transcription.srt.originalLabel')} ${segment.text}\n\n${t('transcription.srt.translationLabel')} ${srtTranslations[index]}` : segment.text)}
+                                      className="relative p-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-110 overflow-hidden group"
+                                      title={t('transcription.srt.copySegment')}
+                                    >
+                                      {/* Subtle Glow Effect */}
+                                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-400 opacity-30 blur-md group-hover:opacity-50 transition-opacity duration-300"></div>
+                                      
+                                      {/* Animated Sparkle */}
+                                      <div className="absolute top-1 right-1 w-1 h-1 bg-white rounded-full opacity-60 animate-ping" style={{animationDelay: '0.5s'}}></div>
+                                      
+                                      {/* Content */}
+                                      <div className="relative z-10">
+                                        <FiCopy className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
+                                      </div>
+                                    </button>
+                                  </div>
+                                </div>
+                                
+                                {/* Segment Text - Original */}
+                                <div className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed mb-2">
+                                  <div className="font-medium text-xs text-blue-600 dark:text-blue-400 mb-1">
+                                    {t('transcription.srt.originalLabel')}
+                                  </div>
+                                  <span className="font-mono">{segment.text}</span>
+                                </div>
+                                
+                                {/* Segment Text - Translation - Only show when translation exists */}
+                                {srtTranslations[index] ? (
+                                  <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pl-3 border-l-2 border-green-400 dark:border-green-600">
+                                    <div className="font-medium text-xs text-green-600 dark:text-green-400 mb-1">
+                                      {t('transcription.srt.translationLabel')} ({languages.find(lang => lang.value === srtSelectedLanguage)?.label})
+                                    </div>
+                                    <span className="font-mono">{srtTranslations[index]}</span>
+                                  </div>
+                                ) : (
+                                  <div className="text-sm text-gray-400 dark:text-gray-500 italic pl-3 border-l-2 border-gray-300 dark:border-gray-600">
+                                    {t('transcription.srt.noTranslationAvailable')}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
                           </div>
                         </div>
                         

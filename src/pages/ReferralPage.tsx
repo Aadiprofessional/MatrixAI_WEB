@@ -3,9 +3,10 @@ import { motion } from 'framer-motion';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
-import { Layout } from '../components';
+import { Layout, ProFeatureAlert } from '../components';
 import { useTranslation } from 'react-i18next';
 import '../styles/CommonStyles.css';
+import { useNavigate } from 'react-router-dom';
 import { 
   FiUsers, 
   FiUserPlus, 
@@ -22,15 +23,25 @@ const ReferralPage: React.FC = () => {
   const { t } = useTranslation();
   const { darkMode } = useContext(ThemeContext);
   const { user } = useAuth();
-  const { userData } = useUser();
+  const { userData, isPro } = useUser();
+  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [inviteHistory, setInviteHistory] = useState<{email: string, date: string, status: string}[]>([]);
+  const [showProAlert, setShowProAlert] = useState(false);
 
   const referralCode = userData?.referral_code || 'LOADING';
   const referralUrl = `https://matrixai.asia/signup?ref=${referralCode}`;
   
+  // Check if user is Pro for referral features
+  useEffect(() => {
+    // Only check for Pro status if user is logged in
+    if (user && !isPro) {
+      setShowProAlert(true);
+    }
+  }, [user, isPro]);
+
   // Get invited members
   useEffect(() => {
     // This would normally fetch from API, using mock data for now
@@ -107,6 +118,13 @@ const ReferralPage: React.FC = () => {
   return (
     <Layout>
       <div className={`page-background py-8 px-4 lg:px-8 ${darkMode ? 'dark' : ''}`}>
+        {/* Pro Feature Alert */}
+        {showProAlert && (
+          <ProFeatureAlert 
+            featureName={t('referral.title')}
+            onClose={() => setShowProAlert(false)}
+          />
+        )}
         {/* Background gradient effects */}
         <div className="gradient-blob-1"></div>
         <div className="gradient-blob-2"></div>

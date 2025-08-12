@@ -252,7 +252,10 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
         <div className="flex items-center space-x-3">
           <div className="text-right">
             <div className="font-semibold text-primary flex items-center">
-              {safeAmount.toFixed(0)} {t('profile.coins')}
+              {safeAmount > 0 
+                ? `-${safeAmount.toFixed(0)}` 
+                : `-${Math.abs(safeAmount).toFixed(0)}`
+              } {t('profile.coins')}
             </div>
             <div className="flex items-center space-x-1">
               {getStatusIcon(transaction.status)}
@@ -272,7 +275,7 @@ const ProfilePage: React.FC = () => {
   const { darkMode } = useContext(ThemeContext);
   const { userData, loading, refreshUserData } = useUser();
   const { user } = useAuth();
-  const uid = user?.id;
+  const uid = user?.uid;
   
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -483,7 +486,7 @@ const ProfilePage: React.FC = () => {
                     <div className="ml-2 sm:ml-3">
                       <p className="text-xs sm:text-sm text-secondary">{t('profile.availableCoins')}</p>
                       <p className="text-base sm:text-lg font-bold text-primary">
-                        {userData?.user_coins || 0}
+                        {userData?.coins || 0}
                       </p>
                     </div>
                   </div>

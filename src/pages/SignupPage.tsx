@@ -16,15 +16,11 @@ const DEFAULT_LANGUAGE = 'English';
 const SignupPage: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('Male');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [referralCode, setReferralCode] = useState('');
-  const [preferredLanguage, setPreferredLanguage] = useState(DEFAULT_LANGUAGE);
-  const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -33,6 +29,11 @@ const SignupPage: React.FC = () => {
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const { error, setError, user, signInWithGoogle, signInWithApple } = useAuth();
   const { t } = useTranslation();
+
+  // Check if we're in localhost/development environment
+  const isLocalhost = window.location.hostname === 'localhost' || 
+                     window.location.hostname === '127.0.0.1' || 
+                     window.location.hostname === '0.0.0.0';
 
   // If user is already logged in, redirect to dashboard
   useEffect(() => {
@@ -63,40 +64,9 @@ const SignupPage: React.FC = () => {
     }
   }, [user, navigate]);
 
-  // Function to generate a random 6-digit alphanumeric code
-  const generateReferralCode = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < 6; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  };
+  // Removed unused helper functions
 
-  // Function to check if referral code is valid
-  const checkReferralCode = async (code: string | null) => {
-    if (!code) return { valid: true, referrerId: null }; // Empty code is considered valid (optional)
-    
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('uid')
-        .eq('referral_code', code.toUpperCase())
-        .single();
-          
-      if (error) throw error;
-        
-      return { valid: !!data, referrerId: data?.uid };
-    } catch (error) {
-      console.error('Error checking referral code:', error);
-      return { valid: false, referrerId: null };
-    }
-  };
-
-  const handleSelectLanguage = (language: string) => {
-    setPreferredLanguage(language);
-    setLanguageModalVisible(false);
-  };
+  // Removed language selection functionality
 
   // Password strength calculation
   const getPasswordStrength = () => {
@@ -184,7 +154,8 @@ const SignupPage: React.FC = () => {
       return;
     }
 
-    if (!turnstileToken) {
+    // Skip Turnstile validation for localhost
+    if (!isLocalhost && !turnstileToken) {
       setError('Please complete the Turnstile verification');
       return;
     }
@@ -192,50 +163,44 @@ const SignupPage: React.FC = () => {
     try {
       setLoading(true);
       
-      // Check if referral code is valid
-      const { valid, referrerId } = await checkReferralCode(referralCode);
-      
-      if (referralCode && !valid) {
-        setError('Invalid referral code');
-        return;
-      }
-      
-      // Generate a unique referral code for the new user
-      const newReferralCode = generateReferralCode();
-      
-      // Use Supabase for signup
-      const { data, error: signupError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password: password,
-        options: {
-          data: {
-            name: name.trim(),
-            age: age ? parseInt(age, 10) : null,
-            gender: gender,
-            preferred_language: preferredLanguage,
-            referral_code: newReferralCode,
-            referrer_id: referrerId
-          }
-        }
+      // Use new API for signup
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_API_URL}/api/user/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+          confirmPassword: confirmPassword,
+          name: name.trim(),
+          referralCode: referralCode || undefined
+        }),
       });
 
-      if (signupError) throw signupError;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Signup failed');
+      }
 
       console.log('Signup successful:', data);
       
-      // Navigate to verification page
-      navigate('/verification', { 
+      // Navigate to login page with pre-filled credentials and alert message
+      navigate('/login', { 
         state: { 
           email: email.trim(),
-          message: 'Please check your email for a verification link.'
+          password: password,
+          showEmailVerificationAlert: true,
+          alertMessage: 'Account created successfully! Please login with your credentials.'
         } 
       });
       
     } catch (err: any) {
       console.error('Signup error:', err);
       setError(err.message || 'An error occurred during signup');
-      // Reset Turnstile on error
-      if (turnstileRef.current) {
+      // Reset Turnstile on error (only if not localhost)
+      if (!isLocalhost && turnstileRef.current) {
         turnstileRef.current.reset();
         setTurnstileToken(null);
       }
@@ -458,51 +423,7 @@ const SignupPage: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Age and Gender in a row */}
-            <div className="grid grid-cols-2 gap-4">
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-              >
-                <label className="block text-sm font-medium mb-1 text-gray-200" htmlFor="age">
-                  {t('auth.age')}
-                </label>
-                <input
-                  id="age"
-                  name="age"
-                  type="number"
-                  min="13"
-                  max="120"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  className="w-full px-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
-                  placeholder={t('signup.agePlaceholder')}
-                />
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-              >
-                <label className="block text-sm font-medium mb-1 text-gray-200" htmlFor="gender">
-                  {t('auth.gender')}
-                </label>
-                <select
-                  id="gender"
-                  name="gender"
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                  className="w-full px-3 py-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all bg-white/10 text-white border border-white/20 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-md"
-                >
-                  <option value="Male">{t('auth.male')}</option>
-                  <option value="Female">{t('auth.female')}</option>
-                  <option value="Other">{t('auth.other')}</option>
-                  <option value="Prefer not to say">{t('auth.preferNotToSay')}</option>
-                </select>
-              </motion.div>
-            </div>
+            {/* Removed age and gender fields */}
 
             {/* Password */}
             <motion.div
@@ -648,23 +569,39 @@ const SignupPage: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Turnstile */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.05, duration: 0.5 }}
-              className="mt-6 flex justify-center"
-            >
-              <Turnstile
-                ref={turnstileRef}
-                siteKey={process.env.REACT_APP_TURNSTILE_SITE_KEY || ''}
-                onSuccess={handleTurnstileSuccess}
-                onError={handleTurnstileError}
-                options={{
-                  theme: darkMode ? 'dark' : 'light'
-                }}
-              />
-            </motion.div>
+            {/* Turnstile - Only show in production */}
+            {!isLocalhost && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.05, duration: 0.5 }}
+                className="mt-6 flex justify-center"
+              >
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={process.env.REACT_APP_TURNSTILE_SITE_KEY || ''}
+                  onSuccess={handleTurnstileSuccess}
+                  onError={handleTurnstileError}
+                  options={{
+                    theme: darkMode ? 'dark' : 'light'
+                  }}
+                />
+              </motion.div>
+            )}
+            
+            {/* Development notice for localhost */}
+            {isLocalhost && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.05, duration: 0.5 }}
+                className="mt-6 flex justify-center"
+              >
+                <div className="text-sm text-yellow-400 bg-yellow-900/20 px-3 py-2 rounded-lg border border-yellow-500/30">
+                  Development Mode: Turnstile bypassed for localhost
+                </div>
+              </motion.div>
+            )}
 
             {/* Submit Button */}
             <motion.div
@@ -675,9 +612,9 @@ const SignupPage: React.FC = () => {
             >
               <button
                 type="submit"
-                disabled={loading || !agreeToTerms || !turnstileToken}
+                disabled={loading || !agreeToTerms || (!isLocalhost && !turnstileToken)}
                 className={`w-full flex justify-center py-3.5 px-4 border border-white/20 rounded-xl shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  loading || !agreeToTerms || !turnstileToken
+                  loading || !agreeToTerms || (!isLocalhost && !turnstileToken)
                     ? 'bg-gradient-to-r from-purple-600/50 to-indigo-600/50 cursor-not-allowed'
                     : 'bg-gradient-to-r from-purple-600/90 to-indigo-600/90 hover:from-purple-700/90 hover:to-indigo-700/90 focus:ring-purple-500'
                 } backdrop-blur-md`}

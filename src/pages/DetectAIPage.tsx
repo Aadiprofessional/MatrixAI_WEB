@@ -27,7 +27,7 @@ import { AuthRequiredButton, ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import axios from 'axios';
+import axios from '../utils/axiosInterceptor';
 import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
 import './ContentWriterPage.css';

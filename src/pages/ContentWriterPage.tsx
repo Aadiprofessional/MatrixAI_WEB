@@ -4,6 +4,7 @@ import { FiFileText, FiZap, FiCopy, FiDownload, FiShare2, FiTrash, FiRotateCw, F
 import { ProFeatureAlert, AuthRequiredButton } from '../components';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
+import { useAlert } from '../context/AlertContext';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
@@ -71,12 +72,13 @@ interface QuickQuestion {
 }
 
 const ContentWriterPage: React.FC = () => {
-  const { userData, isPro } = useUser();
+  const { userData, isPro, refreshUserData } = useUser();
   const { user } = useAuth();
   const { t } = useTranslation();
   const { darkMode } = useTheme();
   const navigate = useNavigate();
-  const uid = user?.id;
+  const uid = user?.uid;
+  const { showConfirmation } = useAlert();
 
   // Tab navigation state
   const [activeTab, setActiveTab] = useState('content-writer');
@@ -169,13 +171,13 @@ const ContentWriterPage: React.FC = () => {
   // Function to fetch content history from the API
   const fetchContentHistory = useCallback(async () => {
     // Use test user ID if no user is logged in (for testing purposes)
-    const userId = user?.id;
+    const userId = user?.uid;
     
     try {
       setIsLoadingHistory(true);
       console.log('Fetching content history for user:', userId, 'page:', currentPage);
       
-      const response = await contentService.getUserContent(userId, {
+      const response = await contentService.getUserContent(userId!, {
         page: currentPage,
         limit: itemsPerPage
       });
@@ -615,7 +617,7 @@ Create content that is original, well-researched, and engaging for the target au
     }
     
     // Check if user has at least 3 coins
-    if (userData && (userData.user_coins || 0) < 3) {
+    if (userData && (userData.coins || 0) < 3) {
       setShowInsufficientCoins(true);
       return;
     }
@@ -626,6 +628,21 @@ Create content that is original, well-researched, and engaging for the target au
     setStreamingContent('');
     setGeneratedContent('');
     setEditedContent('');
+    
+    // Subtract 3 coins before generating content
+    try {
+      if (user?.uid) {
+        await userService.subtractCoins(user.uid, 3, 'content_generation');
+        // Refresh user data to update coin count in UI
+        refreshUserData();
+      }
+    } catch (coinError) {
+      console.error('Error deducting coins:', coinError);
+      toast.error(t('contentWriter.errors.coinDeductionFailed') || 'Failed to deduct coins');
+      setIsGenerating(false);
+      setIsStreaming(false);
+      return;
+    }
     
     try {
 
@@ -661,12 +678,12 @@ Create content that is original, well-researched, and engaging for the target au
       
       try {
         // Use test user ID if no user is logged in (for testing purposes)
-        const userId = uid;
+        const userId = user?.uid;
         
         console.log('Saving content for user:', userId);
         // Save content to the database
         const saveResponse = await contentService.saveContent(
-          userId,
+          userId!,
           prompt,
           fullResponse,
           generatedTitle,
@@ -778,7 +795,7 @@ Create content that is original, well-researched, and engaging for the target au
     }
     
     // Use test user ID if no user is logged in (for testing purposes)
-    const userId = user?.id;
+    const userId = user?.uid;
     
     // Check if we have a current content ID (from history)
     const currentContentId = contentHistory.length > 0 ? contentHistory[0].id : null;
@@ -787,7 +804,7 @@ Create content that is original, well-researched, and engaging for the target au
     if (currentContentId) {
       try {
         console.log('Downloading content with ID:', currentContentId, 'for user:', userId);
-        const response = await contentService.downloadContent(userId, currentContentId, format);
+        const response = await contentService.downloadContent(userId!, currentContentId, format);
         
         if (response.success) {
           // Create a blob from the content
@@ -1017,7 +1034,7 @@ Create content that is original, well-researched, and engaging for the target au
     }
     
     // Use test user ID if no user is logged in (for testing purposes)
-    const userId = user?.id ;
+    const userId = user?.uid;
 
     // Check if we have a current content ID (from history)
     const currentContentId = contentHistory.length > 0 ? contentHistory[0].id : null;
@@ -1027,7 +1044,7 @@ Create content that is original, well-researched, and engaging for the target au
     if (currentContentId) {
       try {
         console.log('Sharing content with ID:', currentContentId, 'for user:', userId);
-        const response = await contentService.shareContent(userId, currentContentId);
+        const response = await contentService.shareContent(userId!, currentContentId);
         
         if (response.success && response.shareUrl) {
           shareUrl = response.shareUrl;
@@ -1095,40 +1112,38 @@ Create content that is original, well-researched, and engaging for the target au
     setError(null);
   };
 
-  // Handle content deletion
-  const handleDeleteContent = async (contentId: string) => {
+  // Function to delete content
+  const deleteContent = async (contentId: string) => {
     // Use test user ID if no user is logged in (for testing purposes)
-    const userId = user?.id;
+    const userId = user?.uid;
     
-    try {
-      // Show confirmation dialog
-      if (!window.confirm('Are you sure you want to delete this content?')) {
-        return;
-      }
-      
-      console.log('Deleting content with ID:', contentId, 'for user:', userId);
-      // Call the API to delete the content
-      const response = await contentService.deleteContent(userId, contentId);
-      
-      if (response.success) {
-        // Remove the content from the local state
-        const updatedHistory = contentHistory.filter(item => item.id !== contentId);
-        setContentHistory(updatedHistory);
-        setTotalItems(totalItems - 1);
+    // Show confirmation dialog using AlertContext
+    showConfirmation('Are you sure you want to delete this content?', async () => {
+      try {
+        console.log('Deleting content with ID:', contentId, 'for user:', userId);
+        // Call the API to delete the content
+        const response = await contentService.deleteContent(userId!, contentId);
         
-        // Adjust current page if needed
-        if (updatedHistory.length === 0 && currentPage > 1) {
-          setCurrentPage(currentPage - 1);
+        if (response.success) {
+          // Remove the content from the local state
+          const updatedHistory = contentHistory.filter(item => item.id !== contentId);
+          setContentHistory(updatedHistory);
+          setTotalItems(totalItems - 1);
+          
+          // Adjust current page if needed
+          if (updatedHistory.length === 0 && currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+          }
+          
+          toast.success('Content deleted successfully');
+        } else {
+          toast.error('Failed to delete content');
         }
-        
-        toast.success('Content deleted successfully');
-      } else {
-        toast.error('Failed to delete content');
+      } catch (error) {
+        console.error('Error deleting content:', error);
+        toast.error('An error occurred while deleting content');
       }
-    } catch (error) {
-      console.error('Error deleting content:', error);
-      toast.error('An error occurred while deleting content');
-    }
+    });
   };
 
   // Pagination helper functions
@@ -1761,7 +1776,7 @@ Create content that is original, well-researched, and engaging for the target au
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleDeleteContent(item.id);
+                                    deleteContent(item.id);
                                   }}
                                   className="text-gray-400 hover:text-red-500 transition-colors"
                                 >
@@ -1807,7 +1822,7 @@ Create content that is original, well-researched, and engaging for the target au
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          handleDeleteContent(item.id);
+                                          deleteContent(item.id);
                                         }}
                                         className="text-gray-400 hover:text-red-500 transition-colors"
                                       >

@@ -6,6 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import { Layout } from '../components';
 import { userService } from '../services/userService';
 import { useTranslation } from 'react-i18next';
+import HelpOrderModal from '../components/HelpOrderModal';
 import { 
   FiShoppingBag, 
   FiCalendar, 
@@ -20,7 +21,8 @@ import {
   FiList,
   FiGrid,
   FiChevronLeft,
-  FiChevronRight
+  FiChevronRight,
+  FiHelpCircle
 } from 'react-icons/fi';
 
 interface Order {
@@ -47,17 +49,19 @@ const OrderHistoryPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState('');
   const ordersPerPage = 6;
 
   // Fetch orders from API
   const fetchOrders = async () => {
-    if (!user?.id) return;
-    
+    if (!user?.uid) return;
+
     setLoading(true);
     setError(null);
     
     try {
-      const response = await userService.getUserOrder(user.id);
+      const response = await userService.getUserOrder(user.uid);
       
       if (response.success) {
         const sortedOrders = response.data.sort((a: Order, b: Order) => 
@@ -77,7 +81,7 @@ const OrderHistoryPage: React.FC = () => {
   // Initial fetch
   useEffect(() => {
     fetchOrders();
-  }, [user?.id]);
+  }, [user?.uid]);
 
   // Handle refresh
   const handleRefresh = () => {
@@ -463,10 +467,22 @@ const OrderHistoryPage: React.FC = () => {
                               {formatDate(order.plan_valid_till)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.bgColor} ${statusInfo.color}`}>
-                                {statusInfo.icon}
-                                <span className="ml-1.5">{order.status}</span>
-                              </span>
+                              <div className="flex items-center justify-between">
+                                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.bgColor} ${statusInfo.color}`}>
+                                  {statusInfo.icon}
+                                  <span className="ml-1.5">{order.status}</span>
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    setSelectedOrderId(order.id.toString());
+                                    setHelpModalOpen(true);
+                                  }}
+                                  className={`ml-2 p-1.5 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-200' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'}`}
+                                  title={t('help.getHelp')}
+                                >
+                                  <FiHelpCircle className="h-4 w-4" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -502,10 +518,22 @@ const OrderHistoryPage: React.FC = () => {
                           }`}>
                             {order.plan_name}
                           </h3>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color} ${statusInfo.bgColor}`}>
-                            {statusInfo.icon}
-                            <span className="ml-1.5">{order.status}</span>
-                          </span>
+                          <div className="flex items-center">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color} ${statusInfo.bgColor}`}>
+                              {statusInfo.icon}
+                              <span className="ml-1.5">{order.status}</span>
+                            </span>
+                            <button
+                              onClick={() => {
+                                setSelectedOrderId(order.id.toString());
+                                setHelpModalOpen(true);
+                              }}
+                              className={`ml-2 p-1.5 rounded-full transition-colors ${darkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-200' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'}`}
+                              title={t('help.getHelp')}
+                            >
+                              <FiHelpCircle className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
                         <div className={`text-sm mt-1 ${
                           darkMode ? 'text-tertiary' : 'text-gray-500'
@@ -632,6 +660,13 @@ const OrderHistoryPage: React.FC = () => {
           </motion.div>
         </div>
       </div>
+      
+      {/* Help Modal */}
+      <HelpOrderModal
+        isOpen={helpModalOpen}
+        onClose={() => setHelpModalOpen(false)}
+        orderId={selectedOrderId}
+      />
     </Layout>
   );
 };

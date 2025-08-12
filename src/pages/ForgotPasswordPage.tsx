@@ -26,10 +26,29 @@ const ForgotPasswordPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      await resetPassword(email.trim());
+      
+      // Use new API for reset password
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_API_URL}/api/user/resetPassword`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim()
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Reset password failed');
+      }
+
+      console.log('Reset password successful:', data);
       setEmailSent(true);
     } catch (error: any) {
       console.error('Reset password error:', error);
+      setError(error.message || 'Reset password failed');
     } finally {
       setLoading(false);
     }

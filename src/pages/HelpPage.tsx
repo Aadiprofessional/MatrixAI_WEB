@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { ThemeContext } from '../context/ThemeContext';
 import { Layout } from '../components';
+import FeedbackForm from '../components/FeedbackForm';
 import { 
   FiSearch, 
   FiHelpCircle, 
@@ -340,6 +341,9 @@ const HelpPage: React.FC = () => {
               </div>
             </div>
           </motion.div>
+          
+          {/* Feedback Form */}
+          <FeedbackForm />
 
         </div>
       </div>

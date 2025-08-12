@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import axios from '../utils/axiosInterceptor';
 import { XMLParser } from 'fast-xml-parser';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { FiLoader, FiDownload, FiSave, FiRefreshCw } from 'react-icons/fi';
 import { userService } from '../services/userService';
+import coinIcon from '../assets/coin.png';
 
 interface MindMapNode {
   name: string;
@@ -125,8 +126,28 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     return root ? [formatNode(root) as MindMapNode] : [];
   };
 
-  const fetchGraphData = async (transcriptionText: string) => {
+  const fetchGraphData = async (transcriptionText: string, deductCoins: boolean = false) => {
     if (!transcriptionText) return;
+    
+    // Deduct coins if requested
+    if (deductCoins && uid) {
+      try {
+        const coinResponse = await userService.subtractCoins(uid, 3, 'mindmap_generation');
+        
+        if (!coinResponse.success) {
+          alert('Failed to deduct coins. Please try again.');
+          return;
+        }
+      } catch (error: any) {
+        console.error('Error deducting coins:', error);
+        if (error.message && error.message.includes('insufficient')) {
+          alert('You don\'t have enough coins. Please purchase more coins to use this feature.');
+        } else {
+          alert('Failed to deduct coins. Please try again.');
+        }
+        return;
+      }
+    }
     
     setLoading(true);
     try {
@@ -409,7 +430,13 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
 
   const regenerateMindMap = () => {
     if (transcription) {
-      fetchGraphData(transcription);
+      fetchGraphData(transcription, true); // Deduct coins when manually generating
+    }
+  };
+
+  const generateMindMap = () => {
+    if (transcription) {
+      fetchGraphData(transcription, true); // Deduct coins when generating
     }
   };
 
@@ -417,9 +444,8 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     if (xmlData) {
       setCurrentXmlData(xmlData);
       parseXMLData(xmlData);
-    } else if (transcription) {
-      fetchGraphData(transcription);
     }
+    // Don't automatically generate mind map if xmlData is empty or null
   }, [transcription, xmlData]);
 
   if (loading) {
@@ -437,12 +463,14 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <p className="text-gray-500 dark:text-gray-400 mb-4">{t('mindmap.noData')}</p>
-        <button
-          onClick={regenerateMindMap}
-          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center"
-        >
-          <FiRefreshCw className="mr-2" /> {t('mindmap.generate')}
-        </button>
+        <div className="relative">
+          <button
+            onClick={generateMindMap}
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center"
+          >
+            <FiRefreshCw className="mr-2" /> {t('mindmap.generate')} <span className="ml-1 text-xs bg-orange-500/20 px-1.5 py-0.5 rounded-full flex items-center">-3 <img src={coinIcon} alt="coin" className="w-3 h-3 ml-0.5" /></span>
+          </button>
+        </div>
       </div>
     );
   }

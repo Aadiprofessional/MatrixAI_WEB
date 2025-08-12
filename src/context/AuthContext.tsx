@@ -1,10 +1,24 @@
 import React, { createContext, useState, useEffect, useContext, useRef, ReactNode } from 'react';
-import { supabase, checkUser, signIn, signUp, signOut, signInWithGoogle, signInWithApple, resetPassword } from '../supabaseClient';
+
+// Define the User interface
+export interface User {
+  uid: string;
+  id?: string; // For backward compatibility
+  email: string;
+  coins?: number;
+  [key: string]: any; // Allow other properties
+}
+
+// Define the Session interface
+interface Session {
+  access_token: string;
+  [key: string]: any; // Allow other properties
+}
 
 // Define the shape of the auth context state
 interface AuthContextType {
-  user: any;
-  session: any;
+  user: User | null;
+  session: Session | null;
   loading: boolean;
   signUp: (email: string, password: string, metadata: any) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
@@ -14,6 +28,7 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<any>;
   error: string | null;
   setError: (error: string | null) => void;
+  setUserData: (userData: any, token: string) => void;
 }
 
 // Create the auth context
@@ -25,68 +40,96 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const authInitialized = useRef(false);
   const authCheckedFromLocalStorage = useRef(false);
   
-  const [user, setUser] = useState<any>(() => {
+  const [user, setUser] = useState<User | null>(() => {
     authCheckedFromLocalStorage.current = true;
     // Try to get user from localStorage when component mounts
-    const storedUser = localStorage.getItem('matrixai_user');
+    const storedUser = localStorage.getItem('userData') || localStorage.getItem('matrixai_user');
     return storedUser ? JSON.parse(storedUser) : null;
   });
   
-  const [session, setSession] = useState<any>(() => {
+  const [session, setSession] = useState<Session | null>(() => {
     // Try to get session from localStorage when component mounts
-    const storedSession = localStorage.getItem('matrixai_session');
-    return storedSession ? JSON.parse(storedSession) : null;
+    const storedToken = localStorage.getItem('authToken') || localStorage.getItem('matrixai_session');
+    return storedToken ? { access_token: storedToken } : null;
   });
   
   const [loading, setLoading] = useState(!authCheckedFromLocalStorage.current);
   const [error, setError] = useState<string | null>(null);
 
-  // Track last time auth was refreshed from server
-  const lastRefreshTime = useRef(0);
-  const AUTH_REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes
-
-  // Function to compare sessions to avoid unnecessary updates
-  const isSameSession = (newSession: any, oldSession: any): boolean => {
-    if (!newSession && !oldSession) return true;
-    if (!newSession || !oldSession) return false;
+  // Function to set user data and token
+  const setUserData = (userData: User, token: string) => {
+    console.log('Setting user data in AuthContext:', userData);
+    console.log('Setting token in AuthContext:', token);
     
-    return newSession.access_token === oldSession.access_token &&
-           newSession.refresh_token === oldSession.refresh_token;
+    // Ensure userData has both uid and id for compatibility
+    if (userData.uid && !userData.id) {
+      userData.id = userData.uid;
+    } else if (userData.id && !userData.uid) {
+      userData.uid = userData.id;
+    }
+    
+    // Store in new format
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('userData', JSON.stringify(userData));
+    
+    // Store in legacy format for compatibility
+    localStorage.setItem('matrixai_session', token);
+    localStorage.setItem('matrixai_user', JSON.stringify(userData));
+    
+    // Update state
+    setUser(userData);
+    setSession({ access_token: token });
   };
 
-  // Function to verify session from server
+  // Function to verify session from localStorage
   const verifySession = async (forceRefresh = false) => {
     try {
-      const now = Date.now();
+      console.log('Verifying session from localStorage...');
       
-      // Skip verification if we've checked recently and force refresh is not required
-      if (!forceRefresh && now - lastRefreshTime.current < AUTH_REFRESH_INTERVAL) {
-        return;
-      }
+      // Check for stored auth token and user data from new API
+      const storedToken = localStorage.getItem('authToken');
+      const storedUserData = localStorage.getItem('userData');
+      const storedSession = localStorage.getItem('matrixai_session');
+      const storedUser = localStorage.getItem('matrixai_user');
       
-      // Get the session from Supabase
-      const { data: { session: newSession } } = await supabase.auth.getSession();
-      lastRefreshTime.current = now;
+      console.log('Found stored token:', !!storedToken);
+      console.log('Found stored user data:', !!storedUserData);
       
-      if (newSession) {
-        // Only update if session changed
-        if (!isSameSession(newSession, session)) {
-          localStorage.setItem('matrixai_session', JSON.stringify(newSession));
-          localStorage.setItem('matrixai_user', JSON.stringify(newSession.user));
-          
-          setSession(newSession);
-          setUser(newSession.user);
-        }
-      } else if (session) {
-        // If we had a session but server says no session, clear it
-        localStorage.removeItem('matrixai_session');
-        localStorage.removeItem('matrixai_user');
+      if (storedToken && (storedUserData || storedUser)) {
+        // We have valid auth data, update context if needed
+        let userData: User | null = null;
         
+        if (storedUserData) {
+          userData = JSON.parse(storedUserData);
+        } else if (storedUser) {
+          userData = JSON.parse(storedUser);
+        }
+        
+        // Ensure userData has both uid and id for compatibility
+        if (userData) {
+          if (userData.uid && !userData.id) {
+            userData.id = userData.uid;
+          } else if (userData.id && !userData.uid) {
+            userData.uid = userData.id;
+          }
+        }
+        
+        const sessionData: Session = { access_token: storedToken };
+        
+        console.log('Updating auth context with stored user data:', userData);
+        setUser(userData);
+        setSession(sessionData);
+      } else if (user || session) {
+        // No valid auth data but we have user/session in context, clear it
+        console.log('No valid auth data found, clearing context...');
         setSession(null);
         setUser(null);
       }
     } catch (error) {
       console.error('Error verifying session:', error);
+      // Clear invalid data
+      setSession(null);
+      setUser(null);
     }
   };
 
@@ -94,57 +137,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Prevent multiple initialization
     if (authInitialized.current) return;
     
-    // Check for an existing session
+    // Initialize auth with new API system
     const initSession = async () => {
       try {
-        // Check if we have a hash fragment from OAuth redirect
-        const hasHashParams = window.location.hash && window.location.hash.includes('access_token');
-        const hasQueryParams = window.location.search && window.location.search.includes('access_token');
-        
-        if (hasHashParams || hasQueryParams) {
-          console.log('Detected OAuth redirect, setting session...');
-          // Let Supabase handle the hash fragment
-          const { data, error } = await supabase.auth.getSession();
-          if (error) {
-            console.error('Error getting session from hash:', error);
-          }
-        }
-        
         if (!authCheckedFromLocalStorage.current) {
           setLoading(true);
         }
         
-        // Subscribe to auth changes
-        const { data: authListener } = supabase.auth.onAuthStateChange(
-          async (event, newSession) => {
-            // Only update if session actually changed
-            if (!isSameSession(newSession, session)) {
-              if (newSession) {
-                localStorage.setItem('matrixai_session', JSON.stringify(newSession));
-                localStorage.setItem('matrixai_user', JSON.stringify(newSession.user));
-                
-                setSession(newSession);
-                setUser(newSession.user);
-              } else {
-                localStorage.removeItem('matrixai_session');
-                localStorage.removeItem('matrixai_user');
-                
-                setSession(null);
-                setUser(null);
-              }
-            }
-          }
-        );
+        console.log('Initializing auth context...');
         
-        // Verify session from server
+        // Verify session from localStorage (new API system)
         await verifySession(true);
         
         // Mark as initialized
         authInitialized.current = true;
-        
-        return () => {
-          authListener?.subscription.unsubscribe();
-        };
       } catch (error) {
         console.error('Error initializing auth:', error);
         setError('Failed to initialize authentication');
@@ -185,7 +191,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       setError(null);
-      return await signUp(email, password, metadata);
+      
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_API_URL}/api/user/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, ...metadata }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Sign up failed');
+      }
+      
+      return data;
     } catch (error: any) {
       setError(error.message || 'An error occurred during sign-up');
       throw error;
@@ -199,7 +220,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       setError(null);
-      return await signIn(email, password);
+      
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_API_URL}/api/user/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Invalid email or password');
+      }
+      
+      if (data.success && data.data) {
+        setUserData(data.data, data.data.token);
+      }
+      
+      return data;
     } catch (error: any) {
       setError(error.message || 'Invalid email or password');
       throw error;
@@ -213,7 +253,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       setError(null);
-      return await signInWithGoogle();
+      // TODO: Implement Google OAuth with new API
+      throw new Error('Google sign-in not implemented yet');
     } catch (error: any) {
       setError(error.message || 'Failed to sign in with Google');
       throw error;
@@ -227,7 +268,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       setError(null);
-      return await signInWithApple();
+      // TODO: Implement Apple OAuth with new API
+      throw new Error('Apple sign-in not implemented yet');
     } catch (error: any) {
       setError(error.message || 'Failed to sign in with Apple');
       throw error;
@@ -241,13 +283,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       setError(null);
-      await signOut();
+      
+      // Clear all authentication data
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userData');
       localStorage.removeItem('matrixai_session');
       localStorage.removeItem('matrixai_user');
       localStorage.removeItem('matrixai_userData');
       localStorage.removeItem('matrixai_userDataTimestamp');
+      
       setUser(null);
       setSession(null);
+      
+      console.log('User signed out successfully');
     } catch (error: any) {
       setError(error.message || 'Failed to sign out');
       throw error;
@@ -260,7 +308,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const handleResetPassword = async (email: string) => {
     try {
       setError(null);
-      return await resetPassword(email);
+      
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_API_URL}/api/user/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to send reset email');
+      }
+      
+      return data;
     } catch (error: any) {
       setError(error.message || 'An error occurred while sending reset email');
       throw error;
@@ -280,6 +343,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     resetPassword: handleResetPassword,
     error,
     setError,
+    setUserData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

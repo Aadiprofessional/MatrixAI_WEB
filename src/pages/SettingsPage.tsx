@@ -4,6 +4,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { Layout } from '../components';
 import '../styles/CommonStyles.css';
 import { useTranslation } from 'react-i18next';
+import { useAlert } from '../context/AlertContext';
 import { 
   FiMoon, 
   FiSun, 
@@ -174,6 +175,7 @@ const NotificationToast = ({ message, type, onClose }: {
 const SettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
+  const { showConfirmation } = useAlert();
   const [activeTab, setActiveTab] = useState('appearance');
   const [notification, setNotification] = useState<{
     show: boolean;
@@ -279,14 +281,14 @@ const SettingsPage: React.FC = () => {
   
   // Handle delete account
   const handleDeleteAccount = () => {
-    if (window.confirm(t('settings.deleteAccountConfirmation'))) {
+    showConfirmation(t('settings.deleteAccountConfirmation'), () => {
       // In a real app, this would trigger account deletion
       setNotification({
         show: true,
         message: t('settings.accountDeletionInitiated'),
         type: 'warning'
       });
-    }
+    });
   };
 
   // Tab navigation options
@@ -391,11 +393,11 @@ const SettingsPage: React.FC = () => {
 
                   <div className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
                     <SelectOption
-                      label="Theme"
+                      label={t('settings.theme')}
                       options={[
-                        { value: 'light', label: 'Light' },
-                        { value: 'dark', label: 'Dark' },
-                        { value: 'system', label: 'Use System Preference' }
+                        { value: 'light', label: t('settings.themeLight') },
+                        { value: 'dark', label: t('settings.themeDark') },
+                        { value: 'system', label: t('settings.themeSystem') }
                       ]}
                       selectedValue={settings.theme}
                       onChange={(value) => handleThemeChange(value)}

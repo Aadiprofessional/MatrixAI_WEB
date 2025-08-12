@@ -54,7 +54,7 @@ const PaymentPage: React.FC = () => {
   // Extract plan info from location state
   const planData = location.state || {};
   const { 
-    uid = user?.id,
+    uid = user?.uid,
     plan = 'Unknown', 
     price = '0', 
     isAddon = false,

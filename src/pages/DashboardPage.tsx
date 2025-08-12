@@ -174,7 +174,7 @@ const DashboardPage: React.FC = () => {
 
   // Parallel data fetching
   useEffect(() => {
-    if (!user?.id) {
+    if (!user?.uid) {
       setLoadingState({ coins: false, userInfo: false, transactions: false, videos: false });
       return;
     }
@@ -182,7 +182,7 @@ const DashboardPage: React.FC = () => {
     // Fetch coins data
     const fetchCoins = async () => {
       try {
-        const coinsResponse = await userService.getUserCoins(user.id);
+        const coinsResponse = await userService.getUserCoins(user.uid);
         setDashboardStats(prev => ({ ...prev, totalCoins: coinsResponse.coins || 0 }));
       } catch (error) {
         console.error('Error fetching coins:', error);
@@ -194,7 +194,7 @@ const DashboardPage: React.FC = () => {
     // Fetch user info
     const fetchUserInfo = async () => {
       try {
-        const userInfoResponse = await userService.getUserInfo(user.id);
+        const userInfoResponse = await userService.getUserInfo(user.uid);
         setDashboardStats(prev => ({ 
           ...prev, 
           subscriptionStatus: userInfoResponse.data?.subscription_active ? 'Pro' : 'Free' 
@@ -209,7 +209,7 @@ const DashboardPage: React.FC = () => {
     // Fetch transactions
     const fetchTransactions = async () => {
       try {
-        const transactionsResponse = await userService.getAllTransactions(user.id);
+        const transactionsResponse = await userService.getAllTransactions(user.uid);
         const transactions = transactionsResponse.data || [];
         
         const coinsUsed = transactions
@@ -260,7 +260,7 @@ const DashboardPage: React.FC = () => {
             type: getTransactionType(t.transaction_name),
             title: t.transaction_name?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Activity',
             date: new Date(t.created_at || t.time).toLocaleDateString(),
-            coins: Math.abs(t.coin_amount || 0)
+            coins: t.coin_amount || 0
           }));
 
         setDashboardStats(prev => ({ 
@@ -281,7 +281,7 @@ const DashboardPage: React.FC = () => {
     // Fetch videos
     const fetchVideos = async () => {
       try {
-        const videosResponse = await videoService.getAllVideos(user.id);
+        const videosResponse = await videoService.getAllVideos(user.uid);
         setDashboardStats(prev => ({ 
           ...prev, 
           videoCount: videosResponse.videos?.length || 0 
@@ -298,7 +298,7 @@ const DashboardPage: React.FC = () => {
     fetchUserInfo();
     fetchTransactions();
     fetchVideos();
-  }, [user?.id]);
+  }, [user?.uid]);
 
   const isLoading = Object.values(loadingState).some(loading => loading);
 
@@ -620,7 +620,10 @@ const DashboardPage: React.FC = () => {
                           </span>
                           <span className="text-xs text-yellow-500 flex items-center gap-1 flex-shrink-0">
                             <img src={coinImage} alt="coin" className="w-3 h-3" />
-                            {activity.coins}
+                            {activity.coins > 0 
+                              ? activity.coins 
+                              : `-${Math.abs(activity.coins)}`
+                            }
                           </span>
                         </div>
                       </div>
@@ -689,7 +692,7 @@ const DashboardPage: React.FC = () => {
                   }`}
                 >
                   <FiFileText className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="text-xs sm:text-sm font-medium text-center">{t('dashboard.contentWriter', 'Content writer')}</span>
+                  <span className="text-xs sm:text-sm font-medium text-center">{t('dashboard.tools.contentWriter.title')}</span>
                 </Link>
               </div>
             </motion.div>

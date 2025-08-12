@@ -23,7 +23,7 @@ import { AuthRequiredButton, ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import axios from 'axios';
+import axios from '../utils/axiosInterceptor';
 import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
 import './ContentWriterPage.css';
@@ -54,6 +54,7 @@ const HumaniseTextPage: React.FC = () => {
   const [aiDetector, setAiDetector] = useState('ZeroGPT.com');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const itemsPerPage = 6;
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
@@ -83,6 +84,8 @@ const HumaniseTextPage: React.FC = () => {
   const fetchUserHumanizations = async () => {
     if (!userData?.uid) return;
     
+    setIsLoadingHistory(true);
+    
     try {
       const response = await axios.get(
         'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/humanize/getUserHumanizations',
@@ -100,6 +103,8 @@ const HumaniseTextPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching humanization history:', error);
+    } finally {
+      setIsLoadingHistory(false);
     }
   };
   
@@ -742,11 +747,22 @@ const HumaniseTextPage: React.FC = () => {
           </div>
         )}
         
-        {showHistory && history.length === 0 && (
+        {showHistory && !isLoadingHistory && history.length === 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
             <p className="text-gray-500 dark:text-gray-400">
               {t('humanizeText.noHistory') || 'No humanization history found.'}
             </p>
+          </div>
+        )}
+        
+        {showHistory && isLoadingHistory && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
+            <div className="flex items-center justify-center">
+              <FiRotateCw className="w-5 h-5 mr-2 animate-spin text-gray-500 dark:text-gray-400" />
+              <p className="text-gray-500 dark:text-gray-400">
+                {t('common.loading') || 'Loading...'}
+              </p>
+            </div>
           </div>
         )}
       </div>

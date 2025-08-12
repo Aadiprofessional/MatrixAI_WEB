@@ -187,7 +187,7 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
       // Navigate to payment page with plan details
       navigate('/payment', {
         state: {
-          uid: user.id,
+          uid: user.uid,
           plan: plan.name,
           price: `${plan.price} ${plan.currency}`,
           coins: plan.coins + (plan.bonus || 0),
@@ -395,4 +395,4 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
   );
 };
 
-export default ChargeModal; 
+export default ChargeModal;

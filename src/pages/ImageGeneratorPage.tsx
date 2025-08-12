@@ -53,7 +53,7 @@ const ImageGeneratorPage: React.FC = () => {
   const { darkMode } = useTheme();
   const { showAlert, showSuccess, showError, showInfo, showWarning, showConfirmation } = useAlert();
   const { t } = useTranslation();
-  const uid = user?.id || '';
+  const uid = user?.uid || '';
 
   // State for image generation
   const [message, setMessage] = useState('');
@@ -372,14 +372,14 @@ const ImageGeneratorPage: React.FC = () => {
   };
 
   // Function to handle image upload
-  const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
     
-    const file = files[0];
+    let file = files[0];
     
     // Check file type
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith('image/') && !(file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif'))) {
       showError(t('imageGenerator.pleaseUploadImageFile'));
       return;
     }
@@ -388,6 +388,28 @@ const ImageGeneratorPage: React.FC = () => {
     if (file.size > 5 * 1024 * 1024) {
       showError(t('imageGenerator.imageSizeLimit'));
       return;
+    }
+    
+    // Convert HEIC/HEIF to JPEG if needed
+    if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+      try {
+        setLoading(true);
+        showInfo(t('imageGenerator.convertingHeicToJpg') || 'Converting HEIC to JPG format...');
+        
+        // Import videoService for HEIC conversion
+        const { videoService } = await import('../services/videoService');
+        
+        // Use the dedicated HEIC to JPEG converter from videoService
+        file = await videoService.convertHeicToJpeg(file);
+        
+        showSuccess(t('imageGenerator.conversionSuccess') || 'Successfully converted to JPG format');
+        setLoading(false);
+      } catch (error) {
+        console.error('Error converting HEIC to JPEG:', error);
+        showError(t('imageGenerator.conversionFailed') || 'Failed to convert HEIC image. Please try another image or convert it to JPG before uploading.');
+        setLoading(false);
+        return;
+      }
     }
     
     // Set the uploaded image
@@ -435,6 +457,8 @@ const ImageGeneratorPage: React.FC = () => {
       }, 200);
       
       // Upload image to Supabase
+      // At this point, HEIC/HEIF images should already be converted to JPG by handleImageUpload
+      // using the videoService.convertHeicToJpeg function
       const uploadResult = await uploadImageToStorage(uploadedImage, uid);
       
       // Complete upload progress
@@ -806,7 +830,7 @@ const ImageGeneratorPage: React.FC = () => {
                   type="file"
                   ref={fileInputRef}
                   onChange={handleImageUpload}
-                  accept="image/*"
+                  accept="image/*,.heic,.heif"
                   className="hidden"
                 />
                 

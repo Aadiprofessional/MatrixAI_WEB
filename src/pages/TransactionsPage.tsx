@@ -113,14 +113,14 @@ const TransactionsPage: React.FC = () => {
 
   // Fetch transactions from API
   const fetchTransactions = async () => {
-    if (!user?.id) return;
+    if (!user?.uid) return;
     
     setLoading(true);
     setError(null);
     
     try {
       // Use userService to fetch transactions
-      const response = await userService.getAllTransactions(user.id);
+      const response = await userService.getAllTransactions(user.uid);
       
       if (response.success) {
         // Sort transactions by time (newest first)
@@ -149,7 +149,7 @@ const TransactionsPage: React.FC = () => {
   // Initial fetch
   useEffect(() => {
     fetchTransactions();
-  }, [user?.id]);
+  }, [user?.uid]);
 
   // Handle refresh
   const handleRefresh = () => {
@@ -394,7 +394,7 @@ const TransactionsPage: React.FC = () => {
                 <div>
                   <div className="text-sm font-medium text-tertiary">{t('transactions.currentBalance')}</div>
                   <div className="text-2xl font-bold text-primary flex items-center">
-                    {userData?.user_coins || 0}
+                    {userData?.coins || 0}
                     <img src={coinImage} alt="coin" className="w-6 h-6 ml-2" />
                   </div>
                 </div>
@@ -563,8 +563,8 @@ const TransactionsPage: React.FC = () => {
                             }`}>
                               <div className="flex items-center">
                                 {transaction.coin_amount > 0
-                                  ? `-${transaction.coin_amount}`
-                                  : `${transaction.coin_amount}`
+                                  ? `${transaction.coin_amount}`
+                                  : `-${Math.abs(transaction.coin_amount)}`
                                 }
                                 <img src={coinImage} alt="coin" className="w-4 h-4 ml-1" />
                               </div>
@@ -658,8 +658,8 @@ const TransactionsPage: React.FC = () => {
                                 : (darkMode ? 'text-red-400' : 'text-red-600')
                             }`}>
                               {transaction.coin_amount > 0
-                                ? `+${transaction.coin_amount}`
-                                : `${transaction.coin_amount}`
+                                ? `${transaction.coin_amount}`
+                                : `-${Math.abs(transaction.coin_amount)}`
                               }
                               <img src={coinImage} alt="coin" className="w-4 h-4 ml-1" />
                             </div>
