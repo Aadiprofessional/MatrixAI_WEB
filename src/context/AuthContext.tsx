@@ -40,12 +40,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const authInitialized = useRef(false);
   const authCheckedFromLocalStorage = useRef(false);
   
-  const [user, setUser] = useState<User | null>(() => {
+  const [userState, setUserState] = useState<User | null>(() => {
     authCheckedFromLocalStorage.current = true;
     // Try to get user from localStorage when component mounts
     const storedUser = localStorage.getItem('userData') || localStorage.getItem('matrixai_user');
-    return storedUser ? JSON.parse(storedUser) : null;
+    console.log('🔍 AuthContext - Initial user from localStorage:', storedUser);
+    const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+    console.log('🔍 AuthContext - Parsed initial user:', parsedUser);
+    return parsedUser;
   });
+  
+  // Wrapper function to log user state changes
+  const setUser = (newUser: User | null) => {
+    console.log('🔄 AuthContext - setUser called with:', newUser);
+    console.log('🔄 AuthContext - Previous user was:', userState);
+    setUserState(newUser);
+  };
+  
+  const user = userState;
+  
+  // Track user state changes
+  useEffect(() => {
+    console.log('🔄 AuthContext - User state changed to:', user);
+  }, [user]);
   
   const [session, setSession] = useState<Session | null>(() => {
     // Try to get session from localStorage when component mounts
@@ -116,17 +133,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         const sessionData: Session = { access_token: storedToken };
         
-        console.log('Updating auth context with stored user data:', userData);
+        console.log('🔄 AuthContext - Updating auth context with stored user data:', userData);
         setUser(userData);
         setSession(sessionData);
       } else if (user || session) {
         // No valid auth data but we have user/session in context, clear it
-        console.log('No valid auth data found, clearing context...');
+        console.log('❌ AuthContext - No valid auth data found, clearing context...');
         setSession(null);
         setUser(null);
       }
     } catch (error) {
-      console.error('Error verifying session:', error);
+      console.error('❌ AuthContext - Error verifying session:', error);
       // Clear invalid data
       setSession(null);
       setUser(null);

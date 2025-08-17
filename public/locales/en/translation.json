@@ -1470,6 +1470,17 @@
     "languageGerman": "German",
     "languageJapanese": "Japanese",
     "languageChinese": "Chinese",
+    "sheet8": {
+      "appearance": "Appearance",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "useSystemPreference": "Use System Preference"
+    },
+    "sheet9": {
+      "japanese": "Japanese",
+      "chinese": "Chinese"
+    },
     "timezone": "Timezone",
     "timezoneUTC": "UTC (Coordinated Universal Time)",
     "timezoneEST": "EST (Eastern Standard Time)",
@@ -2459,9 +2470,15 @@
         "option5": "Set up notifications when cookies are being set"
       },
       "consent": {
-        "title": "Cookie Consent",
+        "title": "cookieConsent",
         "description": "When you first visit our website, you'll see a cookie consent banner. You can manage your preferences at any time by clicking the button below:",
         "button": "Manage Cookie Preferences"
+      },
+      "cookieOptions": {
+        "blockAll": "Block all cookies",
+        "blockThirdParty": "Block third-party cookies only",
+        "deleteExisting": "Delete existing cookies",
+        "expireOnClose": "Set cookies to expire when you close your browser"
       }
     },
     "updatesSection": {
@@ -2689,132 +2706,7 @@
       "title": "Your Rights and Choices",
       "content": "You have several rights regarding your personal information:\n\n• Access: Request a copy of the personal information we hold about you\n• Correction: Request correction of inaccurate or incomplete information\n• Deletion: Request deletion of your personal information (subject to certain exceptions)\n• Portability: Request transfer of your data to another service provider\n• Restriction: Request limitation of processing of your personal information\n• Objection: Object to processing of your personal information for certain purposes\n• Withdraw Consent: Withdraw consent for data processing where consent is the legal basis\n\nTo exercise these rights, please contact us at info@matrixaiglobal.com. We will respond to your request within 30 days."
     },
-    "cookies": {
-      "title": "Cookie Policy",
-      "description": "This Cookie Policy explains how MatrixAI uses cookies and similar technologies to recognize you when you visit our website.",
-      "lastUpdated": "Last updated: January 15, 2024",
-      "effectiveDate": "Effective date: January 15, 2024",
-      "whatAreCookies": {
-        "title": "What Are Cookies?",
-        "content1": "Cookies are small data files that are placed on your computer or mobile device when you visit a website. Cookies are widely used by website owners to make their websites work, or to work more efficiently, as well as to provide reporting information.",
-        "content2": "Cookies set by the website owner (in this case, MatrixAI) are called 'first party cookies'. Cookies set by parties other than the website owner are called 'third party cookies'. Third party cookies enable third party features or functionality to be provided on or through the website (e.g. like advertising, interactive content and analytics)."
-      },
-      "typesSection": {
-        "title": "Types of Cookies We Use",
-        "description": "We use different types of cookies to provide you with the best possible experience on our website."
-      },
-      "types": {
-        "essential": {
-          "title": "Essential Cookies",
-          "required": true,
-          "description": "These cookies are strictly necessary to provide you with services available through our website and to use some of its features.",
-          "example1": "Authentication cookies",
-          "example2": "Security cookies",
-          "example3": "Load balancing cookies",
-          "example4": "Session management cookies"
-        },
-        "functional": {
-          "title": "Functional Cookies",
-          "required": false,
-          "description": "These cookies enable the website to provide enhanced functionality and personalization.",
-          "example1": "Language preferences",
-          "example2": "Theme settings",
-          "example3": "User interface preferences",
-          "example4": "Accessibility settings"
-        },
-        "analytics": {
-          "title": "Analytics Cookies",
-          "required": false,
-          "description": "These cookies help us understand how visitors interact with our website by collecting and reporting information anonymously.",
-          "example1": "Page view tracking",
-          "example2": "User behavior analysis",
-          "example3": "Performance monitoring",
-          "example4": "Error tracking"
-        },
-        "marketing": {
-          "title": "Marketing Cookies",
-          "required": false,
-          "description": "These cookies are used to track visitors across websites to display relevant and engaging advertisements.",
-          "example1": "Ad targeting",
-          "example2": "Conversion tracking",
-          "example3": "Retargeting",
-          "example4": "Social media integration"
-        }
-      },
-      "labels": {
-        "required": "Required",
-        "optional": "Optional",
-        "examples": "Examples"
-      },
-      "thirdPartySection": {
-        "title": "Third-Party Services",
-        "description": "We use various third-party services that may set cookies on your device."
-      },
-      "thirdParty": {
-        "googleAnalytics": {
-          "name": "Google Analytics",
-          "purpose": "Website analytics and performance monitoring",
-          "dataCollected": "Page views, user interactions, device information",
-          "retention": "26 months"
-        },
-        "stripe": {
-          "name": "Stripe",
-          "purpose": "Payment processing and fraud prevention",
-          "dataCollected": "Payment information, transaction data",
-          "retention": "7 years",
-          "optOut": "Contact Stripe directly"
-        },
-        "intercom": {
-          "name": "Intercom",
-          "purpose": "Customer support and communication",
-          "dataCollected": "User interactions, support conversations",
-          "retention": "3 years",
-          "optOut": "Disable in chat settings"
-        },
-        "hotjar": {
-          "name": "Hotjar",
-          "purpose": "User experience analysis and heatmaps",
-          "dataCollected": "Mouse movements, clicks, scrolling behavior",
-          "retention": "12 months"
-        }
-      },
-      "table": {
-        "service": "Service",
-        "purpose": "Purpose",
-        "dataCollected": "Data Collected",
-        "retention": "Retention Period",
-        "optOut": "Opt-Out",
-        "optOutLink": "Learn more"
-      },
-      "managingSection": {
-        "title": "Managing Your Cookie Preferences",
-        "browserSettings": {
-          "title": "Browser Settings",
-          "description": "You can control and manage cookies in various ways:",
-          "option1": "Block all cookies",
-          "option2": "Block third-party cookies",
-          "option3": "Clear cookies when you close your browser",
-          "option4": "Manage cookies on a site-by-site basis"
-        },
-        "consent": {
-          "title": "Cookie Consent",
-          "description": "You can manage your cookie preferences using our consent tool.",
-          "button": "Manage Cookie Preferences"
-        }
-      },
-      "updatesSection": {
-        "title": "Updates to This Policy",
-        "content1": "We may update this Cookie Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons.",
-        "content2": "Please check this page periodically for any changes. We will notify you of any material changes by posting the new Cookie Policy on this page."
-      },
-      "contact": {
-        "title": "Contact Us",
-        "description": "If you have any questions about our use of cookies or this Cookie Policy, please contact us.",
-        "email": "Email Us",
-        "form": "Contact Form"
-      },
-      "content": "We use cookies and similar tracking technologies to collect and store information about your interactions with our services:\n\n• Essential Cookies: Required for basic functionality and security\n• Performance Cookies: Help us understand how you use our services\n• Functionality Cookies: Remember your preferences and settings\n• Analytics Cookies: Provide insights into usage patterns and performance\n\nYou can control cookies through your browser settings, but disabling certain cookies may affect the functionality of our services. We also use local storage and similar technologies to enhance your experience."
-    },
+   
     "internationalTransfers": {
       "title": "International Data Transfers",
       "content": "MatrixAI operates globally, and your information may be transferred to and processed in countries other than your own. When we transfer personal information internationally, we ensure appropriate safeguards are in place:\n\n• Standard Contractual Clauses approved by relevant authorities\n• Adequacy decisions recognizing equivalent protection levels\n• Binding corporate rules for intra-group transfers\n• Your explicit consent for specific transfers\n\nWe are committed to protecting your information regardless of where it is processed and ensure that international transfers comply with applicable data protection laws."

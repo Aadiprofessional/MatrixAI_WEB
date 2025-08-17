@@ -292,16 +292,16 @@ const CookiesPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                    {t('cookies.managingSection.browserSettings.title')}
+                    {t('cookies.managingSection.consent.title')}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     {t('cookies.managingSection.browserSettings.description')}
                   </p>
                   <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                    <li>• {t('cookies.managingSection.browserSettings.option1')}</li>
-                    <li>• {t('cookies.managingSection.browserSettings.option2')}</li>
-                    <li>• {t('cookies.managingSection.browserSettings.option3')}</li>
-                    <li>• {t('cookies.managingSection.browserSettings.option4')}</li>
+                    <li>• {t('cookies.managingSection.cookieOptions.blockAll')}</li>
+                    <li>• {t('cookies.managingSection.cookieOptions.blockThirdParty')}</li>
+                    <li>• {t('cookies.managingSection.cookieOptions.deleteExisting')}</li>
+                    <li>• {t('cookies.managingSection.cookieOptions.expireOnClose')}</li>
                   </ul>
                 </div>
                 
@@ -336,11 +336,8 @@ const CookiesPage: React.FC = () => {
               {t('cookies.updatesSection.title')}
             </h2>
             <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-8">
-              <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-                {t('cookies.updatesSection.content1')}
-              </p>
               <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-                {t('cookies.updatesSection.content2')}
+                {t('cookies.updatesSection.content1')}
               </p>
             </div>
           </motion.div>

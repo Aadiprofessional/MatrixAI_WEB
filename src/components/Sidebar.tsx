@@ -459,7 +459,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpe
                         <FiUpload className="h-8 w-8 text-blue-500 dark:text-blue-400" />
                       </div>
                       <h3 className="text-lg font-medium mb-2">
-                        {t('speechToText.drag')}
+                        {t('speechToText.dragDropText')}
                       </h3>
                       <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
                         WAV, MP3, MP4, M4A, AAC, OGG, FLAC
@@ -478,7 +478,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpe
                           className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:opacity-90 cursor-pointer shadow-md hover:shadow-lg transition-all inline-flex items-center"
                         >
                           <FiUpload className="mr-2" />
-                          Browse Files
+                          {t('speechToText.browseFiles')}
                         </label>
                       </div>
                     </div>

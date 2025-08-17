@@ -30,7 +30,7 @@ import {
   ReferralPage,
   SpeechToTextPage,
   TranscriptionPage,
-  EmailVerificationPage,
+
   BuyPage,
   HumaniseTextPage,
   DetectAIPage,
@@ -210,7 +210,7 @@ const App: React.FC = () => {
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           
-              <Route path="/verify-email" element={<EmailVerificationPage />} />
+             
               
               {/* AI feature routes */}
               <Route 

@@ -1218,6 +1218,17 @@
     "themeDark": "深色",
     "themeLight": "浅色",
     "themeSystem": "使用系统偏好设置",
+    "sheet8": {
+      "appearance": "外观",
+      "theme": "主题",
+      "light": "浅色",
+      "dark": "深色",
+      "useSystemPreference": "使用系统偏好设置"
+    },
+    "sheet9": {
+      "japanese": "日文",
+      "chinese": "中文"
+    },
     "title": "设置",
     "weeklyActivityDigest": "每周活动消化",
     "weeklyActivityDigestDescription": "收到您的帐户活动和使用的每周摘要",
@@ -1776,7 +1787,7 @@
     "salesDesc": "与我们的销售团队谈谈您的需求",
     "select": "选择",
     "selectReason": "请选择上面的联系理由并填写以下表格。",
-    "selectedReason": "您已经选择了{{reason}}。\n填写下面的表格，我们将尽快与您联系。",
+    "selectedReason": "您已经选择了{{reason}}。 填写下面的表格，我们将尽快与您联系。",
     "sendAnother": "发送另一个消息",
     "sendButton": "发送消息",
     "sendMessage": "向我们发送消息",
@@ -1950,7 +1961,7 @@
     "unlimitedTranscriptions": "无限抄录",
     "uploadWait": "请在我们处理您的音频文件时等待...",
     "uploading": "上传",
-    "browseFiles": "浏览文件",
+  
     "cancel": "取消",
     "close": "关闭",
     "convertToText": "转换为文字"
@@ -2379,132 +2390,7 @@
       "title": "您的权利和选择",
       "content": "您对您的个人信息拥有多项权利：\n\n• 访问：索取我们持有的您的个人信息副本\n• 更正：请求更正不准确或不完整的信息\n• 删除：请求删除您的个人信息（有某些例外情况）\n• 可移植性：请求将您的数据传输到另一个服务提供商\n• 限制：请求限制处理您的个人信息\n• 反对：反对为特定目的处理您的个人信息\n• 撤回同意：在同意是法律依据的情况下撤回数据处理的同意\n\n如需行使这些权利，请通过 info@matrixaiglobal.com 与我们联系。我们将在 30 天内回复您的请求。"
     },
-    "cookies": {
-      "title": "Cookie 和追踪技术",
-      "content": "我们使用 Cookie 和类似的追踪技术来收集和存储有关您与我们服务互动的信息：\n\n• 基本 Cookie：基本功能和安全所需\n• 性能 Cookie：帮助我们了解您如何使用我们的服务\n• 功能性 Cookie：记住您的偏好和设置\n• 分析 Cookie：提供对使用模式和性能的洞察\n\n您可以通过浏览器设置控制 Cookie，但禁用某些 Cookie 可能会影响我们服务的功能。我们还使用本地存储和类似技术来提升您的体验。",
-      "contact": {
-        "description": "如果您对我们使用cookie或cookie政策有任何疑问，请与我们联系。",
-        "email": "给我们发电子邮件",
-        "form": "接触表格",
-        "title": "联系我们"
-      },
-      "description": "本 Cookie 政策说明当你访问我们的网站并使用我们的服务时，MatrixAI 如何使用 Cookie 及类似技术来识别你 。",
-      "effectiveDate": "生效日期：2024年1月15日",
-      "labels": {
-        "examples": "例子",
-        "optional": "选修的",
-        "required": "必需的"
-      },
-      "lastUpdated": "最后更新：2024年1月15日",
-      "managingSection": {
-        "browserSettings": {
-          "description": "您可以以各种方式控制和管理cookie：",
-          "option1": "阻止所有饼干",
-          "option2": "阻止第三方饼干",
-          "option3": "关闭浏览器时清除饼干",
-          "option4": "逐个站点管理饼干",
-          "title": "浏览器设置"
-        },
-        "consent": {
-          "button": "管理cookie首选项",
-          "description": "您可以使用我们的同意工具来管理cookie首选项。",
-          "title": "饼干同意"
-        },
-        "title": "管理您的cookie首选项"
-      },
-      "table": {
-        "dataCollected": "收集的数据",
-        "optOut": "选择退出",
-        "optOutLink": "了解更多",
-        "purpose": "目的",
-        "retention": "保留期",
-        "service": "服务"
-      },
-      "thirdParty": {
-        "googleAnalytics": {
-          "dataCollected": "页面视图，用户交互，设备信息",
-          "name": "Google Analytics（分析）",
-          "purpose": "网站分析和性能监控",
-          "retention": "26个月"
-        },
-        "hotjar": {
-          "dataCollected": "鼠标运动，点击，滚动行为",
-          "name": "hotjar",
-          "purpose": "用户经验分析和热图",
-          "retention": "12个月"
-        },
-        "intercom": {
-          "dataCollected": "用户互动，支持对话",
-          "name": "对讲",
-          "optOut": "在聊天设置中禁用",
-          "purpose": "客户支持和沟通",
-          "retention": "3年"
-        },
-        "stripe": {
-          "dataCollected": "付款信息，交易数据",
-          "name": "条纹",
-          "optOut": "直接接触条纹",
-          "purpose": "付款处理和预防欺诈",
-          "retention": "7年"
-        }
-      },
-      "thirdPartySection": {
-        "description": "我们使用可能在您的设备上设置Cookie的各种第三方服务。",
-        "title": "第三方服务"
-      },
-      "types": {
-        "analytics": {
-          "description": "这些cookie可以通过匿名收集和报告信息来了解访问者如何与我们的网站互动。",
-          "example1": "页面查看跟踪",
-          "example2": "用户行为分析",
-          "example3": "性能监控",
-          "example4": "错误跟踪",
-          "required": "错误的",
-          "title": "分析饼干"
-        },
-        "essential": {
-          "description": "这些饼干是严格必要的，对于通过我们的网站为您提供可用的服务并使用其一些功能是必要的。",
-          "example1": "身份验证饼干",
-          "example2": "安全饼干",
-          "example3": "负载平衡饼干",
-          "example4": "会话管理饼干",
-          "required": "真的",
-          "title": "必不可少的饼干"
-        },
-        "functional": {
-          "description": "这些Cookie使网站能够提供增强的功能和个性化。",
-          "example1": "语言偏好",
-          "example2": "主题设置",
-          "example3": "用户界面首选项",
-          "example4": "可访问性设置",
-          "required": "错误的",
-          "title": "功能性饼干"
-        },
-        "marketing": {
-          "description": "这些cookie用于跨网站跟踪访问者，以显示相关和引人入胜的广告。",
-          "example1": "广告定位",
-          "example2": "转换跟踪",
-          "example3": "重新定位",
-          "example4": "社交媒体整合",
-          "required": "错误的",
-          "title": "营销饼干"
-        }
-      },
-      "typesSection": {
-        "description": "我们使用不同类型的cookie为您提供我们网站上最佳的体验。",
-        "title": "我们使用的饼干类型"
-      },
-      "updatesSection": {
-        "content1": "我们可能会不时更新该饼干政策，以反映我们实践的变化或其他操作，法律或监管原因。",
-        "content2": "请定期检查此页面是否有任何更改。\n我们将通过在此页面上发布新的Cookie策略来通知您任何重大更改。",
-        "title": "更新此策略"
-      },
-      "whatAreCookies": {
-        "content1": "cookie是访问网站时放置在计算机或移动设备上的小数据文件。 \nCookie被网站所有者广泛使用，以使其网站工作或更有效地工作，并提供报告信息。",
-        "content2": "网站所有者设定的cookie（在这种情况下为Matrixai）称为“第一派对Cookies”。\n由网站所有者以外的各方设定的饼干称为“第三方cookies”。\n第三方Cookie可以在网站上或通过网站上提供第三方功能或功能（例如广告，交互式内容和分析）。",
-        "title": "什么是饼干？"
-      }
-    },
+   
     "internationalTransfers": {
       "title": "国际数据传输",
       "content": "MatrixAI 在全球范围内运营，您的信息可能会被传输到您所在国家/地区以外的国家/地区并在那里进行处理。当我们进行国际个人信息传输时，我们确保采取适当的保障措施：\n\n• 经相关部门批准的标准合同条款\n• 承认同等保护水平的充分性决定\n• 集团内部转移的约束性公司规则\n• 您对特定转移的明确同意\n\n我们致力于保护您的信息，无论其在何处处理，并确保国际转移符合适用的数据保护法。"
@@ -2526,20 +2412,17 @@
   },
   "cookies": {
     "title": "Cookie 政策",
-    "description": "了解我们如何使用 Cookie 来改善您的体验。",
+    "description": "本 Cookie 政策说明当你访问我们的网站并使用我们的服务时，MatrixAI 如何使用 Cookie 及类似技术来识别你 。",
     "lastUpdated": "最后更新",
     "whatAreCookies": {
       "title": "什么是 Cookie？",
       "content": "Cookie 是当您访问网站时存储在您设备上的小型文本文件。它们被广泛用于使网站工作或更高效地工作，以及向网站所有者提供信息。",
       "content1": "cookie是访问网站时存储在设备上的小文本文件。\n它们被广泛用于使网站更有效地工作，并向网站所有者提供信息。",
-      "content2": "cookie可以是“持久”或“ session” cookie。\n离线时，持续的cookie保留在设备上，而关闭Web浏览器时会话cookie会删除。"
+      "content2": "Cookie 可分为 “持久型” 或 “会话型” Cookie 。持久型 Cookie 在你离线时仍会保留在设备上，而会话型 Cookie 在你关闭网络浏览器时会被删除 。"
     },
     "typesOfCookies": {
       "title": "我们使用的 Cookie 类型",
-      "essential": {
-        "title": "必要 Cookie",
-        "description": "这些 Cookie 对于网站运行是必需的，无法在我们的系统中关闭。它们通常仅在响应您所做的相当于服务请求的操作时设置。"
-      },
+   
       "functional": {
         "title": "功能性 Cookie",
         "description": "这些 Cookie 使网站能够提供增强的功能和个性化。它们可能由我们或我们已将其服务添加到我们页面的第三方提供商设置。"
@@ -2617,7 +2500,13 @@
       "consent": {
         "button": "管理cookie首选项",
         "description": "当您第一次访问我们的网站时，您会看到Cookie同意书的横幅。\n您可以随时单击下面的按钮来管理您的首选项：",
-        "title": "Cookie 同意"
+        "title": "cookieConsent"
+      },
+      "cookieOptions": {
+        "blockAll": "阻止所有 Cookie",
+        "blockThirdParty": "仅阻止第三方 Cookie",
+        "deleteExisting": "删除现有的 Cookie",
+        "expireOnClose": "设置 Cookie 在您关闭浏览器时过期"
       },
       "title": "管理您的cookie首选项"
     },
@@ -2668,7 +2557,7 @@
         "example2": "流量来源和推荐数据",
         "example3": "性能指标和负载时间",
         "example4": "用户旅程和行为分析",
-        "title": "分析饼干"
+        "title": "分析型 Cookie"
       },
       "essential": {
         "description": "这些cookie对于网站正常运行是必要的。\n它们启用了基本功能，例如页面导航，访问安全区域和身份验证。",
@@ -2676,7 +2565,7 @@
         "example2": "安全令牌和CSRF保护",
         "example3": "负载平衡和服务器路由",
         "example4": "基本功能和导航",
-        "title": "必不可少的饼干"
+        "title": "必不可少的 Cookie"
       },
       "functional": {
         "description": "这些cookie实现了增强的功能和个性化，例如记住您的偏好和设置。",
@@ -2684,7 +2573,7 @@
         "example2": "主题和显示设置",
         "example3": "形成数据和用户偏好",
         "example4": "可访问性功能和自定义",
-        "title": "功能性饼干"
+        "title": "功能 Cookie"
       },
       "marketing": {
         "description": "这些cookie用于跨网站跟踪访问者，以显示相关和引人入胜的广告。",
@@ -2692,12 +2581,12 @@
         "example2": "转换和归因数据",
         "example3": "受众细分和定位",
         "example4": "跨平台广告优化",
-        "title": "营销饼干"
+        "title": "推广 Cookies"
       }
     },
     "typesSection": {
       "description": "我们将不同类型的cookie用于各种目的。\n这是每种类型的作用：",
-      "title": "我们使用的饼干类型"
+      "title": "我们使用的 Cookie 类型"
     },
     "updatesSection": {
       "content1": "我们可能会不时更新该饼干政策，以反映我们实践的变化或其他操作，法律或监管原因。",

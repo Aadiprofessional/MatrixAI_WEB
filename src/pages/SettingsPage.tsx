@@ -293,7 +293,7 @@ const SettingsPage: React.FC = () => {
 
   // Tab navigation options
   const tabOptions = [
-    { id: 'appearance', label: t('settings.appearance'), icon: darkMode ? <FiSun /> : <FiMoon /> },
+    { id: 'appearance', label: t('settings.sheet8.appearance'), icon: darkMode ? <FiSun /> : <FiMoon /> },
     { id: 'notifications', label: t('settings.notifications'), icon: <FiBell /> },
     { id: 'privacy', label: t('settings.privacyAndSecurity'), icon: <FiShield /> },
     { id: 'account', label: t('settings.account'), icon: <FiGlobe /> }
@@ -371,7 +371,7 @@ const SettingsPage: React.FC = () => {
                     } flex items-center justify-center transition-all`}
                   >
                     <FiSave className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
-                    Save Changes
+                    {t('settings.save')}
                   </button>
                 </div>
               </div>
@@ -388,16 +388,16 @@ const SettingsPage: React.FC = () => {
               {activeTab === 'appearance' && (
                 <div>
                   <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6 text-primary">
-                    {t('settings.appearanceSettings')}
+                    {t('settings.sheet8.appearance')}
                   </h2>
 
                   <div className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
                     <SelectOption
-                      label={t('settings.theme')}
+                      label={t('settings.sheet8.theme')}
                       options={[
-                        { value: 'light', label: t('settings.themeLight') },
-                        { value: 'dark', label: t('settings.themeDark') },
-                        { value: 'system', label: t('settings.themeSystem') }
+                        { value: 'light', label: t('settings.sheet8.light') },
+                        { value: 'dark', label: t('settings.sheet8.dark') },
+                        { value: 'system', label: t('settings.sheet8.useSystemPreference') }
                       ]}
                       selectedValue={settings.theme}
                       onChange={(value) => handleThemeChange(value)}
@@ -560,8 +560,8 @@ const SettingsPage: React.FC = () => {
                         { value: 'spanish', label: t('settings.languageSpanish') },
                         { value: 'french', label: t('settings.languageFrench') },
                         { value: 'german', label: t('settings.languageGerman') },
-                        { value: 'japanese', label: t('settings.languageJapanese') },
-                        { value: 'chinese', label: t('settings.languageChinese') }
+                        { value: 'japanese', label: t('settings.sheet9.japanese') },
+                        { value: 'chinese', label: t('settings.sheet9.chinese') }
                       ]}
                       selectedValue={settings.language}
                       onChange={(value) => updateSetting('language', value)}

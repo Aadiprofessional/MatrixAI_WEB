@@ -71,114 +71,11 @@
       "zh-TW": "發送消息"
     }
   },
-  "sheet10": {
-    "Drag & drop your audio file here": {
-      "en": "Drag & drop your audio file here",
-      "zh-CN": "将音频文件拖放至此处",
-      "zh-TW": "將音頻文件拖放至此處"
-    },
-    "Browse Files": {
-      "en": "Browse Files",
-      "zh-CN": "浏览文件",
-      "zh-TW": "瀏覽文件"
-    }
-  },
-  "sheet11": {
-    "This Cookie Policy explains how MatrixAI uses cookies and similar technologies to recognize you when you visit our website and use our services.": {
-      "en": "This Cookie Policy explains how MatrixAI uses cookies and similar technologies to recognize you when you visit our website and use our services.",
-      "zh-CN": "本 Cookie 政策说明当你访问我们的网站并使用我们的服务时，MatrixAI 如何使用 Cookie 及类似技术来识别你 。",
-      "zh-TW": "本 Cookie 政策說明當你訪問我們的網站並使用我們的服務時，MatrixAI 如何使用 Cookie 及類似技術來識別你 。"
-    },
-    "Cookies can be \"persistent\" or \"session\" cookies. Persistent cookies remain on your device when you go offline, while session cookies are deleted when you close your web browser.": {
-      "en": "Cookies can be \"persistent\" or \"session\" cookies. Persistent cookies remain on your device when you go offline, while session cookies are deleted when you close your web browser.",
-      "zh-CN": "Cookie 可分为 “持久型” 或 “会话型” Cookie 。持久型 Cookie 在你离线时仍会保留在设备上，而会话型 Cookie 在你关闭网络浏览器时会被删除 。",
-      "zh-TW": "Cookie 可分為 “持久型” 或 “會話型” Cookie 。持久型 Cookie 在你離線時仍會保留在設備上，而會話型 Cookie 在你關閉網絡瀏覽器時會被刪除 。"
-    }
-  },
-  "sheet12": {
-    "Types of Cookies We Use": {
-      "en": "Types of Cookies We Use",
-      "zh-CN": "我们使用的 Cookie 类型",
-      "zh-TW": "我們使用的 Cookie 類型"
-    },
-    "Essential Cookies": {
-      "en": "Essential Cookies",
-      "zh-CN": "必不可少的 Cookie",
-      "zh-TW": "必不可少的 Cookie"
-    },
-    "Functional Cookies": {
-      "en": "Functional Cookies",
-      "zh-CN": "功能 Cookie",
-      "zh-TW": "功能 Cookie"
-    },
-    "Analytics Cookies": {
-      "en": "Analytics Cookies",
-      "zh-CN": "分析型 Cookie",
-      "zh-TW": "分析型 Cookie"
-    },
-    "Marketing Cookies": {
-      "en": "Marketing Cookies",
-      "zh-CN": "推广 Cookies",
-      "zh-TW": "推廣 Cookies"
-    }
-  },
-  "sheet13": {
-    "Matrix AI is the best platform for all your needs": {
-      "en": "Matrix AI is the best platform for all your needs",
-      "zh-CN": "MatrixAI 是满足您所有需求的最佳平台。",
-      "zh-TW": "MatrixAI 是滿足您所有需求的最佳平臺。"
-    }
-  },
-  "sheet14": {
-    "You've selected General Inquiries. Fill out the form below and we'll get back to you as soon as possible.": {
-      "en": "You've selected General Inquiries. Fill out the form below and we'll get back to you as soon as possible.",
-      "zh-CN": "您已经选择了一般查询。 填写下面的表格，我们将尽快与您联系。",
-      "zh-TW": "您已經選擇了一般查詢。 填寫下面的表格，我們將儘快與您聯繫。"
-    },
-    "You've selected Sales. Fill out the form below and we'll get back to you as soon as possible.": {
-      "en": "You've selected Sales. Fill out the form below and we'll get back to you as soon as possible.",
-      "zh-CN": "您已经选择了销售咨询。 填写下面的表格，我们将尽快与您联系。",
-      "zh-TW": "您已經選擇了銷售諮詢。 填寫下面的表格，我們將儘快與您聯繫。"
-    },
-    "You've selected Support. Fill out the form below and we'll get back to you as soon as possible.": {
-      "en": "You've selected Support. Fill out the form below and we'll get back to you as soon as possible.",
-      "zh-CN": "您已经选择了支持。 填写下面的表格，我们将尽快与您联系。",
-      "zh-TW": "您已經選擇了支持。 填寫下面的表格，我們將儘快與您聯繫。"
-    }
-  },
-  "sheet15": {
-    "Cookie Consent": {
-      "en": "Cookie Consent",
-      "zh-CN": "Cookie 同意",
-      "zh-TW": "Cookie 同意"
-    },
-    "Block all cookies": {
-      "en": "Block all cookies",
-      "zh-CN": "阻止所有 Cookie",
-      "zh-TW": "阻止所有 Cookie"
-    },
-    "Block third-party cookies only": {
-      "en": "Block third-party cookies only",
-      "zh-CN": "仅阻止第三方 Cookie",
-      "zh-TW": "僅阻止第三方 Cookie"
-    },
-    "Delete existing cookies": {
-      "en": "Delete existing cookies",
-      "zh-CN": "删除现有的 Cookie",
-      "zh-TW": "刪除現有的 Cookie"
-    },
-    "Set cookies to expire when you close your browser": {
-      "en": "Set cookies to expire when you close your browser",
-      "zh-CN": "设置 Cookie 在您关闭浏览器时过期",
-      "zh-TW": "設置 Cookie 在您關閉瀏覽器時過期"
-    },
-    "We may update this Cookie Policy from time to time to reflect changes in our practices or applicable laws. We will notify you of any material changes by posting the updated policy on our website.": {
-      "en": "We may update this Cookie Policy from time to time to reflect changes in our practices or applicable laws. We will notify you of any material changes by posting the updated policy on our website.",
-      "zh-CN": "我们可能会不时更新本 Cookie 政策，以反映我们的做法或适用法律的变化。我们将通过在我们的网站上发布更新后的政策来通知您任何重大变更。",
-      "zh-TW": "我們可能會不時更新本 Cookie 政策，以反映我們的做法或適用法律的變化。我們將通過在我們的網站上發佈更新後的政策來通知您任何重大變更。"
-    }
-  },
-  "sheet2": {},
+ 
+
+
+
+
   "sheet3": {
     "SRT Subtitles": {
       "en": "SRT Subtitles",
@@ -274,52 +171,6 @@
       "zh-CN": "邀请好友",
       "zh-TW": "邀請好友"
     }
-  },
-  "sheet6": {},
-  "sheet7": {
-    "content writer": {
-      "en": "content writer",
-      "zh-CN": "内容创作器",
-      "zh-TW": "內容創作器"
-    }
-  },
-  "sheet8": {
-    "Appearance": {
-      "en": "Appearance",
-      "zh-CN": "外观",
-      "zh-TW": "外觀"
-    },
-    "Theme": {
-      "en": "Theme",
-      "zh-CN": "主题",
-      "zh-TW": "主題"
-    },
-    "Light": {
-      "en": "Light",
-      "zh-CN": "浅色",
-      "zh-TW": "淺色"
-    },
-    "Dark": {
-      "en": "Dark",
-      "zh-CN": "深色",
-      "zh-TW": "深色"
-    },
-    "Use System Preference": {
-      "en": "Use System Preference",
-      "zh-CN": "使用系统偏好设置",
-      "zh-TW": "使用系統偏好設置"
-    }
-  },
-  "sheet9": {
-    "Japanese": {
-      "en": "Japanese",
-      "zh-CN": "日文",
-      "zh-TW": "日文"
-    },
-    "Chinese": {
-      "en": "Chinese",
-      "zh-CN": "中文",
-      "zh-TW": "中文"
-    }
   }
+ 
 }

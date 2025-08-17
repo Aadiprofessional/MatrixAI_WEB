@@ -1178,6 +1178,49 @@ const TranscriptionPage: React.FC = () => {
     link.remove();
   };
 
+  // Function to download transcription as TXT file
+  const downloadTranscription = () => {
+    if (!transcription) {
+      showError('No transcription available to download');
+      return;
+    }
+    
+    const dataBlob = new Blob([transcription], { type: 'text/plain' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `transcription_${fileName || audioid || Date.now()}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showSuccess('Transcription downloaded successfully!');
+  };
+
+  // Function to share transcription text
+  const shareTranscription = async () => {
+    if (!transcription) {
+      showError('No transcription available to share');
+      return;
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Transcription - ${fileName || 'Audio'}`,
+          text: transcription,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+        // Fallback to copying to clipboard
+        copyTranscription();
+      }
+    } else {
+      // Fallback to copying to clipboard
+      copyTranscription();
+    }
+  };
+
   // Function to handle user chat messages with enhanced language support
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1314,28 +1357,28 @@ const TranscriptionPage: React.FC = () => {
   // Function to save chat to database
   const saveChatToDatabase = async (messageContent: string, role: 'user' | 'assistant') => {
     try {
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user?.id || !audioid) {
+      // Use uid from AuthContext instead of Supabase session
+      if (!uid || !audioid) {
         console.log('No authenticated user or audioid, skipping database save');
         return;
       }
       
-      const userId = session.user.id;
+      const userId = uid;
       const timestamp = new Date().toISOString();
       
       // Check if this chat exists in the database
-      const { data: existingChat, error: chatError } = await supabase
+      const { data: existingChats, error: chatError } = await supabase
         .from('transcription_chats')
         .select('*')
         .eq('user_id', userId)
-        .eq('audio_id', audioid)
-        .single();
+        .eq('audio_id', audioid);
       
-      if (chatError && chatError.code !== 'PGRST116') { // PGRST116 is "not found" error
+      if (chatError) {
         console.error('Error checking chat existence:', chatError);
+        return;
       }
+      
+      const existingChat = existingChats && existingChats.length > 0 ? existingChats[0] : null;
       
       // New message object for database storage
       const newMessage = {
@@ -1561,6 +1604,49 @@ const TranscriptionPage: React.FC = () => {
     }
   };
 
+  // Function to generate formatted SRT document with colors and proper formatting
+  const generateFormattedSRTDocument = (wordsData: any[]) => {
+    const srtSegments = parseSrtToSegments(convertToSRT(wordsData));
+    const currentDate = new Date().toLocaleDateString();
+    const currentTime = new Date().toLocaleTimeString();
+    
+    let documentContent = `Generated: ${currentDate} ${currentTime}\n`;
+    documentContent += `Total Segments: ${srtSegments.length} | Interval: 6 seconds\n\n`;
+
+    srtSegments.forEach((segment, index) => {
+      documentContent += `Segment #${segment.id}\n`;
+      documentContent += `Time: ${segment.startTime} → ${segment.endTime}\n`;
+      documentContent += `Text: ${segment.text}\n`;
+      if (srtTranslations && srtTranslations[index]) {
+        documentContent += `Translation: ${srtTranslations[index]}\n`;
+      }
+      documentContent += `\n`;
+    });
+
+    return documentContent;
+  };
+
+  // Function to copy all SRT segments with formatting
+  const copyAllSRTSegments = () => {
+    const srtSegments = parseSrtToSegments(convertToSRT(wordsData));
+    let formattedContent = `📅 Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}\n`;
+    formattedContent += `📊 Total Segments: ${srtSegments.length} | ⏱️ Interval: 6 seconds\n`;
+    formattedContent += `${'='.repeat(60)}\n\n`;
+    
+    srtSegments.forEach((segment, index) => {
+      formattedContent += `🔸 Segment #${segment.id}\n`;
+      formattedContent += `⏰ Time: ${segment.startTime} → ${segment.endTime}\n`;
+      formattedContent += `💬 Text: ${segment.text}\n`;
+      if (srtTranslations[index]) {
+        formattedContent += `🌐 Translation (${languages.find(lang => lang.value === srtSelectedLanguage)?.label}): ${srtTranslations[index]}\n`;
+      }
+      formattedContent += `\n${'─'.repeat(40)}\n\n`;
+    });
+    
+    navigator.clipboard.writeText(formattedContent);
+    showSuccess('All SRT segments copied with formatting!');
+  };
+
   
   // Use transcription as context
   const setTranscriptionAsContext = () => {
@@ -1695,7 +1781,7 @@ const TranscriptionPage: React.FC = () => {
   };
 
   // Convert words data to SRT format
-  const convertToSRT = (wordsData: any[], segmentDuration: number = 8) => {
+  const convertToSRT = (wordsData: any[], segmentDuration: number = 6) => {
     if (!wordsData || wordsData.length === 0) return '';
     
     // Convert seconds to SRT time format (HH:MM:SS,mmm)
@@ -1711,8 +1797,11 @@ const TranscriptionPage: React.FC = () => {
     let segmentIndex = 1;
     let currentSegmentStart = 0;
     
-    // Create segments based on 8-second intervals
-    while (currentSegmentStart < wordsData[wordsData.length - 1]?.end || 0) {
+    // Get the total duration from the last word
+    const totalDuration = wordsData.length > 0 ? wordsData[wordsData.length - 1]?.end || 0 : 0;
+    
+    // Create segments based on 6-second intervals starting from 0:00
+    while (currentSegmentStart < totalDuration) {
       const segmentEnd = currentSegmentStart + segmentDuration;
       
       // Find words that fall within this time segment
@@ -1727,11 +1816,8 @@ const TranscriptionPage: React.FC = () => {
         // Clean Chinese text for SRT (remove spaces and punctuation)
         text = cleanChineseForSRT(text);
         
-        const actualStartTime = wordsInSegment[0].start;
-        const actualEndTime = Math.min(segmentEnd, wordsInSegment[wordsInSegment.length - 1].end + 1.5);
-        
         srtContent += `${segmentIndex}\n`;
-        srtContent += `${formatSRTTime(actualStartTime)} --> ${formatSRTTime(actualEndTime)}\n`;
+        srtContent += `${formatSRTTime(currentSegmentStart)} --> ${formatSRTTime(segmentEnd)}\n`;
         srtContent += `${text}\n\n`;
         
         segmentIndex++;
@@ -1784,28 +1870,27 @@ const TranscriptionPage: React.FC = () => {
   // Function to load chat history from database
   const loadChatFromDatabase = async () => {
     try {
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user?.id || !audioid) {
+      // Use uid from AuthContext instead of Supabase session
+      if (!uid || !audioid) {
         console.log('No authenticated user or audioid, skipping chat history load');
         return;
       }
       
-      const userId = session.user.id;
+      const userId = uid;
       
       // Check if this chat exists in the database
-      const { data: existingChat, error: chatError } = await supabase
+      const { data: existingChats, error: chatError } = await supabase
         .from('transcription_chats')
         .select('*')
         .eq('user_id', userId)
-        .eq('audio_id', audioid)
-        .single();
+        .eq('audio_id', audioid);
       
-      if (chatError && chatError.code !== 'PGRST116') { // PGRST116 is the error code for no rows returned
+      if (chatError) {
         console.error('Error fetching chat history:', chatError);
         return;
       }
+      
+      const existingChat = existingChats && existingChats.length > 0 ? existingChats[0] : null;
       
       if (existingChat && existingChat.messages && Array.isArray(existingChat.messages)) {
         // Convert database message format to ChatMessage format
@@ -2158,9 +2243,9 @@ const TranscriptionPage: React.FC = () => {
                       </button>
                     ))}
                     <button 
-                      onClick={downloadAudio}
+                      onClick={downloadTranscription}
                       className="p-1.5 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
-                      title={t('transcription.audio.downloadAudio')}
+                      title="Download Transcription"
                     >
                       <FiDownload size={14} />
                     </button>
@@ -2219,15 +2304,16 @@ const TranscriptionPage: React.FC = () => {
                         <FiCopy />
                       </button>
                       <button 
+                        onClick={shareTranscription}
                         className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors" 
                         title={t('transcription.share')}
                       >
                         <FiShare2 />
                       </button>
                       <button 
-                        onClick={downloadAudio}
+                        onClick={downloadTranscription}
                         className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors" 
-                        title={t('transcription.downloadAudio')}
+                        title="Download Transcription"
                       >
                         <FiDownload />
                       </button>
@@ -2736,29 +2822,25 @@ const TranscriptionPage: React.FC = () => {
                           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.wordsData.title')}</h2>
                           <div className="flex space-x-2">
                             <button 
-                              onClick={() => {
-                                const srtContent = convertToSRT(wordsData);
-                                navigator.clipboard.writeText(srtContent);
-                                showSuccess(t('transcription.wordsData.srtCopied'));
-                              }}
+                              onClick={copyAllSRTSegments}
                               className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                              title="Copy as SRT"
+                              title="Copy all SRT segments with formatting"
                             >
                               {t('transcription.wordsData.copySrt')}
                             </button>
                             <button 
                               onClick={() => {
-                                const srtContent = convertToSRT(wordsData);
-                                const dataBlob = new Blob([srtContent], {type: 'text/plain'});
+                                const formattedDocument = generateFormattedSRTDocument(wordsData);
+                                const dataBlob = new Blob([formattedDocument], {type: 'text/plain'});
                                 const url = URL.createObjectURL(dataBlob);
                                 const link = document.createElement('a');
                                 link.href = url;
-                                link.download = `subtitles_${audioid}.srt`;
+                                link.download = `subtitles_${audioid}.txt`;
                                 link.click();
                                 URL.revokeObjectURL(url);
                               }}
                               className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                              title="Download SRT"
+                              title="Download formatted SRT document"
                             >
                               {t('transcription.wordsData.downloadSrt')}
                             </button>
@@ -3169,11 +3251,11 @@ const TranscriptionPage: React.FC = () => {
 
                       <div className="flex flex-col space-y-3 mt-6">
                         <button 
-                          onClick={downloadAudio} 
+                          onClick={downloadTranscription} 
                           className="w-full flex items-center justify-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors"
                         >
                           <FiDownload className="mr-2" />
-                          {t('transcription.audio.downloadAudio')}
+                          Download Transcription
                         </button>
                         
                       

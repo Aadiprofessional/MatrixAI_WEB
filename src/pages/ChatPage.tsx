@@ -71,6 +71,7 @@ const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const { userData, isPro } = useUser();
   const { user } = useAuth();
+  console.log('🔍 ChatPage - useAuth result:', { user, hasUser: !!user, userUid: user?.uid, userEmail: user?.email });
   const { showSuccess, showError, showWarning, showConfirmation } = useAlert();
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
@@ -457,28 +458,44 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   // Fetch user chats from database without updating current messages
   const fetchUserChatsWithoutMessageUpdate = async () => {
     try {
-      // Get current user session
+      console.log('🔄 fetchUserChatsWithoutMessageUpdate - Starting chat fetch without message update');
+      // Only use Supabase session for database operations to comply with RLS policies
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session?.user?.id) {
-        console.error('No valid session or user ID found');
+        console.log('⚠️ fetchUserChatsWithoutMessageUpdate - No valid Supabase session found');
         return [];
       }
       
-      // Get the user ID from the session
       const userId = session.user.id;
-      console.log('Fetching chats for user ID:', userId);
+       console.log('✅ fetchUserChatsWithoutMessageUpdate - Using Supabase session user ID:', userId);
       
       // Query all chats for this user
+      console.log('🔍 fetchUserChatsWithoutMessageUpdate - Querying user_chats for user:', userId);
+      
+      // First, let's check what user_ids exist in the table
+      const { data: allUserIds, error: userIdsError } = await supabase
+        .from('user_chats')
+        .select('user_id')
+        .limit(10);
+      
+      console.log('🔍 Sample user_ids in database:', allUserIds?.map(row => row.user_id));
+      
       const { data: userChats, error: chatsError } = await supabase
         .from('user_chats')
         .select('*')
         .eq('user_id', userId)
         .order('updated_at', { ascending: false });
+        
+      console.log('🔍 Query executed with user_id:', userId);
+      console.log('🔍 Query error:', chatsError);
+      console.log('🔍 Query result count:', userChats?.length || 0);
       
-      console.log('Fetched chats count:', userChats?.length || 0);
+      console.log('📊 fetchUserChatsWithoutMessageUpdate - Fetched chats count:', userChats?.length || 0);
+      console.log('📋 fetchUserChatsWithoutMessageUpdate - Raw chats data:', JSON.stringify(userChats, null, 2));
       
       if (chatsError || !userChats || userChats.length === 0) {
+        console.log('⚠️ fetchUserChatsWithoutMessageUpdate - No chats found or error occurred:', chatsError);
         return [];
       }
       
@@ -576,23 +593,44 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   // Fetch user chats from database
   const fetchUserChats = async () => {
     try {
+      console.log('=== FETCH USER CHATS START ===');
+      console.log('AuthContext user:', user);
+      console.log('Route chat ID:', routeChatId);
       setIsLoadingChats(true);
       
       // First check if we have a user from AuthContext
       if (user && user.uid) {
-        console.log('Using authenticated user from AuthContext:', user.uid);
+        console.log('✅ Using authenticated user from AuthContext:', user.uid);
+        console.log('User object:', JSON.stringify(user, null, 2));
         
         // Query all chats for this user using the uid from AuthContext
+        console.log('🔍 Querying user_chats table with user_id:', user.uid);
+        
+        // First, let's check what user_ids exist in the table
+        const { data: allUserIds, error: userIdsError } = await supabase
+          .from('user_chats')
+          .select('user_id')
+          .limit(10);
+        
+        console.log('🔍 Sample user_ids in database:', allUserIds?.map(row => row.user_id));
+        
         const { data: userChats, error: chatsError } = await supabase
           .from('user_chats')
           .select('*')
           .eq('user_id', user.uid)
           .order('updated_at', { ascending: false });
+          
+        console.log('🔍 Query executed with AuthContext user_id:', user.uid);
+        console.log('🔍 Query error:', chatsError);
+        console.log('🔍 Query result count:', userChats?.length || 0);
         
-        console.log('Fetched chats count from AuthContext user:', userChats?.length || 0);
+        console.log('📊 Fetched chats count from AuthContext user:', userChats?.length || 0);
+        console.log('📋 Raw chats data:', JSON.stringify(userChats, null, 2));
+        console.log('❌ Chats error:', chatsError);
         
         if (chatsError) {
-          console.error('Error fetching user chats:', chatsError);
+          console.error('❌ ERROR fetching user chats:', chatsError);
+          console.error('Error details:', JSON.stringify(chatsError, null, 2));
           setIsLoadingChats(false);
           
           // Use local chat in case of fetch error
@@ -610,8 +648,10 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         }
         
         if (userChats && userChats.length > 0) {
+          console.log('✅ Found chats, formatting for UI...');
           // Format chats for our UI
           const formattedChats = userChats.map(chat => {
+            console.log('📝 Processing chat:', chat.chat_id, 'with', chat.messages?.length || 0, 'messages');
             // Process messages to handle images and format correctly
             const processedMessages = (chat.messages || []).map((msg: any) => {
               // Check if this is an image message
@@ -699,47 +739,75 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
           
           // If a specific chat ID was provided in the route, load that chat
           if (routeChatId) {
+            console.log('🎯 Looking for specific chat ID:', routeChatId);
             const targetChat = formattedChats.find(c => c.id === routeChatId);
             if (targetChat) {
+              console.log('✅ Found target chat:', targetChat.id, 'with', targetChat.messages?.length || 0, 'messages');
               setChatId(routeChatId);
                setMessages(targetChat.messages || []);
                setSelectedRole(roleOptions.find(r => r.id === (targetChat.role || 'general')) || roleOptions[0]);
+               console.log('📱 Loaded chat messages:', targetChat.messages?.length || 0);
             } else {
+              console.log('❌ Target chat not found, loading most recent chat');
               // If the requested chat doesn't exist, load the most recent one
               if (formattedChats.length > 0) {
                 const mostRecentChat = formattedChats[0];
+                console.log('📅 Loading most recent chat:', mostRecentChat.id);
                  setChatId(mostRecentChat.id);
                  setMessages(mostRecentChat.messages || []);
                  setSelectedRole(roleOptions.find(r => r.id === (mostRecentChat.role || 'general')) || roleOptions[0]);
                  // Update URL to match the loaded chat
                  navigate(`/chat/${mostRecentChat.id}`);
+                 console.log('📱 Loaded recent chat messages:', mostRecentChat.messages?.length || 0);
               }
             }
           } else if (formattedChats.length > 0) {
+            console.log('🔄 No specific chat requested, loading most recent');
             // If no specific chat was requested, load the most recent one
             const mostRecentChat = formattedChats[0];
+            console.log('📅 Loading most recent chat:', mostRecentChat.id);
             setChatId(mostRecentChat.id);
             setMessages(mostRecentChat.messages || []);
             setSelectedRole(roleOptions.find(r => r.id === (mostRecentChat.role || 'general')) || roleOptions[0]);
             // Update URL to match the loaded chat
             navigate(`/chat/${mostRecentChat.id}`);
+            console.log('📱 Loaded recent chat messages:', mostRecentChat.messages?.length || 0);
           }
           
           setIsLoadingChats(false);
           return; // Exit early since we've handled everything
         } else {
-          // No chats found for this user, try Supabase session as fallback
-          console.log('No chats found for AuthContext user, trying Supabase session...');
+          // No chats found for this user, but user is authenticated - create a new chat
+          console.log('✅ No chats found for authenticated user, creating new chat...');
+          const newChatId = routeChatId || Date.now().toString();
+          setChatId(newChatId);
+          setMessages([]);
+          setSelectedRole(roleOptions[0]);
+          
+          // Set empty groups for history
+          setGroupedChatHistory({
+            today: [],
+            yesterday: [],
+            lastWeek: [],
+            lastMonth: [],
+            older: []
+          });
+          
+          setChats([]);
+          setIsLoadingChats(false);
+          return;
         }
       } else {
-        console.log('No user in AuthContext, trying Supabase session...');
+        console.log('⚠️ No user in AuthContext, trying Supabase session...');
       }
       
       // Fallback to Supabase session if AuthContext user didn't work
+      console.log('🔄 Falling back to Supabase session...');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('📋 Supabase session:', session);
       
       if (sessionError) {
-        console.error('Authentication error:', sessionError);
+        console.error('❌ Authentication error:', sessionError);
         setIsLoadingChats(false);
         
         // Use local chat in case of auth error
@@ -757,7 +825,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
       }
       
       if (!session?.user?.id) {
-        console.log('No authenticated user found, using local chat');
+        console.log('⚠️ No authenticated user found, using local chat');
         setIsLoadingChats(false);
         
         // Set up a local chat when not authenticated
@@ -785,18 +853,20 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
       
       // Get the user ID from the session
       const userId = session.user.id;
-      console.log('fetchUserChats - User ID from session:', userId);
+      console.log('🆔 fetchUserChats - User ID from session:', userId);
       
       // Query all chats for this user
+      console.log('🔍 Querying user_chats table with session user_id:', userId);
       const { data: userChats, error: chatsError } = await supabase
         .from('user_chats')
         .select('*')
         .eq('user_id', userId)
         .order('updated_at', { ascending: false });
       
-      console.log('fetchUserChats - Fetched chats count:', userChats?.length || 0);
+      console.log('📊 fetchUserChats - Fetched chats count:', userChats?.length || 0);
+      console.log('📋 Session chats data:', JSON.stringify(userChats, null, 2));
       if (chatsError) {
-        console.error('fetchUserChats - Error details:', chatsError);
+        console.error('❌ fetchUserChats - Error details:', chatsError);
       }
       
       if (chatsError) {
@@ -960,15 +1030,16 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   // Save chat message to database
   const saveChatToDatabase = async (messageContent: string, role: string) => {
     try {
-      // Get current user session
+      // Only use Supabase session for database operations to comply with RLS policies
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.user?.id) {
-        console.log('No authenticated user, skipping database save');
+        console.log('No valid Supabase session, skipping database save');
         return;
       }
       
       const userId = session.user.id;
+      console.log('Using Supabase session user ID for database save:', userId);
       const timestamp = new Date().toISOString();
       
       // Check if this chat exists in the database
@@ -1101,24 +1172,29 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   // Delete chat from database
   const deleteChat = async (chatIdToDelete: string) => {
     try {
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
+      // Only use Supabase session for database operations to comply with RLS policies
+      // AuthContext user IDs don't work with Supabase RLS policies
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (!session?.user?.id) {
-        console.error('No authenticated user found');
-        return;
-      }
-      
-      // Delete from database
-      const { error } = await supabase
-        .from('user_chats')
-        .delete()
-        .eq('chat_id', chatIdToDelete)
-        .eq('user_id', session.user.id);
-      
-      if (error) {
-        console.error('Error deleting chat:', error);
-        return;
+      if (sessionError || !session?.user?.id) {
+        console.log('⚠️ No valid Supabase session found, skipping database deletion');
+        console.log('📝 Chat will be removed from local state only');
+        // Still update local state even if we can't delete from database
+      } else {
+        const userId = session.user.id;
+        console.log('✅ Using Supabase session user ID for chat deletion:', userId);
+        
+        // Delete from database
+        const { error } = await supabase
+          .from('user_chats')
+          .delete()
+          .eq('chat_id', chatIdToDelete)
+          .eq('user_id', userId);
+        
+        if (error) {
+          console.error('Error deleting chat:', error);
+          return;
+        }
       }
       
       // Update local state
@@ -2002,9 +2078,9 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
       if (!editedMessage) return;
 
       // Deduct 1 coin for editing a message
-      if (user?.id) {
+      if (user?.uid) {
         try {
-          await userService.subtractCoins(user.id as string, 1, 'edit_message');
+          await userService.subtractCoins(user.uid, 1, 'edit_message');
         } catch (coinError) {
           console.error('Error deducting coins for edit:', coinError);
           showWarning('Could not deduct coins. Please check your balance.');
@@ -2042,8 +2118,11 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
           
           // Save to database if user is logged in
           try {
-            const { data } = await supabase.auth.getSession();
-            if (data?.session?.user?.id) {
+            // Only use Supabase session for database operations to comply with RLS policies
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session?.user?.id) {
+              const userId = session.user.id;
               const finalMessages = [...newMessages, newAiMessage];
               await supabase
                 .from('user_chats')
@@ -2056,7 +2135,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                   }))
                 })
                 .eq('chat_id', chatId)
-                .eq('user_id', data.session.user.id);
+                .eq('user_id', userId);
             }
           } catch (error) {
             console.error('Error saving edited conversation:', error);
@@ -2081,8 +2160,11 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         
         // Save to database if user is logged in
         try {
-          const { data } = await supabase.auth.getSession();
-          if (data?.session?.user?.id) {
+          // Only use Supabase session for database operations to comply with RLS policies
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session?.user?.id) {
+            const userId = session.user.id;
             const updatedMessages = messages.map(msg => 
               msg.id === editingMessageId 
                 ? { ...msg, content: editingContent.trim() }
@@ -2100,7 +2182,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                 }))
               })
               .eq('chat_id', chatId)
-              .eq('user_id', data.session.user.id);
+              .eq('user_id', userId);
           }
         } catch (error) {
           console.error('Error saving edited message:', error);
@@ -2118,7 +2200,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   const handleDeleteChat = async (chatIdToDelete: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent chat selection when clicking delete
     
-    if (!user?.id) {
+    if (!user?.uid) {
       showError('You must be logged in to delete chats');
       return;
     }
@@ -2129,7 +2211,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         .from('user_chats')
         .delete()
         .eq('chat_id', chatIdToDelete)
-        .eq('user_id', user.id as string);
+        .eq('user_id', user.uid);
 
       if (error) {
         console.error('Error deleting chat:', error);
@@ -2311,41 +2393,50 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
     setMessages([]);
     setSelectedRole(roleOptions[0]);
     
+    // Update URL without reloading
+    navigate(`/chat/${newChatId}`, { replace: true });
+    
     try {
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
+      // Only use Supabase session for database operations to comply with RLS policies
+      // AuthContext user IDs don't work with Supabase RLS policies
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (!session?.user?.id) {
-        console.log('No authenticated user, skipping database creation');
-        
-        // Update URL without reloading
-        navigate(`/chat/${newChatId}`, { replace: true });
-        
+      if (sessionError || !session?.user?.id) {
+        console.log('⚠️ No valid Supabase session found, skipping database creation');
+        console.log('📝 Chat will work in local mode until user authenticates with Supabase');
         return;
       }
       
       const userId = session.user.id;
+      console.log('✅ Using Supabase session user ID for new chat:', userId);
+      console.log('ℹ️ Note: AuthContext user ID cannot be used for database operations due to RLS policies');
+      
       const timestamp = new Date().toISOString();
       
       // Create empty chat in database - no initial messages
-        const newChat = {
-          chat_id: newChatId,
-          user_id: userId,
-          name: 'New Chat',
-          messages: [],
-          role: roleOptions[0].id,
-          role_description: roleOptions[0].description,
-          created_at: timestamp,
-          updated_at: timestamp
-        };
+      const newChat = {
+        chat_id: newChatId,
+        user_id: userId,
+        name: 'New Chat',
+        messages: [],
+        role: roleOptions[0].id,
+        role_description: roleOptions[0].description,
+        created_at: timestamp,
+        updated_at: timestamp
+      };
+      
+      console.log('🔄 Creating new chat in database:', newChat);
       
       const { error: insertError } = await supabase
         .from('user_chats')
         .insert(newChat);
       
       if (insertError) {
-        console.error('Error creating new chat:', insertError);
+        console.error('❌ Error creating new chat:', insertError);
+        // Don't throw error, just log it and continue with local state
       } else {
+        console.log('✅ Successfully created new chat in database');
+        
         // Update local state with the new chat
         setChats(prev => [{
           id: newChatId,
@@ -2355,9 +2446,6 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
           roleDescription: roleOptions[0].description,
           description: 'New conversation'
         }, ...prev]);
-        
-        // Update URL without reloading
-        navigate(`/chat/${newChatId}`, { replace: true });
         
         // Update local storage with new chat ID
         localStorage.setItem('lastActiveChatId', newChatId);
@@ -2374,7 +2462,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         }));
       }
     } catch (error) {
-      console.error('Error in startNewChat:', error);
+      console.error('❌ Error in startNewChat:', error);
+      // Continue with local state even if database operation fails
     }
   };
 
@@ -2733,9 +2822,12 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
     
     // Always fetch fresh from database - no local cache usage
     try {
+      console.log('🎯 selectChat - Starting chat selection for ID:', selectedChatId);
+      // Only use Supabase session for database operations to comply with RLS policies
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session?.user?.id) {
+        console.log('❌ selectChat - No session found, creating new local chat');
         // Create new local chat if no session
         setMessages([]);
         setSelectedRole(roleOptions[0]);
@@ -2744,8 +2836,10 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
       }
       
       const userId = session.user.id;
+      console.log('✅ selectChat - Using Supabase session user ID:', userId);
       
       // Fetch specific chat directly from database
+      console.log('🔍 selectChat - Querying database for chat_id:', selectedChatId, 'user_id:', userId);
       const { data: chatData, error: chatError } = await supabase
         .from('user_chats')
         .select('*')
@@ -2753,9 +2847,12 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         .eq('user_id', userId)
         .single();
       
+      console.log('📋 selectChat - Query result:', { chatData, chatError });
+      
       if (chatError || !chatData) {
         // Chat not found, create new one
-        console.log('Chat not found in database, creating new chat with ID:', selectedChatId);
+        console.log('❌ selectChat - Chat not found in database, creating new chat with ID:', selectedChatId);
+        console.log('🔧 selectChat - Error details:', chatError);
         setMessages([]);
         setSelectedRole(roleOptions[0]);
         navigate(`/chat/${selectedChatId}`, { replace: true });
@@ -2763,6 +2860,9 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
       }
       
       // Process messages from database with consistent IDs
+      console.log('✅ selectChat - Chat found! Processing', chatData.messages?.length || 0, 'messages');
+      console.log('📋 selectChat - Raw chat data:', JSON.stringify(chatData, null, 2));
+      
       const processedMessages = (chatData.messages || []).map((msg: any, index: number) => {
         // Create a consistent ID based on message content and position to prevent duplicates
         const consistentId = msg.id || `${selectedChatId}-${index}-${msg.timestamp || Date.now()}`;
@@ -2787,10 +2887,14 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         }
       });
       
+      console.log('🔄 selectChat - Processed messages:', processedMessages.length);
+      console.log('📱 selectChat - Setting messages in state:', JSON.stringify(processedMessages, null, 2));
+      
       // Set fresh messages from database only
       setMessages(() => processedMessages);
       setSelectedRole(roleOptions.find(role => role.id === chatData.role) || roleOptions[0]);
       
+      console.log('🎯 selectChat - Chat loaded successfully with', processedMessages.length, 'messages');
       // Update URL
       navigate(`/chat/${selectedChatId}`, { replace: true });
       
@@ -3181,7 +3285,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
               </div>
                               
                               {/* Coin usage display for AI messages */}
-                              {message.role === 'assistant' && user?.id && coinsUsed[message.id] && (
+                              {message.role === 'assistant' && user?.uid && coinsUsed[message.id] && (
                                 <div className={`mt-2 sm:mt-3 pt-2 border-t ${
                                   darkMode ? 'border-gray-700' : 'border-gray-200'
                                 } flex items-center space-x-1 sm:space-x-2`}>
