@@ -10,10 +10,13 @@ import {
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useAlert } from '../context/AlertContext';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
 import { ProFeatureAlert } from '../components';
 import AuthRequiredButton from '../components/AuthRequiredButton';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
 
 // Add gradient animation style
 const gradientAnimationStyle = document.createElement('style');
@@ -55,6 +58,7 @@ interface AudioFile {
   error_message?: string;
   display_name?: string;
   audio_name?: string; // Add audio_name property
+  video_file?: string; // Add video_file property for storing video URL
   // Computed field for display
 }
 
@@ -65,6 +69,7 @@ const SpeechToTextPage: React.FC = () => {
   const { userData, isPro } = useUser();
   const { user } = useAuth();
   const { theme, getThemeColors } = useTheme();
+  const { showAlert, showError, showSuccess } = useAlert();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const colors = getThemeColors();
@@ -79,6 +84,13 @@ const SpeechToTextPage: React.FC = () => {
   const [audioPreview, setAudioPreview] = useState<string | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const audioPreviewRef = useRef<HTMLAudioElement>(null);
+  
+  // Video processing state
+  const [isProcessingVideo, setIsProcessingVideo] = useState(false);
+  const [videoProcessingProgress, setVideoProcessingProgress] = useState(0);
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
+  const [showVideoProcessingModal, setShowVideoProcessingModal] = useState(false);
+  const ffmpegRef = useRef<FFmpeg | null>(null);
   
   // Files and UI state
   const [files, setFiles] = useState<AudioFile[]>([]);
@@ -110,7 +122,18 @@ const SpeechToTextPage: React.FC = () => {
 
   const [supportedFormats] = useState([
     'audio/wav', 'audio/x-wav', 'audio/mpeg', 'audio/mp3', 'audio/mp4', 
-    'audio/x-m4a', 'audio/aac', 'audio/ogg', 'audio/flac'
+    'audio/x-m4a', 'audio/aac', 'audio/ogg', 'audio/flac',
+    // Video formats
+    'video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo', 
+    'video/webm', 'video/x-ms-wmv', 'video/3gpp', 'video/x-flv'
+  ]);
+  
+  const [supportedVideoExtensions] = useState([
+    'mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv', '3gp', 'mpg', 'mpeg'
+  ]);
+  
+  const [supportedAudioExtensions] = useState([
+    'wav', 'mp3', 'm4a', 'aac', 'ogg', 'flac'
   ]);
 
   const [languages] = useState([
@@ -355,6 +378,94 @@ const SpeechToTextPage: React.FC = () => {
     }
     return true;
   };
+  
+  const isVideoFile = (file: File) => {
+    const fileExtension = getFileExtension(file.name);
+    return file.type.startsWith('video/') || supportedVideoExtensions.includes(fileExtension);
+  };
+  
+  const isAudioFile = (file: File) => {
+    const fileExtension = getFileExtension(file.name);
+    return file.type.startsWith('audio/') || supportedAudioExtensions.includes(fileExtension);
+  };
+  
+  // Initialize FFmpeg
+  const initializeFFmpeg = async () => {
+    if (ffmpegRef.current) return ffmpegRef.current;
+    
+    const ffmpeg = new FFmpeg();
+    
+    ffmpeg.on('log', ({ message }) => {
+      console.log('FFmpeg log:', message);
+    });
+    
+    ffmpeg.on('progress', ({ progress }) => {
+      setVideoProcessingProgress(Math.round(progress * 100));
+    });
+    
+    try {
+      const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+      await ffmpeg.load({
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+      });
+      
+      ffmpegRef.current = ffmpeg;
+      return ffmpeg;
+    } catch (error) {
+      console.error('Failed to initialize FFmpeg:', error);
+      throw new Error('Failed to initialize video processing. Please try again.');
+    }
+  };
+  
+  // Extract audio from video file
+  const extractAudioFromVideo = async (videoFile: File): Promise<File> => {
+    setIsProcessingVideo(true);
+    setVideoProcessingProgress(0);
+    
+    try {
+      const ffmpeg = await initializeFFmpeg();
+      
+      const inputFileName = 'input.' + getFileExtension(videoFile.name);
+      const outputFileName = 'output.mp3';
+      
+      // Write video file to FFmpeg filesystem
+      await ffmpeg.writeFile(inputFileName, await fetchFile(videoFile));
+      
+      // Extract audio with optimized settings
+      await ffmpeg.exec([
+        '-i', inputFileName,
+        '-vn', // No video
+        '-acodec', 'mp3', // Audio codec
+        '-ab', '128k', // Audio bitrate
+        '-ar', '44100', // Audio sample rate
+        '-y', // Overwrite output file
+        outputFileName
+      ]);
+      
+      // Read the output file
+      const audioData = await ffmpeg.readFile(outputFileName);
+      
+      // Create a new File object with the extracted audio
+      const audioBlob = new Blob([audioData], { type: 'audio/mp3' });
+      const audioFileName = videoFile.name.replace(/\.[^/.]+$/, '') + '.mp3';
+      const audioFile = new File([audioBlob], audioFileName, { type: 'audio/mp3' });
+      
+      // Clean up FFmpeg filesystem
+      await ffmpeg.deleteFile(inputFileName);
+      await ffmpeg.deleteFile(outputFileName);
+      
+      setVideoProcessingProgress(100);
+      return audioFile;
+      
+    } catch (error) {
+      console.error('Error extracting audio from video:', error);
+      throw new Error('Failed to extract audio from video. Please try a different file.');
+    } finally {
+      setIsProcessingVideo(false);
+      setVideoProcessingProgress(0);
+    }
+  };
 
   const getFileExtension = (fileName: string) => {
     return fileName.split('.').pop()?.toLowerCase() || '';
@@ -383,22 +494,57 @@ const SpeechToTextPage: React.FC = () => {
     const file = files[0];
     const fileExtension = getFileExtension(file.name);
     
-    if (!isFormatSupported(file.type) && !['wav', 'mp3', 'm4a', 'aac', 'ogg', 'flac', 'mp4'].includes(fileExtension)) {
-      alert(t('speechToText.errors.unsupportedFormat', { format: fileExtension.toUpperCase() }));
+    // Check if file format is supported (audio or video)
+    const isSupported = isFormatSupported(file.type) || 
+                       supportedAudioExtensions.includes(fileExtension) || 
+                       supportedVideoExtensions.includes(fileExtension);
+    
+    if (!isSupported) {
+      showError(t('speechToText.errors.unsupportedFormat', { format: fileExtension.toUpperCase() }));
       return;
     }
 
-    setAudioFile(file);
-    
-    // Create audio preview
-    const cleanup = createAudioPreview(file);
-    
-    // Show advanced options
-    setShowAdvancedOptions(true);
-    
-    return () => {
-      cleanup();
-    };
+    try {
+      setOriginalFile(file);
+      
+      if (isVideoFile(file)) {
+        // Handle video file - extract audio
+        setShowVideoProcessingModal(true);
+        
+        const extractedAudioFile = await extractAudioFromVideo(file);
+        setAudioFile(extractedAudioFile);
+        
+        // Create audio preview from extracted audio
+        const cleanup = createAudioPreview(extractedAudioFile);
+        
+        setShowVideoProcessingModal(false);
+        
+        // Show advanced options
+        setShowAdvancedOptions(true);
+        
+        return () => {
+          cleanup();
+        };
+      } else if (isAudioFile(file)) {
+        // Handle audio file directly
+        setAudioFile(file);
+        
+        // Create audio preview
+        const cleanup = createAudioPreview(file);
+        
+        // Show advanced options
+        setShowAdvancedOptions(true);
+        
+        return () => {
+          cleanup();
+        };
+      } else {
+          console.error('Unsupported format:', fileExtension.toUpperCase());
+        }
+      } catch (error) {
+        console.error('Error processing file:', error);
+        setShowVideoProcessingModal(false);
+      }
   };
 
   const toggleAudioPreview = () => {
@@ -416,7 +562,7 @@ const SpeechToTextPage: React.FC = () => {
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     
     const files = e.dataTransfer.files;
@@ -424,22 +570,57 @@ const SpeechToTextPage: React.FC = () => {
       const file = files[0];
       const fileExtension = getFileExtension(file.name);
       
-      if (!isFormatSupported(file.type) && !['wav', 'mp3', 'm4a', 'aac', 'ogg', 'flac', 'mp4'].includes(fileExtension)) {
-        alert(t('speechToText.errors.unsupportedFormat', { format: fileExtension.toUpperCase() }));
+      // Check if file format is supported (audio or video)
+      const isSupported = isFormatSupported(file.type) || 
+                         supportedAudioExtensions.includes(fileExtension) || 
+                         supportedVideoExtensions.includes(fileExtension);
+      
+      if (!isSupported) {
+        console.error('Unsupported format:', fileExtension.toUpperCase());
         return;
       }
       
-      setAudioFile(file);
-      
-      // Create audio preview
-      const cleanup = createAudioPreview(file);
-      
-      // Show advanced options
-      setShowAdvancedOptions(true);
-      
-      return () => {
-        cleanup();
-      };
+      try {
+        setOriginalFile(file);
+        
+        if (isVideoFile(file)) {
+          // Handle video file - extract audio
+          setShowVideoProcessingModal(true);
+          
+          const extractedAudioFile = await extractAudioFromVideo(file);
+          setAudioFile(extractedAudioFile);
+          
+          // Create audio preview from extracted audio
+          const cleanup = createAudioPreview(extractedAudioFile);
+          
+          setShowVideoProcessingModal(false);
+          
+          // Show advanced options
+          setShowAdvancedOptions(true);
+          
+          return () => {
+            cleanup();
+          };
+        } else if (isAudioFile(file)) {
+          // Handle audio file directly
+          setAudioFile(file);
+          
+          // Create audio preview
+          const cleanup = createAudioPreview(file);
+          
+          // Show advanced options
+          setShowAdvancedOptions(true);
+          
+          return () => {
+            cleanup();
+          };
+        } else {
+          console.error('Unsupported format:', fileExtension.toUpperCase());
+        }
+      } catch (error) {
+        console.error('Error processing file:', error);
+        setShowVideoProcessingModal(false);
+      }
     }
   };
 
@@ -469,7 +650,7 @@ const SpeechToTextPage: React.FC = () => {
 
   const downloadAudio = async (file: AudioFile) => {
     if (!file.audio_url) {
-      alert(t('speechToText.errors.audioUrlNotAvailable'));
+      showError(t('speechToText.errors.audioUrlNotAvailable'));
       return;
     }
     
@@ -482,13 +663,13 @@ const SpeechToTextPage: React.FC = () => {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Download error:', error);
-      alert(t('speechToText.errors.downloadFailed'));
+      showError(t('speechToText.errors.downloadFailed'));
     }
   };
 
   const deleteAudio = async (file: AudioFile) => {
     if (!user?.id || !file.audioid) {
-      alert(t('speechToText.errors.cannotDelete'));
+      showError(t('speechToText.errors.cannotDelete'));
       return;
     }
     
@@ -514,7 +695,7 @@ const SpeechToTextPage: React.FC = () => {
         const updatedFiles = files.filter(f => f.audioid !== file.audioid);
         setFiles(updatedFiles);
         saveFilesToLocalStorage(updatedFiles);
-        alert(t('speechToText.success.audioDeleted'));
+        showSuccess(t('speechToText.success.audioDeleted'));
         
         // Also clear any polling for this audio ID
         const existingInterval = pollingIntervals.get(file.audioid);
@@ -534,12 +715,12 @@ const SpeechToTextPage: React.FC = () => {
           return newSet;
         });
       } else {
-        alert(t('speechToText.errors.deleteFailed', { error: result.error || result.message || t('speechToText.errors.unknownError') }));
+        showError(t('speechToText.errors.deleteFailed', { error: result.error || result.message || t('speechToText.errors.unknownError') }));
       }
     } catch (error) {
       console.error('Error deleting audio:', error);
       const errorMessage = error instanceof Error ? error.message : t('speechToText.errors.unknownErrorOccurred');
-      alert(t('speechToText.errors.deleteError', { error: errorMessage }));
+      showError(t('speechToText.errors.deleteError', { error: errorMessage }));
     } finally {
       setIsLoading(false);
       setIsDeleteModalOpen(false);
@@ -550,7 +731,7 @@ const SpeechToTextPage: React.FC = () => {
   // Add function to edit audio name
   const editAudioName = async (file: AudioFile, newName: string) => {
     if (!user?.id || !file.audioid || !newName.trim()) {
-      alert(t('speechToText.errors.cannotEdit'));
+      showError(t('speechToText.errors.cannotEdit'));
       return;
     }
     
@@ -579,16 +760,16 @@ const SpeechToTextPage: React.FC = () => {
         );
         setFiles(updatedFiles);
         saveFilesToLocalStorage(updatedFiles);
-        alert(t('speechToText.success.nameUpdated'));
+        showSuccess(t('speechToText.success.nameUpdated'));
         setIsEditModalOpen(false);
         setSelectedFile(null);
         setEditingName('');
       } else {
-        alert(t('speechToText.errors.updateNameFailed', { error: result.error || result.message || t('speechToText.errors.unknownError') }));
+        showError(t('speechToText.errors.updateNameFailed', { error: result.error || result.message || t('speechToText.errors.unknownError') }));
       }
     } catch (error) {
       console.error('Error editing audio name:', error);
-      alert(t('speechToText.errors.updateNameError'));
+      showError(t('speechToText.errors.updateNameError'));
     } finally {
       setIsEditingName(false);
     }
@@ -762,7 +943,7 @@ const SpeechToTextPage: React.FC = () => {
             )
           );
           
-          alert(t('speechToText.errors.transcriptionFailed', { error: data.error_message || t('speechToText.errors.unknownError') }));
+          showError(t('speechToText.errors.transcriptionFailed', { error: data.error_message || t('speechToText.errors.unknownError') }));
         }
       } catch (error) {
         console.error('Error polling status for', audioid, ':', error);
@@ -776,7 +957,7 @@ const SpeechToTextPage: React.FC = () => {
   // Updated handleUpload function to use correct API
   const handleUpload = async () => {
     if (!audioFile || !user?.id) {
-      alert(t('speechToText.errors.noFileOrUser'));
+      showError(t('speechToText.errors.noFileOrUser'));
       return;
     }
     
@@ -802,6 +983,34 @@ const SpeechToTextPage: React.FC = () => {
       const sanitizedFileName = `${audioID}.${fileExtension}`;
       const filePath = `users/${user.id}/audioFile/${sanitizedFileName}`;
       
+      // Handle video file upload if original file was a video
+      let videoUrl = null;
+      if (originalFile && isVideoFile(originalFile)) {
+        // Upload original video file to storage
+        const videoFileExtension = getFileExtension(originalFile.name);
+        const sanitizedVideoFileName = `${audioID}_video.${videoFileExtension}`;
+        const videoFilePath = `users/${user.id}/videoFile/${sanitizedVideoFileName}`;
+        
+        const { data: videoUploadData, error: videoUploadError } = await supabase.storage
+          .from('user-uploads')
+          .upload(videoFilePath, originalFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
+          
+        if (videoUploadError) {
+          console.error('Video upload error:', videoUploadError);
+          throw new Error(`Video upload error: ${videoUploadError.message || 'Unknown error'}`);
+        }
+        
+        // Get the public URL for the uploaded video file
+        const { data: { publicUrl: videoPublicUrl } } = supabase.storage
+          .from('user-uploads')
+          .getPublicUrl(videoFilePath);
+          
+        videoUrl = videoPublicUrl;
+      }
+      
       // Simulate upload progress
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => {
@@ -810,7 +1019,7 @@ const SpeechToTextPage: React.FC = () => {
         });
       }, 500);
       
-      // Upload to Supabase storage
+      // Upload audio file to Supabase storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('user-uploads')
         .upload(filePath, audioFile, {
@@ -829,10 +1038,20 @@ const SpeechToTextPage: React.FC = () => {
         throw new Error(`Storage upload error: ${uploadError.message || 'Unknown error'}`);
       }
       
-      // Get the public URL for the uploaded file
+      // Get the public URL for the uploaded audio file
       const { data: { publicUrl } } = supabase.storage
         .from('user-uploads')
         .getPublicUrl(filePath);
+        
+      // Prepare API payload with video URL if available
+      const apiPayload = {
+        uid: user.id,
+        audioUrl: publicUrl,
+        language: selectedLanguage,
+        duration: duration,
+        audio_name: audioName,
+        ...(videoUrl && { video_file: videoUrl }) // Add video_file only if videoUrl exists
+      };
         
       // Now use the correct uploadAudioUrl API
       const uploadResponse = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/uploadAudioUrl', {
@@ -840,13 +1059,7 @@ const SpeechToTextPage: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          uid: user.id,
-          audioUrl: publicUrl,
-          language: selectedLanguage,
-          duration: duration,
-          audio_name: audioName
-        }),
+        body: JSON.stringify(apiPayload),
       });
 
       const uploadResult = await uploadResponse.json();
@@ -863,7 +1076,8 @@ const SpeechToTextPage: React.FC = () => {
               audio_url: publicUrl,
               audio_name: audioName,
               language: selectedLanguage,
-              duration: duration
+              duration: duration,
+              ...(videoUrl && { video_file: videoUrl }) // Add video_file only if videoUrl exists
             }
           });
         } else {
@@ -882,7 +1096,8 @@ const SpeechToTextPage: React.FC = () => {
             uploaded_at: new Date().toISOString(),
             audio_name: audioName,
             transcription: uploadResult.transcription,
-            error_message: uploadResult.error_message
+            error_message: uploadResult.error_message,
+            ...(videoUrl && { video_file: videoUrl }) // Add video_file only if videoUrl exists
           };
           
           setFiles(prevFiles => [newFile, ...prevFiles]);
@@ -903,7 +1118,7 @@ const SpeechToTextPage: React.FC = () => {
       
     } catch (error) {
       console.error('Upload error:', error);
-      alert(t('speechToText.errors.uploadFailed', { error: error instanceof Error ? error.message : t('speechToText.errors.unknownError') }));
+      showError(t('speechToText.errors.uploadFailed', { error: error instanceof Error ? error.message : t('speechToText.errors.unknownError') }));
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -934,7 +1149,8 @@ const SpeechToTextPage: React.FC = () => {
           words_data: item.words_data,
           audio_name: item.audio_name,
           language: item.language,
-          duration: item.duration
+          duration: item.duration,
+          ...(item.video_file && { video_file: item.video_file }) // Add video_file only if it exists
         }
       });
       return;
@@ -967,7 +1183,8 @@ const SpeechToTextPage: React.FC = () => {
               words_data: data.words_data,
               audio_name: data.audio_name,
               language: data.language,
-              duration: data.duration
+              duration: data.duration,
+              ...(data.video_file && { video_file: data.video_file }) // Add video_file only if it exists
             }
           });
         } else {
@@ -976,11 +1193,11 @@ const SpeechToTextPage: React.FC = () => {
           startStatusPolling(item.audioid);
         }
       } else {
-        alert(t('speechToText.errors.getAudioDataFailed', { error: data.error || data.message || t('speechToText.errors.unknownError') }));
+        showError(t('speechToText.errors.getAudioDataFailed', { error: data.error || data.message || t('speechToText.errors.unknownError') }));
       }
     } catch (error) {
       console.error('Error fetching audio file:', error);
-      alert(t('speechToText.errors.networkError'));
+      showError(t('speechToText.errors.networkError'));
     }
   };
 
@@ -1120,7 +1337,7 @@ const SpeechToTextPage: React.FC = () => {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="audio/*"
+                    accept="audio/*,video/*"
                     onChange={handleFileChange}
                     className="hidden"
                     id="file-upload"
@@ -1570,11 +1787,61 @@ const SpeechToTextPage: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      
+      {/* Video Processing Modal */}
+      <AnimatePresence>
+        {showVideoProcessingModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl"
+            >
+              <div className="flex flex-col items-center">
+                <div className="w-16 h-16 mb-4 relative">
+                  <div className="w-16 h-16 border-4 border-blue-200 dark:border-blue-800 rounded-full animate-spin">
+                    <div className="w-4 h-4 bg-blue-500 rounded-full absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+                  </div>
+                </div>
+                
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  {t('speechToText.processingVideo', 'Processing Video')}
+                </h3>
+                
+                <p className="text-gray-600 dark:text-gray-400 text-center mb-4">
+                  {originalFile?.name}
+                </p>
+                
+                <div className="w-full mb-4">
+                  <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300"
+                      style={{ width: `${videoProcessingProgress}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span>{t('speechToText.processing', 'Processing...')}</span>
+                    <span>{Math.round(videoProcessingProgress)}%</span>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+                  {t('speechToText.pleaseWait', 'Please wait while we process your video file.')}
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
           </div>
         </div>
-      
-   
   );
 };
 

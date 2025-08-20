@@ -1554,6 +1554,16 @@
       "regenerationInitiated": "转录再生已开始",
       "words": "字"
     },
+    "video": {
+      "back5Seconds": "回到5秒",
+      "controls": "视频控件",
+      "downloadVideo": "下载视频",
+      "duration": "期间",
+      "forward5Seconds": "向前5秒",
+      "information": "视频信息",
+      "language": "语言",
+      "words": "字"
+    },
     "audioTranscription": "音频转录",
     "back": "后退",
     "chat": {
@@ -1955,7 +1965,7 @@
       "audioDeleted": "音频文件成功删除",
       "nameUpdated": "音频名称成功更新了"
     },
-    "supportedFormats": "支持MP3，WAV，M4A，AAC，OGG，FLAC和更多音频格式",
+    "supportedFormats": "支持MP3，WAV，M4A，AAC，OGG，FLAC音频格式和MP4，AVI，MOV，MKV视频格式",
     "title": "对文字的讲话",
     "transcriptionOptions": "转录选项",
     "unlimitedTranscriptions": "无限抄录",

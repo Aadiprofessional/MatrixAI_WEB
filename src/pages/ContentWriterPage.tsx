@@ -1351,7 +1351,7 @@ Create content that is original, well-researched, and engaging for the target au
                     <FiZap className="w-4 h-4 mr-1" />
                     {t('contentWriter.quickPrompts')}
                   </label>
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3 max-h-48 sm:max-h-60 overflow-y-auto pr-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 max-h-48 sm:max-h-60 overflow-y-auto pr-1">
                     {quickQuestions.map((question) => (
                       <motion.div
                         key={question.id}
@@ -1652,7 +1652,7 @@ Create content that is original, well-researched, and engaging for the target au
                   </p>
                   
                   {/* Featured Quick Questions for Empty State */}
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3 mt-6 sm:mt-8 w-full max-w-2xl">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mt-6 sm:mt-8 w-full max-w-2xl">
                     {quickQuestions.slice(0, 4).map((question) => (
                       <motion.div
                         key={question.id}

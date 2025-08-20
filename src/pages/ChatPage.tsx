@@ -212,7 +212,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
           code: CodeBlock,
           pre: ({ children }: any) => <div className="overflow-auto">{children}</div>,
           h1: ({ children }: any) => {
-            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            const textContent = Array.isArray(children) ? children.join('') : String(children || '');
+            const cleanText = textContent.replace(/^#+\s*/, '');
             return (
               <h1 className={`text-2xl font-bold mb-4 mt-6 flex items-center gap-2 ${
                 darkMode ? 'text-white' : 'text-gray-900'
@@ -223,7 +224,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             );
           },
           h2: ({ children }: any) => {
-            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            const textContent = Array.isArray(children) ? children.join('') : String(children || '');
+            const cleanText = textContent.replace(/^#+\s*/, '');
             return (
               <h2 className={`text-xl font-bold mb-3 mt-5 flex items-center gap-2 ${
                 darkMode ? 'text-gray-100' : 'text-gray-800'
@@ -234,7 +236,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             );
           },
           h3: ({ children }: any) => {
-            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            const textContent = Array.isArray(children) ? children.join('') : String(children || '');
+            const cleanText = textContent.replace(/^#+\s*/, '');
             return (
               <h3 className={`text-lg font-semibold mb-2 mt-4 flex items-center gap-2 ${
                 darkMode ? 'text-gray-200' : 'text-gray-700'
@@ -245,7 +248,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             );
           },
           h4: ({ children }: any) => {
-            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            const textContent = Array.isArray(children) ? children.join('') : String(children || '');
+            const cleanText = textContent.replace(/^#+\s*/, '');
             return (
               <h4 className={`text-base font-semibold mb-2 mt-3 flex items-center gap-2 ${
                 darkMode ? 'text-gray-300' : 'text-gray-600'
@@ -256,7 +260,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             );
           },
           h5: ({ children }: any) => {
-            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            const textContent = Array.isArray(children) ? children.join('') : String(children || '');
+            const cleanText = textContent.replace(/^#+\s*/, '');
             return (
               <h5 className={`text-sm font-medium mb-1 mt-2 flex items-center gap-2 ${
                 darkMode ? 'text-gray-400' : 'text-gray-500'
@@ -267,7 +272,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             );
           },
           h6: ({ children }: any) => {
-            const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
+            const textContent = Array.isArray(children) ? children.join('') : String(children || '');
+            const cleanText = textContent.replace(/^#+\s*/, '');
             return (
               <h6 className={`text-xs font-medium mb-1 mt-2 flex items-center gap-2 ${
                 darkMode ? 'text-gray-500' : 'text-gray-400'

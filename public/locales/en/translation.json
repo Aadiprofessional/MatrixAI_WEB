@@ -983,6 +983,16 @@
       "confirmRegeneration": "Are you sure you want to regenerate the transcription? This will overwrite the current transcription.",
       "regenerationInitiated": "Transcription regeneration has been initiated",
       "regenerateTranscription": "Regenerate Transcription"
+    },
+    "video": {
+      "controls": "Video Controls",
+      "back5Seconds": "Back 5 seconds",
+      "forward5Seconds": "Forward 5 seconds",
+      "information": "Video Information",
+      "duration": "Duration",
+      "language": "Language",
+      "words": "Words",
+      "downloadVideo": "Download Video"
     }
   },
   "coin": "Coin",
@@ -1884,7 +1894,7 @@
       "modalTitle": "MatrixAI Speech to Text",
       "modalDescription": "Convert audio to text quickly and accurately",
       "dragDropText": "Drag & drop your audio file here",
-      "supportedFormats": "Supports MP3, WAV, M4A, AAC, OGG, FLAC and more audio formats",
+      "supportedFormats": "Supports MP3, WAV, M4A, AAC, OGG, FLAC audio formats and MP4, AVI, MOV, MKV video formats",
       "browseFiles": "Browse Files",
       "uploading": "Uploading",
       "uploadWait": "Please wait while we process your audio file...",

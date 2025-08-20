@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from '../utils/axiosInterceptor';
@@ -9,10 +10,10 @@ import { useTranslation } from 'react-i18next';
 import { 
   FiPlay, FiPause, FiDownload, FiCopy, FiShare2, 
   FiChevronLeft, FiChevronRight, FiRefreshCw, FiLoader,
-  FiMaximize, FiMenu, FiLayout, FiSave, FiFileText,
+  FiMaximize, FiMinimize, FiMenu, FiLayout, FiSave, FiFileText,
   FiBarChart2, FiZap, FiSettings, FiBookmark, FiMic,
   FiMessageSquare, FiGlobe, FiToggleLeft, FiToggleRight,
-  FiCpu, FiUser, FiSquare, FiVolume2
+  FiCpu, FiUser, FiSquare, FiVolume2, FiChevronDown
 } from 'react-icons/fi';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -588,6 +589,8 @@ const preprocessContent = (content: string): string => {
 };
 
 const TranscriptionPage: React.FC = () => {
+  console.log('TranscriptionPage component loaded');
+  
   const { t } = useTranslation();
   const { audioid } = useParams<{ audioid: string }>();
   const location = useLocation();
@@ -598,6 +601,10 @@ const TranscriptionPage: React.FC = () => {
   const { showSuccess, showError, showWarning, showConfirmation } = useAlert();
   const uid = user?.uid;
   const colors = getThemeColors();
+  const locationState = location.state as any;
+  
+  console.log('Initial params - uid:', uid, 'audioid:', audioid);
+  console.log('Initial locationState:', locationState);
 
   // Languages array with internationalization
   const languages = [
@@ -613,11 +620,13 @@ const TranscriptionPage: React.FC = () => {
 
   // Audio player state
   const [audioUrl, setAudioUrl] = useState<string>('');
+  const [videoUrl, setVideoUrl] = useState<string>('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Transcription state
   const [transcription, setTranscription] = useState<string>('');
@@ -643,11 +652,86 @@ const TranscriptionPage: React.FC = () => {
   const [srtSegments, setSrtSegments] = useState<Array<{id: number, startTime: string, endTime: string, text: string}>>([]);
   const [userCoins, setUserCoins] = useState<number>(0);
   const [isTranslatingSubtitle, setIsTranslatingSubtitle] = useState<boolean>(false);
+  
+  // Word-level subtitle translation state
+  const [wordTranslations, setWordTranslations] = useState<{[key: string]: string}>({});
+  const [showTranslatedSubtitles, setShowTranslatedSubtitles] = useState<boolean>(false);
+  const [isTranslatingWords, setIsTranslatingWords] = useState<boolean>(false);
+  const [subtitleLanguage, setSubtitleLanguage] = useState<string>('es');
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState<boolean>(false);
+  
+  // Available languages for subtitle translation
+  const subtitleLanguages = [
+    { code: 'en', name: 'English' },
+    { code: 'zh-cn', name: 'Chinese Simplified' },
+    { code: 'zh-tw', name: 'Chinese Traditional' },
+    { code: 'es', name: 'Spanish' },
+    { code: 'fr', name: 'French' },
+    { code: 'de', name: 'German' },
+    { code: 'it', name: 'Italian' },
+    { code: 'pt', name: 'Portuguese' },
+    { code: 'ru', name: 'Russian' },
+    { code: 'ja', name: 'Japanese' },
+    { code: 'ko', name: 'Korean' },
+    { code: 'ar', name: 'Arabic' },
+    { code: 'hi', name: 'Hindi' },
+    { code: 'nl', name: 'Dutch' },
+    { code: 'sv', name: 'Swedish' },
+    { code: 'no', name: 'Norwegian' },
+    { code: 'da', name: 'Danish' },
+    { code: 'fi', name: 'Finnish' },
+    { code: 'pl', name: 'Polish' },
+    { code: 'tr', name: 'Turkish' },
+    { code: 'th', name: 'Thai' },
+    { code: 'vi', name: 'Vietnamese' },
+    { code: 'id', name: 'Indonesian' },
+    { code: 'ms', name: 'Malay' },
+    { code: 'he', name: 'Hebrew' },
+    { code: 'cs', name: 'Czech' },
+    { code: 'hu', name: 'Hungarian' },
+    { code: 'ro', name: 'Romanian' },
+    { code: 'bg', name: 'Bulgarian' },
+    { code: 'hr', name: 'Croatian' },
+    { code: 'sk', name: 'Slovak' },
+    { code: 'sl', name: 'Slovenian' },
+    { code: 'et', name: 'Estonian' },
+    { code: 'lv', name: 'Latvian' },
+    { code: 'lt', name: 'Lithuanian' },
+    { code: 'uk', name: 'Ukrainian' },
+    { code: 'be', name: 'Belarusian' },
+    { code: 'ka', name: 'Georgian' },
+    { code: 'am', name: 'Amharic' },
+    { code: 'sw', name: 'Swahili' },
+    { code: 'zu', name: 'Zulu' },
+    { code: 'af', name: 'Afrikaans' },
+    { code: 'bn', name: 'Bengali' },
+    { code: 'gu', name: 'Gujarati' },
+    { code: 'kn', name: 'Kannada' },
+    { code: 'ml', name: 'Malayalam' },
+    { code: 'mr', name: 'Marathi' },
+    { code: 'pa', name: 'Punjabi' },
+    { code: 'ta', name: 'Tamil' },
+    { code: 'te', name: 'Telugu' },
+    { code: 'ur', name: 'Urdu' },
+    { code: 'fa', name: 'Persian' },
+    { code: 'is', name: 'Icelandic' },
+    { code: 'mt', name: 'Maltese' },
+    { code: 'cy', name: 'Welsh' },
+    { code: 'ga', name: 'Irish' },
+    { code: 'eu', name: 'Basque' },
+    { code: 'ca', name: 'Catalan' },
+    { code: 'gl', name: 'Galician' },
+    { code: 'pl', name: 'Polish', flag: '🇵🇱' },
+    { code: 'tr', name: 'Turkish', flag: '🇹🇷' },
+    { code: 'th', name: 'Thai', flag: '🇹🇭' },
+    { code: 'vi', name: 'Vietnamese', flag: '🇻🇳' }
+  ];
 
   // UI state
   const [activeTab, setActiveTab] = useState<'transcript' | 'mindmap' | 'chat' | 'wordsdata'>('transcript');
   const [showSidebar, setShowSidebar] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [isVideoFullscreen, setIsVideoFullscreen] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
 
   // Mind map state
@@ -691,6 +775,23 @@ const TranscriptionPage: React.FC = () => {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chatMessages]);
+
+  // Close language dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showLanguageDropdown) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.language-dropdown-container')) {
+          setShowLanguageDropdown(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showLanguageDropdown]);
 
   // Function to handle quick actions with formatted responses and language detection
   const handleQuickAction = async (action: 'keypoints' | 'summary' | 'translate') => {
@@ -910,7 +1011,7 @@ const TranscriptionPage: React.FC = () => {
   };
 
   // Get state passed from the previous page
-  const locationState = location.state as any;
+  // locationState is already declared at the top of the component
 
   // Translation function for individual paragraphs
   const handleTranslateParagraph = async (index: number) => {
@@ -1009,6 +1110,7 @@ const TranscriptionPage: React.FC = () => {
           if (parsed.transcription && parsed.audioUrl) {
             setTranscription(parsed.transcription);
             setAudioUrl(parsed.audioUrl);
+            setVideoUrl(parsed.videoUrl || ''); // Set video URL from cache
             setDuration(parsed.duration || 0);
           
             
@@ -1045,6 +1147,7 @@ const TranscriptionPage: React.FC = () => {
       }
       
       // If no cache or parsing error, fetch from correct API
+      console.log('Starting API fetch for uid:', uid, 'audioid:', audioid);
       const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/getAudioFile', {
         method: 'POST',
         headers: {
@@ -1055,6 +1158,10 @@ const TranscriptionPage: React.FC = () => {
       
       const data = await response.json();
       
+      // Log the complete API response to verify video_file data
+      console.log('API Response Data:', data);
+      console.log('video_file from API:', data.video_file);
+      
       if (response.ok && data.success) {
         // Set state with fetched data - using correct field names from server response
         setTranscription(data.transcription || '');
@@ -1062,6 +1169,9 @@ const TranscriptionPage: React.FC = () => {
         const audioDur = data.duration || 0;
         setDuration(audioDur);
         setAudioUrl(data.audioUrl || ''); // Note: server returns 'audioUrl' not 'audio_url'
+        const apiVideoUrl = (data.video_file || '').trim();
+        console.log('API video_file:', data.video_file, 'trimmed:', apiVideoUrl);
+        setVideoUrl(apiVideoUrl); // Set video URL from API response
 
         // Check if xml_data is available (server stores it as xml_data)
         if (data.xml_data) {
@@ -1086,10 +1196,11 @@ const TranscriptionPage: React.FC = () => {
           processTranscription(data.transcription);
         }
         
-        // Cache the data with words_data
+        // Cache the data with words_data and video_file
         localStorage.setItem(`audioData-${audioid}`, JSON.stringify({
           transcription: data.transcription || '',
           audioUrl: data.audioUrl || '',
+          videoUrl: apiVideoUrl || '', // Cache video URL
           audio_name: data.audio_name,
           duration: audioDur,
           paragraphs: paragraphs.length > 0 ? paragraphs : [],
@@ -1109,13 +1220,14 @@ const TranscriptionPage: React.FC = () => {
     }
   };
 
-  // Audio control functions
+  // Media control functions (works with both audio and video)
   const togglePlayPause = () => {
-    if (audioRef.current) {
+    const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+    if (mediaElement) {
       if (isPlaying) {
-        audioRef.current.pause();
+        mediaElement.pause();
       } else {
-        audioRef.current.play();
+        mediaElement.play();
       }
       setIsPlaying(!isPlaying);
     }
@@ -1123,8 +1235,9 @@ const TranscriptionPage: React.FC = () => {
 
   const handlePlaybackRateChange = (rate: number) => {
     setPlaybackRate(rate);
-    if (audioRef.current) {
-      audioRef.current.playbackRate = rate;
+    const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+    if (mediaElement) {
+      mediaElement.playbackRate = rate;
     }
   };
 
@@ -1135,8 +1248,9 @@ const TranscriptionPage: React.FC = () => {
   };
 
   const seekTo = (time: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = time;
+    const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+    if (mediaElement) {
+      mediaElement.currentTime = time;
       setCurrentTime(time);
     }
   };
@@ -1148,6 +1262,80 @@ const TranscriptionPage: React.FC = () => {
 
   const handleWordClick = (word: WordTiming) => {
     seekTo(word.startTime);
+  };
+
+  // Video fullscreen functionality
+  const toggleVideoFullscreen = () => {
+    if (!videoRef.current) return;
+    
+    if (!isVideoFullscreen) {
+      if (videoRef.current.requestFullscreen) {
+        videoRef.current.requestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+    // Don't manually set state - let the fullscreen change event handle it
+  };
+
+  // Create subtitle segments (6-second intervals)
+  const createSubtitleSegments = () => {
+    if (!wordTimings.length) return [];
+    
+    const segments = [];
+    const segmentDuration = 6; // 6 seconds per segment
+    let currentSegment = [];
+    let segmentStartTime = 0;
+    
+    for (let i = 0; i < wordTimings.length; i++) {
+      const word = wordTimings[i];
+      
+      // If this is the first word or we've exceeded the segment duration
+      if (currentSegment.length === 0) {
+        segmentStartTime = word.startTime;
+      }
+      
+      currentSegment.push(word);
+      
+      // Check if we should end this segment
+      const shouldEndSegment = 
+        word.endTime - segmentStartTime >= segmentDuration ||
+        i === wordTimings.length - 1 ||
+        (i < wordTimings.length - 1 && wordTimings[i + 1].startTime - segmentStartTime > segmentDuration);
+      
+      if (shouldEndSegment) {
+        segments.push({
+          words: [...currentSegment],
+          startTime: segmentStartTime,
+          endTime: word.endTime,
+          text: currentSegment.map(w => w.word).join(' ')
+        });
+        currentSegment = [];
+      }
+    }
+    
+    return segments;
+  };
+
+  // Get current subtitle segment
+  const getCurrentSubtitleSegment = () => {
+    const segments = createSubtitleSegments();
+    return segments.find(segment => 
+      currentTime >= segment.startTime && currentTime <= segment.endTime
+    );
+  };
+
+  // Get highlighted words in current segment
+  const getHighlightedWordsInSegment = (segment: { words: WordTiming[], startTime: number, endTime: number, text: string } | undefined) => {
+    if (!segment) return [];
+    
+    return segment.words.map((word: WordTiming, index: number) => ({
+      ...word,
+      isActive: currentTime >= word.startTime && currentTime <= word.endTime,
+      isPast: currentTime > word.endTime
+    }));
   };
 
   const copyTranscription = () => {
@@ -1553,6 +1741,140 @@ const TranscriptionPage: React.FC = () => {
     return;
   };
 
+  // Function to translate words in current subtitle segment
+  const translateWordsInSegment = async (segment: { words: WordTiming[], startTime: number, endTime: number, text: string }) => {
+    if (!user || !segment) return;
+
+    setIsTranslatingWords(true);
+    
+    try {
+      const wordsToTranslate = segment.words.filter(word => !wordTranslations[word.word]);
+      
+      if (wordsToTranslate.length === 0) {
+        setIsTranslatingWords(false);
+        return;
+      }
+
+      const newTranslations = { ...wordTranslations };
+      
+      // Translate each word individually
+      for (const word of wordsToTranslate) {
+        try {
+          const response = await fetch(
+            `${azureEndpoint}/translate?api-version=3.0&to=${subtitleLanguage}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Ocp-Apim-Subscription-Key': azureKey,
+                'Ocp-Apim-Subscription-Region': region,
+              },
+              body: JSON.stringify([{ Text: word.word }]),
+            }
+          );
+
+          const data = await response.json();
+          if (data && data[0] && data[0].translations && data[0].translations[0]) {
+            newTranslations[word.word] = data[0].translations[0].text;
+          }
+        } catch (error) {
+          console.error(`Translation error for word "${word.word}":`, error);
+        }
+      }
+      
+      setWordTranslations(newTranslations);
+    } catch (error) {
+      console.error('Word translation error:', error);
+    } finally {
+      setIsTranslatingWords(false);
+    }
+  };
+
+  // Function to translate all words in subtitle segments
+  const translateAllSubtitleWords = async () => {
+    if (!user) {
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+
+    const segments = createSubtitleSegments();
+    const allWords = segments.flatMap(segment => segment.words);
+    const untranslatedWords = allWords.filter(word => !wordTranslations[word.word]);
+    
+    if (untranslatedWords.length === 0) {
+      showWarning('All subtitle words are already translated');
+      return;
+    }
+
+    showConfirmation(
+      `Translate ${untranslatedWords.length} words for 1 coin?`,
+      async () => {
+        try {
+          setIsTranslatingWords(true);
+
+          // Deduct 1 coin for word translations
+          const coinResponse = await userService.subtractCoins(uid!, 1, 'word_translation_bulk');
+          
+          if (!coinResponse.success) {
+            showError(t('transcription.errors.failedToDeductCoins'));
+            setIsTranslatingWords(false);
+            return;
+          }
+          
+          setUserCoins(prev => prev - 1);
+
+          const newTranslations = { ...wordTranslations };
+          
+          // Translate words in batches to avoid rate limiting
+          const batchSize = 10;
+          for (let i = 0; i < untranslatedWords.length; i += batchSize) {
+            const batch = untranslatedWords.slice(i, i + batchSize);
+            
+            await Promise.all(batch.map(async (word) => {
+              try {
+                const response = await fetch(
+                  `${azureEndpoint}/translate?api-version=3.0&to=${subtitleLanguage}`,
+                  {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Ocp-Apim-Subscription-Key': azureKey,
+                      'Ocp-Apim-Subscription-Region': region,
+                    },
+                    body: JSON.stringify([{ Text: word.word }]),
+                  }
+                );
+
+                const data = await response.json();
+                if (data && data[0] && data[0].translations && data[0].translations[0]) {
+                  newTranslations[word.word] = data[0].translations[0].text;
+                }
+              } catch (error) {
+                console.error(`Translation error for word "${word.word}":`, error);
+              }
+            }));
+            
+            // Small delay between batches
+            if (i + batchSize < untranslatedWords.length) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+          }
+          
+          setWordTranslations(newTranslations);
+          showSuccess('All subtitle words translated successfully!');
+        } catch (error) {
+          console.error('Bulk word translation error:', error);
+          showError('Failed to translate words');
+        } finally {
+          setIsTranslatingWords(false);
+        }
+      },
+      () => {
+        // User canceled, do nothing
+      }
+    );
+  };
+
   // Function to parse SRT content into segments
   const parseSrtToSegments = (srtContent: string) => {
     const segments = [];
@@ -1931,14 +2253,24 @@ const TranscriptionPage: React.FC = () => {
 
   // Fetch transcription data and chat history
   useEffect(() => {
+    console.log('useEffect triggered - uid:', uid, 'audioid:', audioid, 'locationState:', locationState);
+    
     if (uid && audioid) {
       fetchAudioMetadata(uid, audioid);
       loadChatFromDatabase(); // Load chat history
       fetchUserCoins(); // Fetch user coins
     } else if (locationState?.transcription && locationState?.audio_url) {
+      // Log location state to verify video_file data
+      console.log('Location State:', locationState);
+      console.log('video_file from location state:', locationState.video_file);
+      
       // Use data passed from the previous page if available
       setTranscription(locationState.transcription);
       setAudioUrl(locationState.audio_url);
+      const videoFileUrl = (locationState.video_file || '').trim();
+      console.log('Setting videoUrl to:', videoFileUrl);
+      console.log('Original video_file:', locationState.video_file);
+      setVideoUrl(videoFileUrl);
       setDuration(locationState.duration || 0);
       setFileName(locationState.audio_name );
       
@@ -1952,9 +2284,36 @@ const TranscriptionPage: React.FC = () => {
         processTranscription(locationState.transcription);
       }
       
+      // Cache the locationState data including video_file
+      localStorage.setItem(`audioData-${audioid}`, JSON.stringify({
+        transcription: locationState.transcription || '',
+        audioUrl: locationState.audio_url || '',
+        videoUrl: videoFileUrl || '', // Cache video URL from locationState
+        audio_name: locationState.audio_name,
+        duration: locationState.duration || 0,
+        paragraphs: paragraphs.length > 0 ? paragraphs : [],
+        wordTimings: wordTimings.length > 0 ? wordTimings : [],
+        words_data: locationState.words_data || [],
+        xmlData: locationState.xmlData || null,
+      }));
+      
       setIsLoading(false);
     }
   }, [uid, audioid, locationState]);
+
+  // Monitor videoUrl and audioUrl changes
+  useEffect(() => {
+    console.log('videoUrl state changed:', videoUrl);
+    console.log('audioUrl state changed:', audioUrl);
+    console.log('Should render video?', !!videoUrl);
+    console.log('videoUrl length:', videoUrl.length);
+    console.log('videoUrl type:', typeof videoUrl);
+    if (videoUrl) {
+      console.log('Video URL is truthy, should show video player');
+    } else {
+      console.log('Video URL is falsy, showing audio player');
+    }
+  }, [videoUrl, audioUrl]);
 
   // Update current word based on audio time
   useEffect(() => {
@@ -1990,6 +2349,9 @@ const TranscriptionPage: React.FC = () => {
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
+      // Update video fullscreen state based on fullscreen element
+      const isVideoInFullscreen = document.fullscreenElement === videoRef.current;
+      setIsVideoFullscreen(isVideoInFullscreen);
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -2140,7 +2502,7 @@ const TranscriptionPage: React.FC = () => {
           <div className="lg:hidden mb-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
               <div className="p-3 border-b dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('transcription.audio.controls')}</h2>
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{videoUrl ? t('transcription.video.controls') : t('transcription.audio.controls')}</h2>
               </div>
               
               {/* Compact waveform for mobile */}
@@ -2163,6 +2525,166 @@ const TranscriptionPage: React.FC = () => {
                 </div>
               </div>
               
+              {/* Media element for mobile - Video or Audio */}
+              {videoUrl ? (
+                <div className="relative mx-3 mb-3">
+                  <video 
+                    ref={videoRef}
+                    src={videoUrl}
+                    className="w-full max-h-48 rounded-lg bg-black"
+                    onTimeUpdate={() => {
+                      if (videoRef.current) {
+                        setCurrentTime(videoRef.current.currentTime);
+                      }
+                    }}
+                    onDurationChange={() => {
+                      if (videoRef.current) {
+                        setDuration(videoRef.current.duration);
+                      }
+                    }}
+                    onEnded={() => setIsPlaying(false)}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                  />
+                  
+                  {/* Mobile Video Control Buttons */}
+                  <div className="absolute top-2 right-2 flex space-x-2">
+                    {/* Subtitle Translation Controls */}
+                    <div className="relative flex items-center space-x-1 language-dropdown-container">
+                      {/* Translation Toggle Button */}
+                      <button
+                        onClick={() => {
+                          if (!showTranslatedSubtitles && Object.keys(wordTranslations).length === 0) {
+                            // If no translations exist, translate all words first
+                            translateAllSubtitleWords();
+                          }
+                          setShowTranslatedSubtitles(!showTranslatedSubtitles);
+                        }}
+                        className={`p-2 rounded-lg transition-all ${
+                          showTranslatedSubtitles
+                            ? 'bg-blue-500 bg-opacity-75 text-white'
+                            : 'bg-black bg-opacity-50 text-white hover:bg-opacity-75'
+                        }`}
+                        title={showTranslatedSubtitles ? 'Hide Translated Subtitles' : 'Show Translated Subtitles'}
+                        disabled={isTranslatingWords}
+                      >
+                        {isTranslatingWords ? (
+                          <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
+                        ) : (
+                          <FiGlobe size={14} />
+                        )}
+                      </button>
+                      
+                      {/* Language Dropdown Button */}
+                      <button
+                        onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+                        className="p-2 bg-black bg-opacity-50 text-white rounded-lg hover:bg-opacity-75 transition-all"
+                        title="Select Translation Language"
+                      >
+                        <FiChevronDown size={12} />
+                      </button>
+                      
+                      {/* Language Dropdown */}
+                      {showLanguageDropdown && (
+                        <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999] min-w-44 max-h-48 overflow-y-auto">
+                          {subtitleLanguages.map((lang) => (
+                            <button
+                              key={lang.code}
+                              onClick={() => {
+                                setSubtitleLanguage(lang.code);
+                                setShowLanguageDropdown(false);
+                                // Clear existing translations when language changes
+                                setWordTranslations({});
+                                setShowTranslatedSubtitles(false);
+                              }}
+                              className={`w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                                subtitleLanguage === lang.code ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'
+                              }`}
+                            >
+                              <span className="text-sm font-medium">{lang.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Fullscreen Button */}
+                    <button
+                      onClick={toggleVideoFullscreen}
+                      className="p-2 bg-black bg-opacity-50 text-white rounded-lg hover:bg-opacity-75 transition-all"
+                      title="Toggle Fullscreen"
+                    >
+                      {isVideoFullscreen ? <FiMinimize size={16} /> : <FiMaximize size={16} />}
+                    </button>
+                  </div>
+                  
+                  {/* Enhanced Video Subtitles Overlay for mobile */}
+                  {(() => {
+                    const currentSegment = getCurrentSubtitleSegment();
+                    if (!currentSegment) return null;
+                    
+                    const highlightedWords = getHighlightedWordsInSegment(currentSegment);
+                    const maxWordsPerLine = 6;
+                    const shouldUseMultipleLines = highlightedWords.length > maxWordsPerLine;
+                    
+
+                    
+                    return (
+                      <div className={`absolute bg-black bg-opacity-30 text-white px-2 py-1 rounded-lg text-center z-50 ${
+                        shouldUseMultipleLines ? 'text-xs leading-tight' : 'text-xs'
+                      } ${
+                        isVideoFullscreen 
+                          ? 'bottom-16 left-1/2 transform -translate-x-1/2 w-4/5 max-w-4xl text-sm py-2 px-4' 
+                          : 'bottom-2 left-2 right-2'
+                      }`}>
+                        <div className="flex flex-wrap justify-center gap-1 break-words">
+                          {highlightedWords.map((word, index) => {
+                            const displayWord = showTranslatedSubtitles && wordTranslations[word.word] 
+                              ? wordTranslations[word.word] 
+                              : word.word;
+                            
+                            return (
+                              <span
+                                key={index}
+                                className={`transition-all duration-200 inline-block ${
+                                  word.isActive 
+                                    ? 'text-yellow-300 font-bold scale-110 drop-shadow-lg' 
+                                    : word.isPast 
+                                      ? 'text-gray-300' 
+                                      : 'text-white'
+                                }`}
+                                title={showTranslatedSubtitles && wordTranslations[word.word] ? `Original: ${word.word}` : undefined}
+                              >
+                                {displayWord}
+                                {index < highlightedWords.length - 1 && ' '}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : (
+                <audio 
+                  ref={audioRef}
+                  src={audioUrl}
+                  onTimeUpdate={() => {
+                    if (audioRef.current) {
+                      setCurrentTime(audioRef.current.currentTime);
+                    }
+                  }}
+                  onDurationChange={() => {
+                    if (audioRef.current) {
+                      setDuration(audioRef.current.duration);
+                    }
+                  }}
+                  onEnded={() => setIsPlaying(false)}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                />
+              )}
+              
               {/* Mobile audio controls */}
               <div className="px-3 pb-3">
                 <div className="flex items-center mb-2">
@@ -2172,11 +2694,12 @@ const TranscriptionPage: React.FC = () => {
                   <input
                     type="range"
                     min="0"
-                    max={duration}
+                    max={duration || 100}
                     value={currentTime}
                     onChange={(e) => {
-                      if (audioRef.current) {
-                        audioRef.current.currentTime = parseFloat(e.target.value);
+                      const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                      if (mediaElement) {
+                        mediaElement.currentTime = parseFloat(e.target.value);
                       }
                     }}
                     step="0.1"
@@ -2191,8 +2714,9 @@ const TranscriptionPage: React.FC = () => {
                   <div className="flex space-x-1">
                     <button 
                       onClick={() => {
-                        if (audioRef.current) {
-                          audioRef.current.currentTime = Math.max(0, currentTime - 5);
+                        const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                        if (mediaElement) {
+                          mediaElement.currentTime = Math.max(0, currentTime - 5);
                         }
                       }}
                       className="p-1.5 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
@@ -2211,8 +2735,9 @@ const TranscriptionPage: React.FC = () => {
                     </button>
                     <button 
                       onClick={() => {
-                        if (audioRef.current) {
-                          audioRef.current.currentTime = Math.min(duration, currentTime + 5);
+                        const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                        if (mediaElement) {
+                          mediaElement.currentTime = Math.min(duration, currentTime + 5);
                         }
                       }}
                       className="p-1.5 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
@@ -2228,8 +2753,9 @@ const TranscriptionPage: React.FC = () => {
                       <button 
                         key={rate}
                         onClick={() => {
-                          if (audioRef.current) {
-                            audioRef.current.playbackRate = rate;
+                          const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                          if (mediaElement) {
+                            mediaElement.playbackRate = rate;
                             setPlaybackRate(rate);
                           }
                         }}
@@ -2256,24 +2782,7 @@ const TranscriptionPage: React.FC = () => {
           </div>
         )}
 
-        {/* Audio element (hidden) */}
-        <audio 
-          ref={audioRef}
-          src={audioUrl}
-          onTimeUpdate={() => {
-            if (audioRef.current) {
-              setCurrentTime(audioRef.current.currentTime);
-            }
-          }}
-          onDurationChange={() => {
-            if (audioRef.current) {
-              setDuration(audioRef.current.duration);
-            }
-          }}
-          onEnded={() => setIsPlaying(false)}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-        />
+
 
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
@@ -2323,7 +2832,7 @@ const TranscriptionPage: React.FC = () => {
                   {/* Translation Controls */}
                   <div className="p-2 sm:p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+                      <div className="flex flex-row items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
                         <div className="relative">
                           <button
                             onClick={toggleTranslation}
@@ -2416,8 +2925,9 @@ const TranscriptionPage: React.FC = () => {
                                     : 'hover:bg-blue-100 hover:dark:bg-blue-900/30 rounded'
                                 }`}
                                 onClick={() => {
-                                  if (audioRef.current) {
-                                    audioRef.current.currentTime = word.startTime;
+                                  const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                                  if (mediaElement) {
+                                    mediaElement.currentTime = word.startTime;
                                     setCurrentTime(word.startTime);
                                   }
                                 }}
@@ -3043,8 +3553,9 @@ const TranscriptionPage: React.FC = () => {
                                     : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:border-blue-200 dark:hover:border-blue-700'
                                 }`}
                                 onClick={() => {
-                                  if (audioRef.current) {
-                                    audioRef.current.currentTime = wordData.start;
+                                  const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                                  if (mediaElement) {
+                                    mediaElement.currentTime = wordData.start;
                                     setCurrentTime(wordData.start);
                                   }
                                 }}
@@ -3108,7 +3619,7 @@ const TranscriptionPage: React.FC = () => {
               >
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
                   <div className="p-4 border-b dark:border-gray-700">
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.audio.controls')}</h2>
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{videoUrl ? t('transcription.video.controls') : t('transcription.audio.controls')}</h2>
                   </div>
                   
                   {/* Waveform visualization */}
@@ -3131,24 +3642,165 @@ const TranscriptionPage: React.FC = () => {
                     </div>
                   </div>
                   
-                  {/* Audio element (hidden) */}
-                  <audio 
-                    ref={audioRef}
-                    src={audioUrl}
-                    onTimeUpdate={() => {
-                      if (audioRef.current) {
-                        setCurrentTime(audioRef.current.currentTime);
-                      }
-                    }}
-                    onDurationChange={() => {
-                      if (audioRef.current) {
-                        setDuration(audioRef.current.duration);
-                      }
-                    }}
-                    onEnded={() => setIsPlaying(false)}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                  />
+                  {/* Media element - Video or Audio */}
+                  {videoUrl ? (
+                    <div className="relative mb-4">
+                      <video 
+                        ref={videoRef}
+                        src={videoUrl}
+                        className="w-full max-h-64 rounded-lg bg-black"
+                        onTimeUpdate={() => {
+                          if (videoRef.current) {
+                            setCurrentTime(videoRef.current.currentTime);
+                          }
+                        }}
+                        onDurationChange={() => {
+                          if (videoRef.current) {
+                            setDuration(videoRef.current.duration);
+                          }
+                        }}
+                        onEnded={() => setIsPlaying(false)}
+                        onPlay={() => setIsPlaying(true)}
+                        onPause={() => setIsPlaying(false)}
+                      />
+                      
+                      {/* Video Control Buttons */}
+                      <div className="absolute top-3 right-3 flex space-x-2">
+                        {/* Subtitle Translation Controls */}
+                        <div className="relative flex items-center space-x-1 language-dropdown-container">
+                          {/* Translation Toggle Button */}
+                          <button
+                            onClick={() => {
+                              if (!showTranslatedSubtitles && Object.keys(wordTranslations).length === 0) {
+                                // If no translations exist, translate all words first
+                                translateAllSubtitleWords();
+                              }
+                              setShowTranslatedSubtitles(!showTranslatedSubtitles);
+                            }}
+                            className={`p-2 rounded-lg transition-all ${
+                              showTranslatedSubtitles
+                                ? 'bg-blue-500 bg-opacity-75 text-white'
+                                : 'bg-black bg-opacity-50 text-white hover:bg-opacity-75'
+                            }`}
+                            title={showTranslatedSubtitles ? 'Hide Translated Subtitles' : 'Show Translated Subtitles'}
+                            disabled={isTranslatingWords}
+                          >
+                            {isTranslatingWords ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            ) : (
+                              <FiGlobe size={18} />
+                            )}
+                          </button>
+                          
+                          {/* Language Dropdown Button */}
+                          <button
+                            onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+                            className="p-2 bg-black bg-opacity-50 text-white rounded-lg hover:bg-opacity-75 transition-all"
+                            title="Select Translation Language"
+                          >
+                            <FiChevronDown size={16} />
+                          </button>
+                          
+                          {/* Language Dropdown */}
+                          {showLanguageDropdown && (
+                            <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999] min-w-48 max-h-64 overflow-y-auto">
+                              {subtitleLanguages.map((lang) => (
+                                <button
+                                  key={lang.code}
+                                  onClick={() => {
+                                    setSubtitleLanguage(lang.code);
+                                    setShowLanguageDropdown(false);
+                                    // Clear existing translations when language changes
+                                    setWordTranslations({});
+                                    setShowTranslatedSubtitles(false);
+                                  }}
+                                  className={`w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                                    subtitleLanguage === lang.code ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'
+                                  }`}
+                                >
+                                  <span className="text-sm font-medium">{lang.name}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Fullscreen Button */}
+                        <button
+                          onClick={toggleVideoFullscreen}
+                          className="p-2 bg-black bg-opacity-50 text-white rounded-lg hover:bg-opacity-75 transition-all"
+                          title="Toggle Fullscreen"
+                        >
+                          {isVideoFullscreen ? <FiMinimize size={18} /> : <FiMaximize size={18} />}
+                        </button>
+                      </div>
+                      
+                      {/* Enhanced Video Subtitles Overlay */}
+                      {(() => {
+                        const currentSegment = getCurrentSubtitleSegment();
+                        if (!currentSegment) return null;
+                        
+                        const highlightedWords = getHighlightedWordsInSegment(currentSegment);
+                        const maxWordsPerLine = 8;
+                        const shouldUseMultipleLines = highlightedWords.length > maxWordsPerLine;
+                        
+                        
+                        
+                        return (
+                          <div className={`absolute bg-black bg-opacity-30 text-white px-2 py-1 rounded-lg text-center z-50 ${
+                            shouldUseMultipleLines ? 'text-xs leading-relaxed' : 'text-sm'
+                          } ${
+                            isVideoFullscreen 
+                              ? 'bottom-20 left-1/2 transform -translate-x-1/2 w-4/5 max-w-5xl text-base py-3 px-4' 
+                              : 'bottom-4 left-4 right-4'
+                          }`}>
+                            <div className="flex flex-wrap justify-center gap-1 break-words">
+                              {highlightedWords.map((word: any, index: number) => {
+                                const displayWord = showTranslatedSubtitles && wordTranslations[word.word] 
+                                  ? wordTranslations[word.word] 
+                                  : word.word;
+                                
+                                return (
+                                  <span
+                                    key={index}
+                                    className={`transition-all duration-200 inline-block ${
+                                      word.isActive 
+                                        ? 'text-yellow-300 font-bold scale-110 drop-shadow-lg' 
+                                        : word.isPast 
+                                          ? 'text-gray-300' 
+                                          : 'text-white'
+                                    }`}
+                                    title={showTranslatedSubtitles && wordTranslations[word.word] ? `Original: ${word.word}` : undefined}
+                                  >
+                                    {displayWord}
+                                    {index < highlightedWords.length - 1 && ' '}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    <audio 
+                      ref={audioRef}
+                      src={audioUrl}
+                      onTimeUpdate={() => {
+                        if (audioRef.current) {
+                          setCurrentTime(audioRef.current.currentTime);
+                        }
+                      }}
+                      onDurationChange={() => {
+                        if (audioRef.current) {
+                          setDuration(audioRef.current.duration);
+                        }
+                      }}
+                      onEnded={() => setIsPlaying(false)}
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
+                    />
+                  )}
 
                   {/* Audio controls */}
                   <div className="px-4 pb-4">
@@ -3159,11 +3811,12 @@ const TranscriptionPage: React.FC = () => {
                       <input
                         type="range"
                         min="0"
-                        max={duration}
+                        max={duration || 100}
                         value={currentTime}
                         onChange={(e) => {
-                          if (audioRef.current) {
-                            audioRef.current.currentTime = parseFloat(e.target.value);
+                          const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                          if (mediaElement) {
+                            mediaElement.currentTime = parseFloat(e.target.value);
                           }
                         }}
                         step="0.1"
@@ -3178,10 +3831,11 @@ const TranscriptionPage: React.FC = () => {
                       <div className="flex space-x-1 sm:space-x-2">
                         <button 
                           onClick={() => {
-                            if (audioRef.current) {
-                              audioRef.current.currentTime = Math.max(0, currentTime - 5);
-                            }
-                          }}
+                          const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                          if (mediaElement) {
+                            mediaElement.currentTime = Math.max(0, currentTime - 5);
+                          }
+                        }}
                           className="p-1 sm:p-2 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
                           title={t('transcription.audio.back5Seconds')}
                         >
@@ -3198,10 +3852,11 @@ const TranscriptionPage: React.FC = () => {
                         </button>
                         <button 
                           onClick={() => {
-                            if (audioRef.current) {
-                              audioRef.current.currentTime = Math.min(duration, currentTime + 5);
-                            }
-                          }}
+                          const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                          if (mediaElement) {
+                            mediaElement.currentTime = Math.min(duration, currentTime + 5);
+                          }
+                        }}
                           className="p-1 sm:p-2 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
                           title={t('transcription.audio.forward5Seconds')}
                         >
@@ -3215,8 +3870,9 @@ const TranscriptionPage: React.FC = () => {
                           <button 
                             key={rate}
                             onClick={() => {
-                              if (audioRef.current) {
-                                audioRef.current.playbackRate = rate;
+                              const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                              if (mediaElement) {
+                                mediaElement.playbackRate = rate;
                                 setPlaybackRate(rate);
                               }
                             }}
@@ -3232,9 +3888,9 @@ const TranscriptionPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Audio information */}
+                    {/* Audio/Video information */}
                     <div className="border-t dark:border-gray-700 pt-4 mt-4">
-                      <h3 className="text-lg font-medium mb-3 dark:text-gray-300">{t('transcription.audio.information')}</h3>
+                      <h3 className="text-lg font-medium mb-3 dark:text-gray-300">{videoUrl ? t('transcription.video.information') : t('transcription.audio.information')}</h3>
                       
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div className="text-gray-600 dark:text-gray-400">{t('transcription.audio.duration')}:</div>
@@ -3268,6 +3924,59 @@ const TranscriptionPage: React.FC = () => {
           </div>
         )}
       </div>
+      
+      {/* Fullscreen Subtitle Portal */}
+      {(() => {
+        // Check if video is in fullscreen using multiple methods
+        const isVideoElementFullscreen = document.fullscreenElement === videoRef.current;
+        const hasFullscreenElement = !!document.fullscreenElement;
+        
+        // Show portal if video is fullscreen OR if there's any fullscreen element and we have a video
+        const shouldShowPortal = isVideoElementFullscreen || (hasFullscreenElement && videoRef.current);
+        
+        if (!shouldShowPortal) return null;
+        
+        const currentSegment = getCurrentSubtitleSegment();
+        if (!currentSegment) return null;
+        
+        const highlightedWords = getHighlightedWordsInSegment(currentSegment);
+        const maxWordsPerLine = 8;
+        const shouldUseMultipleLines = highlightedWords.length > maxWordsPerLine;
+        
+        return createPortal(
+          <div className="fixed inset-0 pointer-events-none z-[9999] flex items-end justify-center pb-20">
+            <div className={`bg-black bg-opacity-30 text-white px-4 py-2 rounded-lg text-center max-w-4xl w-4/5 ${
+              shouldUseMultipleLines ? 'text-sm leading-relaxed' : 'text-base'
+            }`}>
+              <div className="flex flex-wrap justify-center gap-1 break-words">
+                {highlightedWords.map((word: any, index: number) => {
+                  const displayWord = showTranslatedSubtitles && wordTranslations[word.word] 
+                    ? wordTranslations[word.word] 
+                    : word.word;
+                  
+                  return (
+                    <span
+                      key={index}
+                      className={`transition-all duration-200 inline-block ${
+                        word.isActive 
+                          ? 'text-yellow-300 font-bold scale-110 drop-shadow-lg' 
+                          : word.isPast 
+                            ? 'text-gray-300' 
+                            : 'text-white'
+                      }`}
+                      title={showTranslatedSubtitles && wordTranslations[word.word] ? `Original: ${word.word}` : undefined}
+                    >
+                      {displayWord}
+                      {index < highlightedWords.length - 1 && ' '}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          </div>,
+          document.body
+        );
+      })()}
     </div>
   );
 };

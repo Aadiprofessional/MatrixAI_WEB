@@ -270,270 +270,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     });
   };
 
-  const downloadPDF = async () => {
-    if (!graphData) {
-      alert('No mind map data available. Please generate a mind map first.');
-      return;
-    }
-    
-    // Check if user ID is available
-    if (!uid) {
-      alert('Please log in to download the PDF.');
-      return;
-    }
-    
-    setIsDownloading(true);
-    console.log('Starting visual PDF download process...');
-    
-    try {
-      // Deduct 1 coin for PDF download
-      console.log('Deducting coins...');
-      const coinResponse = await userService.subtractCoins(uid, 1, 'mindmap_pdf_download');
-      
-      if (!coinResponse.success) {
-        alert('Failed to deduct coins. Please try again.');
-        setIsDownloading(false);
-        return;
-      }
-      
-      console.log('Coins deducted successfully, importing libraries...');
-      
-      // Import libraries
-      let html2canvas, jsPDF;
-      try {
-        const html2canvasModule = await import('html2canvas');
-        html2canvas = html2canvasModule.default;
-        console.log('html2canvas imported successfully');
-        
-        const jsPDFModule = await import('jspdf');
-        jsPDF = jsPDFModule.default;
-        console.log('jsPDF imported successfully');
-      } catch (importError: any) {
-        console.error('Error importing libraries:', importError);
-        throw new Error(`Failed to import required libraries: ${importError?.message || 'Unknown error'}`);
-      }
-      
-      console.log('Libraries imported, capturing iframe content...');
-      
-      // Create canvas for drawing mind map
-        const canvas = document.createElement('canvas');
-        canvas.width = 1200;
-        canvas.height = 800;
-        const ctx = canvas.getContext('2d')!;
-        
-        // Set background
-        ctx.fillStyle = theme === 'dark' ? '#1f2937' : '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Function to draw mind map nodes with boundary checking
-        const drawMindMap = (node: any, x: number, y: number, level: number = 0, parentX?: number, parentY?: number) => {
-          // Ensure coordinates are within canvas bounds
-          const margin = 50;
-          const safeX = Math.max(margin, Math.min(canvas.width - margin, x));
-          const safeY = Math.max(margin, Math.min(canvas.height - margin, y));
-          
-          const nodeRadius = Math.max(6, 16 - level * 2);
-          const textColor = theme === 'dark' ? '#f9fafb' : '#1f2937';
-          const lineColor = theme === 'dark' ? '#6b7280' : '#9ca3af';
-          const nodeColor = theme === 'dark' ? '#374151' : '#e5e7eb';
-          
-          // Draw line to parent if exists
-          if (parentX !== undefined && parentY !== undefined) {
-            ctx.strokeStyle = lineColor;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(parentX, parentY);
-            ctx.lineTo(safeX, safeY);
-            ctx.stroke();
-          }
-          
-          // Draw node circle
-          ctx.fillStyle = nodeColor;
-          ctx.beginPath();
-          ctx.arc(safeX, safeY, nodeRadius, 0, 2 * Math.PI);
-          ctx.fill();
-          
-          // Draw node border
-          ctx.strokeStyle = lineColor;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-          
-          // Draw text with improved wrapping
-          ctx.fillStyle = textColor;
-          ctx.font = `${Math.max(10, 12 - level)}px Arial`;
-          ctx.textAlign = level === 0 ? 'center' : 'left';
-          ctx.textBaseline = 'middle';
-          
-          const text = node.name || '';
-          // Adjust max width based on remaining canvas space
-          const remainingWidth = canvas.width - safeX - margin;
-          const maxWidth = Math.min(120, remainingWidth - nodeRadius - 20);
-          
-          const words = text.split(' ');
-          let lines = [];
-          let currentLine = '';
-          
-          for (let word of words) {
-            const testLine = currentLine + (currentLine ? ' ' : '') + word;
-            const metrics = ctx.measureText(testLine);
-            if (metrics.width > maxWidth && currentLine) {
-              lines.push(currentLine);
-              currentLine = word;
-            } else {
-              currentLine = testLine;
-            }
-          }
-          if (currentLine) lines.push(currentLine);
-          
-          // Limit number of lines to prevent overflow
-          if (lines.length > 3) {
-            lines = lines.slice(0, 2);
-            lines.push(lines[1] + '...');
-          }
-          
-          const lineHeight = Math.max(10, 14 - level);
-          const startY = safeY - ((lines.length - 1) * lineHeight) / 2;
-          
-          lines.forEach((line, index) => {
-            const textX = level === 0 ? safeX : safeX + nodeRadius + 8;
-            const textY = startY + index * lineHeight;
-            
-            // Ensure text doesn't go beyond canvas bounds
-            if (textY >= margin && textY <= canvas.height - margin) {
-              ctx.fillText(line, textX, textY);
-            }
-          });
-          
-          // Draw children with improved spacing
-          if (node.children && node.children.length > 0) {
-            const availableHeight = canvas.height - 2 * margin;
-            const childSpacing = Math.min(60, availableHeight / Math.max(node.children.length, 1));
-            const totalChildrenHeight = (node.children.length - 1) * childSpacing;
-            const startChildY = Math.max(margin, safeY - totalChildrenHeight / 2);
-            
-            node.children.forEach((child: any, index: number) => {
-              const childX = Math.min(safeX + 150, canvas.width - margin - 100);
-              const childY = Math.min(startChildY + index * childSpacing, canvas.height - margin);
-              
-              // Only draw child if it's within reasonable bounds
-              if (childX < canvas.width - margin && childY < canvas.height - margin) {
-                drawMindMap(child, childX, childY, level + 1, safeX, safeY);
-              }
-            });
-          }
-        };
-        
-        // Add debugging
-        console.log('GraphData for drawing:', graphData);
-        
-        // Draw the mind map starting from center-left
-        if (graphData && Array.isArray(graphData) && graphData.length > 0 && graphData[0].name) {
-          console.log('Drawing mind map with root node:', graphData[0].name);
-          // Start from left-center with better positioning
-          const rootX = 120; // More space from left edge
-          const rootY = canvas.height / 2;
-          drawMindMap(graphData[0], rootX, rootY);
-        } else {
-          console.error('Invalid graphData structure:', graphData);
-          // Draw a simple fallback
-          ctx.fillStyle = theme === 'dark' ? '#f9fafb' : '#1f2937';
-          ctx.font = '16px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText('Mind Map Data Not Available', canvas.width / 2, canvas.height / 2);
-        }
-        
-        // Add a small delay to ensure drawing is complete
-        await new Promise(resolve => setTimeout(resolve, 100));
-       
-       console.log('Canvas drawing complete, creating PDF...');
-       console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
-       
-       // Debug: Check if canvas has content
-       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-       const hasContent = imageData.data.some((pixel, index) => {
-         // Check if any pixel is not the background color
-         if (index % 4 === 3) return false; // Skip alpha channel
-         const bgColor = theme === 'dark' ? 31 : 255; // #1f2937 vs #ffffff
-         return Math.abs(pixel - bgColor) > 10;
-       });
-       console.log('Canvas has content:', hasContent);
-      
-      // Create PDF document
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      // Calculate dimensions to fit the image properly
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const availableWidth = pdfWidth - (margin * 2);
-      const availableHeight = pdfHeight - (margin * 3) - 20; // Extra space for title
-      
-      // Calculate scaling to fit image while maintaining aspect ratio
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const aspectRatio = imgWidth / imgHeight;
-      
-      let finalWidth = availableWidth;
-      let finalHeight = availableWidth / aspectRatio;
-      
-      if (finalHeight > availableHeight) {
-        finalHeight = availableHeight;
-        finalWidth = availableHeight * aspectRatio;
-      }
-      
-      // Center the image
-      const xOffset = (pdfWidth - finalWidth) / 2;
-      const yOffset = margin + 20; // Space for title
-      
-      // Add title
-      pdf.setFontSize(18);
-      pdf.setFont('helvetica', 'bold');
-      const title = 'Mind Map Visualization';
-      const titleWidth = pdf.getTextWidth(title);
-      pdf.text(title, (pdfWidth - titleWidth) / 2, margin + 10);
-      
-      // Add date
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      const dateText = `Generated on: ${new Date().toLocaleDateString()}`;
-      const dateWidth = pdf.getTextWidth(dateText);
-      pdf.text(dateText, (pdfWidth - dateWidth) / 2, margin + 16);
-      
-      // Convert canvas to image and add to PDF
-      const imgData = canvas.toDataURL('image/png');
-      pdf.addImage(imgData, 'PNG', xOffset, yOffset, finalWidth, finalHeight);
-      
-      // Add footer
-      pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'normal');
-      const footerText = 'Generated by MatrixAI Mind Map Tool';
-      const footerWidth = pdf.getTextWidth(footerText);
-      pdf.text(footerText, (pdfWidth - footerWidth) / 2, pdfHeight - 5);
-      
-      console.log('PDF created, saving file...');
-      
-      // Save the PDF
-      pdf.save(`mindmap_${audioid || Date.now()}.pdf`);
-      
-      console.log('PDF downloaded successfully');
-      
-    } catch (error: any) {
-      console.error('Error downloading mind map PDF:', error);
-      
-      // Check if error is due to insufficient coins
-      if (error.message && error.message.includes('insufficient')) {
-        alert('You don\'t have enough coins. Please purchase more coins to use this feature.');
-      } else {
-        alert('Failed to generate PDF: ' + (error.message || 'Unknown error'));
-      }
-    } finally {
-      setIsDownloading(false);
-    }
-  };
+
 
   // saveMindMap function removed - functionality merged with sendXmlGraphData
 
@@ -691,14 +428,20 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
         const coloredGraphData = ${JSON.stringify(graphData)}.map((node, idx) => assignColors(node, idx));
         const { repulsion, edgeLength, layerSpacing, nodeSpacing } = detectOptimalChartSize(coloredGraphData);
 
-        // Function to wrap text into multiple lines
+        // Function to wrap text into multiple lines with truncation
         function wrapText(text, nodeType) {
+          // Truncate text if it exceeds 150 characters
+          let displayText = text;
+          if (text.length > 150) {
+            displayText = text.substring(0, 150) + '...';
+          }
+          
           let maxLineLength = 16; // Reduced for topic and subtopic nodes
           if (nodeType === 'description') {
             maxLineLength = 70; // Reduced for description nodes
           }
 
-          const words = text.split(' ');
+          const words = displayText.split(' ');
           const lines = [];
           let currentLine = '';
 
@@ -727,6 +470,13 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
             borderColor: '${theme === 'dark' ? '#6b7280' : '#e5e7eb'}',
             textStyle: {
               color: '${theme === 'dark' ? '#e5e7eb' : '#111827'}'
+            },
+            formatter: function(params) {
+              const fullText = params.data.name;
+              if (fullText.length > 150) {
+                return '<div style="max-width: 300px; word-wrap: break-word; white-space: normal;">' + fullText + '</div>';
+              }
+              return fullText;
             }
           },
           series: [{
@@ -744,7 +494,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
               position: 'left',
               verticalAlign: 'middle',
               align: 'right',
-              fontSize: 18,
+              fontSize: 9,
               color: themeText,
               formatter: (params) => {
                 const nodeType = params.data.nodeType || 'topic';
@@ -803,23 +553,46 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
           myChart.resize();
         });
         
+        // Function to update font size based on zoom level
+        function updateFontSize(zoomLevel) {
+          const baseFontSize = 9; // Half of original 18px
+          const scaledFontSize = Math.min(18, baseFontSize * zoomLevel * 2); // Scale up to original 18px when zoom is 1
+          
+          myChart.setOption({
+            series: [{
+              label: {
+                fontSize: scaledFontSize
+              },
+              leaves: {
+                label: {
+                  fontSize: scaledFontSize
+                }
+              }
+            }]
+          });
+        }
+        
         // Zoom controls
         document.getElementById('zoomIn').addEventListener('click', function() {
           const currentZoom = myChart.getOption().series[0].zoom || 1;
+          const newZoom = Math.min(2, currentZoom * 1.3);
           myChart.setOption({
             series: [{
-              zoom: Math.min(2, currentZoom * 1.3)
+              zoom: newZoom
             }]
           });
+          updateFontSize(newZoom);
         });
         
         document.getElementById('zoomOut').addEventListener('click', function() {
           const currentZoom = myChart.getOption().series[0].zoom || 1;
+          const newZoom = Math.max(0.5, currentZoom / 1.3);
           myChart.setOption({
             series: [{
-              zoom: Math.max(0.5, currentZoom / 1.3)
+              zoom: newZoom
             }]
           });
+          updateFontSize(newZoom);
         });
         
         document.getElementById('reset').addEventListener('click', function() {
@@ -828,6 +601,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
               zoom: 1
             }]
           });
+          updateFontSize(1);
           myChart.dispatchAction({
             type: 'restore'
           });
@@ -837,7 +611,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     </html>
   `;
 
-  const downloadPDFDirectly = async () => {
+  const downloadPDF = async () => {
     if (!graphData) {
       alert('No mind map data available. Please generate a mind map first.');
       return;
@@ -850,7 +624,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     }
     
     setIsDownloading(true);
-    console.log('Starting direct PDF download process...');
+    console.log('Starting visual PDF download process...');
     
     try {
       // Deduct 1 coin for PDF download
@@ -863,76 +637,79 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
         return;
       }
       
-      console.log('Coins deducted successfully, importing libraries...');
+      console.log('Coins deducted successfully, capturing chart...');
       
-      // Import libraries
-       let jsPDF;
-       try {
-         const jsPDFModule = await import('jspdf');
-         jsPDF = jsPDFModule.default;
-         console.log('jsPDF imported successfully');
-       } catch (importError: any) {
-         console.error('Error importing jsPDF:', importError);
-         throw new Error(`Failed to import jsPDF: ${importError?.message || 'Unknown error'}`);
-       }
+      // Get the iframe and access the chart
+      const iframe = webViewRef.current;
+      if (!iframe || !iframe.contentWindow) {
+        throw new Error('Chart iframe not accessible');
+      }
+      
+      // Wait a moment for iframe to be ready
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Execute chart capture in iframe context
+      const chartDataUrl = await new Promise<string>((resolve, reject) => {
+        try {
+          iframe.contentWindow!.postMessage({ action: 'getChartImage' }, '*');
+          
+          const messageHandler = (event: MessageEvent) => {
+            if (event.data && event.data.type === 'chartImage') {
+              window.removeEventListener('message', messageHandler);
+              resolve(event.data.dataUrl);
+            } else if (event.data && event.data.type === 'chartError') {
+              window.removeEventListener('message', messageHandler);
+              reject(new Error(event.data.error));
+            }
+          };
+          
+          window.addEventListener('message', messageHandler);
+          
+          // Timeout after 10 seconds
+          setTimeout(() => {
+            window.removeEventListener('message', messageHandler);
+            reject(new Error('Chart capture timeout'));
+          }, 10000);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      
+      console.log('Chart captured, creating PDF...');
+      
+      // Import jsPDF
+      let jsPDF;
+      try {
+        const jsPDFModule = await import('jspdf');
+        jsPDF = jsPDFModule.default;
+        console.log('jsPDF imported successfully');
+      } catch (importError: any) {
+        console.error('Error importing jsPDF:', importError);
+        throw new Error(`Failed to import jsPDF: ${importError?.message || 'Unknown error'}`);
+      }
       
       // Create PDF document
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
+        format: 'a4'
       });
       
       // Add title
       pdf.setFontSize(16);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Mind Map Visualization', 10, 10);
+      pdf.text('Mind Map Visualization', 10, 15);
       
       // Add date
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 10, 18);
+      pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 10, 25);
       
-      // Add mind map content as text
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'normal');
+      // Add the chart image
+      const imgWidth = 277; // A4 landscape width minus margins
+      const imgHeight = 180; // Maintain aspect ratio
       
-      const addNodeToPDF = (node: MindMapNode, level = 0, y = 30) => {
-        const indent = level * 10;
-        const prefix = level > 0 ? '- ' : '';
-        
-        // Add the node name
-        pdf.setFont('helvetica', level === 0 ? 'bold' : 'normal');
-        pdf.text(`${prefix}${node.name}`, 10 + indent, y);
-        
-        let newY = y + 8;
-        
-        // Add children recursively
-        if (node.children && node.children.length > 0) {
-          node.children.forEach(child => {
-            // Check if we need a new page
-            if (newY > 180) {
-              pdf.addPage();
-              newY = 30;
-            }
-            newY = addNodeToPDF(child, level + 1, newY);
-          });
-        }
-        
-        return newY;
-      };
-      
-      // Process each top-level node
-      let currentY = 30;
-      graphData.forEach(node => {
-        currentY = addNodeToPDF(node, 0, currentY);
-        currentY += 10; // Add extra space between top-level nodes
-        
-        // Add a new page if needed
-        if (currentY > 180) {
-          pdf.addPage();
-          currentY = 30;
-        }
-      });
+      pdf.addImage(chartDataUrl, 'PNG', 10, 35, imgWidth, imgHeight);
       
       console.log('PDF created, saving file...');
       
