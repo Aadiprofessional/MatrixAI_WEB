@@ -8,6 +8,7 @@ export { default as PublicToolLayout } from './PublicToolLayout';
 export { default as PublicResourceLayout } from './PublicResourceLayout';
 export { default as Footer } from './Footer';
 export { default as ProFeatureAlert } from './ProFeatureAlert';
+export { default as ChargeModal } from './ChargeModal';
 export { default as AnimatedAlert } from './AnimatedAlert';
 export { default as ConfirmationDialog } from './ConfirmationDialog';
 export { default as FeatureSection } from './FeatureSection';

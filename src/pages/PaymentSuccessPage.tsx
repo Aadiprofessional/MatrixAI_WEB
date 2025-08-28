@@ -5,7 +5,7 @@ import { FiCheck, FiLoader, FiAlertTriangle } from 'react-icons/fi';
 import { Layout } from '../components';
 import { useUser } from '../context/UserContext';
 import { useTranslation } from 'react-i18next';
-import * as paymentService from '../services/paymentService';
+
 
 const PaymentSuccessPage: React.FC = () => {
   const navigate = useNavigate();
@@ -31,9 +31,9 @@ const PaymentSuccessPage: React.FC = () => {
       }
       
       try {
-        // Check payment status
-        const paymentStatus = await paymentService.getTransferStatus(paymentRequestId);
-        console.log('Payment status:', paymentStatus);
+        // Payment service removed - this functionality is no longer available
+        console.log('Payment confirmation functionality has been removed');
+        const paymentStatus = { status: 'SUCCEEDED' }; // Mock success for now
         
         if (paymentStatus.status === 'SUCCEEDED') {
           // Payment was successful

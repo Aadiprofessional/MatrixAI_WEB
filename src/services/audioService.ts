@@ -50,6 +50,20 @@ interface AudioFileResponse {
   duration?: number;
   uploaded_at: string;
   error_message?: string;
+  translated_data?: {
+    [languageCode: string]: {
+      words: Array<{
+        word: string;
+        start: number;
+        end: number;
+        confidence: number;
+        original_word: string;
+        punctuated_word: string;
+        original_punctuated_word: string;
+      }>;
+      transcription?: string;
+    };
+  };
 }
 
 interface AudioListResponse {

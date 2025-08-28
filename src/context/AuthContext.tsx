@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, useRef, ReactNode } from 'react';
+import { signInWithGoogle as supabaseSignInWithGoogle, signInWithApple as supabaseSignInWithApple, supabase } from '../supabaseClient';
 
 // Define the User interface
 export interface User {
@@ -150,6 +151,109 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // OAuth callback handler to sync Supabase users with backend
+  const handleOAuthCallback = async (session: any) => {
+    if (!session?.user) return;
+    
+    try {
+      console.log('🔄 Handling OAuth callback for user:', session.user.email);
+      
+      // Check if user exists in backend
+      const checkResponse = await fetch(`${process.env.REACT_APP_BACKEND_API_URL}/api/user/check-oauth-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: session.user.id,
+          email: session.user.email,
+          provider: 'google'
+        }),
+      });
+      
+      // Handle case where backend endpoints don't exist yet
+      if (checkResponse.status === 404) {
+        console.warn('⚠️ OAuth endpoints not implemented in backend yet. Creating temporary user data.');
+        // Create temporary user data from Supabase session
+        const tempUserData = {
+          uid: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
+          avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || '',
+          subscription_active: false,
+          credits: 0,
+          provider: 'google'
+        };
+        setUserData(tempUserData, session.access_token);
+        return;
+      }
+      
+      if (!checkResponse.ok) {
+        throw new Error(`Backend check failed: ${checkResponse.status}`);
+      }
+      
+      const checkData = await checkResponse.json();
+      
+      if (checkData.exists) {
+        // User exists, get their data and set in context
+        console.log('✅ OAuth user exists in backend, setting user data');
+        setUserData(checkData.user, session.access_token);
+      } else {
+        // User doesn't exist, create them in backend
+        console.log('🆕 Creating new OAuth user in backend');
+        const createResponse = await fetch(`${process.env.REACT_APP_BACKEND_API_URL}/api/user/create-oauth-user`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            uid: session.user.id,
+            email: session.user.email,
+            name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
+            provider: 'google',
+            avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture
+          }),
+        });
+        
+        if (!createResponse.ok) {
+          throw new Error(`Backend create failed: ${createResponse.status}`);
+        }
+        
+        const createData = await createResponse.json();
+        
+        if (createData.success) {
+          console.log('✅ OAuth user created successfully in backend');
+          setUserData(createData.user, session.access_token);
+        } else {
+          console.error('❌ Failed to create OAuth user in backend:', createData.message);
+          throw new Error(createData.message || 'Failed to create user in backend');
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error handling OAuth callback:', error);
+      
+      // If it's a network error or backend is unavailable, create temporary user
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        console.warn('⚠️ Backend unavailable. Creating temporary user data from Supabase session.');
+        const tempUserData = {
+          uid: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
+          avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || '',
+          subscription_active: false,
+          credits: 0,
+          provider: 'google'
+        };
+        setUserData(tempUserData, session.access_token);
+        return;
+      }
+      
+      setError('Failed to complete authentication. Please try again.');
+      // Clear the session if backend sync fails
+      await supabase.auth.signOut();
+    }
+  };
+
   useEffect(() => {
     // Prevent multiple initialization
     if (authInitialized.current) return;
@@ -163,11 +267,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         console.log('Initializing auth context...');
         
+        // Set up Supabase auth state change listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log('🔄 Supabase auth state changed:', event, session?.user?.email);
+          
+          if (event === 'SIGNED_IN' && session) {
+            // Handle OAuth callback
+            await handleOAuthCallback(session);
+          } else if (event === 'SIGNED_OUT') {
+            // Clear user data on sign out
+            setUser(null);
+            setSession(null);
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('matrixai_session');
+            localStorage.removeItem('matrixai_user');
+          }
+        });
+        
         // Verify session from localStorage (new API system)
         await verifySession(true);
         
         // Mark as initialized
         authInitialized.current = true;
+        
+        // Cleanup subscription on unmount
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
         console.error('Error initializing auth:', error);
         setError('Failed to initialize authentication');
@@ -270,8 +397,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       setError(null);
-      // TODO: Implement Google OAuth with new API
-      throw new Error('Google sign-in not implemented yet');
+      const result = await supabaseSignInWithGoogle();
+      return result;
     } catch (error: any) {
       setError(error.message || 'Failed to sign in with Google');
       throw error;
@@ -285,8 +412,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       setError(null);
-      // TODO: Implement Apple OAuth with new API
-      throw new Error('Apple sign-in not implemented yet');
+      const result = await supabaseSignInWithApple();
+      return result;
     } catch (error: any) {
       setError(error.message || 'Failed to sign in with Apple');
       throw error;

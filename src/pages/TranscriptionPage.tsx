@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,7 +13,7 @@ import {
   FiMaximize, FiMinimize, FiMenu, FiLayout, FiSave, FiFileText,
   FiBarChart2, FiZap, FiSettings, FiBookmark, FiMic,
   FiMessageSquare, FiGlobe, FiToggleLeft, FiToggleRight,
-  FiCpu, FiUser, FiSquare, FiVolume2, FiChevronDown
+  FiCpu, FiUser, FiSquare, FiVolume2, FiChevronDown, FiEdit
 } from 'react-icons/fi';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -45,11 +45,143 @@ interface Paragraph {
   endTime: number;
 }
 
-const azureEndpoint = 'https://api.cognitive.microsofttranslator.com';
-const azureKey = '21oYn4dps9k7VJUVttDmU3oigC93LUtyYB9EvQatENmWOufZa4xeJQQJ99ALACYeBjFXJ3w3AAAbACOG0HQP';
-const region = 'eastus';
+// Azure Translator configuration removed - using pre-translated data from API
 
-// Languages will be defined inside component to use translation
+// Azure Translate supported languages - comprehensive list
+const AZURE_SUPPORTED_LANGUAGES = [
+  { code: 'af', name: 'Afrikaans' },
+  { code: 'sq', name: 'Albanian' },
+  { code: 'am', name: 'Amharic' },
+  { code: 'ar', name: 'Arabic' },
+  { code: 'hy', name: 'Armenian' },
+  { code: 'as', name: 'Assamese' },
+  { code: 'az', name: 'Azerbaijani' },
+  { code: 'bn', name: 'Bangla' },
+  { code: 'ba', name: 'Bashkir' },
+  { code: 'eu', name: 'Basque' },
+  { code: 'bho', name: 'Bhojpuri' },
+  { code: 'brx', name: 'Bodo' },
+  { code: 'bs', name: 'Bosnian' },
+  { code: 'bg', name: 'Bulgarian' },
+  { code: 'yue', name: 'Cantonese (Traditional)' },
+  { code: 'ca', name: 'Catalan' },
+  { code: 'lzh', name: 'Chinese (Literary)' },
+  { code: 'zh-Hans', name: 'Chinese Simplified' },
+  { code: 'zh-Hant', name: 'Chinese Traditional' },
+  { code: 'sn', name: 'chiShona' },
+  { code: 'hr', name: 'Croatian' },
+  { code: 'cs', name: 'Czech' },
+  { code: 'da', name: 'Danish' },
+  { code: 'prs', name: 'Dari' },
+  { code: 'dv', name: 'Divehi' },
+  { code: 'doi', name: 'Dogri' },
+  { code: 'nl', name: 'Dutch' },
+  { code: 'en', name: 'English' },
+  { code: 'et', name: 'Estonian' },
+  { code: 'fo', name: 'Faroese' },
+  { code: 'fj', name: 'Fijian' },
+  { code: 'fil', name: 'Filipino' },
+  { code: 'fi', name: 'Finnish' },
+  { code: 'fr', name: 'French' },
+  { code: 'fr-ca', name: 'French (Canada)' },
+  { code: 'gl', name: 'Galician' },
+  { code: 'ka', name: 'Georgian' },
+  { code: 'de', name: 'German' },
+  { code: 'el', name: 'Greek' },
+  { code: 'gu', name: 'Gujarati' },
+  { code: 'ht', name: 'Haitian Creole' },
+  { code: 'ha', name: 'Hausa' },
+  { code: 'he', name: 'Hebrew' },
+  { code: 'hi', name: 'Hindi' },
+  { code: 'mww', name: 'Hmong Daw' },
+  { code: 'hu', name: 'Hungarian' },
+  { code: 'is', name: 'Icelandic' },
+  { code: 'ig', name: 'Igbo' },
+  { code: 'id', name: 'Indonesian' },
+  { code: 'ikt', name: 'Inuinnaqtun' },
+  { code: 'iu', name: 'Inuktitut' },
+  { code: 'iu-Latn', name: 'Inuktitut (Latin)' },
+  { code: 'ga', name: 'Irish' },
+  { code: 'it', name: 'Italian' },
+  { code: 'ja', name: 'Japanese' },
+  { code: 'kn', name: 'Kannada' },
+  { code: 'ks', name: 'Kashmiri' },
+  { code: 'kk', name: 'Kazakh' },
+  { code: 'km', name: 'Khmer' },
+  { code: 'rw', name: 'Kinyarwanda' },
+  { code: 'tlh-Latn', name: 'Klingon' },
+  { code: 'tlh-Piqd', name: 'Klingon (plqaD)' },
+  { code: 'gom', name: 'Konkani' },
+  { code: 'ko', name: 'Korean' },
+  { code: 'ku', name: 'Kurdish (Central)' },
+  { code: 'kmr', name: 'Kurdish (Northern)' },
+  { code: 'ky', name: 'Kyrgyz' },
+  { code: 'lo', name: 'Lao' },
+  { code: 'lv', name: 'Latvian' },
+  { code: 'ln', name: 'Lingala' },
+  { code: 'lt', name: 'Lithuanian' },
+  { code: 'dsb', name: 'Lower Sorbian' },
+  { code: 'lug', name: 'Luganda' },
+  { code: 'mk', name: 'Macedonian' },
+  { code: 'mai', name: 'Maithili' },
+  { code: 'mg', name: 'Malagasy' },
+  { code: 'ms', name: 'Malay' },
+  { code: 'ml', name: 'Malayalam' },
+  { code: 'mt', name: 'Maltese' },
+  { code: 'mi', name: 'Maori' },
+  { code: 'mr', name: 'Marathi' },
+  { code: 'mn-Cyrl', name: 'Mongolian (Cyrillic)' },
+  { code: 'mn-Mong', name: 'Mongolian (Traditional)' },
+  { code: 'my', name: 'Myanmar' },
+  { code: 'ne', name: 'Nepali' },
+  { code: 'nb', name: 'Norwegian' },
+  { code: 'nya', name: 'Nyanja' },
+  { code: 'or', name: 'Odia' },
+  { code: 'ps', name: 'Pashto' },
+  { code: 'fa', name: 'Persian' },
+  { code: 'pl', name: 'Polish' },
+  { code: 'pt', name: 'Portuguese (Brazil)' },
+  { code: 'pt-pt', name: 'Portuguese (Portugal)' },
+  { code: 'pa', name: 'Punjabi' },
+  { code: 'otq', name: 'Queretaro Otomi' },
+  { code: 'ro', name: 'Romanian' },
+  { code: 'run', name: 'Rundi' },
+  { code: 'ru', name: 'Russian' },
+  { code: 'sm', name: 'Samoan' },
+  { code: 'sr-Cyrl', name: 'Serbian (Cyrillic)' },
+  { code: 'sr-Latn', name: 'Serbian (Latin)' },
+  { code: 'st', name: 'Sesotho' },
+  { code: 'nso', name: 'Sesotho sa Leboa' },
+  { code: 'tn', name: 'Setswana' },
+  { code: 'sd', name: 'Sindhi' },
+  { code: 'si', name: 'Sinhala' },
+  { code: 'sk', name: 'Slovak' },
+  { code: 'sl', name: 'Slovenian' },
+  { code: 'so', name: 'Somali' },
+  { code: 'es', name: 'Spanish' },
+  { code: 'sw', name: 'Swahili' },
+  { code: 'sv', name: 'Swedish' },
+  { code: 'ty', name: 'Tahitian' },
+  { code: 'ta', name: 'Tamil' },
+  { code: 'tt', name: 'Tatar' },
+  { code: 'te', name: 'Telugu' },
+  { code: 'th', name: 'Thai' },
+  { code: 'bo', name: 'Tibetan' },
+  { code: 'ti', name: 'Tigrinya' },
+  { code: 'to', name: 'Tongan' },
+  { code: 'tr', name: 'Turkish' },
+  { code: 'tk', name: 'Turkmen' },
+  { code: 'uk', name: 'Ukrainian' },
+  { code: 'hsb', name: 'Upper Sorbian' },
+  { code: 'ur', name: 'Urdu' },
+  { code: 'ug', name: 'Uyghur' },
+  { code: 'uz', name: 'Uzbek' },
+  { code: 'vi', name: 'Vietnamese' },
+  { code: 'cy', name: 'Welsh' },
+  { code: 'xh', name: 'Xhosa' },
+  { code: 'yo', name: 'Yoruba' },
+  { code: 'zu', name: 'Zulu' }
+];
 
 // Enhanced Code Block Component
 const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
@@ -606,18 +738,6 @@ const TranscriptionPage: React.FC = () => {
   console.log('Initial params - uid:', uid, 'audioid:', audioid);
   console.log('Initial locationState:', locationState);
 
-  // Languages array with internationalization
-  const languages = [
-    { label: t('transcription.languages.english'), value: 'en' },
-    { label: t('transcription.languages.chineseSimplified'), value: 'zh' },
-    { label: t('transcription.languages.chineseTraditional'), value: 'zh-TW' },
-    { label: t('transcription.languages.spanish'), value: 'es' },
-    { label: t('transcription.languages.french'), value: 'fr' },
-    { label: t('transcription.languages.german'), value: 'de' },
-    { label: t('transcription.languages.hindi'), value: 'hi' },
-  ];
-
-
   // Audio player state
   const [audioUrl, setAudioUrl] = useState<string>('');
   const [videoUrl, setVideoUrl] = useState<string>('');
@@ -627,6 +747,7 @@ const TranscriptionPage: React.FC = () => {
   const [playbackRate, setPlaybackRate] = useState(1);
   const audioRef = useRef<HTMLAudioElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
 
   // Transcription state
   const [transcription, setTranscription] = useState<string>('');
@@ -640,14 +761,19 @@ const TranscriptionPage: React.FC = () => {
 
   // Translation state
   const [isTranslationEnabled, setIsTranslationEnabled] = useState<boolean>(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('es');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('');
   const [translations, setTranslations] = useState<string[]>([]);
   const [translatingIndex, setTranslatingIndex] = useState<number>(-1);
+  const [isTranslationInProgress, setIsTranslationInProgress] = useState<boolean>(false);
+  
+  // Follow text toggle state
+  const [followText, setFollowText] = useState<boolean>(true);
+  const transcriptContainerRef = useRef<HTMLDivElement>(null);
   
   // SRT Translation state
   const [srtTranslations, setSrtTranslations] = useState<{[key: number]: string}>({});
   const [srtTranslatingIndex, setSrtTranslatingIndex] = useState<number>(-1);
-  const [srtSelectedLanguage, setSrtSelectedLanguage] = useState<string>('es');
+  const [srtSelectedLanguage, setSrtSelectedLanguage] = useState<string>('');
   // Removed showOriginalSrt toggle as we now show both original and translated text together
   const [srtSegments, setSrtSegments] = useState<Array<{id: number, startTime: string, endTime: string, text: string}>>([]);
   const [userCoins, setUserCoins] = useState<number>(0);
@@ -657,75 +783,114 @@ const TranscriptionPage: React.FC = () => {
   const [wordTranslations, setWordTranslations] = useState<{[key: string]: string}>({});
   const [showTranslatedSubtitles, setShowTranslatedSubtitles] = useState<boolean>(false);
   const [isTranslatingWords, setIsTranslatingWords] = useState<boolean>(false);
-  const [subtitleLanguage, setSubtitleLanguage] = useState<string>('es');
+  const [subtitleLanguage, setSubtitleLanguage] = useState<string>('');
   const [showLanguageDropdown, setShowLanguageDropdown] = useState<boolean>(false);
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
+  const [isSrtLanguageDropdownOpen, setIsSrtLanguageDropdownOpen] = useState<boolean>(false);
   
-  // Available languages for subtitle translation
-  const subtitleLanguages = [
-    { code: 'en', name: 'English' },
-    { code: 'zh-cn', name: 'Chinese Simplified' },
-    { code: 'zh-tw', name: 'Chinese Traditional' },
-    { code: 'es', name: 'Spanish' },
-    { code: 'fr', name: 'French' },
-    { code: 'de', name: 'German' },
-    { code: 'it', name: 'Italian' },
-    { code: 'pt', name: 'Portuguese' },
-    { code: 'ru', name: 'Russian' },
-    { code: 'ja', name: 'Japanese' },
-    { code: 'ko', name: 'Korean' },
-    { code: 'ar', name: 'Arabic' },
-    { code: 'hi', name: 'Hindi' },
-    { code: 'nl', name: 'Dutch' },
-    { code: 'sv', name: 'Swedish' },
-    { code: 'no', name: 'Norwegian' },
-    { code: 'da', name: 'Danish' },
-    { code: 'fi', name: 'Finnish' },
-    { code: 'pl', name: 'Polish' },
-    { code: 'tr', name: 'Turkish' },
-    { code: 'th', name: 'Thai' },
-    { code: 'vi', name: 'Vietnamese' },
-    { code: 'id', name: 'Indonesian' },
-    { code: 'ms', name: 'Malay' },
-    { code: 'he', name: 'Hebrew' },
-    { code: 'cs', name: 'Czech' },
-    { code: 'hu', name: 'Hungarian' },
-    { code: 'ro', name: 'Romanian' },
-    { code: 'bg', name: 'Bulgarian' },
-    { code: 'hr', name: 'Croatian' },
-    { code: 'sk', name: 'Slovak' },
-    { code: 'sl', name: 'Slovenian' },
-    { code: 'et', name: 'Estonian' },
-    { code: 'lv', name: 'Latvian' },
-    { code: 'lt', name: 'Lithuanian' },
-    { code: 'uk', name: 'Ukrainian' },
-    { code: 'be', name: 'Belarusian' },
-    { code: 'ka', name: 'Georgian' },
-    { code: 'am', name: 'Amharic' },
-    { code: 'sw', name: 'Swahili' },
-    { code: 'zu', name: 'Zulu' },
-    { code: 'af', name: 'Afrikaans' },
-    { code: 'bn', name: 'Bengali' },
-    { code: 'gu', name: 'Gujarati' },
-    { code: 'kn', name: 'Kannada' },
-    { code: 'ml', name: 'Malayalam' },
-    { code: 'mr', name: 'Marathi' },
-    { code: 'pa', name: 'Punjabi' },
-    { code: 'ta', name: 'Tamil' },
-    { code: 'te', name: 'Telugu' },
-    { code: 'ur', name: 'Urdu' },
-    { code: 'fa', name: 'Persian' },
-    { code: 'is', name: 'Icelandic' },
-    { code: 'mt', name: 'Maltese' },
-    { code: 'cy', name: 'Welsh' },
-    { code: 'ga', name: 'Irish' },
-    { code: 'eu', name: 'Basque' },
-    { code: 'ca', name: 'Catalan' },
-    { code: 'gl', name: 'Galician' },
-    { code: 'pl', name: 'Polish', flag: '🇵🇱' },
-    { code: 'tr', name: 'Turkish', flag: '🇹🇷' },
-    { code: 'th', name: 'Thai', flag: '🇹🇭' },
-    { code: 'vi', name: 'Vietnamese', flag: '🇻🇳' }
-  ];
+  // Translated data from API response
+  const [translatedData, setTranslatedData] = useState<any>(null);
+
+  // Enhanced languages array with Azure support and saved status
+  const languages = React.useMemo(() => {
+    console.log('🔍 Languages useMemo - translatedData:', translatedData);
+    
+    const savedLanguages = translatedData && typeof translatedData === 'object' 
+      ? Object.keys(translatedData) 
+      : [];
+    
+    const languageArray = AZURE_SUPPORTED_LANGUAGES.map(lang => ({
+      label: `${lang.name}${savedLanguages.includes(lang.code) ? ' (Saved)' : ''}`,
+      value: lang.code,
+      isSaved: savedLanguages.includes(lang.code)
+    }));
+    
+    console.log('🔍 Generated enhanced languages array:', languageArray);
+    return languageArray;
+  }, [translatedData]);
+  
+  // Enhanced subtitle languages with Azure support and saved status
+  const subtitleLanguages = React.useMemo(() => {
+    console.log('🔍 SubtitleLanguages useMemo - translatedData:', translatedData);
+    
+    const savedLanguages = translatedData && typeof translatedData === 'object' 
+      ? Object.keys(translatedData) 
+      : [];
+    
+    const subtitleArray = AZURE_SUPPORTED_LANGUAGES.map(lang => ({
+      code: lang.code,
+      name: `${lang.name}${savedLanguages.includes(lang.code) ? ' (Saved)' : ''}`,
+      isSaved: savedLanguages.includes(lang.code)
+    }));
+    
+    console.log('🔍 Generated enhanced subtitleLanguages array:', subtitleArray);
+    return subtitleArray;
+  }, [translatedData]);
+
+  // Update default language selections when translatedData changes
+  useEffect(() => {
+    if (translatedData && typeof translatedData === 'object') {
+      const availableLanguages = Object.keys(translatedData);
+      if (availableLanguages.length > 0) {
+        const firstLang = availableLanguages[0];
+        if (!selectedLanguage) setSelectedLanguage(firstLang);
+        if (!srtSelectedLanguage) setSrtSelectedLanguage(firstLang);
+        if (!subtitleLanguage) setSubtitleLanguage(firstLang);
+      }
+    } else {
+      // Set default to English if no translated data is available
+      if (!selectedLanguage) setSelectedLanguage('en');
+      if (!srtSelectedLanguage) setSrtSelectedLanguage('en');
+      if (!subtitleLanguage) setSubtitleLanguage('en');
+    }
+  }, [translatedData, selectedLanguage, srtSelectedLanguage, subtitleLanguage]);
+
+  // Synchronize only subtitleLanguage with selectedLanguage and update translations (keep SRT independent)
+  useEffect(() => {
+    if (selectedLanguage && selectedLanguage !== subtitleLanguage) {
+      console.log('🔄 Synchronizing subtitleLanguage with selectedLanguage:', selectedLanguage);
+      setSubtitleLanguage(selectedLanguage);
+      
+      // Check if translated data is available for the new language
+      const hasTranslatedData = translatedData && translatedData[selectedLanguage];
+      
+      // If translation is enabled but no saved data exists for the new language, disable translation
+      if (isTranslationEnabled && !hasTranslatedData) {
+        console.log('🔄 Auto-disabling translation - no saved data for:', selectedLanguage);
+        setIsTranslationEnabled(false);
+        setWordTranslations({});
+        setTranslations([]);
+        setTranslationProgress(0);
+        setSrtTranslations({}); // Clear SRT translations as well
+        return;
+      }
+      
+      // If translation is enabled and saved data exists, update translations
+      if (isTranslationEnabled && hasTranslatedData) {
+        console.log('🔄 Updating translations for new language:', selectedLanguage);
+        console.log('🔄 Loading pre-translated content for:', selectedLanguage);
+        
+        // Update video player word translations
+        const newWordTranslations: {[key: string]: string} = {};
+        translatedData[selectedLanguage].words.forEach((translatedWord: any) => {
+          if (translatedWord.original_word) {
+            newWordTranslations[translatedWord.original_word] = translatedWord.punctuated_word || translatedWord.word;
+          }
+        });
+        setWordTranslations(newWordTranslations);
+        
+        // Update transcript paragraph translations
+        const newParagraphTranslations = paragraphs.map((_, index) => 
+          getTranslatedParagraph(index, selectedLanguage)
+        );
+        setTranslations(newParagraphTranslations);
+        
+        console.log('🔄 All translations updated for:', selectedLanguage);
+      }
+    }
+  }, [selectedLanguage, subtitleLanguage, isTranslationEnabled, translatedData, paragraphs]);
+
+
 
   // UI state
   const [activeTab, setActiveTab] = useState<'transcript' | 'mindmap' | 'chat' | 'wordsdata'>('transcript');
@@ -734,11 +899,78 @@ const TranscriptionPage: React.FC = () => {
   const [isVideoFullscreen, setIsVideoFullscreen] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
 
+  // New state variables for enhanced features
+  const [translationProgress, setTranslationProgress] = useState<number>(0);
+  const [translationTimeRemaining, setTranslationTimeRemaining] = useState<number>(0); // in seconds
+  const [translationStartTime, setTranslationStartTime] = useState<number>(0);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [showEditWarning, setShowEditWarning] = useState<boolean>(false);
+  const [showDualSubtitles, setShowDualSubtitles] = useState<boolean>(false);
+  const [editedTranscription, setEditedTranscription] = useState<string>('');
+  
+  // Word editing state
+  const [editingWordIndex, setEditingWordIndex] = useState<number | null>(null);
+  const [editingWordText, setEditingWordText] = useState<string>('');
+  const [isWordEditMode, setIsWordEditMode] = useState<boolean>(false);
+  
+  // SRT segment editing state
+  const [editingSrtIndex, setEditingSrtIndex] = useState<number | null>(null);
+  const [editingSrtText, setEditingSrtText] = useState<string>('');
+  const [isSrtEditMode, setIsSrtEditMode] = useState<boolean>(false);
+  
+  // Language detection state for spacing
+  const [transcriptionLanguage, setTranscriptionLanguage] = useState<string>('');
+
   // Mind map state
   const [xmlData, setXmlData] = useState<string | null>(null);
   
   // Add words_data state for JSON view
   const [wordsData, setWordsData] = useState<any[]>([]);
+
+  // Detect transcription language for proper spacing
+  useEffect(() => {
+    if (transcription) {
+      const detectedLang = detectLanguage(transcription);
+      setTranscriptionLanguage(detectedLang);
+    }
+  }, [transcription]);
+
+  // Handle SRT language changes and load translations automatically
+  useEffect(() => {
+    if (srtSelectedLanguage && translatedData && translatedData[srtSelectedLanguage] && wordsData.length > 0) {
+      console.log('🔄 Loading SRT translations for language:', srtSelectedLanguage);
+      
+      const segments = parseSrtToSegments(convertToSRT(wordsData));
+      const newTranslations: {[key: number]: string} = {};
+      
+      for (let i = 0; i < segments.length; i++) {
+        // Convert SRT time format to seconds for comparison
+        const segmentStartSeconds = srtTimeToSeconds(segments[i].startTime);
+        const segmentEndSeconds = srtTimeToSeconds(segments[i].endTime);
+        
+        // Get translated words for this segment timeframe
+        const translatedWords = translatedData[srtSelectedLanguage].words.filter((word: any) => 
+          word.start >= segmentStartSeconds && word.start < segmentEndSeconds
+        );
+        
+        // Join translated words to form the segment text
+        const words = translatedWords.map((word: any) => word.punctuated_word || word.word);
+        const firstWord = words[0] || '';
+        if (isChinese(firstWord)) {
+          newTranslations[i] = words.join('');
+        } else {
+          newTranslations[i] = words.join(' ');
+        }
+      }
+      
+      setSrtTranslations(newTranslations);
+      console.log('✅ SRT translations loaded for:', srtSelectedLanguage);
+    } else if (srtSelectedLanguage) {
+      // Clear translations if no data exists for the selected language
+      setSrtTranslations({});
+      console.log('🔄 Cleared SRT translations - no data for:', srtSelectedLanguage);
+    }
+  }, [srtSelectedLanguage, translatedData, wordsData]);
 
   // Add state for chat processing
   const [isChatProcessing, setIsChatProcessing] = useState<{[key: string]: boolean}>({
@@ -793,33 +1025,135 @@ const TranscriptionPage: React.FC = () => {
     };
   }, [showLanguageDropdown]);
 
+  // Close custom language dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isLanguageDropdownOpen && !target.closest('.custom-language-dropdown')) {
+        setIsLanguageDropdownOpen(false);
+      }
+      if (isSrtLanguageDropdownOpen && !target.closest('.custom-srt-language-dropdown')) {
+        setIsSrtLanguageDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isLanguageDropdownOpen, isSrtLanguageDropdownOpen]);
+
   // Function to handle quick actions with formatted responses and language detection
   const handleQuickAction = async (action: 'keypoints' | 'summary' | 'translate') => {
     if (!transcription || isChatProcessing[action]) return;
     
+    // Check if user is authenticated
+    if (!user?.uid) {
+      console.error('User not authenticated');
+      return;
+    }
+    
     setIsChatProcessing({...isChatProcessing, [action]: true});
     
     try {
+      // Deduct 1 coin before processing
+      await userService.subtractCoins(user.uid, 1, `quick_${action}`);
+      
       let prompt = '';
+      let actionLabel = '';
       
       switch(action) {
         case 'keypoints':
           prompt = t('transcription.prompts.keypoints', { transcription });
+          actionLabel = 'Key Points';
           break;
         case 'summary':
           prompt = t('transcription.prompts.summary', { transcription });
+          actionLabel = 'Summary';
           break;
         case 'translate':
           prompt = t('transcription.prompts.translate', { translationLanguage, transcription });
+          actionLabel = `Translation (${translationLanguage})`;
           break;
       }
       
+      // Add user message to chat showing the action request
+      const userMessage: ChatMessage = {
+        role: 'user',
+        content: `Generate ${actionLabel}`,
+        timestamp: Date.now(),
+        id: Date.now()
+      };
+      
+      setChatMessages(prev => [...prev, userMessage]);
+      
+      // Create a streaming assistant message that will be updated in real-time
+      const streamingMessageId = Date.now() + 1;
+      let streamingContent = '';
+      
+      // Add initial empty streaming message
+      const initialStreamingMessage: ChatMessage = {
+        role: 'assistant',
+        content: '',
+        timestamp: Date.now(),
+        isStreaming: true,
+        id: streamingMessageId
+      };
+      
+      setChatMessages(prev => [...prev, initialStreamingMessage]);
+      
+      // Define chunk handler for real-time updates
+      const handleChunk = (chunk: string) => {
+        streamingContent += chunk;
+        
+        // Update the streaming message in real-time
+        setChatMessages(prev => prev.map(msg => 
+          msg.id === streamingMessageId 
+            ? { ...msg, content: streamingContent }
+            : msg
+        ));
+        
+        // Auto-scroll to bottom as content streams in
+        setTimeout(() => {
+          if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+          }
+        }, 50);
+      };
+      
       // Using the streaming API to process the request
-      const result = await sendMessageToAI(prompt);
+      const result = await sendMessageToAI(prompt, handleChunk);
+      
+      // Finalize the streaming message
+      setChatMessages(prev => prev.map(msg => 
+        msg.id === streamingMessageId 
+          ? { ...msg, content: result, isStreaming: false }
+          : msg
+      ));
+      
+      // Also store in chatResponses for the quick action results section
       setChatResponses({...chatResponses, [action]: result});
+      
+      // Save both messages to database
+      await saveChatToDatabase(`Generate ${actionLabel}`, 'user');
+      await saveChatToDatabase(result, 'assistant');
+      
     } catch (error) {
       console.error(`Error in ${action} quick action:`, error);
-      setChatResponses({...chatResponses, [action]: t('transcription.errors.couldNotProcess', { action })});
+      
+      // Check if it's a coin deduction error
+      if (error instanceof Error && error.message.includes('insufficient')) {
+        // Show insufficient coins message in chat
+        const errorMessage: ChatMessage = {
+          role: 'assistant',
+          content: 'You don\'t have enough coins to perform this action. Please purchase more coins.',
+          timestamp: Date.now(),
+          id: Date.now()
+        };
+        setChatMessages(prev => [...prev, errorMessage]);
+      } else {
+        setChatResponses({...chatResponses, [action]: t('transcription.errors.couldNotProcess', { action })});
+      }
     } finally {
       setIsChatProcessing({...isChatProcessing, [action]: false});
     }
@@ -989,111 +1323,154 @@ const TranscriptionPage: React.FC = () => {
     return t('transcription.languages.english');
   };
 
-  // Function to check if text contains Chinese characters
+  // Function to detect if text contains Chinese characters
   const isChinese = (text: string): boolean => {
     return /[\u4e00-\u9fff]/.test(text);
   };
 
-  // Function to remove spaces from Chinese text
+  // Function that handles spacing for different languages
   const formatChineseText = (text: string): string => {
+    // For Chinese text, return as is (no extra spacing)
     if (isChinese(text)) {
-      return text.replace(/\s+/g, '');
+      return text;
     }
+    // For non-Chinese text, return with normal spacing
     return text;
   };
 
-  // Function to clean Chinese text for SRT (remove spaces and punctuation)
+  // Function to clean text for SRT - now just returns the text as is
   const cleanChineseForSRT = (text: string): string => {
-    if (isChinese(text)) {
-      return text.replace(/\s+/g, '').replace(/[。.]/g, '');
-    }
     return text;
   };
 
   // Get state passed from the previous page
   // locationState is already declared at the top of the component
 
-  // Translation function for individual paragraphs
-  const handleTranslateParagraph = async (index: number) => {
-    if (!paragraphs[index]) return;
+  // Function to get pre-translated paragraph from API data
+  const getTranslatedParagraph = (index: number, language: string): string => {
+    if (!translatedData || !translatedData[language] || !translatedData[language].words) {
+      return '';
+    }
 
-    setTranslatingIndex(index);
+    const paragraph = paragraphs[index];
+    if (!paragraph) return '';
+
+    // Find translated words that match the paragraph timeframe
+    const translatedWords = translatedData[language].words.filter((word: any) => 
+      word.start >= paragraph.startTime && word.end <= paragraph.endTime
+    );
+
+    // Join translated words to form the paragraph
+    const words = translatedWords.map((word: any) => word.punctuated_word || word.word);
+    
+    // Check if the text is Chinese and join accordingly
+    const firstWord = words[0] || '';
+    if (isChinese(firstWord)) {
+      return words.join('');
+    } else {
+      return words.join(' ');
+    }
+  };
+
+  // Function to translate audio text via API
+  const translateAudioText = async (language: string) => {
     try {
-      const response = await fetch(
-        `https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=${selectedLanguage}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Ocp-Apim-Subscription-Key': azureKey,
-            'Ocp-Apim-Subscription-Region': region,
-          },
-          body: JSON.stringify([{ Text: paragraphs[index].text }]),
-        }
-      );
-
-      const data = await response.json();
-      console.log('Paragraph Translation Response:', data);
-
-      if (data && data[0] && data[0].translations && data[0].translations[0]) {
-        const translation = data[0].translations[0].text;
-
-        setTranslations((prev) => {
-          const updatedTranslations = [...prev];
-          updatedTranslations[index] = translation;
-          return updatedTranslations;
+      if (!uid || !audioid) {
+        throw new Error('Missing required parameters: uid or audioid');
+      }
+      
+      setIsTranslationInProgress(true);
+      setTranslationStartTime(Date.now());
+      setTranslationTimeRemaining(180); // Start with 3 minutes estimate
+      
+      // Update time remaining every second
+      const timeInterval = setInterval(() => {
+        setTranslationTimeRemaining(prev => {
+          if (prev <= 1) {
+            clearInterval(timeInterval);
+            return 0;
+          }
+          return prev - 1;
         });
+      }, 1000);
+      
+      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/translateAudioText', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: uid,
+          audioid: audioid,
+          language: language
+        })
+      });
+      
+      if (!response.ok) {
+        clearInterval(timeInterval);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        clearInterval(timeInterval);
+        setTranslationTimeRemaining(0);
+        // Refresh audio file data to get updated translations
+        await fetchAudioMetadata(uid, audioid);
+        showSuccess(`Translation to ${language} completed successfully!`);
+        return true;
       } else {
-        console.error(t('transcription.errors.translationDataFormat'), data);
+        clearInterval(timeInterval);
+        throw new Error(result.message || 'Translation failed');
       }
     } catch (error) {
-      console.error(t('transcription.errors.translationError'), error);
+      console.error('Translation error:', error);
+      showError(`Translation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setTranslationTimeRemaining(0);
+      return false;
     } finally {
-      setTranslatingIndex(-1);
+      setIsTranslationInProgress(false);
     }
   };
 
   // Toggle translation for all paragraphs
   const toggleTranslation = async () => {
     if (!isTranslationEnabled) {
-      // Check if user is logged in
-      if (!user) {
-        // Redirect to login page
-        navigate('/login', { state: { from: location } });
+      // Check if language is selected
+      if (!selectedLanguage) {
+        showError('Please select a language first');
         return;
       }
       
-      try {
-        // Deduct 1 coin for translation
-        const response = await userService.subtractCoins(uid!, 1, 'transcription_translation');
+      // Check if translated data is available for selected language
+      if (!translatedData || !translatedData[selectedLanguage]) {
+        // Language not saved - need to translate via API
+        const success = await translateAudioText(selectedLanguage);
+        if (!success) return;
         
-        if (!response.success) {
-          // Show warning if coin deduction failed
-          showError(t('transcription.errors.failedToDeductCoins'));
-          return;
-        }
-        
-        // Enable translation and translate all paragraphs
+        // After successful API translation, automatically enable translation display
         setIsTranslationEnabled(true);
-        setTranslations(new Array(paragraphs.length).fill(''));
-        
-        // Translate all paragraphs
-        for (let i = 0; i < paragraphs.length; i++) {
-          await handleTranslateParagraph(i);
-        }
-      } catch (error: any) {
-        // Check if error is due to insufficient coins
-        if (error.message && error.message.includes('insufficient')) {
-          showError(t('transcription.errors.insufficientCoins'));
-        } else {
-          console.error('Error during translation:', error);
-          showError(t('transcription.errors.translationError'));
-        }
+        const newTranslations = paragraphs.map((_, index) => 
+          getTranslatedParagraph(index, selectedLanguage)
+        );
+        setTranslations(newTranslations);
+        setTranslationProgress(100);
+        return;
       }
+      
+      // Enable translation and load pre-translated paragraphs
+      setIsTranslationEnabled(true);
+      const newTranslations = paragraphs.map((_, index) => 
+        getTranslatedParagraph(index, selectedLanguage)
+      );
+      setTranslations(newTranslations);
+      setTranslationProgress(100); // Set to 100% since translations are pre-loaded
     } else {
       // Disable translation
       setIsTranslationEnabled(false);
       setTranslations([]);
+      setTranslationProgress(0); // Reset progress
     }
   };
 
@@ -1102,51 +1479,10 @@ const TranscriptionPage: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // First try getting cached data from local storage
-      const cachedData = localStorage.getItem(`audioData-${audioid}`);
-      if (cachedData) {
-        try {
-          const parsed = JSON.parse(cachedData);
-          if (parsed.transcription && parsed.audioUrl) {
-            setTranscription(parsed.transcription);
-            setAudioUrl(parsed.audioUrl);
-            setVideoUrl(parsed.videoUrl || ''); // Set video URL from cache
-            setDuration(parsed.duration || 0);
-          
-            
-            // Set words_data if available
-            if (parsed.words_data) {
-              setWordsData(parsed.words_data);
-            }
-            
-            if (parsed.paragraphs && parsed.paragraphs.length > 0) {
-              setParagraphs(parsed.paragraphs);
-              setWordTimings(parsed.wordTimings || []);
-            } else if (parsed.words_data && Array.isArray(parsed.words_data) && parsed.words_data.length > 0) {
-              // Process words_data if available
-              setWordTimings(processWordTimings(parsed.words_data));
-              
-              // Create paragraphs from words_data
-              const { paragraphs } = createParagraphsFromWordsData(parsed.words_data);
-              setParagraphs(paragraphs);
-            } else {
-              processTranscription(parsed.transcription);
-            }
-            
-            // Check for xmlData in cache
-            if (parsed.xmlData) {
-              setXmlData(parsed.xmlData);
-            }
-            
-            setIsLoading(false);
-            return;
-          }
-        } catch (e) {
-          console.error('Error parsing cached data', e);
-        }
-      }
+      // Skip cache and fetch directly from API
+      console.log('🔍 Bypassing cache - fetching directly from API');
       
-      // If no cache or parsing error, fetch from correct API
+      // Fetch from API
       console.log('Starting API fetch for uid:', uid, 'audioid:', audioid);
       const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/getAudioFile', {
         method: 'POST',
@@ -1183,6 +1519,19 @@ const TranscriptionPage: React.FC = () => {
           setWordsData(data.words_data);
         }
 
+        // Set translated_data if available
+        console.log('🔍 API Response - Full data object:', data);
+        console.log('🔍 API Response - data.translated_data:', data.translated_data);
+        console.log('🔍 API Response - typeof data.translated_data:', typeof data.translated_data);
+        
+        if (data.translated_data) {
+          console.log('🔍 Setting translatedData with:', data.translated_data);
+          console.log('🔍 Object.keys(data.translated_data):', Object.keys(data.translated_data));
+          setTranslatedData(data.translated_data);
+        } else {
+          console.log('🔍 No translated_data found in API response');
+        }
+
         // Process words_data if available
         if (data.words_data && Array.isArray(data.words_data) && data.words_data.length > 0) {
           // Store the words data for highlighting
@@ -1196,7 +1545,7 @@ const TranscriptionPage: React.FC = () => {
           processTranscription(data.transcription);
         }
         
-        // Cache the data with words_data and video_file
+        // Cache the data with words_data, video_file, and translated_data
         localStorage.setItem(`audioData-${audioid}`, JSON.stringify({
           transcription: data.transcription || '',
           audioUrl: data.audioUrl || '',
@@ -1207,6 +1556,7 @@ const TranscriptionPage: React.FC = () => {
           wordTimings: wordTimings.length > 0 ? wordTimings : [],
           words_data: data.words_data || [],
           xmlData: data.xml_data || null,
+          translated_data: data.translated_data || null, // Cache translated_data
         }));
       } else {
         console.error(t('transcription.errors.audioMetadata'), data.error || data.message);
@@ -1264,8 +1614,19 @@ const TranscriptionPage: React.FC = () => {
     seekTo(word.startTime);
   };
 
-  // Video fullscreen functionality
+  // Video fullscreen functionality - using native browser fullscreen
   const toggleVideoFullscreen = () => {
+    if (!videoContainerRef.current) return;
+    
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      videoContainerRef.current.requestFullscreen();
+    }
+  };
+
+  // Legacy native fullscreen function (kept for compatibility)
+  const toggleNativeVideoFullscreen = () => {
     if (!videoRef.current) return;
     
     if (!isVideoFullscreen) {
@@ -1280,12 +1641,12 @@ const TranscriptionPage: React.FC = () => {
     // Don't manually set state - let the fullscreen change event handle it
   };
 
-  // Create subtitle segments (6-second intervals)
+  // Create subtitle segments (4-second intervals)
   const createSubtitleSegments = () => {
     if (!wordTimings.length) return [];
     
     const segments = [];
-    const segmentDuration = 6; // 6 seconds per segment
+    const segmentDuration = 4; // 4 seconds per segment
     let currentSegment = [];
     let segmentStartTime = 0;
     
@@ -1325,6 +1686,14 @@ const TranscriptionPage: React.FC = () => {
     return segments.find(segment => 
       currentTime >= segment.startTime && currentTime <= segment.endTime
     );
+  };
+
+  // Get transcription text based on selected language
+  const getDisplayTranscription = () => {
+    if (translatedData && subtitleLanguage && translatedData[subtitleLanguage] && translatedData[subtitleLanguage].transcription) {
+      return translatedData[subtitleLanguage].transcription;
+    }
+    return transcription; // Fallback to original transcription
   };
 
   // Get highlighted words in current segment
@@ -1425,19 +1794,14 @@ const TranscriptionPage: React.FC = () => {
       return;
     }
     
-    // Deduct coins for chat
+    // Deduct 1 coin for chat message
     try {
-      // Deduct 1 coin for chat
-      const coinResponse = await userService.subtractCoins(uid!, 1, 'transcription_chat');
-      
-      if (!coinResponse.success) {
-        showError(t('transcription.errors.failedToDeductCoins'));
-        setIsSubmitting(false);
-        return;
-      }
-    } catch (error) {
-      console.error('Error deducting coins:', error);
-      showError(t('transcription.errors.insufficientBalance'));
+      await userService.subtractCoins(user.uid, 1, 'transcription_chat');
+      // Update user coins after deduction
+      fetchUserCoins();
+    } catch (coinError) {
+      console.error('Error deducting coins:', coinError);
+      showError('Insufficient coins. Please purchase more coins to continue.');
       setIsSubmitting(false);
       return;
     }
@@ -1663,6 +2027,13 @@ const TranscriptionPage: React.FC = () => {
   };
 
   // Function to translate SRT subtitle segment
+  // Function to convert SRT time format to seconds
+  const srtTimeToSeconds = (srtTime: string) => {
+    const [time, ms] = srtTime.split(',');
+    const [hours, minutes, seconds] = time.split(':').map(Number);
+    return hours * 3600 + minutes * 60 + seconds + (parseInt(ms) / 1000);
+  };
+
   // Function to translate all SRT segments
   const translateAllSrtSegments = async () => {
     if (!user) {
@@ -1670,209 +2041,133 @@ const TranscriptionPage: React.FC = () => {
       return;
     }
 
-    const segments = parseSrtToSegments(convertToSRT(wordsData));
-    const untranslatedSegments = segments.filter((_, index) => !srtTranslations[index]);
-    
-    if (untranslatedSegments.length === 0) {
-      showWarning(t('transcription.srt.allSegmentsTranslated'));
+    if (!srtSelectedLanguage) {
+      showError('Please select a language first');
       return;
     }
 
-    // Fixed cost of 1 coin for all segments
-    showConfirmation(
-      t('transcription.srt.confirmTranslateAll'),
-      async () => {
-        try {
-          setIsTranslatingSubtitle(true);
+    // Check if translation already exists for this language to prevent duplicate API calls
+    if (translatedData && translatedData[srtSelectedLanguage] && Object.keys(srtTranslations).length > 0) {
+      showSuccess('Translation already available for this language!');
+      return;
+    }
 
-          // Deduct 1 coin for all translations
-          const coinResponse = await userService.subtractCoins(uid!, 1, 'srt_translation_bulk');
-          
-          if (!coinResponse.success) {
-            showError(t('transcription.errors.failedToDeductCoins'));
-            setIsTranslatingSubtitle(false);
-            return;
-          }
-          
-          // Update user coins
-          setUserCoins(prev => prev - 1);
-
-          // Translate all segments
-          const newTranslations = { ...srtTranslations };
-          
-          for (let i = 0; i < segments.length; i++) {
-            if (!srtTranslations[i]) {
-              setSrtTranslatingIndex(i);
-              
-              try {
-                const response = await axios.post(
-                  `${azureEndpoint}/translate?api-version=3.0&to=${srtSelectedLanguage}`,
-                  [{ text: segments[i].text }],
-                  {
-                    headers: {
-                      'Ocp-Apim-Subscription-Key': azureKey,
-                      'Ocp-Apim-Subscription-Region': region,
-                      'Content-Type': 'application/json'
-                    }
-                  }
-                );
-
-                newTranslations[i] = response.data[0].translations[0].text;
-              } catch (error) {
-                console.error(`Translation error for segment ${i}:`, error);
-              }
-            }
-          }
-
-          setSrtTranslations(newTranslations);
-
-        } catch (error) {
-          console.error('Bulk translation error:', error);
-          showError(t('transcription.errors.translationFailed'));
-        } finally {
-          setSrtTranslatingIndex(-1);
+    setIsTranslatingSubtitle(true);
+    
+    try {
+      // Check if translated data is available for selected language
+      if (!translatedData || !translatedData[srtSelectedLanguage]) {
+        // Language not saved - need to translate via API
+        const success = await translateAudioText(srtSelectedLanguage);
+        if (!success) {
           setIsTranslatingSubtitle(false);
+          return;
         }
-      },
-      () => {
-        // User canceled, do nothing
       }
-    );
-    return;
+
+      const segments = parseSrtToSegments(convertToSRT(wordsData));
+      // Load pre-translated segments
+      const newTranslations = { ...srtTranslations };
+      
+      for (let i = 0; i < segments.length; i++) {
+        if (!srtTranslations[i]) {
+          // Convert SRT time format to seconds for comparison
+          const segmentStartSeconds = srtTimeToSeconds(segments[i].startTime);
+          const segmentEndSeconds = srtTimeToSeconds(segments[i].endTime);
+          
+          // Get translated words for this segment timeframe
+          const translatedWords = translatedData[srtSelectedLanguage].words.filter((word: any) => 
+            word.start >= segmentStartSeconds && word.start < segmentEndSeconds
+          );
+          
+          // Join translated words to form the segment text
+          const words = translatedWords.map((word: any) => word.punctuated_word || word.word);
+          const firstWord = words[0] || '';
+          if (isChinese(firstWord)) {
+            newTranslations[i] = words.join('');
+          } else {
+            newTranslations[i] = words.join(' ');
+          }
+        }
+      }
+
+      setSrtTranslations(newTranslations);
+      showSuccess('SRT segments translated successfully!');
+    } catch (error) {
+      console.error('SRT translation error:', error);
+      showError('Failed to translate SRT segments');
+    } finally {
+      setIsTranslatingSubtitle(false);
+    }
   };
 
-  // Function to translate words in current subtitle segment
-  const translateWordsInSegment = async (segment: { words: WordTiming[], startTime: number, endTime: number, text: string }) => {
-    if (!user || !segment) return;
+  // Function to load pre-translated words for current subtitle segment
+  const loadTranslatedWordsInSegment = async (segment: { words: WordTiming[], startTime: number, endTime: number, text: string }) => {
+    if (!segment || !subtitleLanguage) {
+      return;
+    }
+
+    // Check if translated data is available for selected language
+    if (!translatedData || !translatedData[subtitleLanguage]) {
+      // Language not saved - need to translate via API
+      const success = await translateAudioText(subtitleLanguage);
+      if (!success) return;
+    }
+
+    const newTranslations = { ...wordTranslations };
+    
+    // Find translated words that match the segment timeframe
+    const translatedWords = translatedData[subtitleLanguage].words.filter((word: any) => 
+      word.start >= segment.startTime && word.end <= segment.endTime
+    );
+    
+    // Map original words to translated words
+    translatedWords.forEach((translatedWord: any) => {
+      if (translatedWord.original_word) {
+        newTranslations[translatedWord.original_word] = translatedWord.punctuated_word || translatedWord.word;
+      }
+    });
+    
+    setWordTranslations(newTranslations);
+  };
+
+  // Function to load all pre-translated words for subtitle segments
+  const loadAllSubtitleWords = async () => {
+    if (!subtitleLanguage) {
+      showError('Please select a language first');
+      return;
+    }
 
     setIsTranslatingWords(true);
     
     try {
-      const wordsToTranslate = segment.words.filter(word => !wordTranslations[word.word]);
-      
-      if (wordsToTranslate.length === 0) {
-        setIsTranslatingWords(false);
-        return;
+      // Check if translated data is available for selected language
+      if (!translatedData || !translatedData[subtitleLanguage]) {
+        // Language not saved - need to translate via API
+        const success = await translateAudioText(subtitleLanguage);
+        if (!success) {
+          setIsTranslatingWords(false);
+          return;
+        }
       }
 
       const newTranslations = { ...wordTranslations };
       
-      // Translate each word individually
-      for (const word of wordsToTranslate) {
-        try {
-          const response = await fetch(
-            `${azureEndpoint}/translate?api-version=3.0&to=${subtitleLanguage}`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Ocp-Apim-Subscription-Key': azureKey,
-                'Ocp-Apim-Subscription-Region': region,
-              },
-              body: JSON.stringify([{ Text: word.word }]),
-            }
-          );
-
-          const data = await response.json();
-          if (data && data[0] && data[0].translations && data[0].translations[0]) {
-            newTranslations[word.word] = data[0].translations[0].text;
-          }
-        } catch (error) {
-          console.error(`Translation error for word "${word.word}":`, error);
+      // Load all translated words from the API data
+      translatedData[subtitleLanguage].words.forEach((translatedWord: any) => {
+        if (translatedWord.original_word) {
+          newTranslations[translatedWord.original_word] = translatedWord.punctuated_word || translatedWord.word;
         }
-      }
+      });
       
       setWordTranslations(newTranslations);
+      showSuccess('All subtitle words loaded successfully!');
     } catch (error) {
-      console.error('Word translation error:', error);
+      console.error('Subtitle words loading error:', error);
+      showError('Failed to load subtitle words');
     } finally {
       setIsTranslatingWords(false);
     }
-  };
-
-  // Function to translate all words in subtitle segments
-  const translateAllSubtitleWords = async () => {
-    if (!user) {
-      navigate('/login', { state: { from: location } });
-      return;
-    }
-
-    const segments = createSubtitleSegments();
-    const allWords = segments.flatMap(segment => segment.words);
-    const untranslatedWords = allWords.filter(word => !wordTranslations[word.word]);
-    
-    if (untranslatedWords.length === 0) {
-      showWarning('All subtitle words are already translated');
-      return;
-    }
-
-    showConfirmation(
-      `Translate ${untranslatedWords.length} words for 1 coin?`,
-      async () => {
-        try {
-          setIsTranslatingWords(true);
-
-          // Deduct 1 coin for word translations
-          const coinResponse = await userService.subtractCoins(uid!, 1, 'word_translation_bulk');
-          
-          if (!coinResponse.success) {
-            showError(t('transcription.errors.failedToDeductCoins'));
-            setIsTranslatingWords(false);
-            return;
-          }
-          
-          setUserCoins(prev => prev - 1);
-
-          const newTranslations = { ...wordTranslations };
-          
-          // Translate words in batches to avoid rate limiting
-          const batchSize = 10;
-          for (let i = 0; i < untranslatedWords.length; i += batchSize) {
-            const batch = untranslatedWords.slice(i, i + batchSize);
-            
-            await Promise.all(batch.map(async (word) => {
-              try {
-                const response = await fetch(
-                  `${azureEndpoint}/translate?api-version=3.0&to=${subtitleLanguage}`,
-                  {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Ocp-Apim-Subscription-Key': azureKey,
-                      'Ocp-Apim-Subscription-Region': region,
-                    },
-                    body: JSON.stringify([{ Text: word.word }]),
-                  }
-                );
-
-                const data = await response.json();
-                if (data && data[0] && data[0].translations && data[0].translations[0]) {
-                  newTranslations[word.word] = data[0].translations[0].text;
-                }
-              } catch (error) {
-                console.error(`Translation error for word "${word.word}":`, error);
-              }
-            }));
-            
-            // Small delay between batches
-            if (i + batchSize < untranslatedWords.length) {
-              await new Promise(resolve => setTimeout(resolve, 100));
-            }
-          }
-          
-          setWordTranslations(newTranslations);
-          showSuccess('All subtitle words translated successfully!');
-        } catch (error) {
-          console.error('Bulk word translation error:', error);
-          showError('Failed to translate words');
-        } finally {
-          setIsTranslatingWords(false);
-        }
-      },
-      () => {
-        // User canceled, do nothing
-      }
-    );
   };
 
   // Function to parse SRT content into segments
@@ -1972,11 +2267,12 @@ const TranscriptionPage: React.FC = () => {
   
   // Use transcription as context
   const setTranscriptionAsContext = () => {
-    if (!transcription) return;
+    const displayText = getDisplayTranscription();
+    if (!displayText) return;
     
     const contextMessage: ChatMessage = {
       role: 'user',
-      content: `Here is the transcription I want to discuss:\n\n${transcription.substring(0, 1000)}${transcription.length > 1000 ? '...' : ''}`,
+      content: `Here is the transcription I want to discuss:\n\n${displayText.substring(0, 1000)}${displayText.length > 1000 ? '...' : ''}`,
       timestamp: Date.now()
     };
     
@@ -2103,7 +2399,7 @@ const TranscriptionPage: React.FC = () => {
   };
 
   // Convert words data to SRT format
-  const convertToSRT = (wordsData: any[], segmentDuration: number = 6) => {
+  const convertToSRT = (wordsData: any[], segmentDuration: number = 4) => {
     if (!wordsData || wordsData.length === 0) return '';
     
     // Convert seconds to SRT time format (HH:MM:SS,mmm)
@@ -2122,7 +2418,7 @@ const TranscriptionPage: React.FC = () => {
     // Get the total duration from the last word
     const totalDuration = wordsData.length > 0 ? wordsData[wordsData.length - 1]?.end || 0 : 0;
     
-    // Create segments based on 6-second intervals starting from 0:00
+    // Create segments based on 4-second intervals starting from 0:00
     while (currentSegmentStart < totalDuration) {
       const segmentEnd = currentSegmentStart + segmentDuration;
       
@@ -2167,7 +2463,7 @@ const TranscriptionPage: React.FC = () => {
         (word.word.match(/[.!?]$/) && (index === allWords.length - 1 || allWords[index + 1]?.word.match(/^[A-Z]/)))
       ) {
         paragraphs.push({
-          text: currentParagraph.map(w => formatChineseText(w.word)).join(currentParagraph.some(w => isChinese(w.word)) ? '' : ' '),
+          text: currentParagraph.map(w => formatChineseText(w.word)).join(' '),
           words: [...currentParagraph],
           startTime: currentParagraph[0]?.startTime || 0,
           endTime: currentParagraph[currentParagraph.length - 1]?.endTime || 0
@@ -2179,7 +2475,7 @@ const TranscriptionPage: React.FC = () => {
     // Add any remaining words as the last paragraph
     if (currentParagraph.length > 0) {
       paragraphs.push({
-        text: currentParagraph.map(w => formatChineseText(w.word)).join(currentParagraph.some(w => isChinese(w.word)) ? '' : ' '),
+        text: currentParagraph.map(w => formatChineseText(w.word)).join(' '),
         words: [...currentParagraph],
         startTime: currentParagraph[0]?.startTime || 0,
         endTime: currentParagraph[currentParagraph.length - 1]?.endTime || 0
@@ -2190,7 +2486,7 @@ const TranscriptionPage: React.FC = () => {
   };
 
   // Function to load chat history from database
-  const loadChatFromDatabase = async () => {
+  const loadChatFromDatabase = useCallback(async () => {
     try {
       // Use uid from AuthContext instead of Supabase session
       if (!uid || !audioid) {
@@ -2226,16 +2522,11 @@ const TranscriptionPage: React.FC = () => {
         // Set chat messages from database
         setChatMessages(formattedMessages);
         console.log('Chat history loaded from database:', formattedMessages.length, 'messages');
-        
-        // If there are messages, automatically switch to the chat tab
-        if (formattedMessages.length > 0) {
-          setActiveTab('chat');
-        }
       }
     } catch (error) {
       console.error('Error loading chat history:', error);
     }
-  };
+  }, [uid, audioid, setChatMessages]);
 
   // Function to fetch user coins
   const fetchUserCoins = async () => {
@@ -2251,13 +2542,195 @@ const TranscriptionPage: React.FC = () => {
     }
   };
 
+  // Function to edit word data
+  const editWordData = async (wordIndex: number, newWord: string) => {
+    if (!uid || !audioid) {
+      showError('Missing user ID or audio ID');
+      return false;
+    }
+
+    try {
+      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/editWordData', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: uid,
+          audioId: audioid,
+          wordIndex: wordIndex,
+          newWord: newWord
+        })
+      });
+
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        // Update local wordsData
+        const updatedWordsData = [...wordsData];
+        if (updatedWordsData[wordIndex]) {
+          updatedWordsData[wordIndex] = {
+            ...updatedWordsData[wordIndex],
+            word: newWord,
+            punctuated_word: newWord
+          };
+        }
+        setWordsData(updatedWordsData);
+        
+        // Update paragraphs and word timings
+        const { paragraphs: newParagraphs, words: newWords } = createParagraphsFromWordsData(updatedWordsData);
+        setParagraphs(newParagraphs);
+        setWordTimings(newWords);
+        
+        showSuccess('Word updated successfully');
+        return true;
+      } else {
+        showError(result.message || 'Failed to update word');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error editing word:', error);
+      showError('Error updating word');
+      return false;
+    }
+  };
+
+  // Function to handle word editing
+  const handleWordEdit = (globalWordIndex: number, currentWord: string) => {
+    setEditingWordIndex(globalWordIndex);
+    setEditingWordText(currentWord);
+  };
+
+  // Function to save word edit
+  const saveWordEdit = async () => {
+    if (editingWordIndex === null || !editingWordText.trim()) {
+      return;
+    }
+
+    // Validate word count (basic validation - can be enhanced)
+    const originalWord = wordsData[editingWordIndex]?.word || '';
+    const originalWordCount = originalWord.trim().split(/\s+/).length;
+    const newWordCount = editingWordText.trim().split(/\s+/).length;
+    
+    if (originalWordCount !== newWordCount) {
+      showError(`Word count must remain the same. Original: ${originalWordCount} words, New: ${newWordCount} words`);
+      return;
+    }
+
+    const success = await editWordData(editingWordIndex, editingWordText.trim());
+    if (success) {
+      setEditingWordIndex(null);
+      setEditingWordText('');
+    }
+  };
+
+  // Function to cancel word edit
+  const cancelWordEdit = () => {
+    setEditingWordIndex(null);
+    setEditingWordText('');
+  };
+
+  // Function to edit SRT segment data
+  const editSrtSegmentData = async (segmentIndex: number, newText: string) => {
+    if (!uid || !audioid) {
+      showError('Missing user ID or audio ID');
+      return false;
+    }
+
+    try {
+      // Get the segment to find the word indices it contains
+      const segments = parseSrtToSegments(convertToSRT(wordsData));
+      const segment = segments[segmentIndex];
+      if (!segment) {
+        showError('Segment not found');
+        return false;
+      }
+
+      // Parse the segment time to find corresponding words
+      const segmentStartSeconds = srtTimeToSeconds(segment.startTime);
+      const segmentEndSeconds = srtTimeToSeconds(segment.endTime);
+      
+      // Find words in this time range
+      const wordsInSegment = wordsData.filter(word => 
+        word.start >= segmentStartSeconds && word.start < segmentEndSeconds
+      );
+      
+      if (wordsInSegment.length === 0) {
+        showError('No words found in this segment');
+        return false;
+      }
+
+      // Split new text into words
+      const newWords = newText.trim().split(/\s+/);
+      
+      // Validate word count matches
+      if (newWords.length !== wordsInSegment.length) {
+        showError(`Word count must remain the same. Original: ${wordsInSegment.length} words, New: ${newWords.length} words`);
+        return false;
+      }
+
+      // Update each word in the segment
+      let allUpdatesSuccessful = true;
+      for (let i = 0; i < wordsInSegment.length; i++) {
+        const wordIndex = wordsData.findIndex(w => w === wordsInSegment[i]);
+        if (wordIndex !== -1) {
+          const success = await editWordData(wordIndex, newWords[i]);
+          if (!success) {
+            allUpdatesSuccessful = false;
+            break;
+          }
+        }
+      }
+
+      if (allUpdatesSuccessful) {
+        showSuccess('SRT segment updated successfully');
+        return true;
+      } else {
+        showError('Failed to update some words in the segment');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error editing SRT segment:', error);
+      showError('Error updating SRT segment');
+      return false;
+    }
+  };
+
+  // Function to handle SRT segment editing
+  const handleSrtEdit = (segmentIndex: number, currentText: string) => {
+    setEditingSrtIndex(segmentIndex);
+    setEditingSrtText(currentText);
+  };
+
+  // Function to save SRT segment edit
+  const saveSrtEdit = async () => {
+    if (editingSrtIndex === null || !editingSrtText.trim()) {
+      return;
+    }
+
+    const success = await editSrtSegmentData(editingSrtIndex, editingSrtText.trim());
+    if (success) {
+      setEditingSrtIndex(null);
+      setEditingSrtText('');
+    }
+  };
+
+  // Function to cancel SRT segment edit
+  const cancelSrtEdit = () => {
+    setEditingSrtIndex(null);
+    setEditingSrtText('');
+  };
+
   // Fetch transcription data and chat history
   useEffect(() => {
     console.log('useEffect triggered - uid:', uid, 'audioid:', audioid, 'locationState:', locationState);
     
     if (uid && audioid) {
       fetchAudioMetadata(uid, audioid);
-      loadChatFromDatabase(); // Load chat history
+      // Only load chat history if chat tab is active
+      if (activeTab === 'chat') {
+        loadChatFromDatabase(); // Load chat history
+      }
       fetchUserCoins(); // Fetch user coins
     } else if (locationState?.transcription && locationState?.audio_url) {
       // Log location state to verify video_file data
@@ -2284,7 +2757,19 @@ const TranscriptionPage: React.FC = () => {
         processTranscription(locationState.transcription);
       }
       
-      // Cache the locationState data including video_file
+      // Set translated_data if available in locationState
+      console.log('🔍 LocationState - translated_data:', locationState.translated_data);
+      console.log('🔍 LocationState - typeof translated_data:', typeof locationState.translated_data);
+      
+      if (locationState.translated_data) {
+        console.log('🔍 Setting translatedData from locationState with:', locationState.translated_data);
+        console.log('🔍 Object.keys(locationState.translated_data):', Object.keys(locationState.translated_data));
+        setTranslatedData(locationState.translated_data);
+      } else {
+        console.log('🔍 No translated_data found in locationState');
+      }
+      
+      // Cache the locationState data including video_file and translated_data
       localStorage.setItem(`audioData-${audioid}`, JSON.stringify({
         transcription: locationState.transcription || '',
         audioUrl: locationState.audio_url || '',
@@ -2295,11 +2780,19 @@ const TranscriptionPage: React.FC = () => {
         wordTimings: wordTimings.length > 0 ? wordTimings : [],
         words_data: locationState.words_data || [],
         xmlData: locationState.xmlData || null,
+        translated_data: locationState.translated_data || null, // Cache translated_data
       }));
       
       setIsLoading(false);
     }
-  }, [uid, audioid, locationState]);
+  }, [uid, audioid, locationState, activeTab]);
+
+  // Load chat data when chat tab becomes active
+  useEffect(() => {
+    if (activeTab === 'chat' && uid && audioid && chatMessages.length === 0) {
+      loadChatFromDatabase();
+    }
+  }, [activeTab, uid, audioid, chatMessages.length, loadChatFromDatabase]);
 
   // Monitor videoUrl and audioUrl changes
   useEffect(() => {
@@ -2334,12 +2827,49 @@ const TranscriptionPage: React.FC = () => {
           setActiveParagraph(paraIndex);
         }
         
-        // Scroll the active word into view if needed
-        if (activeWordRef.current) {
-          activeWordRef.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-          });
+        // Scroll the active word into view if needed (only within transcript container when followText is enabled)
+        if (activeWordRef.current && followText) {
+          // Check if we have a transcript container reference
+          if (transcriptContainerRef.current) {
+            // Calculate the position of the active word relative to the container
+            const containerRect = transcriptContainerRef.current.getBoundingClientRect();
+            const wordRect = activeWordRef.current.getBoundingClientRect();
+            
+            // Check if the word is outside the visible area of the container
+            const isAboveContainer = wordRect.top < containerRect.top;
+            const isBelowContainer = wordRect.bottom > containerRect.bottom;
+            
+            if (isAboveContainer || isBelowContainer) {
+              // Scroll within the container to center the active word
+              const containerScrollTop = transcriptContainerRef.current.scrollTop;
+              const wordOffsetTop = activeWordRef.current.offsetTop;
+              const containerHeight = transcriptContainerRef.current.clientHeight;
+              
+              const targetScrollTop = wordOffsetTop - (containerHeight / 2);
+              
+              transcriptContainerRef.current.scrollTo({
+                top: targetScrollTop,
+                behavior: 'smooth'
+              });
+            }
+          } else {
+            // Fallback: scroll within the nearest scrollable container to avoid page-level scrolling
+            const scrollableParent = activeWordRef.current.closest('.overflow-y-auto, .overflow-auto');
+            if (scrollableParent) {
+              const wordRect = activeWordRef.current.getBoundingClientRect();
+              const containerRect = scrollableParent.getBoundingClientRect();
+              const relativeTop = wordRect.top - containerRect.top;
+              const containerHeight = scrollableParent.clientHeight;
+              
+              if (relativeTop < 0 || relativeTop > containerHeight) {
+                const targetScrollTop = scrollableParent.scrollTop + relativeTop - (containerHeight / 2);
+                scrollableParent.scrollTo({
+                  top: targetScrollTop,
+                  behavior: 'smooth'
+                });
+              }
+            }
+          }
         }
       }
     }
@@ -2350,7 +2880,7 @@ const TranscriptionPage: React.FC = () => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
       // Update video fullscreen state based on fullscreen element
-      const isVideoInFullscreen = document.fullscreenElement === videoRef.current;
+      const isVideoInFullscreen = document.fullscreenElement === videoContainerRef.current;
       setIsVideoFullscreen(isVideoInFullscreen);
     };
 
@@ -2359,6 +2889,25 @@ const TranscriptionPage: React.FC = () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
   }, []);
+
+  // Handle keyboard shortcuts (spacebar for play/pause)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle spacebar if not typing in an input field
+      if (event.code === 'Space' && 
+          event.target instanceof HTMLElement && 
+          !['INPUT', 'TEXTAREA'].includes(event.target.tagName) &&
+          !event.target.isContentEditable) {
+        event.preventDefault();
+        togglePlayPause();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isPlaying, videoUrl]); // Dependencies to ensure we have the latest state
 
   return (
     <div className={`min-h-screen bg-gradient-to-br ${
@@ -2549,64 +3098,79 @@ const TranscriptionPage: React.FC = () => {
                   
                   {/* Mobile Video Control Buttons */}
                   <div className="absolute top-2 right-2 flex space-x-2">
-                    {/* Subtitle Translation Controls */}
-                    <div className="relative flex items-center space-x-1 language-dropdown-container">
-                      {/* Translation Toggle Button */}
+                    {/* Dual Display Toggle - Only show when translation is enabled */}
+                    {isTranslationEnabled && (
                       <button
                         onClick={() => {
-                          if (!showTranslatedSubtitles && Object.keys(wordTranslations).length === 0) {
+                          if (!showDualSubtitles && Object.keys(wordTranslations).length === 0) {
                             // If no translations exist, translate all words first
-                            translateAllSubtitleWords();
+                            loadAllSubtitleWords();
                           }
-                          setShowTranslatedSubtitles(!showTranslatedSubtitles);
+                          setShowDualSubtitles(!showDualSubtitles);
+                          if (!showDualSubtitles) {
+                            setShowTranslatedSubtitles(false); // Disable single translation mode when enabling dual
+                          }
                         }}
                         className={`p-2 rounded-lg transition-all ${
-                          showTranslatedSubtitles
-                            ? 'bg-blue-500 bg-opacity-75 text-white'
+                          showDualSubtitles
+                            ? 'bg-green-500 bg-opacity-75 text-white'
                             : 'bg-black bg-opacity-50 text-white hover:bg-opacity-75'
                         }`}
-                        title={showTranslatedSubtitles ? 'Hide Translated Subtitles' : 'Show Translated Subtitles'}
+                        title={showDualSubtitles ? 'Hide Dual Subtitles' : 'Show Both Original & Translated'}
                         disabled={isTranslatingWords}
                       >
                         {isTranslatingWords ? (
-                          <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
+                          <div className="flex items-center space-x-1">
+                            <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
+                          </div>
                         ) : (
-                          <FiGlobe size={14} />
+                          <div className="flex flex-col items-center">
+                            <div className="text-xs leading-none">AB</div>
+                            <div className="text-xs leading-none">中文</div>
+                          </div>
+                        )}
+                        
+                        {/* Quick Action Results - Moved to end of chat */}
+                        {(chatResponses.keypoints || chatResponses.summary || chatResponses.translate) && (
+                          <div className="space-y-4 mt-6 border-t pt-6 dark:border-gray-700">
+                            <h3 className="text-md font-medium text-gray-600 dark:text-gray-400">Quick Action Results</h3>
+                            
+                            {chatResponses.keypoints && (
+                              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                                <h4 className="font-medium text-blue-700 dark:text-blue-400 mb-2 flex items-center">
+                                  <FiZap className="mr-2" /> Key Points
+                                </h4>
+                                <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
+                                  {renderTextWithMath(chatResponses.keypoints, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {chatResponses.summary && (
+                              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                                <h4 className="font-medium text-purple-700 dark:text-purple-400 mb-2 flex items-center">
+                                  <FiFileText className="mr-2" /> Summary
+                                </h4>
+                                <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
+                                  {renderTextWithMath(chatResponses.summary, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {chatResponses.translate && (
+                              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                                <h4 className="font-medium text-green-700 dark:text-green-400 mb-2 flex items-center">
+                                  <FiBookmark className="mr-2" /> Translation ({translationLanguage})
+                                </h4>
+                                <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
+                                  {renderTextWithMath(chatResponses.translate, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </button>
-                      
-                      {/* Language Dropdown Button */}
-                      <button
-                        onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
-                        className="p-2 bg-black bg-opacity-50 text-white rounded-lg hover:bg-opacity-75 transition-all"
-                        title="Select Translation Language"
-                      >
-                        <FiChevronDown size={12} />
-                      </button>
-                      
-                      {/* Language Dropdown */}
-                      {showLanguageDropdown && (
-                        <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999] min-w-44 max-h-48 overflow-y-auto">
-                          {subtitleLanguages.map((lang) => (
-                            <button
-                              key={lang.code}
-                              onClick={() => {
-                                setSubtitleLanguage(lang.code);
-                                setShowLanguageDropdown(false);
-                                // Clear existing translations when language changes
-                                setWordTranslations({});
-                                setShowTranslatedSubtitles(false);
-                              }}
-                              className={`w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                                subtitleLanguage === lang.code ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'
-                              }`}
-                            >
-                              <span className="text-sm font-medium">{lang.name}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    )}
                     
                     {/* Fullscreen Button */}
                     <button
@@ -2624,42 +3188,64 @@ const TranscriptionPage: React.FC = () => {
                     if (!currentSegment) return null;
                     
                     const highlightedWords = getHighlightedWordsInSegment(currentSegment);
-                    const maxWordsPerLine = 6;
-                    const shouldUseMultipleLines = highlightedWords.length > maxWordsPerLine;
-                    
-
                     
                     return (
-                      <div className={`absolute bg-black bg-opacity-30 text-white px-2 py-1 rounded-lg text-center z-50 ${
-                        shouldUseMultipleLines ? 'text-xs leading-tight' : 'text-xs'
-                      } ${
+                      <div className={`subtitle-overlay absolute bg-black bg-opacity-60 text-white px-4 py-3 rounded-lg text-center z-50 text-xs ${
                         isVideoFullscreen 
-                          ? 'bottom-16 left-1/2 transform -translate-x-1/2 w-4/5 max-w-4xl text-sm py-2 px-4' 
-                          : 'bottom-2 left-2 right-2'
-                      }`}>
-                        <div className="flex flex-wrap justify-center gap-1 break-words">
-                          {highlightedWords.map((word, index) => {
-                            const displayWord = showTranslatedSubtitles && wordTranslations[word.word] 
-                              ? wordTranslations[word.word] 
-                              : word.word;
-                            
-                            return (
-                              <span
-                                key={index}
-                                className={`transition-all duration-200 inline-block ${
-                                  word.isActive 
-                                    ? 'text-yellow-300 font-bold scale-110 drop-shadow-lg' 
-                                    : word.isPast 
-                                      ? 'text-gray-300' 
-                                      : 'text-white'
-                                }`}
-                                title={showTranslatedSubtitles && wordTranslations[word.word] ? `Original: ${word.word}` : undefined}
-                              >
-                                {displayWord}
-                                {index < highlightedWords.length - 1 && ' '}
-                              </span>
-                            );
-                          })}
+                          ? 'bottom-16 left-1/2 transform -translate-x-1/2 mx-auto text-sm py-4 px-6' 
+                          : 'bottom-2 left-1/2 transform -translate-x-1/2 mx-auto'
+                      }`} style={{ 
+                        maxWidth: highlightedWords.length <= 10 ? 'none' : (isVideoFullscreen ? '85%' : '90%'),
+                        whiteSpace: highlightedWords.length <= 10 ? 'nowrap' : 'normal'
+                      }}>
+                        <div className="flex justify-center">
+                          <div className="text-center leading-tight" style={{ 
+                             lineHeight: '1.3',
+                             fontSize: highlightedWords.length <= 10 ? 'clamp(0.6rem, 2vw, 0.8rem)' : undefined,
+                             maxHeight: highlightedWords.length <= 10 ? 'none' : '2.6em',
+                             overflow: highlightedWords.length <= 10 ? 'visible' : 'hidden',
+                             display: highlightedWords.length <= 10 ? 'block' : '-webkit-box',
+                             WebkitLineClamp: highlightedWords.length <= 10 ? 'none' : 2,
+                             WebkitBoxOrient: highlightedWords.length <= 10 ? 'initial' : 'vertical'
+                           }}>
+                            {highlightedWords.map((word, index) => {
+                              const displayWord = showTranslatedSubtitles && wordTranslations[word.word] 
+                                ? wordTranslations[word.word] 
+                                : word.word;
+                              
+                              return (
+                                <span
+                                  key={index}
+                                  className={`transition-all duration-200 inline-block ${
+                                    word.isActive 
+                                      ? 'text-yellow-300 font-bold scale-110 drop-shadow-lg' 
+                                      : word.isPast 
+                                        ? 'text-gray-300' 
+                                        : 'text-white'
+                                  }`}
+                                  data-lang={isChinese(displayWord) ? 'chinese' : 'other'}
+                                  title={showTranslatedSubtitles && wordTranslations[word.word] ? `Original: ${word.word}` : undefined}
+                                >
+                                  {showDualSubtitles && wordTranslations[word.word] ? (
+                                    highlightedWords.length <= 10 ? (
+                                      <span className="inline-block">
+                                        <span className="inline text-xs text-blue-200 mr-1" data-lang={isChinese(wordTranslations[word.word]) ? 'chinese' : 'other'}>{formatChineseText(wordTranslations[word.word])}</span>
+                                        <span className="inline text-xs" data-lang={isChinese(word.word) ? 'chinese' : 'other'}>({formatChineseText(word.word)})</span>
+                                      </span>
+                                    ) : (
+                                      <span className="inline-block">
+                                        <span className="block text-xs leading-none text-blue-200 mb-1" data-lang={isChinese(wordTranslations[word.word]) ? 'chinese' : 'other'}>{formatChineseText(wordTranslations[word.word])}</span>
+                                        <span className="block text-xs leading-none" data-lang={isChinese(word.word) ? 'chinese' : 'other'}>{formatChineseText(word.word)}</span>
+                                      </span>
+                                    )
+                                  ) : (
+                                    <span data-lang={isChinese(displayWord) ? 'chinese' : 'other'}>{formatChineseText(displayWord)}</span>
+                                  )}
+                                  {index < highlightedWords.length - 1 && !isChinese(displayWord) && ' '}
+                                </span>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
                     );
@@ -2805,6 +3391,7 @@ const TranscriptionPage: React.FC = () => {
                   <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
                     <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.audioTranscription')}</h2>
                     <div className="flex space-x-2">
+                     
                       <button 
                         onClick={copyTranscription}
                         className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
@@ -2826,8 +3413,41 @@ const TranscriptionPage: React.FC = () => {
                       >
                         <FiDownload />
                       </button>
+                      <button 
+                        onClick={() => {
+                          setIsEditMode(!isEditMode);
+                          setShowEditWarning(true);
+                          setTimeout(() => setShowEditWarning(false), 5000);
+                        }}
+                        className={`p-2 transition-colors ${
+                          isEditMode 
+                            ? 'text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300'
+                            : 'text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400'
+                        }`}
+                        title="Edit Transcription"
+                      >
+                        <FiEdit />
+                      </button>
                     </div>
                   </div>
+
+                  {/* Edit Warning Message */}
+                  {showEditWarning && (
+                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-500">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-yellow-700 dark:text-yellow-200">
+                            <strong>Warning:</strong> Any edits made to the transcription will be lost when you leave this page.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Translation Controls */}
                   <div className="p-2 sm:p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
@@ -2839,9 +3459,11 @@ const TranscriptionPage: React.FC = () => {
                             className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all text-xs sm:text-sm ${
                               isTranslationEnabled
                                 ? 'bg-green-500 hover:bg-green-600 text-white'
+                                : isTranslationInProgress
+                                ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed'
                                 : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200'
                             }`}
-                            disabled={translatingIndex !== -1}
+                            disabled={translatingIndex !== -1 || isTranslationInProgress}
                           >
                             <FiGlobe className="w-3 h-3 sm:w-4 sm:h-4" />
                             {isTranslationEnabled ? (
@@ -2849,29 +3471,70 @@ const TranscriptionPage: React.FC = () => {
                             ) : (
                               <FiToggleLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                             )}
-                            <span className="hidden sm:inline">{isTranslationEnabled ? t('transcription.translationOn') : t('transcription.enableTranslation')}</span>
-                            <span className="sm:hidden">{isTranslationEnabled ? 'ON' : 'OFF'}</span>
-                            {!isTranslationEnabled && (
+                            <span className="hidden sm:inline">
+                              {isTranslationInProgress ? 
+                                (translationTimeRemaining > 0 ? 
+                                  `${Math.floor(translationTimeRemaining / 60)}:${(translationTimeRemaining % 60).toString().padStart(2, '0')} remaining` :
+                                  'Translation may take more time, please wait'
+                                ) :
+                                isTranslationEnabled ? 
+                                  t('transcription.translationOn') : 
+                                  t('transcription.enableTranslation')
+                              }
+                            </span>
+                            <span className="sm:hidden">
+                              {isTranslationInProgress ? 
+                                (translationTimeRemaining > 0 ? 
+                                  `${Math.floor(translationTimeRemaining / 60)}:${(translationTimeRemaining % 60).toString().padStart(2, '0')}` :
+                                  'Please wait'
+                                ) :
+                                isTranslationEnabled ? 'ON' : 'OFF'
+                              }
+                            </span>
+                            {!isTranslationEnabled && !translatedData[selectedLanguage] && (
                               <span className="flex items-center ml-1 text-orange-600 dark:text-orange-400 text-xs font-medium">
-                                <span className="mr-1">-1</span>
+                                <span className="mr-2">-2</span>
                                 <img src={coinIcon} alt="coin" className="w-3 h-3" />
                               </span>
                             )}
                           </button>
                         </div>
                         
-                        <select
-                          value={selectedLanguage}
-                          onChange={(e) => setSelectedLanguage(e.target.value)}
-                          className="px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm w-full sm:w-auto"
-                          disabled={translatingIndex !== -1}
-                        >
-                          {languages.map((lang) => (
-                            <option key={lang.value} value={lang.value}>
-                              {lang.label}
-                            </option>
-                          ))}
-                        </select>
+                        {languages.length > 0 ? (
+                          <div className="relative custom-language-dropdown">
+                            <button
+                              onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                              className="px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm w-full sm:w-auto flex items-center justify-between min-w-[120px]"
+                              disabled={translatingIndex !== -1 || isTranslationInProgress}
+                            >
+                              <span>{languages.find(lang => lang.value === selectedLanguage)?.label || 'Select Language'}</span>
+                              <svg className={`w-4 h-4 transition-transform ${isLanguageDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            {isLanguageDropdownOpen && (
+                              <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg shadow-lg max-h-32 overflow-y-auto">
+                                {languages.map((lang) => (
+                                  <button
+                                    key={lang.value}
+                                    onClick={() => {
+                                      setSelectedLanguage(lang.value);
+                                      setIsTranslationInProgress(false);
+                                      setIsLanguageDropdownOpen(false);
+                                    }}
+                                    className="w-full px-2 sm:px-3 py-1.5 text-left text-xs sm:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg"
+                                  >
+                                    {lang.label}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                            No translations available
+                          </span>
+                        )}
                       </div>
                       
                       {translatingIndex !== -1 && (
@@ -2884,8 +3547,12 @@ const TranscriptionPage: React.FC = () => {
                   </div>
 
                   {/* Transcription text with word highlighting and translations */}
-                  <div className="overflow-auto h-[calc(200vh-300px)] sm:h-[calc(100vh-400px)] p-3 sm:p-4 font-medium leading-relaxed text-gray-700 dark:text-gray-300 text-sm sm:text-base">
-                    {paragraphs.map((paragraph, paraIndex) => (
+                  <div 
+                    ref={transcriptContainerRef}
+                    className="transcription-content overflow-auto h-[calc(200vh-300px)] sm:h-[calc(100vh-400px)] p-3 sm:p-4 font-medium leading-relaxed text-gray-700 dark:text-gray-300 text-sm sm:text-base"
+
+                  >
+                    {paragraphs.length > 0 ? paragraphs.map((paragraph, paraIndex) => (
                         <div key={paraIndex} className="mb-4 sm:mb-6">
                           {/* Paragraph timestamp - above paragraph on left side */}
                           <div className="flex items-center mb-2">
@@ -2908,6 +3575,7 @@ const TranscriptionPage: React.FC = () => {
                               ? 'bg-blue-50 dark:bg-blue-900/20 p-3' 
                               : ''
                           }`}
+
                         >
                           {paragraph.words.map((word, wordIndex) => {
                             // Find the global index of this word
@@ -2915,24 +3583,81 @@ const TranscriptionPage: React.FC = () => {
                               w => w.startTime === word.startTime && w.endTime === word.endTime
                             );
                             
+                            const isCurrentlyEditing = editingWordIndex === globalWordIndex;
+                            
                             return (
                               <span 
                                 key={`${paraIndex}-${wordIndex}`}
                                 ref={globalWordIndex === activeWord ? activeWordRef : null}
-                                className={`cursor-pointer transition-all duration-150 ${
+                                className={`inline-flex items-center transition-all duration-150 ${
                                   globalWordIndex === activeWord 
                                     ? 'bg-blue-500 text-white dark:bg-blue-600 rounded px-1 py-0.5' 
-                                    : 'hover:bg-blue-100 hover:dark:bg-blue-900/30 rounded'
+                                    : isEditMode && !isCurrentlyEditing
+                                    ? 'hover:bg-yellow-100 hover:dark:bg-yellow-900/30 rounded cursor-pointer border border-transparent hover:border-yellow-300'
+                                    : 'hover:bg-blue-100 hover:dark:bg-blue-900/30 rounded cursor-pointer'
                                 }`}
-                                onClick={() => {
-                                  const mediaElement = videoUrl ? videoRef.current : audioRef.current;
-                                  if (mediaElement) {
-                                    mediaElement.currentTime = word.startTime;
-                                    setCurrentTime(word.startTime);
-                                  }
-                                }}
                               >
-                                {formatChineseText(word.word)}{isChinese(word.word) ? '' : ' '}
+                                {isCurrentlyEditing ? (
+                                  <div className="inline-flex items-center space-x-1 bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-600 rounded px-2 py-1">
+                                    <input
+                                      type="text"
+                                      value={editingWordText}
+                                      onChange={(e) => setEditingWordText(e.target.value)}
+                                      className="text-sm border-none outline-none bg-transparent text-gray-900 dark:text-gray-100 min-w-[60px] max-w-[200px]"
+                                      autoFocus
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          saveWordEdit();
+                                        } else if (e.key === 'Escape') {
+                                          cancelWordEdit();
+                                        }
+                                      }}
+                                    />
+                                    <button
+                                      onClick={saveWordEdit}
+                                      className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 p-0.5"
+                                      title="Save"
+                                    >
+                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      onClick={cancelWordEdit}
+                                      className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-0.5"
+                                      title="Cancel"
+                                    >
+                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span
+                                    className="relative group"
+                                    data-lang={isChinese(word.word) ? 'chinese' : 'other'}
+                                    onClick={() => {
+                                      if (isEditMode) {
+                                        handleWordEdit(globalWordIndex, word.word);
+                                      } else {
+                                        const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                                        if (mediaElement) {
+                                          mediaElement.currentTime = word.startTime;
+                                          setCurrentTime(word.startTime);
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    <span style={{ wordSpacing: isChinese(word.word) ? '0' : '0.25em' }} data-lang={isChinese(word.word) ? 'chinese' : 'other'}>{formatChineseText(word.word)}</span>{!isChinese(word.word) && ' '}
+                                    {isEditMode && (
+                                      <span className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <svg className="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                      </span>
+                                    )}
+                                  </span>
+                                )}
                               </span>
                             );
                           })}
@@ -2965,7 +3690,19 @@ const TranscriptionPage: React.FC = () => {
                           </div>
                         )}
                       </div>
-                    ))}
+                    )) : (
+                      // Fallback display when no paragraphs are available
+                      <div className="whitespace-pre-wrap">
+                        {wordsData && wordsData.length > 0 
+                          ? (() => {
+                              const words = wordsData.map(word => word.punctuated_word || word.word);
+                              const firstWord = words[0] || '';
+                              return isChinese(firstWord) ? words.join('') : words.join(' ');
+                            })()
+                          : getDisplayTranscription()
+                        }
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -2973,7 +3710,7 @@ const TranscriptionPage: React.FC = () => {
               {/* Mind Map Tab */}
               {activeTab === 'mindmap' && (
                 <MindMapComponent
-                  transcription={transcription}
+                  transcription={getDisplayTranscription()}
                   uid={uid}
                   audioid={audioid}
                   xmlData={xmlData}
@@ -2986,7 +3723,7 @@ const TranscriptionPage: React.FC = () => {
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(200vh-200px)] sm:h-[calc(100vh-200px)] lg:h-[calc(100vh-200px)]"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-200px)] max-h-[800px]"
                 >
                   {/* Fixed Header */}
                   <div className="flex justify-between items-center p-3 sm:p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-20 sticky top-0">
@@ -3068,7 +3805,7 @@ const TranscriptionPage: React.FC = () => {
                         <select
                           value={translationLanguage}
                           onChange={(e) => setTranslationLanguage(e.target.value)}
-                          className="ml-2 px-2 py-1 text-xs sm:text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+                          className="ml-2 px-2 py-1 text-xs sm:text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 max-h-20 overflow-y-auto"
                         >
                           <option value="Spanish">{t('transcription.languages.spanish')}</option>
                           <option value="French">{t('transcription.languages.french')}</option>
@@ -3097,47 +3834,10 @@ const TranscriptionPage: React.FC = () => {
                   {/* Chat display area with messages - Scrollable */}
                   <div 
                     ref={chatContainerRef}
-                    className="flex-1 overflow-y-auto p-4 space-y-4 pb-20"
+                    className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 pb-4"
+                    style={{ scrollBehavior: 'smooth', overscrollBehavior: 'contain' }}
                   >
-                    {/* Quick Action Responses */}
-                    {(chatResponses.keypoints || chatResponses.summary || chatResponses.translate) && (
-                      <div className="space-y-6 mb-6 border-b pb-6 dark:border-gray-700">
-                        <h3 className="text-md font-medium text-gray-600 dark:text-gray-400">Quick Action Results</h3>
-                        
-                        {chatResponses.keypoints && (
-                          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                            <h4 className="font-medium text-blue-700 dark:text-blue-400 mb-2 flex items-center">
-                              <FiZap className="mr-2" /> Key Points
-                            </h4>
-                            <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                              {renderTextWithMath(chatResponses.keypoints, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {chatResponses.summary && (
-                          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-                            <h4 className="font-medium text-purple-700 dark:text-purple-400 mb-2 flex items-center">
-                              <FiFileText className="mr-2" /> Summary
-                            </h4>
-                            <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                              {renderTextWithMath(chatResponses.summary, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {chatResponses.translate && (
-                          <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                            <h4 className="font-medium text-green-700 dark:text-green-400 mb-2 flex items-center">
-                              <FiBookmark className="mr-2" /> Translation ({translationLanguage})
-                            </h4>
-                            <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                              {renderTextWithMath(chatResponses.translate, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+
                     
                     {/* Chat Messages */}
                     {chatMessages.length > 0 ? (
@@ -3263,15 +3963,57 @@ const TranscriptionPage: React.FC = () => {
                         )}
                       </div>
                     ) : (
-                      !chatResponses.keypoints && !chatResponses.summary && !chatResponses.translate && (
-                        <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center mb-4">
-                            <FiMessageSquare className="w-8 h-8 text-white" />
+                      <div>
+                        {/* Quick Action Results - Show when no chat messages */}
+                        {(chatResponses.keypoints || chatResponses.summary || chatResponses.translate) && (
+                          <div className="space-y-4 mb-6">
+                            <h3 className="text-md font-medium text-gray-600 dark:text-gray-400">Quick Action Results</h3>
+                            
+                            {chatResponses.keypoints && (
+                              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                                <h4 className="font-medium text-blue-700 dark:text-blue-400 mb-2 flex items-center">
+                                  <FiZap className="mr-2" /> Key Points
+                                </h4>
+                                <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
+                                  {renderTextWithMath(chatResponses.keypoints, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {chatResponses.summary && (
+                              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                                <h4 className="font-medium text-purple-700 dark:text-purple-400 mb-2 flex items-center">
+                                  <FiFileText className="mr-2" /> Summary
+                                </h4>
+                                <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
+                                  {renderTextWithMath(chatResponses.summary, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {chatResponses.translate && (
+                              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                                <h4 className="font-medium text-green-700 dark:text-green-400 mb-2 flex items-center">
+                                  <FiBookmark className="mr-2" /> Translation ({translationLanguage})
+                                </h4>
+                                <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
+                                  {renderTextWithMath(chatResponses.translate, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <h3 className="text-lg font-semibold mb-2">{t('transcription.chat.startConversation')}</h3>
-                          <p className="text-center max-w-md">{t('transcription.chat.startConversationDescription')}</p>
-                        </div>
-                      )
+                        )}
+                        
+                        {!chatResponses.keypoints && !chatResponses.summary && !chatResponses.translate && (
+                          <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center mb-4">
+                              <FiMessageSquare className="w-8 h-8 text-white" />
+                            </div>
+                            <h3 className="text-lg font-semibold mb-2">{t('transcription.chat.startConversation')}</h3>
+                            <p className="text-center max-w-md">{t('transcription.chat.startConversationDescription')}</p>
+                          </div>
+                        )}
+                      </div>
                     )}
                     
                     <div ref={messagesEndRef} />
@@ -3419,17 +4161,39 @@ const TranscriptionPage: React.FC = () => {
                             </h3>
                             <div className="flex items-center space-x-3">
                               {/* Language Selector */}
-                              <select
-                                value={srtSelectedLanguage}
-                                onChange={(e) => setSrtSelectedLanguage(e.target.value)}
-                                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                              >
-                                {languages.map(lang => (
-                                  <option key={lang.value} value={lang.value}>
-                                    {lang.label}
-                                  </option>
-                                ))}
-                              </select>
+              {languages.length > 0 ? (
+                 <div className="relative custom-srt-language-dropdown">
+                  <button
+                    onClick={() => setIsSrtLanguageDropdownOpen(!isSrtLanguageDropdownOpen)}
+                    className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 flex items-center justify-between min-w-[200px]"
+                  >
+                    <span>{languages.find(lang => lang.value === srtSelectedLanguage)?.label || 'Select Language'}</span>
+                    <svg className={`w-4 h-4 transition-transform ${isSrtLanguageDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {isSrtLanguageDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-32 overflow-y-auto">
+                      {languages.map(lang => (
+                        <button
+                          key={lang.value}
+                          onClick={() => {
+                            setSrtSelectedLanguage(lang.value);
+                            setIsSrtLanguageDropdownOpen(false);
+                          }}
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors"
+                        >
+                          {lang.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <span className="px-3 py-1 text-sm text-gray-500 dark:text-gray-400">
+                  No translations available
+                </span>
+              )}
                               
                               {/* AI-Enhanced Translate All Button */}
                               <button
@@ -3455,8 +4219,13 @@ const TranscriptionPage: React.FC = () => {
                                 
                                 {/* Content */}
                                 <div className="relative z-10 flex items-center space-x-2">
-                                  <img src={coinIcon} alt="Cost" className="w-4 h-4" />
-                                  <span className="font-bold text-yellow-300">1</span>
+                                  {/* Show coin indicator only for unsaved languages */}
+                                  {!translatedData || !translatedData[srtSelectedLanguage] ? (
+                                    <>
+                                      <span className="font-bold text-yellow-300">-2</span>
+                                      <img src={coinIcon} alt="Cost" className="w-4 h-4" />
+                                    </>
+                                  ) : null}
                                   {isTranslatingSubtitle ? (
                                     <div className="flex items-center space-x-1">
                                       <FiLoader className="w-4 h-4 animate-spin" />
@@ -3490,6 +4259,24 @@ const TranscriptionPage: React.FC = () => {
                                     </span>
                                   </div>
                                   <div className="flex items-center space-x-2">
+                                    {/* Edit Button */}
+                                    <button
+                                      onClick={() => handleSrtEdit(index, segment.text)}
+                                      className="relative p-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-110 overflow-hidden group"
+                                      title="Edit Segment"
+                                    >
+                                      {/* Subtle Glow Effect */}
+                                      <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-30 blur-md group-hover:opacity-50 transition-opacity duration-300"></div>
+                                      
+                                      {/* Animated Sparkle */}
+                                      <div className="absolute top-1 right-1 w-1 h-1 bg-white rounded-full opacity-60 animate-ping" style={{animationDelay: '0.3s'}}></div>
+                                      
+                                      {/* Content */}
+                                      <div className="relative z-10">
+                                        <FiEdit className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
+                                      </div>
+                                    </button>
+                                    
                                     {/* AI-Enhanced Copy Button */}
                                     <button
                                       onClick={() => copySegmentText(srtTranslations[index] ? `${t('transcription.srt.originalLabel')} ${segment.text}\n\n${t('transcription.srt.translationLabel')} ${srtTranslations[index]}` : segment.text)}
@@ -3515,7 +4302,33 @@ const TranscriptionPage: React.FC = () => {
                                   <div className="font-medium text-xs text-blue-600 dark:text-blue-400 mb-1">
                                     {t('transcription.srt.originalLabel')}
                                   </div>
-                                  <span className="font-mono">{segment.text}</span>
+                                  {editingSrtIndex === index ? (
+                                    <div className="space-y-2">
+                                      <textarea
+                                        value={editingSrtText}
+                                        onChange={(e) => setEditingSrtText(e.target.value)}
+                                        className="w-full p-2 border border-blue-300 dark:border-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 font-mono text-sm resize-none"
+                                        rows={3}
+                                        placeholder="Edit segment text..."
+                                      />
+                                      <div className="flex items-center space-x-2">
+                                        <button
+                                          onClick={saveSrtEdit}
+                                          className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs font-medium"
+                                        >
+                                          Save
+                                        </button>
+                                        <button
+                                          onClick={cancelSrtEdit}
+                                          className="px-3 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-xs font-medium"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <span className="font-mono">{segment.text}</span>
+                                  )}
                                 </div>
                                 
                                 {/* Segment Text - Translation - Only show when translation exists */}
@@ -3644,11 +4457,15 @@ const TranscriptionPage: React.FC = () => {
                   
                   {/* Media element - Video or Audio */}
                   {videoUrl ? (
-                    <div className="relative mb-4">
+                    <div ref={videoContainerRef} className="relative mb-4 bg-black rounded-lg overflow-hidden">
                       <video 
                         ref={videoRef}
                         src={videoUrl}
-                        className="w-full max-h-64 rounded-lg bg-black"
+                        className={`w-full bg-black ${
+                          isVideoFullscreen 
+                            ? 'h-screen object-cover' 
+                            : 'max-h-64 rounded-lg'
+                        }`}
                         onTimeUpdate={() => {
                           if (videoRef.current) {
                             setCurrentTime(videoRef.current.currentTime);
@@ -3666,64 +4483,39 @@ const TranscriptionPage: React.FC = () => {
                       
                       {/* Video Control Buttons */}
                       <div className="absolute top-3 right-3 flex space-x-2">
-                        {/* Subtitle Translation Controls */}
-                        <div className="relative flex items-center space-x-1 language-dropdown-container">
-                          {/* Translation Toggle Button */}
+                        {/* Dual Display Toggle - Only show when translation is enabled */}
+                        {isTranslationEnabled && (
                           <button
                             onClick={() => {
-                              if (!showTranslatedSubtitles && Object.keys(wordTranslations).length === 0) {
+                              if (!showDualSubtitles && Object.keys(wordTranslations).length === 0) {
                                 // If no translations exist, translate all words first
-                                translateAllSubtitleWords();
+                                loadAllSubtitleWords();
                               }
-                              setShowTranslatedSubtitles(!showTranslatedSubtitles);
+                              setShowDualSubtitles(!showDualSubtitles);
+                              if (!showDualSubtitles) {
+                                setShowTranslatedSubtitles(false); // Disable single translation mode when enabling dual
+                              }
                             }}
                             className={`p-2 rounded-lg transition-all ${
-                              showTranslatedSubtitles
-                                ? 'bg-blue-500 bg-opacity-75 text-white'
+                              showDualSubtitles
+                                ? 'bg-green-500 bg-opacity-75 text-white'
                                 : 'bg-black bg-opacity-50 text-white hover:bg-opacity-75'
                             }`}
-                            title={showTranslatedSubtitles ? 'Hide Translated Subtitles' : 'Show Translated Subtitles'}
+                            title={showDualSubtitles ? 'Hide Dual Subtitles' : 'Show Both Original & Translated'}
                             disabled={isTranslatingWords}
                           >
                             {isTranslatingWords ? (
-                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                              <div className="flex items-center space-x-1">
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                              </div>
                             ) : (
-                              <FiGlobe size={18} />
+                              <div className="flex flex-col items-center">
+                                <div className="text-xs leading-none">AB</div>
+                                <div className="text-xs leading-none">中文</div>
+                              </div>
                             )}
                           </button>
-                          
-                          {/* Language Dropdown Button */}
-                          <button
-                            onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
-                            className="p-2 bg-black bg-opacity-50 text-white rounded-lg hover:bg-opacity-75 transition-all"
-                            title="Select Translation Language"
-                          >
-                            <FiChevronDown size={16} />
-                          </button>
-                          
-                          {/* Language Dropdown */}
-                          {showLanguageDropdown && (
-                            <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999] min-w-48 max-h-64 overflow-y-auto">
-                              {subtitleLanguages.map((lang) => (
-                                <button
-                                  key={lang.code}
-                                  onClick={() => {
-                                    setSubtitleLanguage(lang.code);
-                                    setShowLanguageDropdown(false);
-                                    // Clear existing translations when language changes
-                                    setWordTranslations({});
-                                    setShowTranslatedSubtitles(false);
-                                  }}
-                                  className={`w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                                    subtitleLanguage === lang.code ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'
-                                  }`}
-                                >
-                                  <span className="text-sm font-medium">{lang.name}</span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                        )}
                         
                         {/* Fullscreen Button */}
                         <button
@@ -3741,46 +4533,156 @@ const TranscriptionPage: React.FC = () => {
                         if (!currentSegment) return null;
                         
                         const highlightedWords = getHighlightedWordsInSegment(currentSegment);
-                        const maxWordsPerLine = 8;
-                        const shouldUseMultipleLines = highlightedWords.length > maxWordsPerLine;
-                        
-                        
                         
                         return (
-                          <div className={`absolute bg-black bg-opacity-30 text-white px-2 py-1 rounded-lg text-center z-50 ${
-                            shouldUseMultipleLines ? 'text-xs leading-relaxed' : 'text-sm'
-                          } ${
+                          <div className={`subtitle-overlay absolute bg-black text-white text-center z-50 ${
                             isVideoFullscreen 
-                              ? 'bottom-20 left-1/2 transform -translate-x-1/2 w-4/5 max-w-5xl text-base py-3 px-4' 
-                              : 'bottom-4 left-4 right-4'
-                          }`}>
-                            <div className="flex flex-wrap justify-center gap-1 break-words">
-                              {highlightedWords.map((word: any, index: number) => {
-                                const displayWord = showTranslatedSubtitles && wordTranslations[word.word] 
-                                  ? wordTranslations[word.word] 
-                                  : word.word;
-                                
-                                return (
-                                  <span
-                                    key={index}
-                                    className={`transition-all duration-200 inline-block ${
-                                      word.isActive 
-                                        ? 'text-yellow-300 font-bold scale-110 drop-shadow-lg' 
-                                        : word.isPast 
-                                          ? 'text-gray-300' 
-                                          : 'text-white'
-                                    }`}
-                                    title={showTranslatedSubtitles && wordTranslations[word.word] ? `Original: ${word.word}` : undefined}
-                                  >
-                                    {displayWord}
-                                    {index < highlightedWords.length - 1 && ' '}
-                                  </span>
-                                );
-                              })}
+                              ? 'bottom-40 left-1/2 transform -translate-x-1/2 bg-opacity-90 px-10 py-8 rounded-xl text-xl md:text-2xl shadow-2xl' 
+                              : 'bottom-4 left-1/2 transform -translate-x-1/2 bg-opacity-60 px-4 py-3 rounded-lg text-xs mx-auto'
+                          }`} style={{ 
+                            maxWidth: highlightedWords.length <= 7 ? 'none' : (isVideoFullscreen ? '85%' : '90%'),
+                            whiteSpace: highlightedWords.length <= 7 ? 'nowrap' : 'normal'
+                          }}>
+                            <div className="flex justify-center">
+                              <div className="text-center leading-tight" style={{ 
+                                 lineHeight: isVideoFullscreen ? '1.4' : '1.3',
+                                 fontSize: highlightedWords.length <= 7 ? (isVideoFullscreen ? 'clamp(1rem, 3vw, 1.5rem)' : 'clamp(0.6rem, 2vw, 0.8rem)') : undefined,
+                                 maxHeight: highlightedWords.length <= 7 ? 'none' : (isVideoFullscreen ? '2.8em' : '2.6em'),
+                                 overflow: highlightedWords.length <= 7 ? 'visible' : 'hidden',
+                                 display: highlightedWords.length <= 7 ? 'block' : '-webkit-box',
+                                 WebkitLineClamp: highlightedWords.length <= 7 ? 'none' : 2,
+                                 WebkitBoxOrient: highlightedWords.length <= 7 ? 'initial' : 'vertical'
+                               }}>
+                                {highlightedWords.map((word: any, index: number) => {
+                                  const displayWord = showTranslatedSubtitles && wordTranslations[word.word] 
+                                    ? wordTranslations[word.word] 
+                                    : word.word;
+                                  
+                                  return (
+                                    <span
+                                      key={index}
+                                      className={`transition-all duration-200 inline-block ${
+                                        word.isActive 
+                                          ? 'text-yellow-300 font-bold scale-110 drop-shadow-lg' 
+                                          : word.isPast 
+                                            ? 'text-gray-300' 
+                                            : 'text-white'
+                                      }`}
+                                      data-lang={isChinese(displayWord) ? 'chinese' : 'other'}
+                                      title={showTranslatedSubtitles && wordTranslations[word.word] ? `Original: ${word.word}` : undefined}
+                                    >
+                                      {showDualSubtitles && wordTranslations[word.word] ? (
+                                         highlightedWords.length <= 7 ? (
+                                           <span className="inline-block">
+                                             <span className="inline text-xs text-blue-200 mr-1" data-lang={isChinese(wordTranslations[word.word]) ? 'chinese' : 'other'}>{formatChineseText(wordTranslations[word.word])}</span>
+                                             <span className="inline text-xs" data-lang={isChinese(word.word) ? 'chinese' : 'other'}>({formatChineseText(word.word)})</span>
+                                           </span>
+                                         ) : (
+                                           <span className="inline-block">
+                                             <span className="block text-xs leading-none text-blue-200 mb-1" data-lang={isChinese(wordTranslations[word.word]) ? 'chinese' : 'other'}>{formatChineseText(wordTranslations[word.word])}</span>
+                                             <span className="block text-xs leading-none" data-lang={isChinese(word.word) ? 'chinese' : 'other'}>{formatChineseText(word.word)}</span>
+                                           </span>
+                                         )
+                                       ) : (
+                                         <span data-lang={isChinese(displayWord) ? 'chinese' : 'other'}>{formatChineseText(displayWord)}</span>
+                                       )}
+                                       {index < highlightedWords.length - 1 && !isChinese(displayWord) && ' '}
+                                    </span>
+                                  );
+                                })}
+                              </div>
                             </div>
                           </div>
                         );
                       })()}
+                      
+                      {/* Video Progress Bar and Controls - Only show in fullscreen */}
+                      {isVideoFullscreen && (
+                        <>
+                          {/* Progress Bar */}
+                          <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-50 bg-black bg-opacity-90 p-4 rounded-xl w-4/5 max-w-5xl">
+                            <div className="flex items-center">
+                              <span className="text-xs sm:text-sm w-10 sm:w-12 text-white">
+                                {formatTime(currentTime)}
+                              </span>
+                              <input
+                                type="range"
+                                min="0"
+                                max={duration || 100}
+                                value={currentTime}
+                                onChange={(e) => {
+                                  const mediaElement = videoRef.current;
+                                  if (mediaElement) {
+                                    mediaElement.currentTime = parseFloat(e.target.value);
+                                  }
+                                }}
+                                step="0.1"
+                                className="flex-1 mx-2 sm:mx-3 accent-blue-500 h-2 rounded-lg appearance-none cursor-pointer bg-gray-600"
+                              />
+                              <span className="text-xs sm:text-sm w-10 sm:w-12 text-right text-white">
+                                {formatTime(duration)}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Control Buttons */}
+                          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 bg-black bg-opacity-90 p-4 rounded-xl w-4/5 max-w-5xl">
+                            <div className="flex justify-between items-center">
+                              <div className="flex space-x-1 sm:space-x-2">
+                                <button 
+                                  onClick={() => {
+                                    const mediaElement = videoRef.current;
+                                    if (mediaElement) {
+                                      mediaElement.currentTime = Math.max(0, currentTime - 5);
+                                    }
+                                  }}
+                                  className="p-1 sm:p-2 focus:outline-none transition-colors text-white hover:text-blue-400"
+                                  title={t('transcription.audio.back5Seconds')}
+                                >
+                                  <FiChevronLeft size={16} className="sm:h-5 sm:w-5" />
+                                </button>
+                                <button 
+                                  onClick={togglePlayPause}
+                                  className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full focus:outline-none shadow-md hover:shadow-lg transition-all"
+                                >
+                                  {isPlaying ? 
+                                    <FiPause size={20} className="sm:h-6 sm:w-6" /> : 
+                                    <FiPlay size={20} className="ml-0.5 sm:h-6 sm:w-6 sm:ml-1" />
+                                  }
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    const mediaElement = videoRef.current;
+                                    if (mediaElement) {
+                                      mediaElement.currentTime = Math.min(duration, currentTime + 5);
+                                    }
+                                  }}
+                                  className="p-1 sm:p-2 focus:outline-none transition-colors text-white hover:text-blue-400"
+                                  title={t('transcription.audio.forward5Seconds')}
+                                >
+                                  <FiChevronRight size={16} className="sm:h-5 sm:w-5" />
+                                </button>
+                              </div>
+                              
+                              <div className="flex space-x-1 sm:space-x-2">
+                                <button
+                                  onClick={() => {
+                                    const mediaElement = videoRef.current;
+                                    if (mediaElement) {
+                                      mediaElement.playbackRate = mediaElement.playbackRate === 1 ? 1.5 : mediaElement.playbackRate === 1.5 ? 2 : 1;
+                                      setPlaybackRate(mediaElement.playbackRate);
+                                    }
+                                  }}
+                                  className="px-2 py-1 text-xs sm:text-sm bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
+                                  title={t('transcription.audio.playbackSpeed')}
+                                >
+                                  {playbackRate}x
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ) : (
                     <audio 
@@ -3802,66 +4704,67 @@ const TranscriptionPage: React.FC = () => {
                     />
                   )}
 
-                  {/* Audio controls */}
-                  <div className="px-4 pb-4">
-                    <div className="flex items-center mb-3">
-                      <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 w-10 sm:w-12">
-                        {formatTime(currentTime)}
-                      </span>
-                      <input
-                        type="range"
-                        min="0"
-                        max={duration || 100}
-                        value={currentTime}
-                        onChange={(e) => {
-                          const mediaElement = videoUrl ? videoRef.current : audioRef.current;
-                          if (mediaElement) {
-                            mediaElement.currentTime = parseFloat(e.target.value);
-                          }
-                        }}
-                        step="0.1"
-                        className="flex-1 mx-2 sm:mx-3 accent-blue-500 h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 dark:bg-gray-700"
-                      />
-                      <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 w-10 sm:w-12 text-right">
-                        {formatTime(duration)}
-                      </span>
-                    </div>
+                  {/* Audio controls - Only show when not in fullscreen */}
+                  {!isVideoFullscreen && (
+                    <div className="px-4 pb-4">
+                        <div className="flex items-center mb-3">
+                          <span className="text-xs sm:text-sm w-10 sm:w-12 text-gray-500 dark:text-gray-400">
+                            {formatTime(currentTime)}
+                          </span>
+                          <input
+                            type="range"
+                            min="0"
+                            max={duration || 100}
+                            value={currentTime}
+                            onChange={(e) => {
+                              const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                              if (mediaElement) {
+                                mediaElement.currentTime = parseFloat(e.target.value);
+                              }
+                            }}
+                            step="0.1"
+                            className="flex-1 mx-2 sm:mx-3 accent-blue-500 h-2 rounded-lg appearance-none cursor-pointer bg-gray-200 dark:bg-gray-700"
+                          />
+                          <span className="text-xs sm:text-sm w-10 sm:w-12 text-right text-gray-500 dark:text-gray-400">
+                            {formatTime(duration)}
+                          </span>
+                        </div>
 
-                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex justify-between items-center mb-6">
                       <div className="flex space-x-1 sm:space-x-2">
-                        <button 
-                          onClick={() => {
-                          const mediaElement = videoUrl ? videoRef.current : audioRef.current;
-                          if (mediaElement) {
-                            mediaElement.currentTime = Math.max(0, currentTime - 5);
-                          }
-                        }}
-                          className="p-1 sm:p-2 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
-                          title={t('transcription.audio.back5Seconds')}
-                        >
-                          <FiChevronLeft size={16} className="sm:h-5 sm:w-5" />
-                        </button>
-                        <button 
-                          onClick={togglePlayPause}
-                          className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full focus:outline-none shadow-md hover:shadow-lg transition-all"
-                        >
-                          {isPlaying ? 
-                            <FiPause size={20} className="sm:h-6 sm:w-6" /> : 
-                            <FiPlay size={20} className="ml-0.5 sm:h-6 sm:w-6 sm:ml-1" />
-                          }
-                        </button>
-                        <button 
-                          onClick={() => {
-                          const mediaElement = videoUrl ? videoRef.current : audioRef.current;
-                          if (mediaElement) {
-                            mediaElement.currentTime = Math.min(duration, currentTime + 5);
-                          }
-                        }}
-                          className="p-1 sm:p-2 text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition-colors"
-                          title={t('transcription.audio.forward5Seconds')}
-                        >
-                          <FiChevronRight size={16} className="sm:h-5 sm:w-5" />
-                        </button>
+                          <button 
+                            onClick={() => {
+                              const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                              if (mediaElement) {
+                                mediaElement.currentTime = Math.max(0, currentTime - 5);
+                              }
+                            }}
+                            className="p-1 sm:p-2 focus:outline-none transition-colors text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400"
+                            title={t('transcription.audio.back5Seconds')}
+                          >
+                            <FiChevronLeft size={16} className="sm:h-5 sm:w-5" />
+                          </button>
+                          <button 
+                            onClick={togglePlayPause}
+                            className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full focus:outline-none shadow-md hover:shadow-lg transition-all"
+                          >
+                            {isPlaying ? 
+                              <FiPause size={20} className="sm:h-6 sm:w-6" /> : 
+                              <FiPlay size={20} className="ml-0.5 sm:h-6 sm:w-6 sm:ml-1" />
+                            }
+                          </button>
+                          <button 
+                            onClick={() => {
+                              const mediaElement = videoUrl ? videoRef.current : audioRef.current;
+                              if (mediaElement) {
+                                mediaElement.currentTime = Math.min(duration, currentTime + 5);
+                              }
+                            }}
+                            className="p-1 sm:p-2 focus:outline-none transition-colors text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400"
+                            title={t('transcription.audio.forward5Seconds')}
+                          >
+                            <FiChevronRight size={16} className="sm:h-5 sm:w-5" />
+                          </button>
                       </div>
 
                       {/* Playback rate controls */}
@@ -3918,6 +4821,7 @@ const TranscriptionPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -3925,58 +4829,7 @@ const TranscriptionPage: React.FC = () => {
         )}
       </div>
       
-      {/* Fullscreen Subtitle Portal */}
-      {(() => {
-        // Check if video is in fullscreen using multiple methods
-        const isVideoElementFullscreen = document.fullscreenElement === videoRef.current;
-        const hasFullscreenElement = !!document.fullscreenElement;
-        
-        // Show portal if video is fullscreen OR if there's any fullscreen element and we have a video
-        const shouldShowPortal = isVideoElementFullscreen || (hasFullscreenElement && videoRef.current);
-        
-        if (!shouldShowPortal) return null;
-        
-        const currentSegment = getCurrentSubtitleSegment();
-        if (!currentSegment) return null;
-        
-        const highlightedWords = getHighlightedWordsInSegment(currentSegment);
-        const maxWordsPerLine = 8;
-        const shouldUseMultipleLines = highlightedWords.length > maxWordsPerLine;
-        
-        return createPortal(
-          <div className="fixed inset-0 pointer-events-none z-[9999] flex items-end justify-center pb-20">
-            <div className={`bg-black bg-opacity-30 text-white px-4 py-2 rounded-lg text-center max-w-4xl w-4/5 ${
-              shouldUseMultipleLines ? 'text-sm leading-relaxed' : 'text-base'
-            }`}>
-              <div className="flex flex-wrap justify-center gap-1 break-words">
-                {highlightedWords.map((word: any, index: number) => {
-                  const displayWord = showTranslatedSubtitles && wordTranslations[word.word] 
-                    ? wordTranslations[word.word] 
-                    : word.word;
-                  
-                  return (
-                    <span
-                      key={index}
-                      className={`transition-all duration-200 inline-block ${
-                        word.isActive 
-                          ? 'text-yellow-300 font-bold scale-110 drop-shadow-lg' 
-                          : word.isPast 
-                            ? 'text-gray-300' 
-                            : 'text-white'
-                      }`}
-                      title={showTranslatedSubtitles && wordTranslations[word.word] ? `Original: ${word.word}` : undefined}
-                    >
-                      {displayWord}
-                      {index < highlightedWords.length - 1 && ' '}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          </div>,
-          document.body
-        );
-      })()}
+
     </div>
   );
 };
@@ -3993,6 +4846,70 @@ const styles = `
   @keyframes blink {
     0%, 50% { opacity: 1; }
     51%, 100% { opacity: 0; }
+  }
+  
+  /* Add proper spacing to all text in the transcription - scoped to transcription content */
+  .transcription-content p {
+    word-spacing: 0.5em !important;
+    letter-spacing: 0.05em !important;
+  }
+  
+  /* Remove spacing for Chinese text in transcription content */
+  .transcription-content p:lang(zh),
+  .transcription-content p[lang="zh"],
+  .transcription-content p[lang="zh-CN"],
+  .transcription-content p[lang="zh-TW"] {
+    word-spacing: 0 !important;
+    letter-spacing: 0 !important;
+  }
+  
+  /* Detect Chinese characters and remove spacing */
+  .transcription-content p:has([data-lang="chinese"]) {
+    word-spacing: 0 !important;
+    letter-spacing: 0 !important;
+  }
+  
+  /* Ensure spaces between words - scoped to transcription content */
+  .transcription-content span {
+    margin-right: 0.25em;
+    padding-right: 0;
+    margin-left: 0;
+    padding-left: 0;
+  }
+  
+  /* Remove ALL spacing for Chinese text spans */
+  .transcription-content span:lang(zh),
+  .transcription-content span[lang="zh"],
+  .transcription-content span[lang="zh-CN"],
+  .transcription-content span[lang="zh-TW"],
+  .transcription-content span[data-lang="chinese"] {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+    word-spacing: 0 !important;
+    letter-spacing: 0 !important;
+  }
+  
+  /* Restore original spacing for subtitle overlays */
+  .subtitle-overlay span {
+    word-spacing: 0.5em !important;
+    letter-spacing: 0.05em !important;
+    margin-right: 0.25em;
+  }
+  
+  /* Remove ALL spacing for Chinese text in subtitle overlays */
+  .subtitle-overlay span:lang(zh),
+  .subtitle-overlay span[lang="zh"],
+  .subtitle-overlay span[lang="zh-CN"],
+  .subtitle-overlay span[lang="zh-TW"],
+  .subtitle-overlay span[data-lang="chinese"] {
+    word-spacing: 0 !important;
+    letter-spacing: 0 !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    padding-right: 0 !important;
+    padding-left: 0 !important;
   }
   
   .markdown-content {

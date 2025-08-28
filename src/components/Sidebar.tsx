@@ -123,6 +123,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpe
       return true;
     }
     
+    // Special case for speech-to-text: treat transcription pages as part of speech-to-text
+    if (path === '/tools/speech-to-text' && location.pathname.startsWith('/transcription/')) {
+      return true;
+    }
+    
     return location.pathname === path;
   };
 

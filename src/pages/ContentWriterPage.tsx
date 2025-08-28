@@ -147,7 +147,6 @@ const ContentWriterPage: React.FC = () => {
 
   // UI state
   const [showProAlert, setShowProAlert] = useState(false);
-  const [showInsufficientCoins, setShowInsufficientCoins] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -618,7 +617,7 @@ Create content that is original, well-researched, and engaging for the target au
     
     // Check if user has at least 3 coins
     if (userData && (userData.coins || 0) < 3) {
-      setShowInsufficientCoins(true);
+      setShowProAlert(true);
       return;
     }
     
@@ -1206,44 +1205,9 @@ Create content that is original, well-researched, and engaging for the target au
       {/* Modals */}
       {showProAlert && (
         <ProFeatureAlert 
-          featureName={t('contentWriter.title')}
+          featureName={t('contentWriter')}
           onClose={() => setShowProAlert(false)}
         />
-      )}
-      
-      {showInsufficientCoins && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4 border border-gray-200 dark:border-gray-700">
-            <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
-                <FiX className="w-6 h-6 text-red-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                {t('contentWriter.insufficientCoins')}
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
-                {t('contentWriter.needMoreCoins')}
-              </p>
-              <div className="flex space-x-3">
-                <AuthRequiredButton
-                  onClick={() => setShowInsufficientCoins(false)}
-                  className="flex-1 px-4 py-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                >
-                  {t('common.cancel')}
-                </AuthRequiredButton>
-                <AuthRequiredButton
-                  onClick={() => {
-                    setShowInsufficientCoins(false);
-                    navigate('/buy');
-                  }}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  {t('contentWriter.buyCoins')}
-                </AuthRequiredButton>
-              </div>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* Header */}

@@ -87,7 +87,6 @@ const DetectAIPage: React.FC = () => {
   const [showTitleEdit, setShowTitleEdit] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showProAlert, setShowProAlert] = useState(false);
-  const [freeDetectionsLeft, setFreeDetectionsLeft] = useState(1);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<string[]>([
     t('detectAI.analyzeContent'),
@@ -205,8 +204,8 @@ const DetectAIPage: React.FC = () => {
   const handleDetectAI = async () => {
     if (!text.trim()) return;
     
-    // If user is not pro and has used all free detections, show pro alert
-    if (!isPro && freeDetectionsLeft <= 0) {
+    // If user is not pro and has insufficient coins, show charge modal
+    if (!isPro && (!userData?.coins || userData.coins < 1)) {
       setShowProAlert(true);
       return;
     }
@@ -325,10 +324,7 @@ const DetectAIPage: React.FC = () => {
         setHistory(prev => [text.substring(0, 50), ...prev.slice(0, 3)]);
       }
       
-      // Decrease free detections left if user is not pro
-      if (!isPro) {
-        setFreeDetectionsLeft(prev => prev - 1);
-      }
+      // Coin deduction will be handled by the backend
     } catch (error) {
       console.error('Error detecting AI:', error);
       setDetectionResult({
@@ -612,8 +608,8 @@ ${text}
      
       <div className="container mx-auto max-w-6xl flex-1 md:p-6 relative z-10">
       {showProAlert && (
-        <ProFeatureAlert 
-          featureName={t('detectAI.title')}
+        <ProFeatureAlert
+          featureName="AI Detection"
           onClose={() => setShowProAlert(false)}
         />
       )}

@@ -14,12 +14,11 @@ import {
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth, User } from '../context/AuthContext';
-import coinImage from '../assets/coin.png';
+
 import { useUser } from '../context/UserContext';
 import { supabase } from '../supabaseClient';
 import { userService } from '../services/userService';
-import ProFeatureAlert from '../components/ProFeatureAlert';
-import ChargeModal from '../components/ChargeModal';
+import { ProFeatureAlert } from '../components';
 import AuthRequiredButton from '../components/AuthRequiredButton';
 import { useAlert } from '../context/AlertContext';
 import './ChatPage.css';
@@ -212,7 +211,24 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
           code: CodeBlock,
           pre: ({ children }: any) => <div className="overflow-auto">{children}</div>,
           h1: ({ children }: any) => {
-            const textContent = Array.isArray(children) ? children.join('') : String(children || '');
+            // Handle different types of children properly
+            let textContent = '';
+            if (Array.isArray(children)) {
+              textContent = children.map(child => {
+                if (typeof child === 'object' && child !== null) {
+                  return child.props?.children ? 
+                    (typeof child.props.children === 'string' ? child.props.children : 
+                     Array.isArray(child.props.children) ? child.props.children.join('') : '') : '';
+                }
+                return String(child || '');
+              }).join('');
+            } else if (typeof children === 'object' && children !== null) {
+              textContent = children.props?.children ? 
+                (typeof children.props.children === 'string' ? children.props.children : 
+                 Array.isArray(children.props.children) ? children.props.children.join('') : '') : '';
+            } else {
+              textContent = String(children || '');
+            }
             const cleanText = textContent.replace(/^#+\s*/, '');
             return (
               <h1 className={`text-2xl font-bold mb-4 mt-6 flex items-center gap-2 ${
@@ -224,7 +240,24 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             );
           },
           h2: ({ children }: any) => {
-            const textContent = Array.isArray(children) ? children.join('') : String(children || '');
+            // Handle different types of children properly
+            let textContent = '';
+            if (Array.isArray(children)) {
+              textContent = children.map(child => {
+                if (typeof child === 'object' && child !== null) {
+                  return child.props?.children ? 
+                    (typeof child.props.children === 'string' ? child.props.children : 
+                     Array.isArray(child.props.children) ? child.props.children.join('') : '') : '';
+                }
+                return String(child || '');
+              }).join('');
+            } else if (typeof children === 'object' && children !== null) {
+              textContent = children.props?.children ? 
+                (typeof children.props.children === 'string' ? children.props.children : 
+                 Array.isArray(children.props.children) ? children.props.children.join('') : '') : '';
+            } else {
+              textContent = String(children || '');
+            }
             const cleanText = textContent.replace(/^#+\s*/, '');
             return (
               <h2 className={`text-xl font-bold mb-3 mt-5 flex items-center gap-2 ${
@@ -236,7 +269,24 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             );
           },
           h3: ({ children }: any) => {
-            const textContent = Array.isArray(children) ? children.join('') : String(children || '');
+            // Handle different types of children properly
+            let textContent = '';
+            if (Array.isArray(children)) {
+              textContent = children.map(child => {
+                if (typeof child === 'object' && child !== null) {
+                  return child.props?.children ? 
+                    (typeof child.props.children === 'string' ? child.props.children : 
+                     Array.isArray(child.props.children) ? child.props.children.join('') : '') : '';
+                }
+                return String(child || '');
+              }).join('');
+            } else if (typeof children === 'object' && children !== null) {
+              textContent = children.props?.children ? 
+                (typeof children.props.children === 'string' ? children.props.children : 
+                 Array.isArray(children.props.children) ? children.props.children.join('') : '') : '';
+            } else {
+              textContent = String(children || '');
+            }
             const cleanText = textContent.replace(/^#+\s*/, '');
             return (
               <h3 className={`text-lg font-semibold mb-2 mt-4 flex items-center gap-2 ${
@@ -248,7 +298,24 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             );
           },
           h4: ({ children }: any) => {
-            const textContent = Array.isArray(children) ? children.join('') : String(children || '');
+            // Handle different types of children properly
+            let textContent = '';
+            if (Array.isArray(children)) {
+              textContent = children.map(child => {
+                if (typeof child === 'object' && child !== null) {
+                  return child.props?.children ? 
+                    (typeof child.props.children === 'string' ? child.props.children : 
+                     Array.isArray(child.props.children) ? child.props.children.join('') : '') : '';
+                }
+                return String(child || '');
+              }).join('');
+            } else if (typeof children === 'object' && children !== null) {
+              textContent = children.props?.children ? 
+                (typeof children.props.children === 'string' ? children.props.children : 
+                 Array.isArray(children.props.children) ? children.props.children.join('') : '') : '';
+            } else {
+              textContent = String(children || '');
+            }
             const cleanText = textContent.replace(/^#+\s*/, '');
             return (
               <h4 className={`text-base font-semibold mb-2 mt-3 flex items-center gap-2 ${
@@ -260,7 +327,24 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             );
           },
           h5: ({ children }: any) => {
-            const textContent = Array.isArray(children) ? children.join('') : String(children || '');
+            // Handle different types of children properly
+            let textContent = '';
+            if (Array.isArray(children)) {
+              textContent = children.map(child => {
+                if (typeof child === 'object' && child !== null) {
+                  return child.props?.children ? 
+                    (typeof child.props.children === 'string' ? child.props.children : 
+                     Array.isArray(child.props.children) ? child.props.children.join('') : '') : '';
+                }
+                return String(child || '');
+              }).join('');
+            } else if (typeof children === 'object' && children !== null) {
+              textContent = children.props?.children ? 
+                (typeof children.props.children === 'string' ? children.props.children : 
+                 Array.isArray(children.props.children) ? children.props.children.join('') : '') : '';
+            } else {
+              textContent = String(children || '');
+            }
             const cleanText = textContent.replace(/^#+\s*/, '');
             return (
               <h5 className={`text-sm font-medium mb-1 mt-2 flex items-center gap-2 ${
@@ -272,7 +356,24 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             );
           },
           h6: ({ children }: any) => {
-            const textContent = Array.isArray(children) ? children.join('') : String(children || '');
+            // Handle different types of children properly
+            let textContent = '';
+            if (Array.isArray(children)) {
+              textContent = children.map(child => {
+                if (typeof child === 'object' && child !== null) {
+                  return child.props?.children ? 
+                    (typeof child.props.children === 'string' ? child.props.children : 
+                     Array.isArray(child.props.children) ? child.props.children.join('') : '') : '';
+                }
+                return String(child || '');
+              }).join('');
+            } else if (typeof children === 'object' && children !== null) {
+              textContent = children.props?.children ? 
+                (typeof children.props.children === 'string' ? children.props.children : 
+                 Array.isArray(children.props.children) ? children.props.children.join('') : '') : '';
+            } else {
+              textContent = String(children || '');
+            }
             const cleanText = textContent.replace(/^#+\s*/, '');
             return (
               <h6 className={`text-xs font-medium mb-1 mt-2 flex items-center gap-2 ${
@@ -401,9 +502,6 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   const [selectedRole, setSelectedRole] = useState(roleOptions[0]);
   const [showRoleSelector, setShowRoleSelector] = useState(false);
   const [showChatHistory, setShowChatHistory] = useState(false);
-  const [showProAlert, setShowProAlert] = useState(false);
-  const [freeMessagesLeft, setFreeMessagesLeft] = useState(5);
-  const [freeUploadsLeft, setFreeUploadsLeft] = useState(2);
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState('');
   const [userMessageCount, setUserMessageCount] = useState(0);
@@ -450,7 +548,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   const [showUserMenu, setShowUserMenu] = useState<boolean>(false);
   const [isLoadingChats, setIsLoadingChats] = useState(true);
   const [chats, setChats] = useState<Chat[]>([]);
-  const [showChargeModal, setShowChargeModal] = useState(false);
+  const [showProAlert, setShowProAlert] = useState(false);
   const [coinsUsed, setCoinsUsed] = useState<{[key: number]: number}>({});
 
   
@@ -1533,14 +1631,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
       return;
     }
     
-    // Check if free trial limit is reached for messages
-    if (!isPro && currentUserMessages >= freeMessagesLeft) {
-      setShowProAlert(true);
-      return;
-    }
-    
-    // Check if free trial limit is reached for uploads
-    if (!isPro && selectedFile && freeUploadsLeft <= 0) {
+    // Check if user has sufficient coins
+    if (!isPro && (!userData?.coins || userData.coins <= 0)) {
       setShowProAlert(true);
       return;
     }
@@ -1602,10 +1694,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
               setInputMessage('');
               setSelectedFile(null);
               
-              // Decrease free uploads left if user is not pro
-              if (!isPro) {
-                setFreeUploadsLeft(prev => prev - 1);
-              }
+
               
               // Process each page one by one
               let fullResponse = '';
@@ -1756,10 +1845,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             setInputMessage('');
             setSelectedFile(null);
             
-            // Decrease free uploads left if user is not pro
-            if (!isPro) {
-              setFreeUploadsLeft(prev => prev - 1);
-            }
+
             
             // Use local URL for AI processing
             imageUrl = localUrl;
@@ -1837,10 +1923,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             setInputMessage('');
             setSelectedFile(null);
             
-            // Decrease free uploads left if user is not pro
-            if (!isPro) {
-              setFreeUploadsLeft(prev => prev - 1);
-            }
+
             
             // Use public URL for AI processing
             imageUrl = publicUrl;
@@ -2254,8 +2337,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
 
   // Handle file upload with better error reporting
   const handleFileUpload = async () => {
-    // If user is not pro and has used all free uploads, show pro alert
-    if (!isPro && freeUploadsLeft <= 0) {
+    // Check if user has sufficient coins
+    if (!isPro && (!userData?.coins || userData.coins <= 0)) {
       setShowProAlert(true);
       return;
     }
@@ -2520,7 +2603,6 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
 
   // Calculate remaining messages for display
   const currentUserMessages = messages.filter(m => m.role === 'user').length;
-        const remainingMessages = Math.max(0, freeMessagesLeft - currentUserMessages);
 
   // Load voices when component mounts
   useEffect(() => {
@@ -2972,12 +3054,12 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         {/* Main content area */}
         <div className={`flex-1 flex flex-col overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
           <div className="flex-1 overflow-hidden relative">
-            {/* Show pro feature alert modal */}
+            {/* Show pro alert */}
             <AnimatePresence>
               {showProAlert && (
                 <ProFeatureAlert 
-                  onClose={() => setShowProAlert(false)} 
-                  featureName="AI Chat"
+                  featureName={t('chat.title')}
+                  onClose={() => setShowProAlert(false)}
                 />
               )}
             </AnimatePresence>
@@ -3029,12 +3111,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                     </div>
                     
                     <div className="flex items-center space-x-1 sm:space-x-2">
-                      {!isPro && (
-                        <div className="hidden lg:flex items-center text-xs sm:text-sm text-yellow-600 dark:text-yellow-400 mr-1 sm:mr-2">
-                          <FiMessageSquare className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-                          <span>{t('chat.messagesLeft', { count: remainingMessages })}</span>
-                        </div>
-                      )}
+
                       
                       {/* Mobile chat history button */}
                       <AuthRequiredButton 
@@ -3290,23 +3367,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                 )}
               </div>
                               
-                              {/* Coin usage display for AI messages */}
-                              {message.role === 'assistant' && user?.uid && coinsUsed[message.id] && (
-                                <div className={`mt-2 sm:mt-3 pt-2 border-t ${
-                                  darkMode ? 'border-gray-700' : 'border-gray-200'
-                                } flex items-center space-x-1 sm:space-x-2`}>
-                                  <img 
-                                    src={coinImage} 
-                                    alt="Coin" 
-                                    className="w-3 h-3 sm:w-4 sm:h-4"
-                                  />
-                                  <span className={`text-xs ${
-                                    darkMode ? 'text-gray-400' : 'text-gray-500'
-                                  }`}>
-                                    {t('chat.coinsUsed', { count: coinsUsed[message.id] })}
-                                  </span>
-                                </div>
-                              )}
+
                               
                               {/* Message footer */}
                               <div className={`mt-2 flex items-center justify-between text-xs ${
@@ -3467,7 +3528,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                                   selectedFile.name.toLowerCase().endsWith('.doc') || selectedFile.name.toLowerCase().endsWith('.docx')
                                     ? '2p' : '2'
                                 ) : '1'}
-                                <img src={coinImage} alt="coin" className="w-3 h-3 ml-0.5" />
+
                               </span>
                             )}
                           </AuthRequiredButton>
@@ -3482,12 +3543,13 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         </div>
       </div>
 
-      {/* Charge Modal */}
-      <ChargeModal
-        isOpen={showChargeModal}
-        onClose={() => setShowChargeModal(false)}
-        currentCoins={userData?.coins || 0}
-      />
+      {/* Pro Feature Alert */}
+      {showProAlert && (
+        <ProFeatureAlert
+          featureName={t('chat.title')}
+          onClose={() => setShowProAlert(false)}
+        />
+      )}
     </div>
   );
 };

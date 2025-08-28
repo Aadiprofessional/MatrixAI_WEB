@@ -96,7 +96,6 @@ const SpeechToTextPage: React.FC = () => {
   const [files, setFiles] = useState<AudioFile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showProAlert, setShowProAlert] = useState(false);
-  const [freeTranscriptionsLeft, setFreeTranscriptionsLeft] = useState(3);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -159,35 +158,10 @@ const SpeechToTextPage: React.FC = () => {
   useEffect(() => {
     if (user?.id) {
       loadFiles(true); // Force refresh from API on initial load
-      checkFreeTranscriptionsLeft();
     }
   }, [user]);
 
-  const checkFreeTranscriptionsLeft = async () => {
-    try {
-      if (isPro) {
-        setFreeTranscriptionsLeft(Infinity);
-        return;
-      }
-      
-      const { data, error } = await supabase
-        .from("user_usage")
-        .select("free_transcriptions_left")
-        .eq("uid", user?.id)
-        .single();
 
-      if (error) {
-        console.error('Error checking free transcriptions:', error);
-        return;
-      }
-
-      if (data) {
-        setFreeTranscriptionsLeft(data.free_transcriptions_left);
-      }
-    } catch (error) {
-      console.error('Error in checkFreeTranscriptionsLeft:', error);
-    }
-  };
 
   const loadFiles = async (forceRefresh = false) => {
     setIsLoading(true);
@@ -1184,7 +1158,8 @@ const SpeechToTextPage: React.FC = () => {
               audio_name: data.audio_name,
               language: data.language,
               duration: data.duration,
-              ...(data.video_file && { video_file: data.video_file }) // Add video_file only if it exists
+              ...(data.video_file && { video_file: data.video_file }), // Add video_file only if it exists
+              ...(data.translated_data && { translated_data: data.translated_data }) // Add translated_data only if it exists
             }
           });
         } else {
@@ -1259,7 +1234,7 @@ const SpeechToTextPage: React.FC = () => {
         {showProAlert && (
           <div className="mx-2">
             <ProFeatureAlert 
-              featureName={t('speechToText.unlimitedTranscriptions')}
+              featureName="Speech to Text"
               onClose={() => setShowProAlert(false)}
             />
           </div>
@@ -1283,25 +1258,7 @@ const SpeechToTextPage: React.FC = () => {
             {t('speechToText.subtitle')}
           </motion.p>
           
-          {!isPro && (
-            <motion.div 
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="mt-3 flex items-center text-sm text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded-md max-w-fit"
-            >
-              <FiMic className="mr-1.5" />
-              <span>{freeTranscriptionsLeft} {freeTranscriptionsLeft === 1 ? t('speechToText.freeLeft') : t('speechToText.freeLeftPlural')} {t('speechToText.leftToday')}</span>
-              {freeTranscriptionsLeft === 0 && (
-                <button 
-                  onClick={() => setShowProAlert(true)}
-                  className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
-                >
-                  {t('speechToText.upgradeText')}
-                </button>
-              )}
-            </motion.div>
-          )}
+
         </div>
 
         {/* File Upload Area */}

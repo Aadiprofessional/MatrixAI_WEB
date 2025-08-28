@@ -2480,7 +2480,7 @@
         "option5": "Set up notifications when cookies are being set"
       },
       "consent": {
-        "title": "cookieConsent",
+        "title": "Cookie Consent",
         "description": "When you first visit our website, you'll see a cookie consent banner. You can manage your preferences at any time by clicking the button below:",
         "button": "Manage Cookie Preferences"
       },

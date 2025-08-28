@@ -102,7 +102,6 @@ const VideoCreatorPage: React.FC = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
   const [showProAlert, setShowProAlert] = useState(false);
-  const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(1);
   const [presetPrompts, setPresetPrompts] = useState([
     t('videoCreator.preset.cityTimelapse'),
     t('videoCreator.preset.droneShot'),
@@ -496,8 +495,8 @@ const VideoCreatorPage: React.FC = () => {
     // Determine if this is a premium template generation
     const isPremiumTemplate = selectedTemplate && templateVideos.find(t => t.name === selectedTemplate)?.category === 'premium';
     
-    // If user is not pro and has used all free generations, show pro alert
-    if (!isPro && freeGenerationsLeft <= 0) {
+    // If user is not pro and has insufficient coins, show charge modal
+    if (!isPro && (!userData?.coins || userData.coins < 1)) {
       setShowProAlert(true);
       setGenerateButtonClicked(false);
       return;
@@ -682,10 +681,7 @@ const VideoCreatorPage: React.FC = () => {
         setCurrentVideoId(response.videoId);
         setTaskStatus( response.status || 'SUCCEEDED');
         
-        // If we're not a pro user, decrement the free generations
-        if (!isPro) {
-          setFreeGenerationsLeft(prev => Math.max(0, prev - 1));
-        }
+        // Coin deduction will be handled by the backend
         
         clearInterval(progressInterval);
         setIsGenerating(false);
@@ -1249,8 +1245,8 @@ const VideoCreatorPage: React.FC = () => {
         <div className="flex-1 p-0">
           <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
       {showProAlert && (
-        <ProFeatureAlert 
-          featureName="Advanced Video Creation"
+        <ProFeatureAlert
+          featureName="Video Creator"
           onClose={() => setShowProAlert(false)}
         />
       )}
@@ -1272,18 +1268,15 @@ const VideoCreatorPage: React.FC = () => {
           {t('video.subtitle')}
         </motion.p>
         
-        {!isPro && (
+        {!isPro && (!userData?.coins || userData.coins < 1) && (
           <div className="mt-2 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
             <FiVideo className="mr-1.5" />
-            <span>{freeGenerationsLeft} {freeGenerationsLeft === 1 ? t('video.freeLeft') || 'free generation' : t('video.freeLeftPlural') || 'free generations'} left</span>
-            {freeGenerationsLeft === 0 && (
-              <button 
-                onClick={() => setShowProAlert(true)}
-                className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
-              >
-                {t('videoCreator.upgradeToPro')}
-              </button>
-            )}
+            <button 
+              onClick={() => setShowProAlert(true)}
+              className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
+            >
+              {t('videoCreator.upgradeToPro')}
+            </button>
           </div>
         )}
       </div>

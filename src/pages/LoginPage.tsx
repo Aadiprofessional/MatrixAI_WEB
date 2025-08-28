@@ -42,6 +42,36 @@ const LoginPage: React.FC = () => {
 
   // If user is already logged in, redirect to dashboard
   useEffect(() => {
+    // Check for OAuth error parameters in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    
+    const error = urlParams.get('error') || hashParams.get('error');
+    const errorDescription = urlParams.get('error_description') || hashParams.get('error_description');
+    const errorCode = urlParams.get('error_code') || hashParams.get('error_code');
+    
+    // Handle OAuth errors
+    if (error) {
+      console.error('OAuth error detected:', { error, errorDescription, errorCode });
+      let errorMessage = 'Authentication failed. Please try again.';
+      
+      if (error === 'server_error' && errorDescription?.includes('Database error saving new user')) {
+        errorMessage = 'There was an issue with your account. This has been fixed - please try logging in again.';
+      } else if (error === 'access_denied') {
+        errorMessage = 'Access was denied. Please try again and make sure to grant the necessary permissions.';
+      } else if (errorDescription) {
+        errorMessage = decodeURIComponent(errorDescription);
+      }
+      
+      setError(errorMessage);
+      setLoading(false);
+      
+      // Clean up URL by removing error parameters
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+      return;
+    }
+    
     // Check for OAuth redirect parameters in URL
     const hasOAuthParams = window.location.hash.includes('access_token') || 
                           window.location.search.includes('access_token');
@@ -59,7 +89,7 @@ const LoginPage: React.FC = () => {
       console.log('User detected, redirecting to dashboard');
       navigate('/dashboard');
     }
-  }, [user, navigate]);
+  }, [user, navigate, setError]);
 
   // Check if we're in localhost/development environment
   const isLocalhost = window.location.hostname === 'localhost' || 

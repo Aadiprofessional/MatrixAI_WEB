@@ -688,7 +688,7 @@
     "aiChatDesc": "与我们的高级AI助手聊天",
     "blog": "博客",
     "blogDesc": "最新消息",
-    "contact": "接触",
+    "contact": "联系",
     "contactDesc": "与我们联系",
     "contentWriter": "内容作家",
     "contentWriterDesc": "生成专业内容",
@@ -843,7 +843,7 @@
     "terms_subscription_desc": "订阅在每个计费期结束时自动续订。\n您将以购买时的费率收取费用。\n对于每月计划，您的订阅将每月续订。\n对于年度计划，您的订阅将每年续签。",
     "tester_description": "非常适合那些想尝试我们的服务的人。\n获得450个硬币有效期15天。",
     "tester_plan": "测试仪",
-    "tester_plan_desc": "尝试使用一小件硬币的服务。\n有效期15天。",
+    "tester_plan_desc": "用一小包硬币体验我们的服务。有效期15天。",
     "tester_price": "$ 50 HKD",
     "unlock_potential": "通过我们的灵活订阅选项解锁Matrixai的全部潜力",
     "view_all_plans": "寻找不同的计划？\n查看所有计划",
@@ -1017,10 +1017,10 @@
   },
   "login": {
     "emailPlaceholder": "you@example.com",
-    "feature1": "高级AI驱动的对话",
+    "feature1": "先进的人工智能对话",
     "feature2": "专业内容产生",
     "feature3": "无缝文件和图像共享",
-    "heroSubtitle": "您的生产力和创造力的聪明人",
+    "heroSubtitle": "您的生产力和创造力的智能伴侣",
     "heroTitle": "Matrix AI助理",
     "passwordPlaceholder": "输入您的密码"
   },
@@ -1762,7 +1762,7 @@
       "all": "全部",
       "tutorials": "教程"
     },
-    "pageDescription": "洞察力，更新和深入研究AI技术的世界",
+    "pageDescription": "洞察、更新和深入探究人工智能技术的世界",
     "pageTitle": "Matrixai博客",
     "searchPlaceholder": "搜索文章...",
     "title": "博客",
@@ -2510,7 +2510,7 @@
       "consent": {
         "button": "管理cookie首选项",
         "description": "当您第一次访问我们的网站时，您会看到Cookie同意书的横幅。\n您可以随时单击下面的按钮来管理您的首选项：",
-        "title": "cookieConsent"
+        "title": "cookie同意"
       },
       "cookieOptions": {
         "blockAll": "阻止所有 Cookie",

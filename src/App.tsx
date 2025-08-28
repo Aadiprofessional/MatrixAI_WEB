@@ -25,8 +25,10 @@ import {
   SubscriptionPage,
   TransactionsPage,
   OrderHistoryPage,
-  PaymentPage,
   PaymentSuccessPage,
+  AirwallexPaymentPage,
+  AirwallexPaymentSuccess,
+  AirwallexPaymentFailure,
   ReferralPage,
   SpeechToTextPage,
   TranscriptionPage,
@@ -399,12 +401,12 @@ const App: React.FC = () => {
                 } 
               />
               
-              {/* Payment route */}
+              {/* Payment route - Using Airwallex */}
               <Route 
                 path="/payment" 
                 element={
                   <ProtectedRoute>
-                    <PaymentPage />
+                    <AirwallexPaymentPage />
                   </ProtectedRoute>
                 } 
               />
@@ -419,12 +421,39 @@ const App: React.FC = () => {
                 } 
               />
               
-              {/* Payment with Airwallex route (legacy) */}
+              {/* Airwallex Payment routes */}
               <Route 
                 path="/payment/airwallex" 
                 element={
                   <ProtectedRoute>
-                    <PaymentPage />
+                    <AirwallexPaymentPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/payment/airwallex/success" 
+                element={
+                  <ProtectedRoute>
+                    <AirwallexPaymentSuccess />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/payment/airwallex/failure" 
+                element={
+                  <ProtectedRoute>
+                    <AirwallexPaymentFailure />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/payment/airwallex/result" 
+                element={
+                  <ProtectedRoute>
+                    <AirwallexPaymentSuccess />
                   </ProtectedRoute>
                 } 
               />

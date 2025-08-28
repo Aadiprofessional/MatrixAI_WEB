@@ -47,7 +47,6 @@ const HumaniseTextPage: React.FC = () => {
   const [showTitleEdit, setShowTitleEdit] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showProAlert, setShowProAlert] = useState(false);
-  const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(1);
   const [showComparison, setShowComparison] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<{id: string, title: string, original_text: string, humanized_text: string, createdAt: string}[]>([]);
@@ -157,8 +156,8 @@ const HumaniseTextPage: React.FC = () => {
     if (!userData?.uid) return;
     if (!text.trim()) return;
     
-    // If user is not pro and has used all free generations, show pro alert
-    if (!isPro && freeGenerationsLeft <= 0) {
+    // If user is not pro and has insufficient coins, show charge modal
+    if (!isPro && (!userData?.coins || userData.coins < 1)) {
       setShowProAlert(true);
       return;
     }
@@ -212,10 +211,7 @@ const HumaniseTextPage: React.FC = () => {
         );
       }
       
-      // Decrease free generations left if user is not pro
-      if (!isPro) {
-        setFreeGenerationsLeft(prev => prev - 1);
-      }
+      // Coin deduction will be handled by the backend
     } catch (error) {
       console.error('Error humanising text:', error);
       setHumanisedText(t('humanizeText.errors.humanizingError'));
@@ -303,8 +299,8 @@ const HumaniseTextPage: React.FC = () => {
     
       <div className="container mx-auto max-w-6xl flex-1 md:p-6 relative z-10">
       {showProAlert && (
-        <ProFeatureAlert 
-          featureName={t('humanizeText.title')}
+        <ProFeatureAlert
+          featureName="Text Humanizer"
           onClose={() => setShowProAlert(false)}
         />
       )}

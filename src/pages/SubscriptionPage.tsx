@@ -16,6 +16,7 @@ import { Layout } from '../components';
 import { ThemeContext } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
+import coinImage from '../assets/coin.png';
 
 interface PlanProps {
   name: string;
@@ -54,13 +55,7 @@ const PlanCard: React.FC<PlanProps> = ({
           : `border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`
       } ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm p-6`}
     >
-      {discount && (
-        <div className="absolute -top-1 -right-1">
-          <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-xs font-semibold px-4 py-1 rounded-bl-lg shadow-md transform rotate-[45deg] translate-x-[25%] translate-y-[-25%] w-36 text-center">
-            {discount}
-          </div>
-        </div>
-      )}
+      {/* Discount label removed as it was not displaying correctly */}
       
       <div className="mb-3">
         <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -92,9 +87,9 @@ const PlanCard: React.FC<PlanProps> = ({
         darkMode ? 'bg-gray-700/50' : 'bg-gray-100'
       }`}>
         <img 
-          src="https://via.placeholder.com/24?text=$" 
+          src={coinImage} 
           alt={t('coin')} 
-          className="w-6 h-6 mr-2" 
+          className="w-6 h-6 mr-2 object-contain" 
           onError={(e) => {
             e.currentTarget.src = 'https://via.placeholder.com/24?text=$';
             e.currentTarget.onerror = null;
@@ -186,9 +181,9 @@ const AddonCard: React.FC<AddonCardProps> = ({ price, coins, description, onSele
         darkMode ? 'bg-gray-700/50' : 'bg-gray-100'
       }`}>
         <img 
-          src="https://via.placeholder.com/24?text=$" 
+          src={coinImage} 
           alt="Coin" 
-          className="w-6 h-6 mr-2" 
+          className="w-6 h-6 mr-2 object-contain" 
           onError={(e) => {
             e.currentTarget.src = 'https://via.placeholder.com/24?text=$';
             e.currentTarget.onerror = null;

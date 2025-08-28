@@ -121,7 +121,7 @@ const ReferralPage: React.FC = () => {
         {/* Pro Feature Alert */}
         {showProAlert && (
           <ProFeatureAlert 
-            featureName={t('referral.title')}
+            featureName={t('referralProgram')}
             onClose={() => setShowProAlert(false)}
           />
         )}

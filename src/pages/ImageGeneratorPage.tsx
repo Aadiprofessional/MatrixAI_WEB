@@ -62,7 +62,6 @@ const ImageGeneratorPage: React.FC = () => {
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [imageCount, setImageCount] = useState(1);
   const [showProAlert, setShowProAlert] = useState(false);
-  const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(3);
   
   // Image upload state
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
@@ -205,10 +204,7 @@ const ImageGeneratorPage: React.FC = () => {
         setLoading(false);
         setShowSkeleton(false);
         
-        // Update free generations if not pro
-        if (!isPro) {
-          setFreeGenerationsLeft(prev => Math.max(0, prev - 1));
-        }
+
         
         // Refresh image history from server
         fetchImageHistory(1);
@@ -514,10 +510,7 @@ const ImageGeneratorPage: React.FC = () => {
       setShowSkeleton(false);
       removeUploadedImage();
       
-      // Update free generations if not pro
-      if (!isPro) {
-        setFreeGenerationsLeft(prev => Math.max(0, prev - 1));
-      }
+
       
       // Refresh image history
       fetchImageHistory(1);
@@ -612,8 +605,8 @@ const ImageGeneratorPage: React.FC = () => {
     
     if (!message.trim() || !uid) return;
     
-    // If user is not pro and has used all free generations, show pro alert
-    if (!isPro && freeGenerationsLeft <= 0) {
+    // If user is not pro and has no coins or subscription, show pro alert
+    if (!isPro && (!userData?.coins || userData.coins <= 0)) {
       setShowProAlert(true);
       return;
     }
@@ -783,7 +776,7 @@ const ImageGeneratorPage: React.FC = () => {
           <div className="max-w-7xl mx-auto pt-4 md:pt-8 lg:pt-10">
             {showProAlert && (
               <ProFeatureAlert 
-                featureName="Unlimited Image Generation"
+                featureName={t('imageGenerator.title')}
                 onClose={() => setShowProAlert(false)}
               />
             )}
@@ -986,19 +979,7 @@ const ImageGeneratorPage: React.FC = () => {
                 )}
               </div>
               
-              {!isPro && (
-                <div className="mt-3 md:mt-4 text-xs md:text-sm text-yellow-300">
-                  {t('imageGenerator.freeGenerationsRemaining')}: {freeGenerationsLeft}
-                  {freeGenerationsLeft === 0 && (
-                    <button 
-                      onClick={() => setShowProAlert(true)}
-                      className="ml-2 text-indigo-400 hover:text-indigo-300 font-medium"
-                    >
-                      {t('common.upgradeToPro')}
-                    </button>
-                  )}
-                </div>
-              )}
+
               
               {/* History Toggle Button */}
               <div className="mt-4">

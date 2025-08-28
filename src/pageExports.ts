@@ -21,8 +21,11 @@ export { default as HelpPage } from './pages/HelpPage';
 export { default as SubscriptionPage } from './pages/SubscriptionPage';
 export { default as TransactionsPage } from './pages/TransactionsPage';
 export { default as OrderHistoryPage } from './pages/OrderHistoryPage';
-export { default as PaymentPage } from './pages/PaymentPage';
+// PaymentPage removed - using AirwallexPaymentPage instead
 export { default as PaymentSuccessPage } from './pages/PaymentSuccessPage';
+export { default as AirwallexPaymentPage } from './pages/AirwallexPaymentPage';
+export { default as AirwallexPaymentSuccess } from './pages/AirwallexPaymentSuccess';
+export { default as AirwallexPaymentFailure } from './pages/AirwallexPaymentFailure';
 export { default as ReferralPage } from './pages/ReferralPage';
 export { default as SpeechToTextPage } from './pages/SpeechToTextPage';
 export { default as TranscriptionPage } from './pages/TranscriptionPage';

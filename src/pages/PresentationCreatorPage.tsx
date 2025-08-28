@@ -64,7 +64,6 @@ const PresentationCreatorPage: React.FC = () => {
   const [pages, setPages] = useState(5);
   const [purpose, setPurpose] = useState('educational');
   const [showProAlert, setShowProAlert] = useState(false);
-  const [freeGenerationsLeft, setFreeGenerationsLeft] = useState(3);
   
   // Presentation generation state
   const [generationStatus, setGenerationStatus] = useState<string>('');
@@ -184,10 +183,8 @@ const PresentationCreatorPage: React.FC = () => {
         // Start polling for presentation status
         pollPresentationStatus(result.presentationId);
         
-        // Update free generations if not pro
-        if (!isPro) {
-          setFreeGenerationsLeft(prev => Math.max(0, prev - 1));
-        }
+        // Deduct coins for presentation generation
+        // Coins are handled by the backend API
         
       } catch (apiError: any) {
         console.error("Error from API:", apiError);
@@ -576,8 +573,8 @@ const PresentationCreatorPage: React.FC = () => {
     
     if (!description.trim() || !uid) return;
     
-    // If user is not pro and has used all free generations, show pro alert
-    if (!isPro && freeGenerationsLeft <= 0) {
+    // Check if user has sufficient coins for generation
+    if (!isPro && (userData?.coins || 0) < 30) {
       setShowProAlert(true);
       return;
     }
@@ -684,8 +681,8 @@ const PresentationCreatorPage: React.FC = () => {
       
       <div className="container mx-auto px-4 py-8 relative z-10">
         {showProAlert && (
-          <ProFeatureAlert 
-            featureName="Professional Presentation Creator"
+          <ProFeatureAlert
+            featureName={t('presentationCreator')}
             onClose={() => setShowProAlert(false)}
           />
         )}
@@ -711,13 +708,13 @@ const PresentationCreatorPage: React.FC = () => {
           {!isPro && (
             <div className="mt-2 flex items-center text-sm text-yellow-600 dark:text-yellow-400">
               <FiClock className="mr-1.5" />
-              <span>{freeGenerationsLeft} {freeGenerationsLeft === 1 ? t('presentation.freeLeft', 'free generation') : t('presentation.freeLeftPlural', 'free generations')} left</span>
-              {freeGenerationsLeft === 0 && (
+              <span>{userData?.coins || 0} {t('common.coins', 'coins')} available</span>
+              {(userData?.coins || 0) < 30 && (
                 <button 
                   onClick={() => setShowProAlert(true)}
                   className="ml-2 text-blue-500 hover:text-blue-600 font-medium"
                 >
-                  {t('presentation.upgradeText', 'Upgrade to Pro')}
+                  {t('common.getMoreCoins', 'Get More Coins')}
                 </button>
               )}
             </div>
