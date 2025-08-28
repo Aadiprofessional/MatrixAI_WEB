@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,14 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+
+interface SubscriptionPlan {
+  id: number;
+  plan_name: string;
+  coins: number;
+  plan_period: string;
+  price: number;
+}
 
 interface ChargeModalProps {
   isOpen: boolean;
@@ -46,11 +54,114 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
   const { user } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState<string>('monthly');
+  const [selectedPlan, setSelectedPlan] = useState<string>('Monthly');
   const [loading, setLoading] = useState(false);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
+  const [apiLoading, setApiLoading] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  // Updated pricing plans to match the real subscription data
-  const pricingPlans: PricingPlan[] = [
+  // Function to fetch subscription plans from API
+  const fetchSubscriptionPlans = async () => {
+    try {
+      setApiLoading(true);
+      setApiError(null);
+      
+      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/user/getSubscriptionPlans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: user?.uid || null
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch subscription plans');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && data.plans) {
+        setSubscriptionPlans(data.plans);
+        // Set default selected plan to the first one if available
+        if (data.plans.length > 0) {
+          setSelectedPlan(data.plans[0].plan_name);
+        }
+      } else {
+        throw new Error(data.message || 'Failed to load subscription plans');
+      }
+    } catch (err: any) {
+      console.error('Error fetching subscription plans:', err);
+      setApiError(err.message || 'Failed to load subscription plans');
+    } finally {
+      setApiLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchSubscriptionPlans();
+    }
+  }, [isOpen, user?.uid]);
+
+  // Helper function to get icon for plan
+  const getPlanIcon = (planName: string) => {
+    switch (planName.toLowerCase()) {
+      case 'tester':
+        return <FiZap className="w-6 h-6" />;
+      case 'monthly':
+        return <FiStar className="w-6 h-6" />;
+      case 'yearly':
+        return <FiTrendingUp className="w-6 h-6" />;
+      case 'addon':
+        return <FiPackage className="w-6 h-6" />;
+      default:
+        return <FiStar className="w-6 h-6" />;
+    }
+  };
+
+  // Helper function to get color scheme for plan
+  const getPlanColors = (planName: string) => {
+    switch (planName.toLowerCase()) {
+      case 'tester':
+        return { color: 'blue', bgGradient: 'from-blue-500 to-cyan-500' };
+      case 'monthly':
+        return { color: 'purple', bgGradient: 'from-purple-500 to-pink-500' };
+      case 'yearly':
+        return { color: 'green', bgGradient: 'from-green-500 to-emerald-500' };
+      case 'addon':
+        return { color: 'amber', bgGradient: 'from-amber-500 to-orange-500' };
+      default:
+        return { color: 'purple', bgGradient: 'from-purple-500 to-pink-500' };
+    }
+  };
+
+  // Convert API data to PricingPlan format
+  const pricingPlans: PricingPlan[] = subscriptionPlans.map((plan, index) => {
+    const colors = getPlanColors(plan.plan_name);
+    return {
+      id: plan.plan_name.toLowerCase(),
+      name: plan.plan_name,
+      coins: plan.coins,
+      price: plan.price,
+      currency: 'HKD',
+      popular: plan.plan_name === 'Monthly', // Mark Monthly as popular
+      features: [
+        `Get ${plan.coins} coins`,
+        `Valid for ${plan.plan_period}`,
+        'Access to all AI tools',
+        'Priority support'
+      ],
+      icon: getPlanIcon(plan.plan_name),
+      color: colors.color,
+      bgGradient: colors.bgGradient,
+      period: plan.plan_period
+    };
+  });
+
+  // Fallback pricing plans (kept for reference but not used when API data is available)
+  const fallbackPricingPlans: PricingPlan[] = [
     {
       id: 'tester',
       name: 'Tester',
@@ -266,13 +377,39 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
               </div>
             </div>
 
+            {/* Loading State */}
+            {apiLoading && (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <span className="ml-3 text-gray-600 dark:text-gray-400">Loading plans...</span>
+              </div>
+            )}
+
+            {/* Error State */}
+            {apiError && (
+              <div className={`mb-4 p-3 rounded-lg border ${
+                theme === 'dark' 
+                  ? 'bg-red-900/20 border-red-800 text-red-400' 
+                  : 'bg-red-50 border-red-200 text-red-600'
+              }`}>
+                <p className="text-sm">{apiError}</p>
+                <button 
+                  onClick={fetchSubscriptionPlans}
+                  className="mt-2 text-sm underline hover:no-underline"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
             {/* Pricing Plans */}
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                Choose Your Plan
-              </h3>
-              <div className="space-y-2">
-                {pricingPlans.map((plan) => (
+            {!apiLoading && !apiError && pricingPlans.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                  Choose Your Plan
+                </h3>
+                <div className="space-y-2">
+                  {pricingPlans.map((plan) => (
                   <motion.div
                     key={plan.id}
                     whileHover={{ scale: 1.01 }}
@@ -326,9 +463,9 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
                       </div>
                     </div>
                   </motion.div>
-                ))}
+                ))}              </div>
               </div>
-            </div>
+            )}
 
             {/* AI Services Pricing */}
             <div className="mb-4">
@@ -362,19 +499,22 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
             </div>
 
             {/* Purchase Button */}
-            <div className="text-center pt-2">
-              <button
-                onClick={handlePurchase}
-                disabled={loading}
-                className={`w-full px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all ${
-                  loading
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
-                }`}
-              >
-                {loading ? t('charge.processing') : `${t('charge.purchase').replace('{{plan}}', pricingPlans.find(p => p.id === selectedPlan)?.name || t('charge.plan'))}`}
-              </button>
-            </div>
+            {/* Purchase Button */}
+            {!apiLoading && !apiError && pricingPlans.length > 0 && (
+              <div className="text-center pt-2">
+                <button
+                  onClick={handlePurchase}
+                  disabled={loading || !selectedPlan}
+                  className={`w-full px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all ${
+                    loading || !selectedPlan
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
+                  }`}
+                >
+                  {loading ? 'Processing...' : `Purchase ${pricingPlans.find(p => p.id === selectedPlan)?.name || 'Plan'}`}
+                </button>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>

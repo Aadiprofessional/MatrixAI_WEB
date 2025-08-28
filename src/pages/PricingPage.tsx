@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiCheck, FiStar, FiZap, FiTrendingUp, FiPackage, FiMic, FiImage, FiVideo, FiMessageSquare, FiEdit3, FiArrowRight } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
@@ -6,6 +6,14 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
+
+interface SubscriptionPlan {
+  id: number;
+  plan_name: string;
+  coins: number;
+  plan_period: string;
+  price: number;
+}
 
 interface PricingPlan {
   id: string;
@@ -38,10 +46,111 @@ const PricingPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { darkMode } = useTheme();
-  const [selectedPlan, setSelectedPlan] = useState<string>('monthly');
+  const [selectedPlan, setSelectedPlan] = useState<string>('Monthly');
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Pricing plans data from ChargeModal.tsx
-  const pricingPlans: PricingPlan[] = [
+  // Function to fetch subscription plans from API
+  const fetchSubscriptionPlans = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/user/getSubscriptionPlans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: user?.uid || null
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch subscription plans');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && data.plans) {
+        setSubscriptionPlans(data.plans);
+        // Set default selected plan to the first one if available
+        if (data.plans.length > 0) {
+          setSelectedPlan(data.plans[0].plan_name);
+        }
+      } else {
+        throw new Error(data.message || 'Failed to load subscription plans');
+      }
+    } catch (err: any) {
+      console.error('Error fetching subscription plans:', err);
+      setError(err.message || 'Failed to load subscription plans');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubscriptionPlans();
+  }, [user?.uid]);
+
+  // Helper function to get icon for plan
+  const getPlanIcon = (planName: string) => {
+    switch (planName.toLowerCase()) {
+      case 'tester':
+        return <FiZap className="w-6 h-6" />;
+      case 'monthly':
+        return <FiStar className="w-6 h-6" />;
+      case 'yearly':
+        return <FiTrendingUp className="w-6 h-6" />;
+      case 'addon':
+        return <FiPackage className="w-6 h-6" />;
+      default:
+        return <FiStar className="w-6 h-6" />;
+    }
+  };
+
+  // Helper function to get color scheme for plan
+  const getPlanColors = (planName: string) => {
+    switch (planName.toLowerCase()) {
+      case 'tester':
+        return { color: 'blue', bgGradient: 'from-blue-600 to-cyan-600' };
+      case 'monthly':
+        return { color: 'purple', bgGradient: 'from-purple-600 to-pink-600' };
+      case 'yearly':
+        return { color: 'green', bgGradient: 'from-green-600 to-emerald-600' };
+      case 'addon':
+        return { color: 'amber', bgGradient: 'from-amber-600 to-orange-600' };
+      default:
+        return { color: 'purple', bgGradient: 'from-purple-600 to-pink-600' };
+    }
+  };
+
+  // Convert API data to PricingPlan format
+  const pricingPlans: PricingPlan[] = subscriptionPlans.map((plan, index) => {
+    const colors = getPlanColors(plan.plan_name);
+    return {
+      id: plan.plan_name.toLowerCase(),
+      name: plan.plan_name,
+      coins: plan.coins,
+      price: plan.price,
+      currency: 'HKD',
+      popular: plan.plan_name === 'Monthly', // Mark Monthly as popular
+      features: [
+        `Get ${plan.coins} coins`,
+        `Valid for ${plan.plan_period}`,
+        'Access to all AI tools',
+        'Priority support'
+      ],
+      icon: getPlanIcon(plan.plan_name),
+      color: colors.color,
+      bgGradient: colors.bgGradient,
+      period: plan.plan_period
+    };
+  });
+
+  // Fallback pricing plans (kept for reference but not used when API data is available)
+  const fallbackPricingPlans: PricingPlan[] = [
     {
       id: 'tester',
       name: t('pricing.tester'),
@@ -210,14 +319,42 @@ const PricingPage: React.FC = () => {
             </motion.p>
           </div>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="flex items-center justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              <span className="ml-4 text-xl text-gray-600 dark:text-gray-400">Loading pricing plans...</span>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className={`mb-8 p-6 rounded-lg border max-w-2xl mx-auto ${
+              darkMode 
+                ? 'bg-red-900/20 border-red-800 text-red-400' 
+                : 'bg-red-50 border-red-200 text-red-600'
+            }`}>
+              <p className="text-center">{error}</p>
+              <div className="text-center mt-4">
+                <button 
+                  onClick={fetchSubscriptionPlans}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Try again
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Pricing Cards */}
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            {pricingPlans.map((plan, index) => (
+          {!loading && !error && pricingPlans.length > 0 && (
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              {pricingPlans.map((plan, index) => (
               <motion.div 
                 key={plan.id}
                 className={`relative rounded-2xl glass-effect overflow-hidden transition-all duration-300 hover:transform hover:scale-105 hover:shadow-xl hover:shadow-${plan.color}-500/20 flex flex-col h-[550px]`}
@@ -301,6 +438,7 @@ const PricingPage: React.FC = () => {
               </motion.div>
             ))}
           </motion.div>
+          )}
 
           {/* Usage Pricing */}
           <motion.div 

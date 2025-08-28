@@ -1,176 +1,219 @@
 {
   "sheet1": {
-    "MatrixAl Bot": {
-      "en": "MatrixAl Bot",
-      "zh-CN": "MatrixAl机器人",
-      "zh-TW": "MatrixAl機器人"
+    "Complete Your Purchase": {
+      "en": "Complete Your Purchase",
+      "zh-CN": "完成购买",
+      "zh-TW": "完成購買"
     },
-    "Hi,I'm MatrixAI Bot.": {
-      "en": "Hi,I'm MatrixAI Bot.",
-      "zh-CN": "你好，我是 MatrixAl机器人。",
-      "zh-TW": "你好，我是 MatrixAl機器人。"
+    "Secure checkout powered by Airwallex": {
+      "en": "Secure checkout powered by Airwallex",
+      "zh-CN": "由 Airwallex 提供的安全结账服务",
+      "zh-TW": "由 Airwallex 提供的安全結帳服務"
     },
-    "How can l help you today?": {
-      "en": "How can l help you today?",
-      "zh-CN": "今天我能帮你什么?",
-      "zh-TW": "今天我能幫你什麼?"
+    "Addon Plan": {
+      "en": "Addon Plan",
+      "zh-CN": "附加计划",
+      "zh-TW": "附加計劃"
     },
-    "You can ask me any question or you can select the below role": {
-      "en": "You can ask me any question or you can select the below role",
-      "zh-CN": "你可以问我任何问题，或者选择以下角色",
-      "zh-TW": "你可以問我任何問題，或者選擇以下角色"
+    "Everything you need to get started with AI": {
+      "en": "Everything you need to get started with AI",
+      "zh-CN": "开始使用 AI 所需的一切",
+      "zh-TW": "開始使用 AI 所需的一切"
     },
-    "Doctor": {
-      "en": "Doctor",
-      "zh-CN": "医生",
-      "zh-TW": "醫生"
+    "HKD": {
+      "en": "HKD",
+      "zh-CN": "港币",
+      "zh-TW": "港幣"
     },
-    "Lawyer": {
-      "en": "Lawyer",
-      "zh-CN": "律师",
-      "zh-TW": "律師"
+    "per 1 month": {
+      "en": "per 1 month",
+      "zh-CN": "每月​",
+      "zh-TW": "每月​"
     },
-    "Engineer": {
-      "en": "Engineer",
-      "zh-CN": "工程师",
-      "zh-TW": "工程師"
+    "Save 0.00 HKD": {
+      "en": "Save 0.00 HKD",
+      "zh-CN": "节省0.00港币",
+      "zh-TW": "節省0.00港幣"
     },
-    "Teacher": {
-      "en": "Teacher",
-      "zh-CN": "教师",
-      "zh-TW": "教師"
+    "AI Tokens": {
+      "en": "AI Tokens",
+      "zh-CN": "AI代币",
+      "zh-TW": "AI代幣"
     },
-    "Psychologist": {
-      "en": "Psychologist",
-      "zh-CN": "心理学家",
-      "zh-TW": "心理學家"
+    "1 month": {
+      "en": "1 month",
+      "zh-CN": "1个月",
+      "zh-TW": "1個月"
     },
-    "Surveyor": {
-      "en": "Surveyor",
-      "zh-CN": "测量师",
-      "zh-TW": "測量師"
+    "Duration": {
+      "en": "Duration",
+      "zh-CN": "期间",
+      "zh-TW": "期間"
     },
-    "Architect": {
-      "en": "Architect",
-      "zh-CN": "建筑师",
-      "zh-TW": "建築師"
+    "Support": {
+      "en": "Support",
+      "zh-CN": "支持",
+      "zh-TW": "支持"
     },
-    "Financial Advisor": {
-      "en": "Financial Advisor",
-      "zh-CN": "财务顾问",
-      "zh-TW": "財務顧問"
+    "What's Included": {
+      "en": "What's Included",
+      "zh-CN": "包含的内容",
+      "zh-TW": "包含的內容"
     },
-    "New Chat": {
-      "en": "New Chat",
-      "zh-CN": "新聊天",
-      "zh-TW": "新聊天"
+    "AI tokens included": {
+      "en": "AI tokens included",
+      "zh-CN": "包含 AI 代币",
+      "zh-TW": "包含 AI 代幣"
     },
-    "Send a message": {
-      "en": "Send a message",
-      "zh-CN": "发送消息",
-      "zh-TW": "發送消息"
-    }
-  },
- 
-
-
-
-
-  "sheet3": {
-    "SRT Subtitles": {
-      "en": "SRT Subtitles",
-      "zh-CN": "字幕",
-      "zh-TW": "字幕"
+    "Access to AI models": {
+      "en": "Access to AI models",
+      "zh-CN": "访问 AI 模型",
+      "zh-TW": "訪問 AI 模型"
     },
-    "Translate": {
-      "en": "Translate",
-      "zh-CN": "翻译",
-      "zh-TW": "翻譯"
+    "Customer support": {
+      "en": "Customer support",
+      "zh-CN": "客户支持",
+      "zh-TW": "客戶支持"
     },
-    "Target Language": {
-      "en": "Target Language",
-      "zh-CN": "目标语言",
-      "zh-TW": "目標語言"
+    "Dashboard access": {
+      "en": "Dashboard access",
+      "zh-CN": "仪表板访问",
+      "zh-TW": "儀錶板訪問"
     },
-    "English": {
-      "en": "English",
-      "zh-CN": "英语",
-      "zh-TW": "英語"
+    "Secure & Trusted": {
+      "en": "Secure & Trusted",
+      "zh-CN": "安全可靠",
+      "zh-TW": "安全可靠"
     },
-    "Chinese": {
-      "en": "Chinese",
-      "zh-CN": "中文",
-      "zh-TW": "中文"
+    "SSL Encrypted": {
+      "en": "SSL Encrypted",
+      "zh-CN": "SSL加密",
+      "zh-TW": "SSL加密"
     },
-    "Spanish": {
-      "en": "Spanish",
-      "zh-CN": "西班牙语",
-      "zh-TW": "西班牙語"
+    "3D Secure": {
+      "en": "3D Secure",
+      "zh-CN": "3D 安全",
+      "zh-TW": "3D 安全"
     },
-    "French": {
-      "en": "French",
-      "zh-CN": "法语",
-      "zh-TW": "法語"
+    "Global Payments": {
+      "en": "Global Payments",
+      "zh-CN": "全球支付",
+      "zh-TW": "全球支付"
     },
-    "German": {
-      "en": "German",
-      "zh-CN": "德语",
-      "zh-TW": "德語"
+    "PCI Compliant": {
+      "en": "PCI Compliant",
+      "zh-CN": "符合 PCI 标准",
+      "zh-TW": "符合 PCI 標準"
     },
-    "Japanese": {
-      "en": "Japanese",
-      "zh-CN": "日语",
-      "zh-TW": "日語"
-    }
-  },
-  "sheet4": {
-    "Creative": {
-      "en": "Creative",
-      "zh-CN": "创意",
-      "zh-TW": "創意"
+    "Why Choose Our Platform": {
+      "en": "Why Choose Our Platform",
+      "zh-CN": "为什么选择我们的平台",
+      "zh-TW": "為什麼選擇我們的平臺"
     },
-    "Persuasive": {
-      "en": "Persuasive",
-      "zh-CN": "说服性",
-      "zh-TW": "說服性"
-    }
-  },
-  "sheet5": {
-    "Refer Your Friends": {
-      "en": "Refer Your Friends",
-      "zh-CN": "邀请您的好友",
-      "zh-TW": "邀請您的好友"
+    "No need for multiple platforms - all AI tools in one place": {
+      "en": "No need for multiple platforms - all AI tools in one place",
+      "zh-CN": "无需多个平台 - 所有 AI 工具均集中在一个地方",
+      "zh-TW": "無需多個平臺 - 所有 AI 工具均集中在一個地方"
     },
-    "Get 50 Coins for Each Invite": {
-      "en": "Get 50 Coins for Each Invite",
-      "zh-CN": "每次邀请可获得50个硬币",
-      "zh-TW": "每次邀請可獲得50個硬幣"
+    "Pay-per-use model with no monthly fixed limits": {
+      "en": "Pay-per-use model with no monthly fixed limits",
+      "zh-CN": "按使用付费模式，无每月固定限额",
+      "zh-TW": "按使用付費模式，無每月固定限額"
     },
-    "Total Coins": {
-      "en": "Total Coins",
-      "zh-CN": "总硬币数",
-      "zh-TW": "總硬幣數"
+    "Buy addons anytime to extend your usage": {
+      "en": "Buy addons anytime to extend your usage",
+      "zh-CN": "随时购买附加组件以延长您的使用时间",
+      "zh-TW": "隨時購買附加組件以延長您的使用時間"
     },
-    "Invite your friends to join MatrixAl and get 50 coins for each invite": {
-      "en": "Invite your friends to join MatrixAl and get 50 coins for each invite",
-      "zh-CN": "邀请您的好友加入MatrixAl，每次邀请获得50个硬币",
-      "zh-TW": "邀請您的好友加入MatrixAl，每次邀請獲得50個硬幣"
+    "Order Summary": {
+      "en": "Order Summary",
+      "zh-CN": "订单摘要",
+      "zh-TW": "訂單摘要"
     },
-    "Friend Signup Reward": {
-      "en": "Friend Signup Reward",
-      "zh-CN": "好友注册奖励",
-      "zh-TW": "好友註冊獎勵"
+    "Plan": {
+      "en": "Plan",
+      "zh-CN": "计划",
+      "zh-TW": "計劃"
     },
-    "Your Referral Code": {
-      "en": "Your Referral Code",
-      "zh-CN": "您的推荐码",
-      "zh-TW": "您的推薦碼"
+    "Billing Cycle": {
+      "en": "Billing Cycle",
+      "zh-CN": "结算周期",
+      "zh-TW": "結算週期"
     },
-    "Invite Friend": {
-      "en": "Invite Friend",
-      "zh-CN": "邀请好友",
-      "zh-TW": "邀請好友"
+    "Valid Until": {
+      "en": "Valid Until",
+      "zh-CN": "有效期至",
+      "zh-TW": "有效期至"
+    },
+    "Original Price": {
+      "en": "Original Price",
+      "zh-CN": "原价",
+      "zh-TW": "原價"
+    },
+    "Discount": {
+      "en": "Discount",
+      "zh-CN": "折扣",
+      "zh-TW": "折扣"
+    },
+    "Total": {
+      "en": "Total",
+      "zh-CN": "总计",
+      "zh-TW": "總計"
+    },
+    "HKD, billed 1 month": {
+      "en": "HKD, billed 1 month",
+      "zh-CN": "港币，1个月计费",
+      "zh-TW": "港幣，1個月計費"
+    },
+    "Secure Checkout": {
+      "en": "Secure Checkout",
+      "zh-CN": "安全结账",
+      "zh-TW": "安全結帳"
+    },
+    "Secure Payment Processing": {
+      "en": "Secure Payment Processing",
+      "zh-CN": "安全支付处理",
+      "zh-TW": "安全支付處理"
+    },
+    "Payment Method": {
+      "en": "Payment Method",
+      "zh-CN": "付款方式",
+      "zh-TW": "付款方式"
+    },
+    "Secure Payment with Airwallex": {
+      "en": "Secure Payment with Airwallex",
+      "zh-CN": "使用 Airwallex 安全付款",
+      "zh-TW": "使用 Airwallex 安全付款"
+    },
+    "Your payment information is encrypted and secure": {
+      "en": "Your payment information is encrypted and secure",
+      "zh-CN": "您的付款信息已加密且安全",
+      "zh-TW": "您的付款信息已加密且安全"
+    },
+    "Accepted Payment Methods": {
+      "en": "Accepted Payment Methods",
+      "zh-CN": "接受的付款方式",
+      "zh-TW": "接受的付款方式"
+    },
+    "Credit Cards": {
+      "en": "Credit Cards",
+      "zh-CN": "信用卡",
+      "zh-TW": "信用卡"
+    },
+    "Digital Wallets": {
+      "en": "Digital Wallets",
+      "zh-CN": "数字钱包",
+      "zh-TW": "數字錢包"
+    },
+    "You will be redirected to Airwallex secure payment page": {
+      "en": "You will be redirected to Airwallex secure payment page",
+      "zh-CN": "您将被重定向至 Airwallex 安全支付页面",
+      "zh-TW": "您將被重定向至 Airwallex 安全支付頁面"
+    },
+    "Back": {
+      "en": "Back",
+      "zh-CN": "返回",
+      "zh-TW": "返回"
     }
   }
- 
 }

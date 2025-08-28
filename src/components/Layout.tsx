@@ -84,7 +84,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </main>
         {/* Only render Footer if not on a chat route */}
         {!isChatRoute && (
-          <div className="w-full z-20">
+          <div className="w-full z-auto">
             <FooterLinks 
               categories={[
           {

@@ -604,7 +604,7 @@ ${text}
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="relative overflow-hidden">
      
       <div className="container mx-auto max-w-6xl flex-1 md:p-6 relative z-10">
       {showProAlert && (

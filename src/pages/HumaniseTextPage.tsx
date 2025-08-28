@@ -292,11 +292,8 @@ const HumaniseTextPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden page-background">
-      {/* Background gradient effects */}
-      <div className="gradient-blob-1"></div>
-      <div className="gradient-blob-2"></div>
-    
+    <div className="relative overflow-hidden">
+     
       <div className="container mx-auto max-w-6xl flex-1 md:p-6 relative z-10">
       {showProAlert && (
         <ProFeatureAlert
@@ -305,9 +302,9 @@ const HumaniseTextPage: React.FC = () => {
         />
       )}
       
-    
+   
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8sm:px-2 py-2 sm:py-4">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8  sm:px-2 py-2 sm:py-4">
         {/* Text Input Form */}
         <div className="lg:col-span-2 order-1 lg:order-1">
           <div className="sticky top-6 space-y-6">
@@ -743,13 +740,7 @@ const HumaniseTextPage: React.FC = () => {
           </div>
         )}
         
-        {showHistory && !isLoadingHistory && history.length === 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
-            <p className="text-gray-500 dark:text-gray-400">
-              {t('humanizeText.noHistory') || 'No humanization history found.'}
-            </p>
-          </div>
-        )}
+
         
         {showHistory && isLoadingHistory && (
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 text-center">

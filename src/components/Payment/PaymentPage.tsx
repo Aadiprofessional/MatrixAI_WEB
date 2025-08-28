@@ -8,6 +8,8 @@ interface PaymentPageProps {
   currency?: string;
   productName?: string;
   productDescription?: string;
+  uid: string;
+  plan: string;
   onSuccess?: (paymentIntentId: string) => void;
   onError?: (error: string) => void;
 }
@@ -17,6 +19,8 @@ const PaymentPage: React.FC<PaymentPageProps> = ({
   currency = 'USD',
   productName = 'MatrixAI Service',
   productDescription = 'AI Agent Service Payment',
+  uid,
+  plan,
   onSuccess,
   onError,
 }) => {
@@ -64,6 +68,8 @@ const PaymentPage: React.FC<PaymentPageProps> = ({
         currency: currency.toUpperCase(),
         merchantOrderId,
         returnUrl,
+        uid,
+        plan,
         products: [
           {
             name: productName,

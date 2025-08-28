@@ -2792,5 +2792,89 @@
         }
       }
     }
+  },
+  "airwallexPayment": {
+    "navigation": {
+      "back": "Back"
+    },
+    "header": {
+      "title": "Complete Your Purchase",
+      "subtitle": "Secure checkout powered by Airwallex"
+    },
+    "planOverview": {
+      "mostPopular": "Most Popular",
+      "planTitle": "Addon Plan",
+      "description": "Everything you need to get started with AI",
+      "per": "per 1 month",
+      "save": "Save 0.00 HKD"
+    },
+    "planStats": {
+      "aiTokens": "AI Tokens",
+      "duration": "Duration",
+      "support": "Support"
+    },
+    "features": {
+      "title": "What's Included",
+      "aiImageGeneration": "AI Image Generation",
+      "aiChatbot": "AI Chatbot",
+      "aiWritingAssistant": "AI Writing Assistant",
+      "aiCodeGenerator": "AI Code Generator",
+      "prioritySupport": "Priority Support",
+      "noWatermark": "No Watermark",
+      "commercialUse": "Commercial Use",
+      "advancedFeatures": "Advanced Features"
+    },
+    "planFeatures": {
+       "default": {
+         "tokensIncluded": "AI tokens included",
+         "modelsAccess": "Access to AI models",
+         "customerSupport": "Customer support",
+         "dashboardAccess": "Dashboard access"
+       }
+     },
+      "security": {
+      "title": "Secure & Trusted",
+      "sslEncrypted": "SSL Encrypted",
+      "threeDSecure": "3D Secure",
+      "globalPayments": "Global Payments",
+      "pciCompliant": "PCI Compliant"
+    },
+    "benefits": {
+      "title": "Why Choose Our Platform",
+      "allInOne": "No need for multiple platforms - all AI tools in one place",
+      "payPerUse": "Pay-per-use model with no monthly fixed limits",
+      "buyAddons": "Buy addons anytime to extend your usage"
+    },
+    "orderSummary": {
+      "title": "Order Summary",
+      "plan": "Plan",
+      "aiTokens": "AI Tokens",
+      "billingCycle": "Billing Cycle",
+      "validUntil": "Valid Until",
+      "originalPrice": "Original Price",
+      "discount": "Discount",
+      "additionalDiscount": "Additional Discount",
+      "total": "Total",
+      "billedDuration": "HKD, billed 1 month"
+    },
+    "payment": {
+      "processing": "Processing...",
+      "secureCheckout": "Secure Checkout",
+      "securityNotice": "Your payment is secured with 256-bit SSL encryption and processed through Airwallex's PCI-compliant infrastructure.",
+      "secureProcessing": "Secure Payment Processing"
+    },
+    "paymentMethod": {
+      "title": "Payment Method",
+      "securePayment": "Secure Payment with Airwallex",
+      "encryptionNotice": "Your payment information is encrypted and secure",
+      "acceptedMethods": "Accepted Payment Methods",
+      "creditCards": "Credit Cards",
+      "digitalWallets": "Digital Wallets",
+      "redirectNotice": "You will be redirected to Airwallex secure payment page"
+    },
+    "errors": {
+      "userNotAuthenticated": "User not authenticated",
+      "paymentFailed": "Payment failed"
+    }
   }
 }

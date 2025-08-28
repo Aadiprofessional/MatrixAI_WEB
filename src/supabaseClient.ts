@@ -130,7 +130,7 @@ export const signOut = async () => {
 // Reset password
 export const resetPassword = async (email: string) => {
   const redirectUrl = window.location.hostname === 'localhost'
-    ? 'http://localhost:3000/reset-password'
+    ? 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/reset-password'
     : `${window.location.origin}/reset-password`;
     
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -205,19 +205,7 @@ export const updateUserSubscription = async (userId: string, subscriptionData: a
   }
 };
 
-// Verify subscription purchase
-export const verifySubscriptionPurchase = async (purchaseData: any) => {
-  try {
-    // In a real app, you would have an API endpoint to verify the purchase
-    // and update the user's subscription status accordingly
-    
-    // This is just a placeholder function
-    return { success: true, message: 'Subscription verified successfully' };
-  } catch (error) {
-    console.error('Error verifying subscription:', error);
-    throw error;
-  }
-};
+
 
 // Get user's usage metrics
 export const getUserUsageMetrics = async (userId: string) => {

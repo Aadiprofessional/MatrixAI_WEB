@@ -310,14 +310,8 @@ const ContentWriterPage: React.FC = () => {
     }
   ];
 
-  // Check if user is Pro for premium features
-  useEffect(() => {
-    // Only check for Pro status if user is logged in
-    if (user && !isPro) {
-      navigate('/subscription', { state: { feature: 'Content Writer' } });
-      return;
-    }
-  }, [user, isPro, navigate]);
+  // Removed automatic redirect to subscription page
+  // Now using ProFeatureAlert modal instead
 
   // Tone options
   const toneOptions = [
@@ -603,15 +597,10 @@ Create content that is original, well-researched, and engaging for the target au
       return;
     }
     
-    // Check if user is authenticated
-    if (!user) {
-      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
-      return;
-    }
-    
+    // AuthRequiredButton handles authentication
     // Check if user is Pro
     if (!isPro) {
-      navigate('/subscription', { state: { feature: 'Content Writer' } });
+      setShowProAlert(true);
       return;
     }
     
@@ -747,12 +736,7 @@ Create content that is original, well-researched, and engaging for the target au
   };
 
   const handleQuickQuestion = (question: QuickQuestion) => {
-    // Check if user is authenticated
-    if (!user) {
-      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
-      return;
-    }
-    
+    // AuthRequiredButton handles authentication
     setPrompt(question.text);
     // Auto-set content type based on question category
     switch (question.category.toLowerCase()) {
@@ -1098,12 +1082,7 @@ Create content that is original, well-researched, and engaging for the target au
   };
 
   const clearContent = () => {
-    // Check if user is authenticated
-    if (!user) {
-      navigate('/login', { state: { redirectTo: '/tools/content-writer' } });
-      return;
-    }
-    
+    // AuthRequiredButton handles authentication
     setPrompt('');
     setGeneratedContent('');
     setEditedContent('');
@@ -1181,10 +1160,8 @@ Create content that is original, well-researched, and engaging for the target au
     return t('contentWriter.readyToGenerate');
   };
 
-  // Only check for Pro status if user is authenticated
-  if (user && !isPro) {
-    return null;
-  }
+  // Remove the Pro status check that blocks the entire page
+  // The page should display normally with AuthRequiredButton handling authentication
 
   return (
     <div className="min-h-screen relative overflow-hidden">

@@ -72,10 +72,7 @@ interface OrderResponse {
   data: Order[];
 }
 
-interface SubscriptionResponse {
-  success: boolean;
-  message: string;
-}
+
 
 interface EditUserResponse {
   success: boolean;
@@ -272,28 +269,7 @@ export const userService = {
     return response.json();
   },
 
-  // Buy subscription
-  BuySubscription: async (uid: string, plan: string, totalPrice: number, couponId?: number): Promise<SubscriptionResponse> => {
-    const response = await fetch(`${API_BASE_URL}/api/user/BuySubscription`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        uid,
-        plan,
-        totalPrice,
-        couponId
-      }),
-    });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || errorData.error || 'Failed to buy subscription');
-    }
-
-    return response.json();
-  },
 
   // Edit user profile
   editUser: async (uid: string, name?: string, age?: number, gender?: string, dp_url?: string): Promise<EditUserResponse> => {

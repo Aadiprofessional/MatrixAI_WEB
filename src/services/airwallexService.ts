@@ -11,6 +11,8 @@ interface PaymentIntentRequest {
   currency: string;
   merchant_order_id: string;
   return_url: string;
+  uid: string;
+  plan: string;
   order?: {
     products?: Array<{
       name: string;
@@ -53,7 +55,7 @@ class AirwallexService {
   private backendUrl: string;
 
   constructor() {
-    this.backendUrl = process.env.REACT_APP_BACKEND_API_URL || 'http://localhost:3000';
+    this.backendUrl = process.env.REACT_APP_BACKEND_API_URL || 'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run';
   }
 
   /**
@@ -73,6 +75,8 @@ class AirwallexService {
     currency: string;
     merchantOrderId: string;
     returnUrl: string;
+    uid: string;
+    plan: string;
     products?: Array<{
       name: string;
       desc?: string;
@@ -92,6 +96,8 @@ class AirwallexService {
         currency: params.currency,
         merchant_order_id: params.merchantOrderId,
         return_url: params.returnUrl,
+        uid: params.uid,
+        plan: params.plan,
       };
 
       // Add order information if products are provided

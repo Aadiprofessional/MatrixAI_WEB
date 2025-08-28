@@ -30,6 +30,7 @@ import 'katex/dist/katex.min.css';
 import katex from 'katex';
 import MindMapComponent from '../components/MindMapComponent';
 import coinIcon from '../assets/coin.png';
+// FFmpeg imports removed - now using API endpoint for video processing
 
 // Define types for word timings
 interface WordTiming {
@@ -790,6 +791,11 @@ const TranscriptionPage: React.FC = () => {
   
   // Translated data from API response
   const [translatedData, setTranslatedData] = useState<any>(null);
+
+  // Video processing state
+  const [isProcessingVideo, setIsProcessingVideo] = useState<boolean>(false);
+  const [videoProcessingProgress, setVideoProcessingProgress] = useState<number>(0);
+  // FFmpeg reference removed - now using API endpoint for video processing
 
   // Enhanced languages array with Azure support and saved status
   const languages = React.useMemo(() => {
@@ -1641,12 +1647,13 @@ const TranscriptionPage: React.FC = () => {
     // Don't manually set state - let the fullscreen change event handle it
   };
 
-  // Create subtitle segments (4-second intervals)
+  // Create subtitle segments (3-second intervals for better readability)
   const createSubtitleSegments = () => {
     if (!wordTimings.length) return [];
     
     const segments = [];
-    const segmentDuration = 4; // 4 seconds per segment
+    const segmentDuration = 3; // 3 seconds per segment for better readability
+    const maxWordsPerSegment = 8; // Limit words per segment
     let currentSegment = [];
     let segmentStartTime = 0;
     
@@ -1663,6 +1670,7 @@ const TranscriptionPage: React.FC = () => {
       // Check if we should end this segment
       const shouldEndSegment = 
         word.endTime - segmentStartTime >= segmentDuration ||
+        currentSegment.length >= maxWordsPerSegment ||
         i === wordTimings.length - 1 ||
         (i < wordTimings.length - 1 && wordTimings[i + 1].startTime - segmentStartTime > segmentDuration);
       
@@ -1775,6 +1783,145 @@ const TranscriptionPage: React.FC = () => {
     } else {
       // Fallback to copying to clipboard
       copyTranscription();
+    }
+  };
+
+  // Initialize FFmpeg
+  // initializeFFmpeg function removed - now using API endpoint for video processing
+
+  // Generate SRT subtitle file from word timings
+  const generateSRTFromWordTimings = () => {
+    if (!wordTimings.length) return '';
+    
+    const segments = createSubtitleSegments();
+    let srtContent = '';
+    
+    segments.forEach((segment, index) => {
+      const startTime = formatTimeForSRT(segment.startTime);
+      const endTime = formatTimeForSRT(segment.endTime);
+      
+      srtContent += `${index + 1}\n`;
+      srtContent += `${startTime} --> ${endTime}\n`;
+      srtContent += `${segment.text}\n\n`;
+    });
+    
+    return srtContent;
+  };
+
+  // Format time in seconds to SRT format (HH:MM:SS,mmm)
+  const formatTimeForSRT = (timeInSeconds: number) => {
+    const hours = Math.floor(timeInSeconds / 3600);
+    const minutes = Math.floor((timeInSeconds % 3600) / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    const milliseconds = Math.floor((timeInSeconds % 1) * 1000);
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')},${milliseconds.toString().padStart(3, '0')}`;
+  };
+
+  // Download video with burned-in subtitles
+  const downloadVideoWithSubtitles = async () => {
+    console.log('Starting video download with subtitles...');
+    console.log('Video URL:', videoUrl);
+    console.log('Word timings count:', wordTimings.length);
+    console.log('Word timings sample:', wordTimings.slice(0, 3));
+    
+    if (!videoUrl || !wordTimings.length) {
+      showError('Video or subtitle data not available');
+      return;
+    }
+
+    setIsProcessingVideo(true);
+    setVideoProcessingProgress(0);
+
+    try {
+      setVideoProcessingProgress(10);
+      
+      // Transform word timings to match API expected format
+      const transformedWordData = wordTimings.map(word => ({
+        word: word.word,
+        start: word.startTime,
+        end: word.endTime
+      }));
+
+      // Prepare the request payload
+      const requestBody = {
+        video_url: videoUrl,
+        word_data: transformedWordData,
+        uid: user?.id || 'anonymous'
+      };
+
+      console.log('Sending request to /api/video/generateSubtitles...');
+      setVideoProcessingProgress(30);
+
+      // Call the API endpoint
+      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/video/generateSubtitles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      setVideoProcessingProgress(50);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `API request failed with status ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('API response:', result);
+
+      if (!result.success) {
+        throw new Error(result.message || 'Video subtitle generation failed');
+      }
+
+      setVideoProcessingProgress(80);
+
+      // Get the processed video URL from the response
+      const processedVideoUrl = result.data.video_url;
+      console.log('Processed video URL:', processedVideoUrl);
+      console.log('Processing time:', result.data.processing_time);
+
+      setVideoProcessingProgress(90);
+
+      // Download the video file properly
+      try {
+        const videoResponse = await fetch(processedVideoUrl);
+        if (!videoResponse.ok) {
+          throw new Error('Failed to fetch the processed video');
+        }
+        
+        const videoBlob = await videoResponse.blob();
+        const blobUrl = URL.createObjectURL(videoBlob);
+        
+        // Create download link for the processed video
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `${fileName || 'video'}_with_subtitles.mp4`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the blob URL
+        URL.revokeObjectURL(blobUrl);
+        
+        console.log('Video download completed successfully');
+      } catch (downloadError) {
+        console.error('Error downloading video:', downloadError);
+        // Fallback: open in new tab
+        window.open(processedVideoUrl, '_blank');
+      }
+      setVideoProcessingProgress(100);
+      showSuccess(`Video with subtitles processed successfully! Processing time: ${result.data.processing_time}`);
+      
+    } catch (error) {
+      console.error('Error processing video with subtitles:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      showError(`Failed to process video with subtitles: ${errorMessage}`);
+    } finally {
+      setIsProcessingVideo(false);
+      setVideoProcessingProgress(0);
     }
   };
 
@@ -3054,25 +3201,27 @@ const TranscriptionPage: React.FC = () => {
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{videoUrl ? t('transcription.video.controls') : t('transcription.audio.controls')}</h2>
               </div>
               
-              {/* Compact waveform for mobile */}
-              <div className="relative h-12 m-3 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-                <div 
-                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-400/60 to-purple-400/60 dark:from-blue-500/40 dark:to-purple-500/40 pointer-events-none"
-                  style={{ width: `${(currentTime / duration) * 100}%` }}
-                ></div>
-                <div className="flex items-end justify-between h-full px-1">
-                  {waveformData.map((height, i) => (
-                    <div
-                      key={i}
-                      className="w-0.5 mx-0.5 bg-gradient-to-t from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400"
-                      style={{ 
-                        height: `${height * 100}%`,
-                        opacity: currentTime / duration > i / waveformData.length ? 1 : 0.4
-                      }}
-                    ></div>
-                  ))}
+              {/* Compact waveform for mobile - Only show for audio files */}
+              {!videoUrl && (
+                <div className="relative h-12 m-3 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                  <div 
+                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-400/60 to-purple-400/60 dark:from-blue-500/40 dark:to-purple-500/40 pointer-events-none"
+                    style={{ width: `${(currentTime / duration) * 100}%` }}
+                  ></div>
+                  <div className="flex items-end justify-between h-full px-1">
+                    {waveformData.map((height, i) => (
+                      <div
+                        key={i}
+                        className="w-0.5 mx-0.5 bg-gradient-to-t from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400"
+                        style={{ 
+                          height: `${height * 100}%`,
+                          opacity: currentTime / duration > i / waveformData.length ? 1 : 0.4
+                        }}
+                      ></div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
               
               {/* Media element for mobile - Video or Audio */}
               {videoUrl ? (
@@ -3096,91 +3245,7 @@ const TranscriptionPage: React.FC = () => {
                     onPause={() => setIsPlaying(false)}
                   />
                   
-                  {/* Mobile Video Control Buttons */}
-                  <div className="absolute top-2 right-2 flex space-x-2">
-                    {/* Dual Display Toggle - Only show when translation is enabled */}
-                    {isTranslationEnabled && (
-                      <button
-                        onClick={() => {
-                          if (!showDualSubtitles && Object.keys(wordTranslations).length === 0) {
-                            // If no translations exist, translate all words first
-                            loadAllSubtitleWords();
-                          }
-                          setShowDualSubtitles(!showDualSubtitles);
-                          if (!showDualSubtitles) {
-                            setShowTranslatedSubtitles(false); // Disable single translation mode when enabling dual
-                          }
-                        }}
-                        className={`p-2 rounded-lg transition-all ${
-                          showDualSubtitles
-                            ? 'bg-green-500 bg-opacity-75 text-white'
-                            : 'bg-black bg-opacity-50 text-white hover:bg-opacity-75'
-                        }`}
-                        title={showDualSubtitles ? 'Hide Dual Subtitles' : 'Show Both Original & Translated'}
-                        disabled={isTranslatingWords}
-                      >
-                        {isTranslatingWords ? (
-                          <div className="flex items-center space-x-1">
-                            <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center">
-                            <div className="text-xs leading-none">AB</div>
-                            <div className="text-xs leading-none">中文</div>
-                          </div>
-                        )}
-                        
-                        {/* Quick Action Results - Moved to end of chat */}
-                        {(chatResponses.keypoints || chatResponses.summary || chatResponses.translate) && (
-                          <div className="space-y-4 mt-6 border-t pt-6 dark:border-gray-700">
-                            <h3 className="text-md font-medium text-gray-600 dark:text-gray-400">Quick Action Results</h3>
-                            
-                            {chatResponses.keypoints && (
-                              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                                <h4 className="font-medium text-blue-700 dark:text-blue-400 mb-2 flex items-center">
-                                  <FiZap className="mr-2" /> Key Points
-                                </h4>
-                                <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                                  {renderTextWithMath(chatResponses.keypoints, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
-                                </div>
-                              </div>
-                            )}
-                            
-                            {chatResponses.summary && (
-                              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-                                <h4 className="font-medium text-purple-700 dark:text-purple-400 mb-2 flex items-center">
-                                  <FiFileText className="mr-2" /> Summary
-                                </h4>
-                                <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                                  {renderTextWithMath(chatResponses.summary, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
-                                </div>
-                              </div>
-                            )}
-                            
-                            {chatResponses.translate && (
-                              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                                <h4 className="font-medium text-green-700 dark:text-green-400 mb-2 flex items-center">
-                                  <FiBookmark className="mr-2" /> Translation ({translationLanguage})
-                                </h4>
-                                <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                                  {renderTextWithMath(chatResponses.translate, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </button>
-                    )}
-                    
-                    {/* Fullscreen Button */}
-                    <button
-                      onClick={toggleVideoFullscreen}
-                      className="p-2 bg-black bg-opacity-50 text-white rounded-lg hover:bg-opacity-75 transition-all"
-                      title="Toggle Fullscreen"
-                    >
-                      {isVideoFullscreen ? <FiMinimize size={16} /> : <FiMaximize size={16} />}
-                    </button>
-                  </div>
+                  {/* Mobile Video Control Buttons - Hidden for cleaner video experience */}
                   
                   {/* Enhanced Video Subtitles Overlay for mobile */}
                   {(() => {
@@ -3361,6 +3426,21 @@ const TranscriptionPage: React.FC = () => {
                     >
                       <FiDownload size={14} />
                     </button>
+                    {/* Download Video with Subtitles Button - Mobile */}
+                    {videoUrl && (
+                      <button 
+                        onClick={downloadVideoWithSubtitles}
+                        disabled={isProcessingVideo || !wordTimings.length}
+                        className="p-1.5 text-purple-600 hover:text-purple-500 dark:text-purple-400 dark:hover:text-purple-300 focus:outline-none transition-colors disabled:text-gray-400 disabled:cursor-not-allowed"
+                        title={isProcessingVideo ? `Processing... ${videoProcessingProgress}%` : "Download Video with Subtitles"}
+                      >
+                        {isProcessingVideo ? (
+                          <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-purple-600 border-t-transparent"></div>
+                        ) : (
+                          <FiDownload size={14} />
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -3513,8 +3593,28 @@ const TranscriptionPage: React.FC = () => {
                               </svg>
                             </button>
                             {isLanguageDropdownOpen && (
-                              <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg shadow-lg max-h-32 overflow-y-auto">
-                                {languages.map((lang) => (
+                              <div className="absolute z-50 mt-1 w-full bg-gradient-to-br from-white via-blue-100 to-purple-100 dark:from-gray-800 dark:via-blue-800/80 dark:to-purple-800/80 border-2 border-blue-300 dark:border-blue-600 rounded-xl shadow-2xl max-h-64 overflow-y-auto" style={{
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: '#3b82f6 #e5e7eb'
+                              }}>
+                                <style>{`
+                                  .absolute::-webkit-scrollbar {
+                                    width: 8px;
+                                  }
+                                  .absolute::-webkit-scrollbar-track {
+                                    background: linear-gradient(to bottom, #f3f4f6, #e5e7eb);
+                                    border-radius: 4px;
+                                  }
+                                  .absolute::-webkit-scrollbar-thumb {
+                                    background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+                                    border-radius: 4px;
+                                    border: 1px solid #1e40af;
+                                  }
+                                  .absolute::-webkit-scrollbar-thumb:hover {
+                                    background: linear-gradient(to bottom, #1d4ed8, #1e3a8a);
+                                  }
+                                `}</style>
+                                {languages.map((lang, index) => (
                                   <button
                                     key={lang.value}
                                     onClick={() => {
@@ -3522,9 +3622,20 @@ const TranscriptionPage: React.FC = () => {
                                       setIsTranslationInProgress(false);
                                       setIsLanguageDropdownOpen(false);
                                     }}
-                                    className="w-full px-2 sm:px-3 py-1.5 text-left text-xs sm:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg"
+                                    className={`w-full px-3 py-3 text-left text-xs sm:text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] ${
+                                      index % 3 === 0 ? 'text-blue-700 dark:text-blue-300 hover:bg-gradient-to-r hover:from-blue-200 hover:to-blue-300 dark:hover:from-blue-700/70 dark:hover:to-blue-600/70' :
+                                       index % 3 === 1 ? 'text-purple-700 dark:text-purple-300 hover:bg-gradient-to-r hover:from-purple-200 hover:to-purple-300 dark:hover:from-purple-700/70 dark:hover:to-purple-600/70' :
+                                       'text-green-700 dark:text-green-300 hover:bg-gradient-to-r hover:from-green-200 hover:to-green-300 dark:hover:from-green-700/70 dark:hover:to-green-600/70'
+                                    } first:rounded-t-xl last:rounded-b-xl border-b border-gray-200/50 dark:border-gray-600/50 last:border-b-0`}
                                   >
-                                    {lang.label}
+                                    <span className="flex items-center gap-2">
+                                      <span className={`w-2 h-2 rounded-full ${
+                                        index % 3 === 0 ? 'bg-blue-500' :
+                                        index % 3 === 1 ? 'bg-purple-500' :
+                                        'bg-green-500'
+                                      }`}></span>
+                                      {lang.label}
+                                    </span>
                                   </button>
                                 ))}
                               </div>
@@ -4173,17 +4284,50 @@ const TranscriptionPage: React.FC = () => {
                     </svg>
                   </button>
                   {isSrtLanguageDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-32 overflow-y-auto">
-                      {languages.map(lang => (
+                    <div className="absolute top-full left-0 mt-1 w-full bg-gradient-to-br from-white via-cyan-100 to-teal-100 dark:from-gray-800 dark:via-cyan-800/80 dark:to-teal-800/80 border-2 border-cyan-300 dark:border-cyan-600 rounded-xl shadow-2xl z-50 max-h-64 overflow-y-auto" style={{
+                       scrollbarWidth: 'thin',
+                       scrollbarColor: '#06b6d4 #e5e7eb'
+                     }}>
+                      <style>{`
+                        .absolute::-webkit-scrollbar {
+                          width: 8px;
+                        }
+                        .absolute::-webkit-scrollbar-track {
+                          background: linear-gradient(to bottom, #f0fdfa, #ccfbf1);
+                          border-radius: 4px;
+                        }
+                        .absolute::-webkit-scrollbar-thumb {
+                          background: linear-gradient(to bottom, #06b6d4, #0891b2);
+                          border-radius: 4px;
+                          border: 1px solid #0e7490;
+                        }
+                        .absolute::-webkit-scrollbar-thumb:hover {
+                          background: linear-gradient(to bottom, #0891b2, #0e7490);
+                        }
+                      `}</style>
+                      {languages.map((lang, index) => (
                         <button
                           key={lang.value}
                           onClick={() => {
                             setSrtSelectedLanguage(lang.value);
                             setIsSrtLanguageDropdownOpen(false);
                           }}
-                          className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors"
+                          className={`w-full px-3 py-3 text-left text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] ${
+                            index % 4 === 0 ? 'text-cyan-700 dark:text-cyan-300 hover:bg-gradient-to-r hover:from-cyan-200 hover:to-cyan-300 dark:hover:from-cyan-700/70 dark:hover:to-cyan-600/70' :
+                             index % 4 === 1 ? 'text-teal-700 dark:text-teal-300 hover:bg-gradient-to-r hover:from-teal-200 hover:to-teal-300 dark:hover:from-teal-700/70 dark:hover:to-teal-600/70' :
+                             index % 4 === 2 ? 'text-emerald-700 dark:text-emerald-300 hover:bg-gradient-to-r hover:from-emerald-200 hover:to-emerald-300 dark:hover:from-emerald-700/70 dark:hover:to-emerald-600/70' :
+                             'text-indigo-700 dark:text-indigo-300 hover:bg-gradient-to-r hover:from-indigo-200 hover:to-indigo-300 dark:hover:from-indigo-700/70 dark:hover:to-indigo-600/70'
+                          } first:rounded-t-xl last:rounded-b-xl border-b border-gray-200/50 dark:border-gray-600/50 last:border-b-0`}
                         >
-                          {lang.label}
+                          <span className="flex items-center gap-2">
+                            <span className={`w-2 h-2 rounded-full ${
+                              index % 4 === 0 ? 'bg-cyan-500' :
+                              index % 4 === 1 ? 'bg-teal-500' :
+                              index % 4 === 2 ? 'bg-emerald-500' :
+                              'bg-indigo-500'
+                            }`}></span>
+                            {lang.label}
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -4435,25 +4579,27 @@ const TranscriptionPage: React.FC = () => {
                     <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{videoUrl ? t('transcription.video.controls') : t('transcription.audio.controls')}</h2>
                   </div>
                   
-                  {/* Waveform visualization */}
-                  <div className="relative h-16 sm:h-20 m-4 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-                    <div 
-                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-400/60 to-purple-400/60 dark:from-blue-500/40 dark:to-purple-500/40 pointer-events-none"
-                      style={{ width: `${(currentTime / duration) * 100}%` }}
-                    ></div>
-                    <div className="flex items-end justify-between h-full px-1">
-                      {waveformData.map((height, i) => (
-                        <div
-                          key={i}
-                          className="w-1 mx-0.5 bg-gradient-to-t from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400"
-                          style={{ 
-                            height: `${height * 100}%`,
-                            opacity: currentTime / duration > i / waveformData.length ? 1 : 0.4
-                          }}
-                        ></div>
-                      ))}
+                  {/* Waveform visualization - Only show for audio files */}
+                  {!videoUrl && (
+                    <div className="relative h-16 sm:h-20 m-4 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                      <div 
+                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-400/60 to-purple-400/60 dark:from-blue-500/40 dark:to-purple-500/40 pointer-events-none"
+                        style={{ width: `${(currentTime / duration) * 100}%` }}
+                      ></div>
+                      <div className="flex items-end justify-between h-full px-1">
+                        {waveformData.map((height, i) => (
+                          <div
+                            key={i}
+                            className="w-1 mx-0.5 bg-gradient-to-t from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400"
+                            style={{ 
+                              height: `${height * 100}%`,
+                              opacity: currentTime / duration > i / waveformData.length ? 1 : 0.4
+                            }}
+                          ></div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   
                   {/* Media element - Video or Audio */}
                   {videoUrl ? (
@@ -4481,51 +4627,7 @@ const TranscriptionPage: React.FC = () => {
                         onPause={() => setIsPlaying(false)}
                       />
                       
-                      {/* Video Control Buttons */}
-                      <div className="absolute top-3 right-3 flex space-x-2">
-                        {/* Dual Display Toggle - Only show when translation is enabled */}
-                        {isTranslationEnabled && (
-                          <button
-                            onClick={() => {
-                              if (!showDualSubtitles && Object.keys(wordTranslations).length === 0) {
-                                // If no translations exist, translate all words first
-                                loadAllSubtitleWords();
-                              }
-                              setShowDualSubtitles(!showDualSubtitles);
-                              if (!showDualSubtitles) {
-                                setShowTranslatedSubtitles(false); // Disable single translation mode when enabling dual
-                              }
-                            }}
-                            className={`p-2 rounded-lg transition-all ${
-                              showDualSubtitles
-                                ? 'bg-green-500 bg-opacity-75 text-white'
-                                : 'bg-black bg-opacity-50 text-white hover:bg-opacity-75'
-                            }`}
-                            title={showDualSubtitles ? 'Hide Dual Subtitles' : 'Show Both Original & Translated'}
-                            disabled={isTranslatingWords}
-                          >
-                            {isTranslatingWords ? (
-                              <div className="flex items-center space-x-1">
-                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col items-center">
-                                <div className="text-xs leading-none">AB</div>
-                                <div className="text-xs leading-none">中文</div>
-                              </div>
-                            )}
-                          </button>
-                        )}
-                        
-                        {/* Fullscreen Button */}
-                        <button
-                          onClick={toggleVideoFullscreen}
-                          className="p-2 bg-black bg-opacity-50 text-white rounded-lg hover:bg-opacity-75 transition-all"
-                          title="Toggle Fullscreen"
-                        >
-                          {isVideoFullscreen ? <FiMinimize size={18} /> : <FiMaximize size={18} />}
-                        </button>
-                      </div>
+                      {/* Video Control Buttons - Hidden for cleaner video experience */}
                       
                       {/* Enhanced Video Subtitles Overlay */}
                       {(() => {
@@ -4817,6 +4919,26 @@ const TranscriptionPage: React.FC = () => {
                           Download Transcription
                         </button>
                         
+                        {/* Download Video with Subtitles Button - Only show when video is available */}
+                        {videoUrl && (
+                          <button 
+                            onClick={downloadVideoWithSubtitles}
+                            disabled={isProcessingVideo || !wordTimings.length}
+                            className="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:cursor-not-allowed"
+                          >
+                            {isProcessingVideo ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                                Processing... {videoProcessingProgress}%
+                              </>
+                            ) : (
+                              <>
+                                <FiDownload className="mr-2" />
+                                Download Video with Subtitles
+                              </>
+                            )}
+                          </button>
+                        )}
                       
                       </div>
                     </div>

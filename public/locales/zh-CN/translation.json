@@ -2887,5 +2887,89 @@
       "email": "电子邮件支持",
       "form": "联系表格"
     }
+  },
+  "airwallexPayment": {
+    "navigation": {
+      "back": "返回"
+    },
+    "header": {
+      "title": "完成购买",
+      "subtitle": "由 Airwallex 提供的安全结账"
+    },
+    "planOverview": {
+      "mostPopular": "最受欢迎",
+      "planTitle": "附加计划",
+      "description": "开始使用 AI 所需的一切",
+      "per": "每月​",
+      "save": "节省0.00港币"
+    },
+    "planStats": {
+      "aiTokens": "AI代币",
+      "duration": "期间",
+      "support": "支持"
+    },
+    "features": {
+      "title": "包含的内容",
+      "aiImageGeneration": "AI图像生成",
+      "aiChatbot": "AI聊天机器人",
+      "aiWritingAssistant": "AI写作助手",
+      "aiCodeGenerator": "AI代码生成器",
+      "prioritySupport": "优先支持",
+      "noWatermark": "无水印",
+      "commercialUse": "商业使用",
+      "advancedFeatures": "高级功能"
+    },
+    "planFeatures": {
+       "default": {
+         "tokensIncluded": "包含 AI 代币",
+         "modelsAccess": "访问 AI 模型",
+         "customerSupport": "客户支持",
+         "dashboardAccess": "仪表板访问"
+       }
+     },
+      "security": {
+      "title": "安全可靠",
+      "sslEncrypted": "SSL加密",
+      "threeDSecure": "3D 安全",
+      "globalPayments": "全球支付",
+      "pciCompliant": "符合 PCI 标准"
+    },
+    "benefits": {
+      "title": "为什么选择我们的平台",
+      "allInOne": "无需多个平台 - 所有 AI 工具均集中在一个地方",
+      "payPerUse": "按使用付费模式，无每月固定限额",
+      "buyAddons": "随时购买附加组件以延长您的使用时间"
+    },
+    "orderSummary": {
+      "title": "订单摘要",
+      "plan": "计划",
+      "aiTokens": "AI代币",
+      "billingCycle": "结算周期",
+      "validUntil": "有效期至",
+      "originalPrice": "原价",
+      "discount": "折扣",
+      "additionalDiscount": "额外折扣",
+      "total": "总计",
+      "billedDuration": "港币，1个月计费"
+    },
+    "payment": {
+      "processing": "处理中...",
+      "secureCheckout": "安全结账",
+      "securityNotice": "您的付款通过 256 位 SSL 加密保护，并通过 Airwallex 的 PCI 合规基础设施处理。",
+      "secureProcessing": "安全支付处理"
+    },
+    "paymentMethod": {
+      "title": "付款方式",
+      "securePayment": "使用 Airwallex 安全付款",
+      "encryptionNotice": "您的付款信息已加密且安全",
+      "acceptedMethods": "接受的付款方式",
+      "creditCards": "信用卡",
+      "digitalWallets": "数字钱包",
+      "redirectNotice": "您将被重定向至 Airwallex 安全支付页面"
+    },
+    "errors": {
+      "userNotAuthenticated": "用户未认证",
+      "paymentFailed": "支付失败"
+    }
   }
 }

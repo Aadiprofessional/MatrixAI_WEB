@@ -110,6 +110,7 @@ const LoginPage: React.FC = () => {
       return;
     }
 
+    setLoading(true);
     try {
       console.log('Attempting login with AuthContext...');
       

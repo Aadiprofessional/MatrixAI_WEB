@@ -38,43 +38,43 @@ interface PlanDetails {
 }
 
 // Plan features data
-const getPlanFeatures = (planTitle: string): string[] => {
+const getPlanFeatures = (planTitle: string, t: any): string[] => {
   const features: { [key: string]: string[] } = {
     'Basic': [
-      '1,000 AI tokens per month',
-      'Basic AI models access',
-      'Standard support',
-      'Web dashboard access',
-      'Basic analytics'
+      t('airwallexPayment.planFeatures.basic.tokensPerMonth'),
+      t('airwallexPayment.planFeatures.basic.basicModelsAccess'),
+      t('airwallexPayment.planFeatures.basic.standardSupport'),
+      t('airwallexPayment.planFeatures.basic.webDashboardAccess'),
+      t('airwallexPayment.planFeatures.basic.basicAnalytics')
     ],
     'Pro': [
-      '10,000 AI tokens per month',
-      'Advanced AI models access',
-      'Priority support',
-      'API access',
-      'Advanced analytics',
-      'Custom integrations',
-      'Team collaboration tools'
+      t('airwallexPayment.planFeatures.pro.tokensPerMonth'),
+      t('airwallexPayment.planFeatures.pro.advancedModelsAccess'),
+      t('airwallexPayment.planFeatures.pro.prioritySupport'),
+      t('airwallexPayment.planFeatures.pro.apiAccess'),
+      t('airwallexPayment.planFeatures.pro.advancedAnalytics'),
+      t('airwallexPayment.planFeatures.pro.customIntegrations'),
+      t('airwallexPayment.planFeatures.pro.teamCollaboration')
     ],
     'Enterprise': [
-      'Unlimited AI tokens',
-      'All AI models access',
-      '24/7 dedicated support',
-      'Full API access',
-      'Advanced analytics & reporting',
-      'Custom integrations',
-      'Team management',
-      'White-label options',
-      'SLA guarantee',
-      'Custom training'
+      t('airwallexPayment.planFeatures.enterprise.unlimitedTokens'),
+      t('airwallexPayment.planFeatures.enterprise.allModelsAccess'),
+      t('airwallexPayment.planFeatures.enterprise.dedicatedSupport'),
+      t('airwallexPayment.planFeatures.enterprise.fullApiAccess'),
+      t('airwallexPayment.planFeatures.enterprise.advancedReporting'),
+      t('airwallexPayment.planFeatures.enterprise.customIntegrations'),
+      t('airwallexPayment.planFeatures.enterprise.teamManagement'),
+      t('airwallexPayment.planFeatures.enterprise.whiteLabelOptions'),
+      t('airwallexPayment.planFeatures.enterprise.slaGuarantee'),
+      t('airwallexPayment.planFeatures.enterprise.customTraining')
     ]
   };
   
   return features[planTitle] || [
-    'AI tokens included',
-    'Access to AI models',
-    'Customer support',
-    'Dashboard access'
+    t('airwallexPayment.planFeatures.default.tokensIncluded'),
+    t('airwallexPayment.planFeatures.default.modelsAccess'),
+    t('airwallexPayment.planFeatures.default.customerSupport'),
+    t('airwallexPayment.planFeatures.default.dashboardAccess')
   ];
 };
 
@@ -112,7 +112,7 @@ const AirwallexPaymentPage: React.FC = () => {
     duration: '1 month',
     expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
     price: finalPrice || price,
-    features: getPlanFeatures(plan),
+    features: getPlanFeatures(plan, t),
     originalPrice: price !== finalPrice ? price : undefined,
     savings: price !== finalPrice ? (parseFloat(price) - parseFloat(finalPrice || price)).toFixed(2) : undefined,
     popular: plan === 'Pro'
@@ -122,7 +122,7 @@ const AirwallexPaymentPage: React.FC = () => {
     if (passedPlanDetails) {
       setPlanDetails({
         ...passedPlanDetails,
-        features: passedPlanDetails.features || getPlanFeatures(passedPlanDetails.title),
+        features: passedPlanDetails.features || getPlanFeatures(passedPlanDetails.title, t),
         originalPrice: passedPlanDetails.originalPrice || (price !== finalPrice ? price : undefined),
         savings: passedPlanDetails.savings || (price !== finalPrice ? (parseFloat(price) - parseFloat(finalPrice || price)).toFixed(2) : undefined),
         popular: passedPlanDetails.popular || passedPlanDetails.title === 'Pro'
@@ -132,7 +132,7 @@ const AirwallexPaymentPage: React.FC = () => {
 
   const handlePayment = async () => {
     if (!user?.uid) {
-      setError('User not authenticated');
+      setError(t('airwallexPayment.errors.userNotAuthenticated'));
       return;
     }
 
@@ -148,7 +148,9 @@ const AirwallexPaymentPage: React.FC = () => {
         amount: Math.round(numericPrice), // HKD amount as-is (no cents conversion)
         currency: 'HKD',
         merchantOrderId: airwallexService.generateMerchantOrderId(),
-        returnUrl: `${window.location.origin}/payment/airwallex/result`
+        returnUrl: `${window.location.origin}/payment/airwallex/result`,
+        uid: user.uid,
+        plan: planDetails.title
       });
 
       // Initialize Airwallex SDK and redirect to checkout
@@ -175,7 +177,7 @@ const AirwallexPaymentPage: React.FC = () => {
 
     } catch (err) {
       console.error('Payment error:', err);
-      setError(err instanceof Error ? err.message : 'Payment failed');
+      setError(err instanceof Error ? err.message : t('airwallexPayment.errors.paymentFailed'));
       setLoading(false);
     }
   };
@@ -201,19 +203,19 @@ const AirwallexPaymentPage: React.FC = () => {
               }`}
             >
               <FiArrowLeft className="w-5 h-5" />
-              <span>Back</span>
+              <span>{t('airwallexPayment.navigation.back')}</span>
             </button>
             
             <div className="text-center">
               <h1 className={`text-3xl font-bold ${
                 darkMode ? 'text-white' : 'text-gray-900'
               }`}>
-                Complete Your Purchase
+                {t('airwallexPayment.header.title')}
               </h1>
               <p className={`text-sm mt-1 ${
                 darkMode ? 'text-gray-400' : 'text-gray-600'
               }`}>
-                Secure checkout powered by Airwallex
+                {t('airwallexPayment.header.subtitle')}
               </p>
             </div>
             
@@ -234,7 +236,7 @@ const AirwallexPaymentPage: React.FC = () => {
                 {planDetails.popular && (
                   <div className="absolute top-0 right-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
                     <FiStar className="inline w-4 h-4 mr-1" />
-                    Most Popular
+                    {t('airwallexPayment.planOverview.mostPopular')}
                   </div>
                 )}
                 
@@ -243,12 +245,12 @@ const AirwallexPaymentPage: React.FC = () => {
                     <h2 className={`text-2xl font-bold mb-2 ${
                       darkMode ? 'text-white' : 'text-gray-900'
                     }`}>
-                      {planDetails.title} Plan
+                      {t('airwallexPayment.planOverview.planTitle', { title: planDetails.title })}
                     </h2>
                     <p className={`text-sm ${
                       darkMode ? 'text-gray-400' : 'text-gray-600'
                     }`}>
-                      Everything you need to get started with AI
+                      {t('airwallexPayment.planOverview.description')}
                     </p>
                   </div>
                   
@@ -268,11 +270,11 @@ const AirwallexPaymentPage: React.FC = () => {
                     <div className={`text-sm ${
                       darkMode ? 'text-gray-400' : 'text-gray-600'
                     }`}>
-                      per {planDetails.duration}
+                      {t('airwallexPayment.planOverview.per')} {planDetails.duration}
                     </div>
                     {planDetails.savings && (
                       <div className="text-green-500 text-sm font-semibold mt-1">
-                        Save {planDetails.savings} HKD
+                        {t('airwallexPayment.planOverview.save', { amount: planDetails.savings })}
                       </div>
                     )}
                   </div>
@@ -294,7 +296,7 @@ const AirwallexPaymentPage: React.FC = () => {
                     <div className={`text-xs ${
                       darkMode ? 'text-gray-400' : 'text-gray-600'
                     }`}>
-                      AI Tokens
+                      {t('airwallexPayment.planStats.aiTokens')}
                     </div>
                   </div>
                   
@@ -312,7 +314,7 @@ const AirwallexPaymentPage: React.FC = () => {
                     <div className={`text-xs ${
                       darkMode ? 'text-gray-400' : 'text-gray-600'
                     }`}>
-                      Duration
+                      {t('airwallexPayment.planStats.duration')}
                     </div>
                   </div>
                   
@@ -330,7 +332,7 @@ const AirwallexPaymentPage: React.FC = () => {
                     <div className={`text-xs ${
                       darkMode ? 'text-gray-400' : 'text-gray-600'
                     }`}>
-                      Support
+                      {t('airwallexPayment.planStats.support')}
                     </div>
                   </div>
                 </div>
@@ -349,7 +351,7 @@ const AirwallexPaymentPage: React.FC = () => {
                   darkMode ? 'text-white' : 'text-gray-900'
                 }`}>
                   <FiCheck className="w-5 h-5 mr-2 text-green-500" />
-                  What's Included
+                  {t('airwallexPayment.features.title')}
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -379,7 +381,7 @@ const AirwallexPaymentPage: React.FC = () => {
                   darkMode ? 'text-white' : 'text-gray-900'
                 }`}>
                   <FiShield className="w-5 h-5 mr-2 text-green-500" />
-                  Secure & Trusted
+                  {t('airwallexPayment.security.title')}
                 </h3>
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -390,7 +392,7 @@ const AirwallexPaymentPage: React.FC = () => {
                     <div className={`text-xs font-medium ${
                       darkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
-                      SSL Encrypted
+                      {t('airwallexPayment.security.sslEncrypted')}
                     </div>
                   </div>
                   
@@ -401,7 +403,7 @@ const AirwallexPaymentPage: React.FC = () => {
                     <div className={`text-xs font-medium ${
                       darkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
-                      3D Secure
+                      {t('airwallexPayment.security.threeDSecure')}
                     </div>
                   </div>
                   
@@ -412,7 +414,7 @@ const AirwallexPaymentPage: React.FC = () => {
                     <div className={`text-xs font-medium ${
                       darkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
-                      Global Payments
+                      {t('airwallexPayment.security.globalPayments')}
                     </div>
                   </div>
                   
@@ -423,13 +425,13 @@ const AirwallexPaymentPage: React.FC = () => {
                     <div className={`text-xs font-medium ${
                       darkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
-                      PCI Compliant
+                      {t('airwallexPayment.security.pciCompliant')}
                     </div>
                   </div>
                 </div>
               </motion.div>
               
-              {/* Customer Testimonials */}
+              {/* Plan Benefits */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -441,49 +443,34 @@ const AirwallexPaymentPage: React.FC = () => {
                 <h3 className={`text-lg font-semibold mb-4 flex items-center ${
                   darkMode ? 'text-white' : 'text-gray-900'
                 }`}>
-                  <FiUsers className="w-5 h-5 mr-2 text-blue-500" />
-                  Trusted by 10,000+ Users
+                  <FiZap className="w-5 h-5 mr-2 text-blue-500" />
+                  {t('airwallexPayment.benefits.title')}
                 </h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className={`p-4 rounded-lg ${
-                    darkMode ? 'bg-gray-700' : 'bg-gray-50'
-                  }`}>
-                    <div className="flex items-center mb-2">
-                      {[...Array(5)].map((_, i) => (
-                        <FiStar key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                      ))}
-                    </div>
-                    <p className={`text-sm mb-2 ${
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <FiCheck className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className={`text-sm ${
                       darkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
-                      "Amazing AI capabilities and great value for money!"
-                    </p>
-                    <div className={`text-xs ${
-                      darkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}>
-                      - Sarah K., Developer
-                    </div>
+                      {t('airwallexPayment.benefits.allInOne')}
+                    </span>
                   </div>
-                  
-                  <div className={`p-4 rounded-lg ${
-                    darkMode ? 'bg-gray-700' : 'bg-gray-50'
-                  }`}>
-                    <div className="flex items-center mb-2">
-                      {[...Array(5)].map((_, i) => (
-                        <FiStar key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                      ))}
-                    </div>
-                    <p className={`text-sm mb-2 ${
+                  <div className="flex items-center space-x-3">
+                    <FiCheck className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className={`text-sm ${
                       darkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
-                      "The Pro plan has everything I need for my projects."
-                    </p>
-                    <div className={`text-xs ${
-                      darkMode ? 'text-gray-400' : 'text-gray-500'
+                      {t('airwallexPayment.benefits.payPerUse')}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <FiCheck className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className={`text-sm ${
+                      darkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
-                      - Mike R., Entrepreneur
-                    </div>
+                      {t('airwallexPayment.benefits.buyAddons')}
+                    </span>
                   </div>
                 </div>
               </motion.div>
@@ -497,13 +484,13 @@ const AirwallexPaymentPage: React.FC = () => {
             >
               <div className={`rounded-xl p-6 ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} shadow-lg sticky top-8`}>
                 <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Order Summary
+                  {t('airwallexPayment.orderSummary.title')}
                 </h2>
                 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Plan:
+                      {t('airwallexPayment.orderSummary.plan')}:
                     </span>
                     <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                       {planDetails.title}
@@ -512,7 +499,7 @@ const AirwallexPaymentPage: React.FC = () => {
                   
                   <div className="flex justify-between items-center">
                     <span className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      AI Tokens:
+                      {t('airwallexPayment.orderSummary.aiTokens')}:
                     </span>
                     <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                       {planDetails.coins}
@@ -521,7 +508,7 @@ const AirwallexPaymentPage: React.FC = () => {
                   
                   <div className="flex justify-between items-center">
                     <span className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Billing Cycle:
+                      {t('airwallexPayment.orderSummary.billingCycle')}:
                     </span>
                     <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                       {planDetails.duration}
@@ -530,7 +517,7 @@ const AirwallexPaymentPage: React.FC = () => {
                   
                   <div className="flex justify-between items-center">
                     <span className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Valid Until:
+                      {t('airwallexPayment.orderSummary.validUntil')}:
                     </span>
                     <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                       {planDetails.expiry}
@@ -541,7 +528,7 @@ const AirwallexPaymentPage: React.FC = () => {
                     <>
                       <div className="flex justify-between items-center">
                         <span className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          Original Price:
+                          {t('airwallexPayment.orderSummary.originalPrice')}:
                         </span>
                         <span className={`line-through ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                           {planDetails.originalPrice}
@@ -550,7 +537,7 @@ const AirwallexPaymentPage: React.FC = () => {
                       
                       <div className="flex justify-between items-center text-green-600">
                         <span className="font-medium">
-                          Discount:
+                          {t('airwallexPayment.orderSummary.discount')}:
                         </span>
                         <span className="font-semibold">
                           -{planDetails.savings} HKD
@@ -562,7 +549,7 @@ const AirwallexPaymentPage: React.FC = () => {
                   {discount > 0 && (
                     <div className="flex justify-between items-center text-green-600">
                       <span className="font-medium">
-                        Additional Discount:
+                        {t('airwallexPayment.orderSummary.additionalDiscount')}:
                       </span>
                       <span className="font-semibold">
                         -{discount.toFixed(2)} HKD
@@ -573,22 +560,45 @@ const AirwallexPaymentPage: React.FC = () => {
                   <div className={`border-t pt-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                     <div className="flex justify-between items-center">
                       <span className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        Total:
+                        {t('airwallexPayment.orderSummary.total')}:
                       </span>
                       <span className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
                         {planDetails.price}
                       </span>
                     </div>
                     <div className={`text-xs text-right mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      HKD, billed {planDetails.duration}
+                      {t('airwallexPayment.orderSummary.billedDuration', { duration: planDetails.duration })}
                     </div>
                   </div>
                   
-                  {/* Money Back Guarantee */}
-                  <div className={`mt-4 p-3 rounded-lg text-center ${darkMode ? 'bg-green-900/20 border border-green-800' : 'bg-green-50 border border-green-200'}`}>
-                    <FiShield className={`w-4 h-4 mx-auto mb-1 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <div className={`text-xs font-medium ${darkMode ? 'text-green-300' : 'text-green-800'}`}>
-                      30-Day Money Back Guarantee
+                  {/* Secure Checkout Button */}
+                  <button
+                    onClick={handlePayment}
+                    disabled={loading}
+                    className={`w-full mt-6 py-4 px-6 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 text-lg ${
+                      loading
+                        ? 'bg-gray-400 cursor-not-allowed text-gray-200'
+                        : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                    }`}
+                  >
+                    {loading ? (
+                      <>
+                        <FiLoader className="w-5 h-5 animate-spin" />
+                        <span>{t('airwallexPayment.payment.processing')}</span>
+                      </>
+                    ) : (
+                      <>
+                        <FiLock className="w-5 h-5" />
+                        <span>{t('airwallexPayment.payment.secureCheckout')}</span>
+                      </>
+                    )}
+                  </button>
+                  
+                  {/* Secure Payment Notice */}
+                  <div className={`mt-4 p-3 rounded-lg text-center ${darkMode ? 'bg-blue-900/20 border border-blue-800' : 'bg-blue-50 border border-blue-200'}`}>
+                    <FiLock className={`w-4 h-4 mx-auto mb-1 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                    <div className={`text-xs font-medium ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
+                      {t('airwallexPayment.payment.secureProcessing')}
                     </div>
                   </div>
                 </div>
@@ -603,7 +613,7 @@ const AirwallexPaymentPage: React.FC = () => {
             >
               <div className={`rounded-xl p-6 ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} shadow-lg`}>
                 <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Payment Method
+                  {t('airwallexPayment.paymentMethod.title')}
                 </h2>
                 
                 {/* Airwallex Payment Info */}
@@ -612,10 +622,10 @@ const AirwallexPaymentPage: React.FC = () => {
                     <FiInfo className={`w-5 h-5 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                     <div>
                       <p className={`text-sm font-medium ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
-                        Secure Payment with Airwallex
+                        {t('airwallexPayment.paymentMethod.securePayment')}
                       </p>
                       <p className={`text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                        Your payment information is encrypted and secure
+                        {t('airwallexPayment.paymentMethod.encryptionNotice')}
                       </p>
                     </div>
                   </div>
@@ -624,21 +634,21 @@ const AirwallexPaymentPage: React.FC = () => {
                 {/* Payment Methods */}
                 <div className="mb-6">
                   <h3 className={`text-sm font-medium mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Accepted Payment Methods
+                    {t('airwallexPayment.paymentMethod.acceptedMethods')}
                   </h3>
                   
                   <div className="grid grid-cols-2 gap-3">
                     <div className={`p-3 rounded-lg border text-center ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-gray-50'}`}>
                       <FiCreditCard className={`w-6 h-6 mx-auto mb-1 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                       <div className={`text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        Credit Cards
+                        {t('airwallexPayment.paymentMethod.creditCards')}
                       </div>
                     </div>
                     
                     <div className={`p-3 rounded-lg border text-center ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-gray-50'}`}>
                       <FiDollarSign className={`w-6 h-6 mx-auto mb-1 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
                       <div className={`text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        Digital Wallets
+                        {t('airwallexPayment.paymentMethod.digitalWallets')}
                       </div>
                     </div>
                   </div>
@@ -657,31 +667,8 @@ const AirwallexPaymentPage: React.FC = () => {
                   </motion.div>
                 )}
 
-                {/* Payment Button */}
-                <button
-                  onClick={handlePayment}
-                  disabled={loading}
-                  className={`w-full py-4 px-6 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 text-lg ${
-                    loading
-                      ? 'bg-gray-400 cursor-not-allowed text-gray-200'
-                      : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
-                  }`}
-                >
-                  {loading ? (
-                    <>
-                      <FiLoader className="w-5 h-5 animate-spin" />
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FiLock className="w-5 h-5" />
-                      <span>Secure Checkout - ${planDetails.price}</span>
-                    </>
-                  )}
-                </button>
-
                 <p className={`text-xs text-center mt-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  You will be redirected to Airwallex secure payment page
+                  {t('airwallexPayment.paymentMethod.redirectNotice')}
                 </p>
               </div>
             </motion.div>

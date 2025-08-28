@@ -18,6 +18,14 @@ import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
 import coinImage from '../assets/coin.png';
 
+interface SubscriptionPlan {
+  id: number;
+  plan_name: string;
+  coins: number;
+  plan_period: string;
+  price: number;
+}
+
 interface PlanProps {
   name: string;
   price: string;
@@ -44,46 +52,65 @@ const PlanCard: React.FC<PlanProps> = ({
   const { darkMode } = useContext(ThemeContext);
   const { t } = useTranslation();
 
+  // Check if this is the yearly plan to show special pricing
+  const isYearlyPlan = name.toLowerCase().includes('yearly') || name.toLowerCase().includes('year');
+  const displayOriginalPrice = isYearlyPlan ? '1656' : originalPrice;
+  const displayDiscount = isYearlyPlan ? 'Save 10%' : discount;
+
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
       onClick={onSelect}
-      className={`relative rounded-xl overflow-hidden transition-colors cursor-pointer ${
+      className={`relative rounded-xl overflow-hidden transition-all duration-300 cursor-pointer h-[420px] flex flex-col ${
         selected 
-          ? 'border-2 border-blue-500 transform scale-[1.01]' 
-          : `border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`
-      } ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm p-6`}
+          ? 'border-2 border-blue-500 transform scale-[1.02] shadow-lg shadow-blue-500/25' 
+          : `border ${darkMode ? 'border-gray-700 hover:border-gray-600' : 'border-gray-200 hover:border-gray-300'}`
+      } ${darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-gray-50'} shadow-sm hover:shadow-md p-6`}
     >
-      {/* Discount label removed as it was not displaying correctly */}
-      
-      <div className="mb-3">
-        <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-          {name}
-        </h3>
-      </div>
-      
-      <div className="flex items-baseline mb-4">
-        <span className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-          {price}
-        </span>
-        <span className={`ml-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          HKD
-        </span>
-      </div>
-
-      {originalPrice && (
-        <div className="mb-3 flex items-center">
-          <span className={`text-sm line-through mr-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-            {originalPrice} HKD
-          </span>
-          <span className="text-xs font-semibold text-green-500">
-            {discount}
-          </span>
+      {/* Discount badge for yearly plan */}
+      {isYearlyPlan && (
+        <div className="absolute top-0 right-0 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-bl-lg text-xs font-semibold z-10">
+          Save 10%
         </div>
       )}
       
-      <div className={`flex items-center mb-4 p-3 rounded-lg ${
+      {/* Header Section - Fixed Height */}
+      <div className="mb-3 h-12">
+        <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+          {name}
+        </h3>
+        {isYearlyPlan && (
+          <p className={`text-xs mt-1 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+            Coins credited every 30 days from start date
+          </p>
+        )}
+      </div>
+      
+      {/* Price Section - Fixed Height */}
+      <div className="mb-3 h-16">
+        {(isYearlyPlan || originalPrice) && (
+          <div className="mb-2 flex items-center">
+            <span className={`text-lg line-through mr-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              {displayOriginalPrice} HKD
+            </span>
+            <span className="text-xs font-semibold bg-green-100 text-green-700 px-2 py-1 rounded-full">
+              {displayDiscount}
+            </span>
+          </div>
+        )}
+        <div className="flex items-baseline">
+          <span className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            {price}
+          </span>
+          <span className={`ml-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            HKD
+          </span>
+        </div>
+      </div>
+      
+      {/* Coins Section - Fixed Height */}
+      <div className={`flex items-center mb-3 p-3 rounded-lg h-14 ${
         darkMode ? 'bg-gray-700/50' : 'bg-gray-100'
       }`}>
         <img 
@@ -105,11 +132,15 @@ const PlanCard: React.FC<PlanProps> = ({
         )}
       </div>
 
-      <p className={`mb-5 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-        {description}
-      </p>
+      {/* Description Section - Flexible Height */}
+      <div className="flex-1 mb-3">
+        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          {description}
+        </p>
+      </div>
       
-      <div className={`w-full h-2 rounded-full mb-4 ${
+      {/* Progress Bar - Fixed Height */}
+      <div className={`w-full h-2 rounded-full mb-3 ${
         selected 
           ? 'bg-gradient-to-r from-blue-400 to-purple-500' 
           : (darkMode ? 'bg-gray-700' : 'bg-gray-200')
@@ -120,8 +151,9 @@ const PlanCard: React.FC<PlanProps> = ({
         ></div>
       </div>
       
+      {/* Button Section - Fixed Height */}
       <button
-        className={`w-full py-2.5 rounded-lg font-medium text-center transition-colors ${
+        className={`w-full py-3 rounded-lg font-medium text-center transition-colors h-12 ${
           selected
             ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
             : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
@@ -148,11 +180,12 @@ const AddonCard: React.FC<AddonCardProps> = ({ price, coins, description, onSele
     <motion.div
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
-      className={`rounded-xl overflow-hidden transition-colors ${
-        darkMode ? 'bg-gradient-to-br from-purple-800/30 to-blue-900/30 backdrop-blur-sm border border-purple-700/50' : 'bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-100'
-      } shadow-md p-6`}
+      className={`rounded-xl overflow-hidden transition-all duration-300 h-[420px] flex flex-col ${
+        darkMode ? 'bg-gradient-to-br from-purple-800/30 to-blue-900/30 backdrop-blur-sm border border-purple-700/50 hover:border-purple-600/70' : 'bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-100 hover:border-purple-200'
+      } shadow-md hover:shadow-lg p-6`}
     >
-      <div className="flex items-center mb-4">
+      {/* Header Section - Fixed Height */}
+      <div className="flex items-center mb-4 h-16">
         <div className={`p-3 rounded-lg mr-4 ${
           darkMode ? 'bg-purple-900/50 text-purple-400' : 'bg-purple-100 text-purple-600'
         }`}>
@@ -162,13 +195,14 @@ const AddonCard: React.FC<AddonCardProps> = ({ price, coins, description, onSele
           <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             {t('subscription.addon_pack', 'Addon Pack')}
           </h3>
-          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            {t('subscription.expires_month_end', 'Expires at month end')}
+          <p className={`text-sm ${darkMode ? 'text-orange-400' : 'text-orange-600'} font-medium`}>
+            ⚠️ Coins expire with current plan month
           </p>
         </div>
       </div>
       
-      <div className="flex items-baseline mb-4">
+      {/* Price Section - Fixed Height */}
+      <div className="flex items-baseline mb-4 h-20">
         <span className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
           {price}
         </span>
@@ -177,7 +211,8 @@ const AddonCard: React.FC<AddonCardProps> = ({ price, coins, description, onSele
         </span>
       </div>
       
-      <div className={`flex items-center mb-4 p-3 rounded-lg ${
+      {/* Coins Section - Fixed Height */}
+      <div className={`flex items-center mb-4 p-3 rounded-lg h-16 ${
         darkMode ? 'bg-gray-700/50' : 'bg-gray-100'
       }`}>
         <img 
@@ -194,13 +229,22 @@ const AddonCard: React.FC<AddonCardProps> = ({ price, coins, description, onSele
         </span>
       </div>
 
-      <p className={`mb-5 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-        {description}
-      </p>
+      {/* Description Section - Flexible Height */}
+      <div className="flex-1 mb-4">
+        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          {description}
+        </p>
+      </div>
       
+      {/* Progress Bar Placeholder - Fixed Height */}
+      <div className="mb-4 h-2">
+        {/* Empty space to match PlanCard layout */}
+      </div>
+      
+      {/* Button Section - Fixed Height */}
       <button
         onClick={onSelect}
-        className="w-full py-2.5 rounded-lg font-medium bg-gradient-to-r from-purple-500 to-blue-600 text-white hover:opacity-90 transition-opacity"
+        className="w-full py-3 rounded-lg font-medium bg-gradient-to-r from-purple-500 to-blue-600 text-white hover:opacity-90 transition-opacity h-12"
       >
         {t('subscription.add_coins', 'Add Coins')}
       </button>
@@ -215,9 +259,55 @@ const SubscriptionPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   
-  const [selectedPlan, setSelectedPlan] = useState<'Tester' | 'Monthly' | 'Yearly'>('Monthly');
+  const [selectedPlan, setSelectedPlan] = useState<string>('Monthly');
   const [showTnC, setShowTnC] = useState(false);
   const [showAddon, setShowAddon] = useState(false);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Function to fetch subscription plans from API
+  const fetchSubscriptionPlans = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/user/getSubscriptionPlans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: user?.uid || null
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch subscription plans');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && data.plans) {
+        setSubscriptionPlans(data.plans);
+        // Set default selected plan to the first one if available
+        if (data.plans.length > 0) {
+          setSelectedPlan(data.plans[0].plan_name);
+        }
+      } else {
+        throw new Error(data.message || 'Failed to load subscription plans');
+      }
+    } catch (err: any) {
+      console.error('Error fetching subscription plans:', err);
+      setError(err.message || 'Failed to load subscription plans');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubscriptionPlans();
+  }, [user?.uid]);
 
   useEffect(() => {
     // Check if user has active subscription to show the addon option
@@ -229,50 +319,48 @@ const SubscriptionPage: React.FC = () => {
   }, [userData]);
 
   const getPlanText = () => {
-    switch (selectedPlan) {
-      case 'Tester':
-        return t('subscription.tester_description', 'Perfect for those who want to try our service. Get 450 coins valid for 15 days.');
-      case 'Monthly':
-        return t('subscription.monthly_description', 'Ideal for regular users. Get 1380 coins each month.');
-      case 'Yearly':
-        return t('subscription.yearly_description', 'Best value for committed users. Get 1380 coins each month for a full year with 10% discount.');
-      default:
-        return '';
-    }
+    const plan = subscriptionPlans.find(p => p.plan_name === selectedPlan);
+    if (!plan) return '';
+    
+    return `Get ${plan.coins} coins valid for ${plan.plan_period}.`;
   };
 
   const getButtonPrice = () => {
-    switch (selectedPlan) {
-      case 'Tester':
-        return t('subscription.tester_price', '$50 HKD');
-      case 'Monthly':
-        return t('subscription.monthly_price', '$138 HKD');
-      case 'Yearly':
-        return t('subscription.yearly_price', '$1490 HKD');
-      default:
-        return '';
-    }
+    const plan = subscriptionPlans.find(p => p.plan_name === selectedPlan);
+    if (!plan) return '';
+    
+    return `$${plan.price} HKD`;
   };
 
-  const handleSubscribe = (plan: string) => {
+  const getSelectedPlan = () => {
+    return subscriptionPlans.find(p => p.plan_name === selectedPlan);
+  };
+
+  const handleSubscribe = (planName: string) => {
+    const plan = subscriptionPlans.find(p => p.plan_name === planName);
+    if (!plan) return;
+    
     // Navigate to payment page with plan details
     navigate('/payment', { 
       state: { 
         uid: user?.uid,
-        plan: plan,
-        price: plan === 'Tester' ? '50 HKD' : plan === 'Monthly' ? '138 HKD' : '1490 HKD',
+        plan: plan.plan_name,
+        price: `${plan.price} HKD`,
         isAddon: false
       } 
     });
   };
 
   const handleAddonPurchase = () => {
+    const addonPlan = subscriptionPlans.find(plan => plan.plan_name === 'Addon');
+    if (!addonPlan) return;
+    
     // Navigate to payment page with addon details
     navigate('/payment', { 
       state: { 
         uid: user?.uid,
-        plan: 'Addon',
-        price: '50 HKD',
+        plan: addonPlan.plan_name,
+        price: `${addonPlan.price} HKD`,
         isAddon: true
       } 
     });
@@ -307,80 +395,119 @@ const SubscriptionPage: React.FC = () => {
             </p>
           </motion.div>
 
+          {/* Loading State */}
+          {loading && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-12"
+            >
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+              <p className={`mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                Loading subscription plans...
+              </p>
+            </motion.div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-12"
+            >
+              <div className={`p-4 rounded-lg ${darkMode ? 'bg-red-900/20 border border-red-500/30 text-red-300' : 'bg-red-100 border border-red-300 text-red-700'}`}>
+                <p className="font-medium">Error loading subscription plans</p>
+                <p className="text-sm mt-1">{error}</p>
+                <button 
+                  onClick={fetchSubscriptionPlans}
+                  className="mt-3 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {/* Main Subscription Plans */}
-          {!showAddon && (
+          {!loading && !error && !showAddon && subscriptionPlans.length > 0 && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                <PlanCard 
-                  name={t('subscription.tester_plan', 'Tester')}
-                  price="50"
-                  coins={450}
-                  period=""
-                  description={t('subscription.tester_plan_desc', 'Try our service with a small package of coins. Valid for 15 days.')}
-                  selected={selectedPlan === 'Tester'}
-                  onSelect={() => setSelectedPlan('Tester')}
-                />
-                
-                <PlanCard 
-                  name={t('subscription.monthly_plan', 'Monthly')}
-                  price="138"
-                  coins={1380}
-                  period=""
-                  description={t('subscription.monthly_plan_desc', 'Perfect for regular users. Get a monthly allocation of coins.')}
-                  selected={selectedPlan === 'Monthly'}
-                  onSelect={() => setSelectedPlan('Monthly')}
-                />
-                
-                <PlanCard 
-                  name={t('subscription.yearly_plan', 'Yearly')}
-                  price="1490"
-                  coins={1380}
-                  period={t('subscription.per_month', '/month')}
-                  originalPrice="1656"
-                  discount={t('subscription.save_percent', 'Save 10%')}
-                  description={t('subscription.yearly_plan_desc', 'Our best value plan. 1380 coins delivered every month for a full year.')}
-                  selected={selectedPlan === 'Yearly'}
-                  onSelect={() => setSelectedPlan('Yearly')}
-                />
+                {subscriptionPlans.map((plan) => (
+                  <PlanCard 
+                    key={plan.id}
+                    name={plan.plan_name}
+                    price={plan.price.toString()}
+                    coins={plan.coins}
+                    period={plan.plan_period}
+                    description={`Get ${plan.coins} coins valid for ${plan.plan_period}.`}
+                    selected={selectedPlan === plan.plan_name}
+                    onSelect={() => setSelectedPlan(plan.plan_name)}
+                  />
+                ))}
               </div>
 
               {/* Plan Details */}
-              <div className="bg-gradient-to-br from-blue-600/10 to-purple-600/10 rounded-xl p-6 mb-10 backdrop-blur-sm border border-blue-500/20">
-                <div className="flex items-start space-x-4">
-                  <div className={`p-3 rounded-lg ${
-                    darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-600'
-                  }`}>
-                    <FiInfo className="h-6 w-6" />
+              <div className={`rounded-xl p-8 mb-10 backdrop-blur-sm border ${
+                darkMode 
+                  ? 'bg-gradient-to-br from-blue-900/20 to-purple-900/20 border-blue-500/30' 
+                  : 'bg-gradient-to-br from-blue-50/80 to-purple-50/80 border-blue-200/50'
+              } shadow-lg`}>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                  {/* Plan Info Section */}
+                  <div className="lg:col-span-2">
+                    <div className="flex items-start space-x-4">
+                      <div className={`p-3 rounded-lg ${
+                        darkMode ? 'bg-blue-900/40 text-blue-300' : 'bg-blue-100 text-blue-600'
+                      }`}>
+                        <FiInfo className="h-6 w-6" />
+                      </div>
+                      
+                      <div className="flex-1">
+                        <h3 className={`text-xl font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {t('subscription.plan_details', 'Plan Details')}
+                        </h3>
+                        <p className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-4 text-base leading-relaxed`}>
+                          {getPlanText()}
+                        </p>
+                        
+                        <button
+                          className={`text-sm flex items-center transition-colors ${
+                            darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'
+                          }`}
+                          onClick={handleTermsAndConditions}
+                        >
+                          {t('subscription.terms_conditions', 'Terms & Conditions Apply')}
+                          <FiArrowLeft className="ml-1 transform rotate-180 h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div>
-                    <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      {t('subscription.plan_details', 'Plan Details')}
-                    </h3>
-                    <p className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-4`}>
-                      {getPlanText()}
-                    </p>
-                    
-                    <div className="flex flex-wrap items-center justify-between">
-                      <button
-                        className="text-sm flex items-center text-blue-500 hover:text-blue-400 mb-4 md:mb-0"
-                        onClick={handleTermsAndConditions}
-                      >
-                        {t('subscription.terms_conditions', 'Terms & Conditions Apply')}
-                        <FiArrowLeft className="ml-1 transform rotate-180 h-4 w-4" />
-                      </button>
-                      
-                      <button
-                        onClick={() => handleSubscribe(selectedPlan)}
-                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
-                      >
-                        {t('subscription.buy_now', 'Buy Now')} <span className="ml-1 font-bold">{getButtonPrice()}</span>
-                      </button>
+                  {/* Buy Now Section */}
+                  <div className="lg:col-span-1 flex flex-col items-center lg:items-end">
+                    <div className={`text-center lg:text-right mb-4 p-4 rounded-lg ${
+                      darkMode ? 'bg-gray-800/50' : 'bg-white/70'
+                    } border border-gray-200/20`}>
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1`}>
+                        Total Price
+                      </p>
+                      <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {getButtonPrice()}
+                      </p>
                     </div>
+                    
+                    <button
+                      onClick={() => handleSubscribe(selectedPlan)}
+                      className="w-full lg:w-auto px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                    >
+                      <FiShoppingBag className="h-5 w-5" />
+                      <span>{t('subscription.buy_now', 'Buy Now')}</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -404,12 +531,17 @@ const SubscriptionPage: React.FC = () => {
                 </p>
               </div>
               
-              <AddonCard 
-                price="50"
-                coins={550}
-                description={t('subscription.addon_description', 'These coins will be added to your existing balance and expire at the end of this month.')}
-                onSelect={handleAddonPurchase}
-              />
+              {(() => {
+                const addonPlan = subscriptionPlans.find(plan => plan.plan_name === 'Addon');
+                return addonPlan ? (
+                  <AddonCard 
+                    price={addonPlan.price.toString()}
+                    coins={addonPlan.coins}
+                    description={`These ${addonPlan.coins} coins will be added to your existing balance and expire at the end of this month.`}
+                    onSelect={handleAddonPurchase}
+                  />
+                ) : null;
+              })()}
               
               <div className="text-center mt-6">
                 <button
@@ -425,7 +557,7 @@ const SubscriptionPage: React.FC = () => {
           {/* Features Section */}
           <div className="mt-16">
             <h2 className={`text-2xl font-bold text-center mb-10 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              {t('subscription.whats_included', 'What\'s Included in All Plans')}
+              Why Choose Our Platform
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -441,10 +573,10 @@ const SubscriptionPage: React.FC = () => {
                   <FiStar className="h-6 w-6" />
                 </div>
                 <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {t('subscription.premium_ai_features', 'Premium AI Features')}
+                  All-in-One Platform
                 </h3>
                 <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('subscription.premium_ai_desc', 'Access to all our advanced AI tools including image and video generation')}
+                  No need for multiple platforms - all AI tools in one place
                 </p>
               </motion.div>
               
@@ -460,10 +592,10 @@ const SubscriptionPage: React.FC = () => {
                   <FiCreditCard className="h-6 w-6" />
                 </div>
                 <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {t('subscription.flexible_coin_system', 'Flexible Coin System')}
+                  Pay-Per-Use Model
                 </h3>
                 <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('subscription.flexible_coin_desc', 'Use coins across any AI service based on your specific needs')}
+                  Pay-per-use model with no monthly fixed limits
                 </p>
               </motion.div>
               
@@ -476,13 +608,13 @@ const SubscriptionPage: React.FC = () => {
                 <div className={`p-3 rounded-lg inline-block mb-4 ${
                   darkMode ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-100 text-amber-600'
                 }`}>
-                  <FiCalendar className="h-6 w-6" />
+                  <FiPackage className="h-6 w-6" />
                 </div>
                 <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {t('subscription.regular_updates', 'Regular Updates')}
+                  Flexible Add-ons
                 </h3>
                 <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('subscription.regular_updates_desc', 'Access to new features and improvements as they\'re released')}
+                  Buy addons anytime to extend your usage
                 </p>
               </motion.div>
             </div>

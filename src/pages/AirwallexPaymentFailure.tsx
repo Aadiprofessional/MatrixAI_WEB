@@ -28,6 +28,21 @@ const AirwallexPaymentFailure: React.FC = () => {
   
   const intentId = searchParams.get('intent_id');
 
+  // Prevent back navigation
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      event.preventDefault();
+      navigate('/dashboard', { replace: true });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.history.pushState(null, '', window.location.href);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [navigate]);
+
   useEffect(() => {
     const fetchPaymentDetails = async () => {
       if (!intentId) {
@@ -61,7 +76,7 @@ const AirwallexPaymentFailure: React.FC = () => {
   };
 
   const handleGoHome = () => {
-    navigate('/');
+    navigate('/dashboard');
   };
 
   const getFailureReason = (status: string) => {
@@ -163,11 +178,14 @@ const AirwallexPaymentFailure: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <h1 className={`text-3xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Payment Failed
+              <h1 className={`text-4xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                ❌ Payment Failed
               </h1>
+              <p className={`text-xl mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                We're sorry, but your payment could not be processed.
+              </p>
               <p className={`text-lg mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Unfortunately, your payment could not be processed.
+                Don't worry - no charges were made to your account. Please try again or contact support if you need assistance.
               </p>
             </motion.div>
 
@@ -190,7 +208,7 @@ const AirwallexPaymentFailure: React.FC = () => {
                       <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Amount</span>
                     </div>
                     <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      ${(paymentDetails.amount / 100).toFixed(2)} {paymentDetails.currency}
+                      ${paymentDetails.amount} {paymentDetails.currency}
                     </span>
                   </div>
                   
@@ -252,7 +270,11 @@ const AirwallexPaymentFailure: React.FC = () => {
             >
               <button
                 onClick={handleRetryPayment}
-                className="flex items-center justify-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                className={`flex items-center justify-center space-x-2 px-8 py-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 ${
+                  darkMode 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg' 
+                    : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-lg'
+                }`}
               >
                 <FiRefreshCw className="w-5 h-5" />
                 <span>Try Again</span>
@@ -260,10 +282,10 @@ const AirwallexPaymentFailure: React.FC = () => {
               
               <button
                 onClick={handleGoHome}
-                className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+                className={`flex items-center justify-center space-x-2 px-8 py-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 ${
                   darkMode 
-                    ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600' 
-                    : 'bg-white hover:bg-gray-50 text-gray-900 border border-gray-300'
+                    ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600 shadow-lg' 
+                    : 'bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-lg'
                 }`}
               >
                 <FiHome className="w-5 h-5" />
