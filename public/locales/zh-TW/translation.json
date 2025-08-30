@@ -1065,7 +1065,7 @@
     "basic": "基本的",
     "basicCoins": "基本硬幣",
     "basicTemplates": "基本模板",
-    "basicTemplatesCount": "基本模板（{{{count}}）",
+    "basicTemplatesCount": "基本模板（{{count}}）",
     "browseTemplates": "瀏覽模板",
     "buffering": "緩衝...",
     "cancel": "取消",
@@ -1121,7 +1121,7 @@
     "premium": "優質的",
     "premiumCoins": "高級硬幣",
     "premiumRequiredAlert": "此模板所需的優質訂閱",
-    "premiumTemplatesCount": "高級模板（{{{count}}）",
+    "premiumTemplatesCount": "高級模板（{{count}}）",
     "premiumTemplatesLocked": "高級模板（鎖定）",
     "preparingImage": "準備圖像...",
     "preset": {
@@ -2964,6 +2964,75 @@
     "errors": {
       "userNotAuthenticated": "用戶未認證",
       "paymentFailed": "支付失敗"
+    },
+    "privacy": {
+      "title": "隱私政策",
+      "subtitle": "您的隱私對我們很重要。本政策說明我們如何收集、使用和保護您的資訊。",
+      "lastUpdated": "最後更新",
+      "effectiveDate": "生效日期",
+      "tableOfContents": "目錄",
+      "informationCollection": {
+        "title": "我們收集的資訊",
+        "personalInfo": {
+          "title": "個人資訊",
+          "description": "我們收集您直接提供給我們的資訊，例如當您建立帳戶、使用我們的服務或聯絡我們時。"
+        },
+        "usageData": {
+          "title": "使用資料",
+          "description": "我們自動收集有關您使用我們服務的某些資訊，包括您的IP位址、瀏覽器類型和使用模式。"
+        },
+        "cookies": {
+          "title": "Cookie和追蹤",
+          "description": "我們使用Cookie和類似技術來增強您的體驗並分析我們服務的使用情況。"
+        }
+      },
+      "howWeUse": {
+        "title": "我們如何使用您的資訊",
+        "serviceProvision": "提供、維護和改進我們的服務",
+        "communication": "與您就我們的服務進行溝通",
+        "personalization": "個人化您的體驗",
+        "analytics": "分析使用情況並改進我們的服務",
+        "legal": "遵守法律義務"
+      },
+      "informationSharing": {
+        "title": "資訊共享",
+        "description": "未經您的同意，我們不會向第三方出售、交易或以其他方式轉讓您的個人資訊，除非本政策中所述。",
+        "serviceProviders": "我們可能與協助我們營運服務的可信服務提供商共享資訊",
+        "legal": "當法律要求或為保護我們的權利時，我們可能會披露資訊",
+        "businessTransfer": "資訊可能在合併、收購或資產出售時轉移"
+      },
+      "dataSecurity": {
+        "title": "資料安全",
+        "description": "我們實施適當的技術和組織措施來保護您的個人資訊免受未經授權的存取、更改、披露或銷毀。"
+      },
+      "dataRetention": {
+        "title": "資料保留",
+        "description": "我們僅在履行本政策中概述的目的所需的時間內保留您的個人資訊，除非法律要求更長的保留期。"
+      },
+      "yourRights": {
+        "title": "您的權利",
+        "access": "存取您個人資訊的權利",
+        "correction": "更正不準確資訊的權利",
+        "deletion": "要求刪除您資訊的權利",
+        "portability": "資料可攜帶權",
+        "restriction": "限制處理的權利",
+        "objection": "反對處理的權利",
+        "withdraw": "撤回同意的權利"
+      },
+      "internationalTransfers": {
+        "title": "國際資料傳輸",
+        "description": "您的資訊可能會被傳輸到您所在國家以外的國家並在那裡處理。我們確保採取適當的保障措施來保護您的資訊。"
+      },
+      "cookies": {
+        "title": "Cookie政策",
+        "content": "我們使用Cookie和類似技術來改善您在我們網站上的體驗。"
+      },
+      "contact": {
+        "title": "聯絡我們",
+        "description": "如果您對本隱私政策有任何疑問，請聯絡我們：",
+        "emailUs": "發送郵件",
+        "contactForm": "聯絡表單"
+      }
     }
   }
 }

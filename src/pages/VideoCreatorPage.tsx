@@ -2368,7 +2368,6 @@ const VideoCreatorPage: React.FC = () => {
                           return;
                         }
                         handleTemplateSelect(template.name);
-                        setShowTemplateGrid(false);
                       }}
                     >
                       {/* Video Preview */}
@@ -2379,15 +2378,6 @@ const VideoCreatorPage: React.FC = () => {
                           muted
                           loop
                           preload="metadata"
-                          onMouseEnter={(e) => {
-                            if (templateCategory === 'basic' || canAccessPremium()) {
-                              e.currentTarget.play();
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.pause();
-                            e.currentTarget.currentTime = 0;
-                          }}
                         />
                         
                         {/* Premium Lock Overlay */}

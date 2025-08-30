@@ -98,7 +98,14 @@ const HumaniseTextPage: React.FC = () => {
       );
       
       if (response.data && response.data.humanizations) {
-        setHistory(response.data.humanizations);
+        // Sort humanizations by creation date (most recent first)
+        const sortedHumanizations = response.data.humanizations.sort((a: any, b: any) => {
+          const dateA = new Date(a.created_at || a.createdAt || '').getTime();
+          const dateB = new Date(b.created_at || b.createdAt || '').getTime();
+          return dateB - dateA; // Most recent first
+        });
+        
+        setHistory(sortedHumanizations);
       }
     } catch (error) {
       console.error('Error fetching humanization history:', error);

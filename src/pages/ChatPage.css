@@ -642,3 +642,11 @@
 .dark .katex-display .katex:hover {
   background-color: rgba(96, 165, 250, 0.12) !important;
 }
+
+/* Force user message text to always be white */
+.bg-blue-500 .markdown-content,
+.bg-blue-600 .markdown-content,
+.bg-blue-500 .markdown-content *,
+.bg-blue-600 .markdown-content * {
+  color: #ffffff !important;
+}

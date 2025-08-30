@@ -1070,7 +1070,7 @@
     "basic": "基本的",
     "basicCoins": "基本硬币",
     "basicTemplates": "基本模板",
-    "basicTemplatesCount": "基本模板（{{{count}}）",
+    "basicTemplatesCount": "基本模板（{{count}}）",
     "browseTemplates": "浏览模板",
     "buffering": "缓冲...",
     "cancel": "取消",
@@ -1126,7 +1126,7 @@
     "premium": "优质的",
     "premiumCoins": "高级硬币",
     "premiumRequiredAlert": "此模板所需的优质订阅",
-    "premiumTemplatesCount": "高级模板（{{{count}}）",
+    "premiumTemplatesCount": "高级模板（{{count}}）",
     "premiumTemplatesLocked": "高级模板（锁定）",
     "preparingImage": "准备图像...",
     "preset": {
@@ -2970,6 +2970,75 @@
     "errors": {
       "userNotAuthenticated": "用户未认证",
       "paymentFailed": "支付失败"
+    },
+    "privacy": {
+      "title": "隐私政策",
+      "subtitle": "您的隐私对我们很重要。本政策说明我们如何收集、使用和保护您的信息。",
+      "lastUpdated": "最后更新",
+      "effectiveDate": "生效日期",
+      "tableOfContents": "目录",
+      "informationCollection": {
+        "title": "我们收集的信息",
+        "personalInfo": {
+          "title": "个人信息",
+          "description": "我们收集您直接提供给我们的信息，例如当您创建账户、使用我们的服务或联系我们时。"
+        },
+        "usageData": {
+          "title": "使用数据",
+          "description": "我们自动收集有关您使用我们服务的某些信息，包括您的IP地址、浏览器类型和使用模式。"
+        },
+        "cookies": {
+          "title": "Cookie和跟踪",
+          "description": "我们使用Cookie和类似技术来增强您的体验并分析我们服务的使用情况。"
+        }
+      },
+      "howWeUse": {
+        "title": "我们如何使用您的信息",
+        "serviceProvision": "提供、维护和改进我们的服务",
+        "communication": "与您就我们的服务进行沟通",
+        "personalization": "个性化您的体验",
+        "analytics": "分析使用情况并改进我们的服务",
+        "legal": "遵守法律义务"
+      },
+      "informationSharing": {
+        "title": "信息共享",
+        "description": "未经您的同意，我们不会向第三方出售、交易或以其他方式转让您的个人信息，除非本政策中所述。",
+        "serviceProviders": "我们可能与协助我们运营服务的可信服务提供商共享信息",
+        "legal": "当法律要求或为保护我们的权利时，我们可能会披露信息",
+        "businessTransfer": "信息可能在合并、收购或资产出售时转移"
+      },
+      "dataSecurity": {
+        "title": "数据安全",
+        "description": "我们实施适当的技术和组织措施来保护您的个人信息免受未经授权的访问、更改、披露或销毁。"
+      },
+      "dataRetention": {
+        "title": "数据保留",
+        "description": "我们仅在履行本政策中概述的目的所需的时间内保留您的个人信息，除非法律要求更长的保留期。"
+      },
+      "yourRights": {
+        "title": "您的权利",
+        "access": "访问您个人信息的权利",
+        "correction": "更正不准确信息的权利",
+        "deletion": "要求删除您信息的权利",
+        "portability": "数据可携带权",
+        "restriction": "限制处理的权利",
+        "objection": "反对处理的权利",
+        "withdraw": "撤回同意的权利"
+      },
+      "internationalTransfers": {
+        "title": "国际数据传输",
+        "description": "您的信息可能会被传输到您所在国家以外的国家并在那里处理。我们确保采取适当的保障措施来保护您的信息。"
+      },
+      "cookies": {
+        "title": "Cookie政策",
+        "content": "我们使用Cookie和类似技术来改善您在我们网站上的体验。"
+      },
+      "contact": {
+        "title": "联系我们",
+        "description": "如果您对本隐私政策有任何疑问，请联系我们：",
+        "emailUs": "发送邮件",
+        "contactForm": "联系表单"
+      }
     }
   }
 }

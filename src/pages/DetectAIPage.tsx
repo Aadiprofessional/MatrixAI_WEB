@@ -123,7 +123,14 @@ const DetectAIPage: React.FC = () => {
       );
       
       if (response.data && response.data.detections) {
-        setSavedContents(response.data.detections);
+        // Sort detections by creation date (most recent first)
+        const sortedDetections = response.data.detections.sort((a: any, b: any) => {
+          const dateA = new Date(a.created_at || a.createdAt || '').getTime();
+          const dateB = new Date(b.created_at || b.createdAt || '').getTime();
+          return dateB - dateA; // Most recent first
+        });
+        
+        setSavedContents(sortedDetections);
         setTotalPages(Math.ceil((response.data.total || 0) / itemsPerPage));
         setCurrentPage(page);
       }

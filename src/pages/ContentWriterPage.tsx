@@ -184,11 +184,17 @@ const ContentWriterPage: React.FC = () => {
       
       // The API response structure based on our test
       if (response && response.content && Array.isArray(response.content)) {
-        // Map API response to ContentItem format
-        const formattedContent = response.content.map(item => ({
-          ...item,
-          createdAt: item.created_at || new Date().toISOString()
-        }));
+        // Map API response to ContentItem format and sort by creation date (most recent first)
+        const formattedContent = response.content
+          .map(item => ({
+            ...item,
+            createdAt: item.created_at || item.updated_at || new Date().toISOString()
+          }))
+          .sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return dateB - dateA; // Most recent first
+          });
         
         console.log('Setting content history:', formattedContent);
         setContentHistory(formattedContent);

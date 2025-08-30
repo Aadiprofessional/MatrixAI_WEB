@@ -349,7 +349,15 @@ const PricingPage: React.FC = () => {
           {/* Pricing Cards */}
           {!loading && !error && pricingPlans.length > 0 && (
             <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20"
+              className={`grid gap-8 mb-20 ${
+                pricingPlans.length === 1 
+                  ? 'grid-cols-1 max-w-md mx-auto' 
+                  : pricingPlans.length === 2 
+                  ? 'grid-cols-1 md:grid-cols-2 max-w-2xl mx-auto' 
+                  : pricingPlans.length === 3 
+                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
+              }`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}

@@ -2875,6 +2875,75 @@
     "errors": {
       "userNotAuthenticated": "User not authenticated",
       "paymentFailed": "Payment failed"
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "subtitle": "Your privacy is important to us. This policy explains how we collect, use, and protect your information.",
+      "lastUpdated": "Last updated",
+      "effectiveDate": "Effective date",
+      "tableOfContents": "Table of Contents",
+      "informationCollection": {
+        "title": "Information We Collect",
+        "personalInfo": {
+          "title": "Personal Information",
+          "description": "We collect information you provide directly to us, such as when you create an account, use our services, or contact us."
+        },
+        "usageData": {
+          "title": "Usage Data",
+          "description": "We automatically collect certain information about your use of our services, including your IP address, browser type, and usage patterns."
+        },
+        "cookies": {
+          "title": "Cookies and Tracking",
+          "description": "We use cookies and similar technologies to enhance your experience and analyze usage of our services."
+        }
+      },
+      "howWeUse": {
+        "title": "How We Use Your Information",
+        "serviceProvision": "To provide, maintain, and improve our services",
+        "communication": "To communicate with you about our services",
+        "personalization": "To personalize your experience",
+        "analytics": "To analyze usage and improve our services",
+        "legal": "To comply with legal obligations"
+      },
+      "informationSharing": {
+        "title": "Information Sharing",
+        "description": "We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy.",
+        "serviceProviders": "We may share information with trusted service providers who assist us in operating our services",
+        "legal": "We may disclose information when required by law or to protect our rights",
+        "businessTransfer": "Information may be transferred in connection with a merger, acquisition, or sale of assets"
+      },
+      "dataSecurity": {
+        "title": "Data Security",
+        "description": "We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction."
+      },
+      "dataRetention": {
+        "title": "Data Retention",
+        "description": "We retain your personal information only as long as necessary to fulfill the purposes outlined in this policy, unless a longer retention period is required by law."
+      },
+      "yourRights": {
+        "title": "Your Rights",
+        "access": "Right to access your personal information",
+        "correction": "Right to correct inaccurate information",
+        "deletion": "Right to request deletion of your information",
+        "portability": "Right to data portability",
+        "restriction": "Right to restrict processing",
+        "objection": "Right to object to processing",
+        "withdraw": "Right to withdraw consent"
+      },
+      "internationalTransfers": {
+        "title": "International Data Transfers",
+        "description": "Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place to protect your information."
+      },
+      "cookies": {
+        "title": "Cookies Policy",
+        "content": "We use cookies and similar technologies to improve your experience on our website."
+      },
+      "contact": {
+        "title": "Contact Us",
+        "description": "If you have any questions about this Privacy Policy, please contact us:",
+        "emailUs": "Email us",
+        "contactForm": "Contact form"
+      }
     }
   }
 }

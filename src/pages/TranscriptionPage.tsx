@@ -436,14 +436,34 @@ const MarkdownComponents = {
 };
 
 // Function to render text with math expressions and markdown formatting
-const renderTextWithMath = (text: string, theme: string, textStyle?: string) => {
+const renderTextWithMath = (text: string, theme: string, textStyle?: string, language?: string) => {
   if (!text) return null;
+  
+  // Detect if the content is Chinese
+  const isChineseContent = language ? 
+    (language.includes('zh') || language.includes('chinese') || language === 'zh-CN' || language === 'zh-TW' || language === 'zh-Hans' || language === 'zh-Hant') :
+    /[\u4e00-\u9fff]/.test(text);
+  
+  // Dynamic spacing based on language
+  const spacing = {
+    paragraph: isChineseContent ? 'mb-1' : 'mb-2',
+    heading: {
+      h1: isChineseContent ? 'mb-2 mt-3' : 'mb-3 mt-4',
+      h2: isChineseContent ? 'mb-1 mt-2' : 'mb-2 mt-3',
+      h3: isChineseContent ? 'mb-1 mt-2' : 'mb-2 mt-3',
+      h4: isChineseContent ? 'mb-1 mt-1' : 'mb-1 mt-2',
+      h5: isChineseContent ? 'mb-0 mt-1' : 'mb-1 mt-1',
+      h6: isChineseContent ? 'mb-0 mt-1' : 'mb-1 mt-1'
+    },
+    list: isChineseContent ? 'mb-2 space-y-0' : 'mb-3 space-y-1',
+    blockquote: isChineseContent ? 'my-2' : 'my-3'
+  };
   
   // Preprocess the content to handle math expressions and clean formatting
   const processedText = preprocessContent(text);
   
   return (
-    <div className={`markdown-content ${theme === 'dark' ? 'dark' : ''} ${textStyle || ''}`}>
+    <div className={`markdown-content ${theme === 'dark' ? 'dark' : ''} ${textStyle || ''} ${isChineseContent ? 'chinese-content' : 'normal-content'}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex, rehypeRaw]}
@@ -451,7 +471,7 @@ const renderTextWithMath = (text: string, theme: string, textStyle?: string) => 
           h1: ({ children }: any) => {
             const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
             return (
-              <h1 className={`text-2xl font-bold mb-4 mt-6 flex items-center gap-2 ${
+              <h1 className={`text-xl font-bold ${spacing.heading.h1} flex items-center gap-2 ${
                 theme === 'dark' ? 'text-white' : 'text-gray-900'
               }`}>
                 <span className="text-blue-500">📋</span>
@@ -462,7 +482,7 @@ const renderTextWithMath = (text: string, theme: string, textStyle?: string) => 
           h2: ({ children }: any) => {
             const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
             return (
-              <h2 className={`text-xl font-bold mb-3 mt-5 flex items-center gap-2 ${
+              <h2 className={`text-lg font-bold ${spacing.heading.h2} flex items-center gap-2 ${
                 theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
               }`}>
                 <span className="text-green-500">📝</span>
@@ -473,7 +493,7 @@ const renderTextWithMath = (text: string, theme: string, textStyle?: string) => 
           h3: ({ children }: any) => {
             const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
             return (
-              <h3 className={`text-lg font-semibold mb-2 mt-4 flex items-center gap-2 ${
+              <h3 className={`text-base font-semibold ${spacing.heading.h3} flex items-center gap-2 ${
                 theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
               }`}>
                 <span className="text-purple-500">📌</span>
@@ -484,7 +504,7 @@ const renderTextWithMath = (text: string, theme: string, textStyle?: string) => 
           h4: ({ children }: any) => {
             const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
             return (
-              <h4 className={`text-base font-semibold mb-2 mt-3 flex items-center gap-2 ${
+              <h4 className={`text-sm font-semibold ${spacing.heading.h4} flex items-center gap-2 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
               }`}>
                 <span className="text-orange-500">🔸</span>
@@ -495,7 +515,7 @@ const renderTextWithMath = (text: string, theme: string, textStyle?: string) => 
           h5: ({ children }: any) => {
             const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
             return (
-              <h5 className={`text-sm font-medium mb-1 mt-2 flex items-center gap-2 ${
+              <h5 className={`text-sm font-medium ${spacing.heading.h5} flex items-center gap-2 ${
                 theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
               }`}>
                 <span className="text-yellow-500">🔹</span>
@@ -506,7 +526,7 @@ const renderTextWithMath = (text: string, theme: string, textStyle?: string) => 
           h6: ({ children }: any) => {
             const cleanText = typeof children === 'string' ? children.replace(/^#+\s*/, '') : children;
             return (
-              <h6 className={`text-xs font-medium mb-1 mt-2 flex items-center gap-2 ${
+              <h6 className={`text-xs font-medium ${spacing.heading.h6} flex items-center gap-2 ${
                 theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
               }`}>
                 <span className="text-gray-500">▪️</span>
@@ -515,31 +535,31 @@ const renderTextWithMath = (text: string, theme: string, textStyle?: string) => 
             );
           },
           p: ({ children }: any) => (
-            <p className={`mb-4 leading-relaxed ${
+            <p className={`${spacing.paragraph} ${isChineseContent ? 'leading-normal' : 'leading-relaxed'} ${
               theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
             }`}>
               {children}
             </p>
           ),
           ul: ({ children }: any) => (
-            <ul className={`mb-4 ml-6 space-y-1 list-disc ${
+            <ul className={`${spacing.list} ml-4 list-disc ${
               theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
             }`}>
               {children}
             </ul>
           ),
           ol: ({ children }: any) => (
-            <ol className={`mb-4 ml-6 space-y-1 list-decimal ${
+            <ol className={`${spacing.list} ml-4 list-decimal ${
               theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
             }`}>
               {children}
             </ol>
           ),
           li: ({ children }: any) => (
-            <li className="mb-1">{children}</li>
+            <li className={isChineseContent ? 'mb-0' : 'mb-1'}>{children}</li>
           ),
           blockquote: ({ children }: any) => (
-            <blockquote className={`border-l-4 pl-4 py-2 my-4 italic ${
+            <blockquote className={`border-l-4 pl-4 py-2 ${spacing.blockquote} italic ${
               theme === 'dark' 
                 ? 'border-blue-400 bg-blue-900/20 text-blue-200' 
                 : 'border-blue-500 bg-blue-50 text-blue-800'
@@ -767,6 +787,10 @@ const TranscriptionPage: React.FC = () => {
   const [translatingIndex, setTranslatingIndex] = useState<number>(-1);
   const [isTranslationInProgress, setIsTranslationInProgress] = useState<boolean>(false);
   
+  // Language search state
+  const [languageSearchTerm, setLanguageSearchTerm] = useState<string>('');
+  const [srtLanguageSearchTerm, setSrtLanguageSearchTerm] = useState<string>('');
+  
   // Follow text toggle state
   const [followText, setFollowText] = useState<boolean>(true);
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
@@ -806,10 +830,10 @@ const TranscriptionPage: React.FC = () => {
       : [];
     
     const languageArray = AZURE_SUPPORTED_LANGUAGES.map(lang => ({
-      label: `${lang.name}${savedLanguages.includes(lang.code) ? ' (Saved)' : ''}`,
-      value: lang.code,
-      isSaved: savedLanguages.includes(lang.code)
-    }));
+        label: `${lang.name}${savedLanguages.includes(lang.code) ? ' (Saved)' : ''}`,
+        value: lang.code,
+        isSaved: savedLanguages.includes(lang.code)
+      }));
     
     console.log('🔍 Generated enhanced languages array:', languageArray);
     return languageArray;
@@ -832,6 +856,19 @@ const TranscriptionPage: React.FC = () => {
     console.log('🔍 Generated enhanced subtitleLanguages array:', subtitleArray);
     return subtitleArray;
   }, [translatedData]);
+
+  // Filtered language arrays for search functionality
+  const filteredLanguages = React.useMemo(() => {
+    return languages.filter(lang => 
+      lang.label.toLowerCase().includes(languageSearchTerm.toLowerCase())
+    );
+  }, [languages, languageSearchTerm]);
+
+  const filteredSrtLanguages = React.useMemo(() => {
+    return subtitleLanguages.filter(lang => 
+      lang.name.toLowerCase().includes(srtLanguageSearchTerm.toLowerCase())
+    );
+  }, [subtitleLanguages, srtLanguageSearchTerm]);
 
   // Update default language selections when translatedData changes
   useEffect(() => {
@@ -3593,28 +3630,39 @@ const TranscriptionPage: React.FC = () => {
                               </svg>
                             </button>
                             {isLanguageDropdownOpen && (
-                              <div className="absolute z-50 mt-1 w-full bg-gradient-to-br from-white via-blue-100 to-purple-100 dark:from-gray-800 dark:via-blue-800/80 dark:to-purple-800/80 border-2 border-blue-300 dark:border-blue-600 rounded-xl shadow-2xl max-h-64 overflow-y-auto" style={{
+                              <div className="absolute z-50 mt-1 w-full bg-gradient-to-br from-white via-blue-100 to-purple-100 dark:from-gray-800 dark:via-blue-800/80 dark:to-purple-800/80 border-2 border-blue-300 dark:border-blue-600 rounded-xl shadow-2xl max-h-64 overflow-hidden" style={{
                                 scrollbarWidth: 'thin',
                                 scrollbarColor: '#3b82f6 #e5e7eb'
                               }}>
                                 <style>{`
-                                  .absolute::-webkit-scrollbar {
+                                  .language-dropdown-content::-webkit-scrollbar {
                                     width: 8px;
                                   }
-                                  .absolute::-webkit-scrollbar-track {
+                                  .language-dropdown-content::-webkit-scrollbar-track {
                                     background: linear-gradient(to bottom, #f3f4f6, #e5e7eb);
                                     border-radius: 4px;
                                   }
-                                  .absolute::-webkit-scrollbar-thumb {
+                                  .language-dropdown-content::-webkit-scrollbar-thumb {
                                     background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
                                     border-radius: 4px;
                                     border: 1px solid #1e40af;
                                   }
-                                  .absolute::-webkit-scrollbar-thumb:hover {
+                                  .language-dropdown-content::-webkit-scrollbar-thumb:hover {
                                     background: linear-gradient(to bottom, #1d4ed8, #1e3a8a);
                                   }
                                 `}</style>
-                                {languages.map((lang, index) => (
+                                <div className="p-2 border-b border-gray-200/50 dark:border-gray-600/50">
+                                  <input
+                                    type="text"
+                                    placeholder="Search languages..."
+                                    value={languageSearchTerm}
+                                    onChange={(e) => setLanguageSearchTerm(e.target.value)}
+                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 dark:text-gray-200"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                                <div className="language-dropdown-content overflow-y-auto max-h-48">
+                                  {filteredLanguages.map((lang, index) => (
                                   <button
                                     key={lang.value}
                                     onClick={() => {
@@ -3637,7 +3685,8 @@ const TranscriptionPage: React.FC = () => {
                                       {lang.label}
                                     </span>
                                   </button>
-                                ))}
+                                  ))}
+                                </div>
                               </div>
                             )}
                           </div>
@@ -3986,13 +4035,13 @@ const TranscriptionPage: React.FC = () => {
                                   <div className={`prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
                                     {message.isStreaming ? (
                                       <div className="streaming-content">
-                                        {renderTextWithMath(message.content, theme, `text-gray-800 dark:text-gray-200 leading-relaxed text-sm`)}
+                                        {renderTextWithMath(message.content, theme, `text-gray-800 dark:text-gray-200 leading-relaxed text-sm`, selectedLanguage)}
                                         <span className="typing-cursor animate-pulse ml-1 text-blue-500">▋</span>
                                       </div>
                                     ) : (
                                       <div>
                                         {message.content ? (
-                                          renderTextWithMath(message.content, theme, `text-gray-800 dark:text-gray-200 leading-relaxed text-sm`)
+                                          renderTextWithMath(message.content, theme, `text-gray-800 dark:text-gray-200 leading-relaxed text-sm`, selectedLanguage)
                                         ) : (
                                           <span>Loading content...</span>
                                         )}
@@ -4001,7 +4050,7 @@ const TranscriptionPage: React.FC = () => {
                                   </div>
                                 ) : (
                                   <div className="whitespace-pre-wrap text-white leading-relaxed">
-                                    {renderTextWithMath(message.content, theme, "text-white leading-relaxed")}
+                                    {renderTextWithMath(message.content, theme, "text-white leading-relaxed", selectedLanguage)}
                                   </div>
                                 )}
                                 
@@ -4086,7 +4135,7 @@ const TranscriptionPage: React.FC = () => {
                                   <FiZap className="mr-2" /> Key Points
                                 </h4>
                                 <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                                  {renderTextWithMath(chatResponses.keypoints, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
+                                  {renderTextWithMath(chatResponses.keypoints, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm", selectedLanguage)}
                                 </div>
                               </div>
                             )}
@@ -4097,7 +4146,7 @@ const TranscriptionPage: React.FC = () => {
                                   <FiFileText className="mr-2" /> Summary
                                 </h4>
                                 <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                                  {renderTextWithMath(chatResponses.summary, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
+                                  {renderTextWithMath(chatResponses.summary, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm", selectedLanguage)}
                                 </div>
                               </div>
                             )}
@@ -4108,7 +4157,7 @@ const TranscriptionPage: React.FC = () => {
                                   <FiBookmark className="mr-2" /> Translation ({translationLanguage})
                                 </h4>
                                 <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                                  {renderTextWithMath(chatResponses.translate, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm")}
+                                  {renderTextWithMath(chatResponses.translate, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm", selectedLanguage)}
                                 </div>
                               </div>
                             )}
@@ -4278,38 +4327,49 @@ const TranscriptionPage: React.FC = () => {
                     onClick={() => setIsSrtLanguageDropdownOpen(!isSrtLanguageDropdownOpen)}
                     className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 flex items-center justify-between min-w-[200px]"
                   >
-                    <span>{languages.find(lang => lang.value === srtSelectedLanguage)?.label || 'Select Language'}</span>
+                    <span>{subtitleLanguages.find(lang => lang.code === srtSelectedLanguage)?.name || 'Select Language'}</span>
                     <svg className={`w-4 h-4 transition-transform ${isSrtLanguageDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
                   {isSrtLanguageDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-full bg-gradient-to-br from-white via-cyan-100 to-teal-100 dark:from-gray-800 dark:via-cyan-800/80 dark:to-teal-800/80 border-2 border-cyan-300 dark:border-cyan-600 rounded-xl shadow-2xl z-50 max-h-64 overflow-y-auto" style={{
+                    <div className="absolute top-full left-0 mt-1 w-full bg-gradient-to-br from-white via-cyan-100 to-teal-100 dark:from-gray-800 dark:via-cyan-800/80 dark:to-teal-800/80 border-2 border-cyan-300 dark:border-cyan-600 rounded-xl shadow-2xl z-50 max-h-64 overflow-hidden" style={{
                        scrollbarWidth: 'thin',
                        scrollbarColor: '#06b6d4 #e5e7eb'
                      }}>
                       <style>{`
-                        .absolute::-webkit-scrollbar {
+                        .srt-language-dropdown-content::-webkit-scrollbar {
                           width: 8px;
                         }
-                        .absolute::-webkit-scrollbar-track {
+                        .srt-language-dropdown-content::-webkit-scrollbar-track {
                           background: linear-gradient(to bottom, #f0fdfa, #ccfbf1);
                           border-radius: 4px;
                         }
-                        .absolute::-webkit-scrollbar-thumb {
+                        .srt-language-dropdown-content::-webkit-scrollbar-thumb {
                           background: linear-gradient(to bottom, #06b6d4, #0891b2);
                           border-radius: 4px;
                           border: 1px solid #0e7490;
                         }
-                        .absolute::-webkit-scrollbar-thumb:hover {
+                        .srt-language-dropdown-content::-webkit-scrollbar-thumb:hover {
                           background: linear-gradient(to bottom, #0891b2, #0e7490);
                         }
                       `}</style>
-                      {languages.map((lang, index) => (
+                      <div className="p-2 border-b border-gray-200/50 dark:border-gray-600/50">
+                        <input
+                          type="text"
+                          placeholder="Search languages..."
+                          value={srtLanguageSearchTerm}
+                          onChange={(e) => setSrtLanguageSearchTerm(e.target.value)}
+                          className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-gray-700 dark:text-gray-200"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                      <div className="srt-language-dropdown-content overflow-y-auto max-h-48">
+                        {filteredSrtLanguages.map((lang, index) => (
                         <button
-                          key={lang.value}
+                          key={lang.code}
                           onClick={() => {
-                            setSrtSelectedLanguage(lang.value);
+                            setSrtSelectedLanguage(lang.code);
                             setIsSrtLanguageDropdownOpen(false);
                           }}
                           className={`w-full px-3 py-3 text-left text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] ${
@@ -4326,12 +4386,13 @@ const TranscriptionPage: React.FC = () => {
                               index % 4 === 2 ? 'bg-emerald-500' :
                               'bg-indigo-500'
                             }`}></span>
-                            {lang.label}
+                            {lang.name}
                           </span>
                         </button>
                       ))}
-                    </div>
-                  )}
+                        </div>
+                      </div>
+                    )}
                 </div>
               ) : (
                 <span className="px-3 py-1 text-sm text-gray-500 dark:text-gray-400">
@@ -4780,6 +4841,25 @@ const TranscriptionPage: React.FC = () => {
                                 >
                                   {playbackRate}x
                                 </button>
+                                <button
+                                  onClick={toggleTranslation}
+                                  className={`p-1 sm:p-2 rounded transition-colors ${
+                                    isTranslationEnabled
+                                      ? 'bg-green-500 hover:bg-green-600 text-white'
+                                      : 'bg-gray-700 hover:bg-gray-600 text-white'
+                                  }`}
+                                  title={isTranslationEnabled ? 'Disable Translation' : 'Enable Translation'}
+                                  disabled={translatingIndex !== -1 || isTranslationInProgress}
+                                >
+                                  <FiGlobe size={16} className="sm:h-5 sm:w-5" />
+                                </button>
+                                <button
+                                  onClick={toggleVideoFullscreen}
+                                  className="p-1 sm:p-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
+                                  title={isVideoFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                                >
+                                  {isVideoFullscreen ? <FiMinimize size={16} className="sm:h-5 sm:w-5" /> : <FiMaximize size={16} className="sm:h-5 sm:w-5" />}
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -4869,8 +4949,8 @@ const TranscriptionPage: React.FC = () => {
                           </button>
                       </div>
 
-                      {/* Playback rate controls */}
-                      <div className="flex space-x-1">
+                      {/* Playback rate controls and fullscreen button */}
+                      <div className="flex space-x-1 items-center">
                         {[0.5, 1, 1.5, 2].map(rate => (
                           <button 
                             key={rate}
@@ -4890,6 +4970,30 @@ const TranscriptionPage: React.FC = () => {
                             {rate}x
                           </button>
                         ))}
+                        {/* Translation and Fullscreen buttons for video */}
+                        {videoUrl && (
+                          <>
+                            <button
+                              onClick={toggleTranslation}
+                              className={`p-1.5 sm:p-2 rounded-full transition-colors ${
+                                isTranslationEnabled
+                                  ? 'bg-green-500 hover:bg-green-600 text-white'
+                                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                              }`}
+                              title={isTranslationEnabled ? 'Disable Translation' : 'Enable Translation'}
+                              disabled={translatingIndex !== -1 || isTranslationInProgress}
+                            >
+                              <FiGlobe size={14} />
+                            </button>
+                            <button
+                              onClick={toggleVideoFullscreen}
+                              className="p-1.5 sm:p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full transition-colors"
+                              title={isVideoFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                            >
+                              {isVideoFullscreen ? <FiMinimize size={14} /> : <FiMaximize size={14} />}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
 

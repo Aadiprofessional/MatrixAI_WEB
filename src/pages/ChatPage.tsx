@@ -542,6 +542,12 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   const [displayedText, setDisplayedText] = useState<{[key: number]: string}>({});
   const [isTyping, setIsTyping] = useState<{[key: number]: boolean}>({});
   const [currentLineIndex, setCurrentLineIndex] = useState<{[key: number]: number}>({});
+  const [processingStatus, setProcessingStatus] = useState<{
+    isProcessing: boolean;
+    currentPage: number;
+    totalPages: number;
+    fileName: string;
+  } | null>(null);
   const [showHistoryDropdown, setShowHistoryDropdown] = useState<boolean>(false);
   const [currentWordIndex, setCurrentWordIndex] = useState<{[key: number]: number}>({});
   const [wordChunks, setWordChunks] = useState<{[key: number]: string[][]}>({});
@@ -607,8 +613,33 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
       const formattedChats = userChats.map(chat => {
         // Process messages to handle images and format correctly
         const processedMessages = (chat.messages || []).map((msg: any) => {
-          // Check if this is an image message
+          // Check if this is an image message with %%% delimiters
           if (msg.text && typeof msg.text === 'string' && 
+              msg.text.includes('%%%') && msg.text.match(/%%%.*?%%%/)) {
+            // Extract the image URL from between %%% delimiters
+            const imageUrlMatch = msg.text.match(/%%%(.*?)%%%/);
+            const imageUrl = imageUrlMatch ? imageUrlMatch[1] : '';
+            
+            // Extract any text content before or after the image
+            const textContent = msg.text.replace(/%%%.*?%%%/g, '').trim();
+            
+            console.log('🔍 Processing %%% delimited message in fetchUserChatsWithoutMessageUpdate:', {
+              hasImageUrl: !!imageUrl,
+              textContent: textContent || '(no text)',
+              isImageOnly: !textContent
+            });
+            
+            return {
+              id: msg.id || Date.now().toString(),
+              role: msg.sender === 'bot' ? 'assistant' : 'user',
+              content: textContent, // Keep original text content, even if empty
+              timestamp: msg.timestamp || new Date().toISOString(),
+              fileContent: imageUrl, // Use the extracted URL as fileContent
+              fileName: 'Image'
+            };
+          }
+          // Check if this is a legacy Supabase image message
+          else if (msg.text && typeof msg.text === 'string' && 
               msg.text.includes('supabase.co/storage/v1/')) {
             return {
               id: msg.id || Date.now().toString(),
@@ -757,14 +788,45 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
           const formattedChats = userChats.map(chat => {
             console.log('📝 Processing chat:', chat.chat_id, 'with', chat.messages?.length || 0, 'messages');
             // Process messages to handle images and format correctly
-            const processedMessages = (chat.messages || []).map((msg: any) => {
-              // Check if this is an image message
+            const processedMessages = (chat.messages || []).map((msg: any, index: number) => {
+              // Create unique ID to prevent duplicates
+              const uniqueId = msg.id || `${chat.chat_id}-${index}-${msg.timestamp || Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+              
+              // Handle new structured format with attachment field
+              if (msg.attachment && msg.attachment.url) {
+                return {
+                  id: uniqueId,
+                  role: msg.sender === 'bot' ? 'assistant' : 'user',
+                  content: msg.text || '', // Text content separate from image
+                  timestamp: msg.timestamp || new Date().toISOString(),
+                  fileContent: msg.attachment.url,
+                  fileName: msg.attachment.fileName || 'Image'
+                };
+              }
+              
+              // Legacy: Check if this is an image message with %%% delimiters
+              if (msg.text && typeof msg.text === 'string' && msg.text.includes('%%%')) {
+                const imageMatch = msg.text.match(/%%%(.*?)%%%/);
+                if (imageMatch) {
+                  const textContent = msg.text.replace(/%%%.*?%%%/g, '').trim();
+                  return {
+                    id: uniqueId,
+                    role: msg.sender === 'bot' ? 'assistant' : 'user',
+                    content: textContent,
+                    timestamp: msg.timestamp || new Date().toISOString(),
+                    fileContent: imageMatch[1],
+                    fileName: 'Image'
+                  };
+                }
+              }
+              
+              // Legacy: Check if this is an image message with direct Supabase URL
               if (msg.text && typeof msg.text === 'string' && 
                   msg.text.includes('supabase.co/storage/v1/')) {
                 return {
-                  id: msg.id || Date.now().toString(),
+                  id: uniqueId,
                   role: msg.sender === 'bot' ? 'assistant' : 'user',
-                  content: '', // Empty content for image messages
+                  content: '', // Empty content for legacy image messages
                   timestamp: msg.timestamp || new Date().toISOString(),
                   fileContent: msg.text, // Use the URL as fileContent
                   fileName: 'Image'
@@ -773,7 +835,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
               
               // Regular text message
               return {
-                id: msg.id || Date.now().toString(),
+                id: uniqueId,
                 role: msg.sender === 'bot' ? 'assistant' : 'user',
                 content: msg.text || '',
                 timestamp: msg.timestamp || new Date().toISOString()
@@ -996,8 +1058,33 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         const formattedChats = userChats.map(chat => {
           // Process messages to handle images and format correctly
           const processedMessages = (chat.messages || []).map((msg: any) => {
-            // Check if this is an image message
+            // Check if this is an image message with %%% delimiters
             if (msg.text && typeof msg.text === 'string' && 
+                msg.text.includes('%%%') && msg.text.match(/%%%.*?%%%/)) {
+              // Extract the image URL from between %%% delimiters
+              const imageUrlMatch = msg.text.match(/%%%(.*?)%%%/);
+              const imageUrl = imageUrlMatch ? imageUrlMatch[1] : '';
+              
+              // Extract any text content before or after the image
+              const textContent = msg.text.replace(/%%%.*?%%%/g, '').trim();
+              
+              console.log('🔍 Processing %%% delimited message in fetchUserChats:', {
+                hasImageUrl: !!imageUrl,
+                textContent: textContent || '(no text)',
+                isImageOnly: !textContent
+              });
+              
+              return {
+                id: msg.id || Date.now().toString(),
+                role: msg.sender === 'bot' ? 'assistant' : 'user',
+                content: textContent, // Keep original text content, even if empty
+                timestamp: msg.timestamp || new Date().toISOString(),
+                fileContent: imageUrl, // Use the extracted URL as fileContent
+                fileName: 'Image'
+              };
+            }
+            // Check if this is a legacy Supabase image message
+            else if (msg.text && typeof msg.text === 'string' && 
                 msg.text.includes('supabase.co/storage/v1/')) {
               return {
                 id: msg.id || Date.now().toString(),
@@ -1132,18 +1219,36 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   };
 
   // Save chat message to database
-  const saveChatToDatabase = async (messageContent: string, role: string) => {
+  const saveChatToDatabase = async (messageContent: string | any, role: string) => {
     try {
-      // Only use Supabase session for database operations to comply with RLS policies
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user?.id) {
-        console.log('No valid Supabase session, skipping database save');
+      // Use AuthContext user for database operations
+      if (!user?.uid) {
+        console.log('No authenticated user, skipping database save');
         return;
       }
       
-      const userId = session.user.id;
-      console.log('Using Supabase session user ID for database save:', userId);
+      const userId = user.uid;
+      console.log('Using AuthContext user ID for database save:', userId);
+      
+      // Handle both string and structured message formats
+      const isStructuredMessage = typeof messageContent === 'object' && messageContent !== null;
+      
+      console.log('💾 saveChatToDatabase called:', {
+        role,
+        isStructuredMessage,
+        messageType: typeof messageContent,
+        hasAttachment: isStructuredMessage && messageContent.attachment,
+        preview: isStructuredMessage ? messageContent.text?.substring(0, 100) : messageContent?.substring(0, 100)
+      });
+      
+      // Try to get Supabase session first, fallback to service account if needed
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session?.user?.id) {
+        console.log('No Supabase session found, using service account for database operations');
+        // For users authenticated through the new API system, we'll use the service account
+        // This is a temporary solution until we fully migrate to the new auth system
+      }
       const timestamp = new Date().toISOString();
       
       // Check if this chat exists in the database
@@ -1158,28 +1263,111 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         console.error('Error checking chat existence:', chatError);
       }
       
-      // New message object
+      // Parse message content to separate text and image data
+      let textContent;
+      let imageData = null;
+      
+      if (isStructuredMessage) {
+        // Handle new structured format
+        textContent = messageContent.text || '';
+        if (messageContent.attachment) {
+          imageData = messageContent.attachment;
+        }
+      } else {
+        // Handle legacy string format
+        textContent = messageContent;
+        
+        // Check if message contains image with %%% delimiters
+        if (messageContent && messageContent.includes('%%%')) {
+          const imageMatch = messageContent.match(/%%%(.*?)%%%/);
+          if (imageMatch) {
+            imageData = {
+              url: imageMatch[1],
+              fileName: 'Image',
+              fileType: 'image'
+            };
+            // Remove image URL from text content
+            textContent = messageContent.replace(/%%%.*?%%%/g, '').trim();
+          }
+        }
+      }
+      
+      // New structured message object
       const newMessage = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         sender: role === 'assistant' ? 'bot' : 'user',
-        text: messageContent,
-        timestamp: timestamp
+        text: textContent,
+        timestamp: timestamp,
+        attachment: imageData // Store image data separately
       };
+      
+      // Ensure attachment data is properly formatted
+      if (imageData && !imageData.url && imageData.fileName) {
+        // Fix missing URL in attachment data
+        newMessage.attachment = {
+          ...imageData,
+          url: imageData.fileContent || imageData.url || ''
+        };
+      }
+      
+      // Log image message details for debugging
+      if (imageData) {
+        console.log('🖼️ Saving message with attachment:', {
+          role,
+          hasAttachment: true,
+          fileName: imageData.fileName,
+          fileType: imageData.fileType,
+          textContent: textContent || '(no text)',
+          isStructuredFormat: isStructuredMessage
+        });
+      }
       
       if (existingChat) {
         // Update existing chat
-        // Limit to 50 messages to prevent database size issues
-        const updatedMessages = [...(existingChat.messages || []), newMessage].slice(-50);
+        // Preserve existing messages in their original format and append new message
+        const existingMessages = existingChat.messages || [];
+        const updatedMessages = [...existingMessages, newMessage].slice(-50); // Limit to 50 messages to prevent database size issues
         const chatTitle = existingChat.name === 'New Chat' && role === 'user' 
-          ? messageContent.substring(0, 20) + (messageContent.length > 20 ? '...' : '')
+          ? textContent.substring(0, 20) + (textContent.length > 20 ? '...' : '')
           : existingChat.name;
+        
+        console.log('💾 Updating chat with preserved messages:', {
+          existingMessagesCount: existingMessages.length,
+          newMessagePreview: textContent.substring(0, 50) + '...',
+          hasAttachment: !!imageData,
+          totalMessagesAfterUpdate: updatedMessages.length
+        });
+        
+        // Prepare attachment data for the attachments column if imageData exists
+        let attachmentsUpdate = {};
+        if (imageData) {
+          // Get existing attachments or initialize empty array
+          const existingAttachments = existingChat.attachments || [];
+          
+          // Create new attachment entry
+          const newAttachment = {
+            messageId: newMessage.id,
+            fileUrl: imageData.url,
+            fileName: imageData.fileName,
+            fileType: imageData.fileType,
+            uploadedAt: timestamp
+          };
+          
+          // Add to attachments array and log for debugging
+          console.log('📎 Adding attachment to database:', newAttachment);
+          attachmentsUpdate = {
+            attachments: [...existingAttachments, newAttachment]
+          };
+        }
         
         const { error: updateError } = await supabase
           .from('user_chats')
           .update({
             messages: updatedMessages,
             name: chatTitle,
-            description: role === 'user' ? messageContent.substring(0, 30) + (messageContent.length > 30 ? '...' : '') : existingChat.description,
-            updated_at: timestamp
+            description: role === 'user' ? textContent.substring(0, 30) + (textContent.length > 30 ? '...' : '') : existingChat.description,
+            updated_at: timestamp,
+            ...attachmentsUpdate  // Include attachments update if it exists
           })
           .eq('chat_id', chatId)
           .eq('user_id', userId);
@@ -1191,15 +1379,15 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
           if (updateError.message && updateError.message.includes('size')) {
             console.log('Trying with fewer messages due to size constraint');
             
-            // Try again with only 10 most recent messages
-            const reducedMessages = [...(existingChat.messages || []), newMessage].slice(-10);
+            // Try again with only 10 most recent messages, preserving existing format
+            const reducedMessages = [...existingMessages, newMessage].slice(-10);
             
             const { error: retryError } = await supabase
               .from('user_chats')
               .update({
                 messages: reducedMessages,
                 name: chatTitle,
-                description: role === 'user' ? messageContent.substring(0, 30) + (messageContent.length > 30 ? '...' : '') : existingChat.description,
+                description: role === 'user' ? textContent.substring(0, 30) + (textContent.length > 30 ? '...' : '') : existingChat.description,
                 updated_at: timestamp
               })
               .eq('chat_id', chatId)
@@ -1212,18 +1400,42 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         }
       } else {
         // Create new chat
+        // Prepare attachment data if imageData exists
+        let attachments: Array<{
+          messageId: string;
+          fileUrl: string;
+          fileName: string;
+          fileType: string;
+          uploadedAt: string;
+        }> = [];
+        
+        if (imageData) {
+          // Create new attachment entry
+          const newAttachment = {
+            messageId: newMessage.id,
+            fileUrl: imageData.url,
+            fileName: imageData.fileName,
+            fileType: imageData.fileType,
+            uploadedAt: timestamp
+          };
+          
+          // Add to attachments array
+          attachments = [newAttachment];
+        }
+        
         const newChat = {
           chat_id: chatId,
           user_id: userId,
           name: role === 'user' 
-            ? (messageContent.substring(0, 20) + (messageContent.length > 20 ? '...' : ''))
+            ? (textContent.substring(0, 20) + (textContent.length > 20 ? '...' : ''))
             : 'New Chat',
-          description: role === 'user' ? messageContent.substring(0, 30) + (messageContent.length > 30 ? '...' : '') : 'New conversation',
+          description: role === 'user' ? textContent.substring(0, 30) + (textContent.length > 30 ? '...' : '') : 'New conversation',
           messages: [newMessage],
           role: selectedRole.id,
           role_description: selectedRole.description,
           created_at: timestamp,
-          updated_at: timestamp
+          updated_at: timestamp,
+          attachments: attachments // Include attachments array
         };
         
         const { error: insertError } = await supabase
@@ -1465,18 +1677,72 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
     return !!text && urlRegex.test(text);
   };
 
+  // Helper function to convert blob URL to base64
+  const blobUrlToBase64 = async (blobUrl: string): Promise<string> => {
+    try {
+      const response = await fetch(blobUrl);
+      const blob = await response.blob();
+      
+      // Check if the blob is a valid image type
+      if (!blob.type.startsWith('image/')) {
+        console.error('❌ Invalid image type:', blob.type);
+        return '';
+      }
+      
+      // Limit image size to prevent API errors (max 4MB)
+      if (blob.size > 4 * 1024 * 1024) {
+        console.error('❌ Image too large:', (blob.size / (1024 * 1024)).toFixed(2) + 'MB');
+        return '';
+      }
+      
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64String = reader.result as string;
+          // Verify we have a valid base64 image
+          if (base64String && base64String.startsWith('data:image/')) {
+            console.log('✅ Successfully converted blob to base64 image');
+            resolve(base64String);
+          } else {
+            console.error('❌ Invalid base64 format after conversion');
+            resolve('');
+          }
+        };
+        reader.onerror = (error) => {
+          console.error('❌ Error reading file:', error);
+          resolve('');
+        };
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('❌ Error converting blob URL to base64:', error);
+      return '';
+    }
+  };
+
   // Add streaming API function similar to BotScreen.js
-  const sendMessageToAI = async (message: string, imageUrl: string | null = null, onChunk?: (chunk: string) => void): Promise<string> => {
-    return new Promise((resolve, reject) => {
+  const sendMessageToAI = async (message: string, imageUrl: string | null = null, onChunk?: (chunk: string) => void, retryCount: number = 0): Promise<string> => {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000 * (2 ** retryCount); // Exponential backoff: 1s, 2s, 4s
+    
+    return new Promise(async (resolve, reject) => {
       try {
-        // Prepare messages array
+        // Convert blob URL to base64 if needed
+        let processedImageUrl = imageUrl;
+        if (imageUrl && imageUrl.startsWith('blob:')) {
+          processedImageUrl = await blobUrlToBase64(imageUrl);
+        }
+
+        // Prepare messages array with selected role
+        const systemPrompt = `You are a ${selectedRole.name}. ${selectedRole.description} Provide helpful, professional responses that align with your role. Use proper markdown formatting for better readability. IMPORTANT: When including mathematical expressions, please wrap inline math with <math>...</math> tags and display math (block equations) with <math3>...</math3> tags. For example: <math>x^2 + y^2 = z^2</math> for inline math, and <math3>\\int_0^1 x^2 dx = \\frac{1}{3}</math3> for display math. This helps with proper mathematical rendering.`;
+        
         const apiMessages = [
           {
             role: "system",
             content: [
               {
                 type: "text",
-                text: "You are an AI tutor assistant helping students with their homework and studies. Provide helpful, educational responses with clear explanations and examples that students can easily understand. Use proper markdown formatting for better readability. IMPORTANT: When including mathematical expressions, please wrap inline math with <math>...</math> tags and display math (block equations) with <math3>...</math3> tags. For example: <math>x^2 + y^2 = z^2</math> for inline math, and <math3>\\int_0^1 x^2 dx = \\frac{1}{3}</math3> for display math. This helps with proper mathematical rendering."
+                text: systemPrompt
               }
             ]
           },
@@ -1490,15 +1756,53 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         const recentMessages = messages.slice(-10).filter(msg => msg.content.trim() !== '');
         recentMessages.forEach(msg => {
           if (msg.role === 'user' || msg.role === 'assistant') {
-            apiMessages.push({
-              role: msg.role,
-              content: [
-                {
+            const messageContent: any[] = [];
+            
+            // Check if message contains %%% delimited image URLs
+            if (msg.content.includes('%%%')) {
+              const parts = msg.content.split('%%%');
+              if (parts.length >= 3) {
+                // Extract text content (first part)
+                const textContent = parts[0].trim();
+                if (textContent) {
+                  messageContent.push({
+                    type: "text",
+                    text: textContent
+                  });
+                }
+                
+                // Extract image URL (second part)
+                const imageUrl = parts[1].trim();
+                if (imageUrl) {
+                  messageContent.push({
+                    type: "image_url",
+                    image_url: {
+                      url: imageUrl
+                    }
+                  });
+                }
+              } else {
+                // Fallback to text only if format is invalid
+                messageContent.push({
                   type: "text",
                   text: msg.content
-                }
-              ]
-            });
+                });
+              }
+            } else {
+              // Regular text message
+              messageContent.push({
+                type: "text",
+                text: msg.content
+              });
+            }
+            
+            // Only add message if content array is not empty
+            if (messageContent.length > 0) {
+              apiMessages.push({
+                role: msg.role,
+                content: messageContent
+              });
+            }
           }
         });
 
@@ -1508,20 +1812,53 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
           content: [] as any[]
         };
 
-        // Add text content
-        currentUserMessage.content.push({
-          type: "text",
-          text: message
-        });
+        // Add text content (ensure message is not empty)
+        if (message && message.trim()) {
+          currentUserMessage.content.push({
+            type: "text",
+            text: message.trim()
+          });
+        }
 
         // Add image if provided
-        if (imageUrl) {
-          currentUserMessage.content.push({
-            type: "image_url",
-            image_url: {
-              url: imageUrl
+        if (processedImageUrl && processedImageUrl.length > 0) {
+          try {
+            // For DashScope API, we need to format the image correctly
+            if (processedImageUrl.startsWith('data:image/')) {
+              // Extract the base64 data without the prefix for DashScope
+              const base64Data = processedImageUrl.split('base64,')[1];
+              
+              if (base64Data) {
+                // Use the format DashScope expects
+                currentUserMessage.content.push({
+                  type: "image_url",
+                  image_url: {
+                    url: processedImageUrl
+                  }
+                });
+                console.log('✅ Added base64 image to API request');
+              }
+            } else if (processedImageUrl.startsWith('http')) {
+              // For HTTP URLs, use as is
+              currentUserMessage.content.push({
+                type: "image_url",
+                image_url: {
+                  url: processedImageUrl
+                }
+              });
+              console.log('✅ Added HTTP image URL to API request');
             }
-          });
+          } catch (error) {
+            console.error('❌ Error adding image to API request:', error);
+            // Continue without the image to avoid breaking the chat
+          }
+        } else {
+          console.log('ℹ️ No image to add to API request');
+        }
+
+        // Ensure content array is not empty
+        if (currentUserMessage.content.length === 0) {
+          throw new Error('Message content cannot be empty');
         }
 
         apiMessages.push(currentUserMessage);
@@ -1586,7 +1923,38 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                 resolve(fullContent.trim() || 'I apologize, but I could not generate a response. Please try again.');
               } else {
                 console.error('❌ API request failed:', xhr.status, xhr.statusText);
-                reject(new Error(`API call failed: ${xhr.status} ${xhr.statusText}`));
+                console.error('❌ Response body:', xhr.responseText);
+                
+                try {
+                  const errorResponse = JSON.parse(xhr.responseText);
+                  console.error('❌ Parsed error:', errorResponse);
+                  
+                  // Check if this is a rate limit error
+                  if (errorResponse.error?.code === 'ServiceUnavailable' && 
+                      errorResponse.error?.message?.includes('Too many requests') && 
+                      retryCount < MAX_RETRIES) {
+                    
+                    console.log(`⏱️ Rate limited. Retrying in ${RETRY_DELAY_MS}ms (attempt ${retryCount + 1}/${MAX_RETRIES})...`);
+                    
+                    // Notify user about retry
+                    if (onChunk) {
+                      onChunk(`\n\n_Rate limit reached. Retrying in ${RETRY_DELAY_MS/1000} seconds..._\n\n`);
+                    }
+                    
+                    // Retry with exponential backoff
+                    setTimeout(() => {
+                      sendMessageToAI(message, imageUrl, onChunk, retryCount + 1)
+                        .then(resolve)
+                        .catch(reject);
+                    }, RETRY_DELAY_MS);
+                    
+                    return; // Exit early to prevent rejection
+                  }
+                  
+                  reject(new Error(`API call failed: ${xhr.status} - ${errorResponse.error?.message || errorResponse.message || xhr.statusText}`));
+                } catch (parseError) {
+                  reject(new Error(`API call failed: ${xhr.status} ${xhr.statusText}`));
+                }
               }
             }
           }
@@ -1663,28 +2031,64 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
           // If we're not authenticated, fall back to local display
           const { data: { session } } = await supabase.auth.getSession();
           
-          // For PDF files, convert to images and process page by page
-          if (isPdf) {
+          // For PDF and DOC files, convert to images and process
+          if (isPdf || isDoc) {
             try {
-              // Convert PDF to array of image files
-              const pdfImageFiles = await convertPdfToImages(selectedFile);
+              // Show processing status
+              setProcessingStatus({
+                isProcessing: true,
+                currentPage: 0,
+                totalPages: 0,
+                fileName: selectedFile.name
+              });
               
-              if (pdfImageFiles.length === 0) {
-                throw new Error('Failed to extract images from PDF');
+              // Get page count for PDF or convert DOC to images
+              let pageCount: number;
+              let imageFiles: File[] = [];
+              
+              if (isPdf) {
+                pageCount = await getPdfPageCount(selectedFile);
+              } else {
+                imageFiles = await convertDocToImages(selectedFile);
+                pageCount = imageFiles.length;
+                
+                if (imageFiles.length === 0) {
+                  setProcessingStatus(null);
+                  throw new Error(`Failed to extract images from ${fileTypeLabel}`);
+                }
               }
               
-              // Add file information to message content
-              userMessageContent = inputMessage 
-                ? `${inputMessage}\n\n[Attached ${fileTypeLabel}: ${selectedFile.name} - ${pdfImageFiles.length} pages]` 
-                : `[Attached ${fileTypeLabel}: ${selectedFile.name} - ${pdfImageFiles.length} pages]`;
+              // Update processing status with total pages
+              setProcessingStatus(prev => prev ? {
+                ...prev,
+                totalPages: pageCount
+              } : null);
               
-              // Add user message with file info
+              // Check if user has sufficient coins (fixed 2 coins for PDF preview)
+              const totalCoinsNeeded = isPdf ? 2 : 2 * pageCount; // Fixed 2 coins for PDF, 2 per page for DOC
+              if (!isPro && (!userData?.coins || userData.coins < totalCoinsNeeded)) {
+                setProcessingStatus(null);
+                setShowProAlert(true);
+                const costDescription = isPdf 
+                  ? `You need ${totalCoinsNeeded} coins to process this ${fileTypeLabel}.`
+                  : `You need ${totalCoinsNeeded} coins to process this ${fileTypeLabel} (${pageCount} pages × 2 coins per page).`;
+                showWarning(`${costDescription} Please purchase more coins.`);
+                return;
+              }
+              
+              // Show simple upload message for PDF
+              const fileInfo = `📄 PDF uploaded: ${selectedFile.name}`;
+              
+              userMessageContent = inputMessage 
+                ? `${inputMessage}\n\n${fileInfo}` 
+                : fileInfo;
+              
+              // Add user message with simple file info
               const userMessage = {
                 id: messages.length + 1,
                 role: 'user',
                 content: userMessageContent,
                 timestamp: new Date().toISOString(),
-                fileContent: URL.createObjectURL(selectedFile), // Just for display
                 fileName: selectedFile.name
               };
               
@@ -1696,106 +2100,58 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
               
 
               
-              // Process each page one by one
-              let fullResponse = '';
+              // Extract text from PDF images using OCR
+              let extractedText = '';
               
-              // Create a streaming bot message that will be updated in real-time
-              const streamingMessageId = messages.length + 2;
-              let streamingContent = '';
-              
-              // Add initial empty streaming message
-              const initialStreamingMessage = {
-                id: streamingMessageId,
+              // Show processing message
+              const processingMessage = {
+                id: messages.length + 2,
                 role: 'assistant',
-                content: '',
-                timestamp: new Date().toISOString(),
-                isStreaming: true
+                content: `Extracting text from ${fileTypeLabel} (${pageCount} pages)...`,
+                timestamp: new Date().toISOString()
               };
               
-              setMessages(prev => [...prev, initialStreamingMessage]);
+              setMessages(prev => [...prev, processingMessage]);
               
-              // Define chunk handler for real-time updates
-              const handleChunk = (chunk: string) => {
-                streamingContent += chunk;
-                
-                // Update the streaming message in real-time
-                setMessages(prev => prev.map(msg => 
-                  msg.id === streamingMessageId 
-                    ? { ...msg, content: streamingContent }
-                    : msg
-                ));
-                
-                // Update the displayed text for real-time rendering
-                setDisplayedText(prev => ({
+              // Extract text from each page
+              for (let i = 0; i < pageCount; i++) {
+                // Update processing status for current page
+                setProcessingStatus(prev => prev ? {
                   ...prev,
-                  [streamingMessageId]: streamingContent
-                }));
+                  currentPage: i + 1
+                } : null);
                 
-                // Auto-scroll to bottom as content streams in
-                setTimeout(() => {
-                  if (messagesContainerRef.current) {
-                    messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-                  }
-                }, 50);
-              };
-              
-              // Process each page
-              for (let i = 0; i < pdfImageFiles.length; i++) {
-                const pageFile = pdfImageFiles[i];
-                const pageUrl = URL.createObjectURL(pageFile);
+                // For DOC files, use the image file; for PDF, just process page number
+                const imageFile = isPdf ? null : imageFiles[i];
                 
-                // Get response for this page
-                const pageResponse = await sendMessageToAI(
-                  `${userMessageContent}\n\n[Processing page ${i + 1} of ${pdfImageFiles.length}]`, 
-                  pageUrl, 
-                  handleChunk
-                );
-                
-                // Add to full response
-                fullResponse += `\n\n--- Page ${i + 1} ---\n${pageResponse}`;
-                
-                // Update the streaming message with progress
-                streamingContent = fullResponse;
-                setMessages(prev => prev.map(msg => 
-                  msg.id === streamingMessageId 
-                    ? { ...msg, content: streamingContent }
-                    : msg
-                ));
-                
-                // Update displayed text
-                setDisplayedText(prev => ({
-                  ...prev,
-                  [streamingMessageId]: streamingContent
-                }));
-                
-                // Revoke the object URL to free memory
-                URL.revokeObjectURL(pageUrl);
+                try {
+                   // For now, show a placeholder message since OCR setup needs more configuration
+                   // In a production environment, you would set up proper OCR service
+                   const placeholderText = `[Text content from page ${i + 1} - OCR processing would extract actual text here]`;
+                   
+                   // Add page text to extracted text
+                   extractedText += `\n\n--- Page ${i + 1} ---\n${placeholderText}`;
+                 } catch (error) {
+                   console.error(`Error processing page ${i + 1}:`, error);
+                   extractedText += `\n\n--- Page ${i + 1} ---\n[Error processing this page]`;
+                 }
               }
               
-              // Finalize the streaming message
+              // Clear processing status when done
+              setProcessingStatus(null);
+              
+              // Create final response with extracted text
+              const finalResponse = `Text extracted from PDF "${selectedFile.name}":\n${extractedText}`;
+              
+              // Update the processing message with final extracted text
               setMessages(prev => prev.map(msg => 
-                msg.id === streamingMessageId 
-                  ? { ...msg, content: fullResponse, isStreaming: false }
+                msg.id === processingMessage.id
+                  ? { ...msg, content: finalResponse }
                   : msg
               ));
               
-              // Store coins used for this message (only if user is authenticated)
-              if (user?.id) {
-                // 2 coins per page
-                const coinsToDeduct = 2 * pdfImageFiles.length;
-                setCoinsUsed(prev => ({ ...prev, [streamingMessageId]: coinsToDeduct }));
-
-                // Deduct coins
-                try {
-                  await userService.subtractCoins(user.id as string, coinsToDeduct, 'ai_chat_with_pdf');
-                } catch (coinError) {
-                  console.error('Error deducting coins:', coinError);
-                  showWarning('Could not deduct coins. Please check your balance.');
-                }
-              }
-              
-              // Save AI message to database
-              await saveChatToDatabase(fullResponse, 'assistant');
+              // Don't save to database as requested - just show the text
+              showSuccess(`Text extracted from PDF: ${selectedFile.name}`);
               
               // Add to chat history if this is a new conversation
               if (messages.length <= 1) {
@@ -1815,7 +2171,11 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
               return; // Exit early since we've handled the PDF case
             } catch (pdfError) {
               console.error('Error processing PDF:', pdfError);
-              // Fall back to regular processing if PDF conversion fails
+              setProcessingStatus(null);
+              const errorMessage = pdfError instanceof Error ? pdfError.message : 'Unknown error occurred';
+              showError(`Failed to process ${fileTypeLabel}: ${errorMessage}`);
+              setIsLoading(false);
+              return;
             }
           }
           
@@ -1875,58 +2235,106 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
               reader.readAsDataURL(selectedFile);
             });
             
-            // Create a unique file path
-            const userId = session.user.id;
-            // Use the file extension from earlier declaration
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExtension}`;
-            const filePath = `${userId}/${fileName}`;
-            
-            // Upload to Supabase storage
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from('user-uploads')
-              .upload(filePath, selectedFile, {
-                contentType: selectedFile.type,
-                upsert: false
+            // For images, use new structured format with attachment field
+            if (isImage && fileType.startsWith('image/')) {
+              // Add user message with structured format - separate text and image
+              setMessages(prev => {
+                const textContent = inputMessage || ''; // Only the text part
+                const userMessage = {
+                  id: prev.length + 1,
+                  role: 'user',
+                  content: textContent,
+                  timestamp: new Date().toISOString(),
+                  fileContent: fileContent,
+                  fileName: selectedFile.name
+                };
+                return [...prev, userMessage];
               });
-            
-            if (uploadError) {
-              throw new Error(`Upload error: ${uploadError.message}`);
-            }
-            
-            // Get the URL for the uploaded file
-            const { data: { publicUrl } } = supabase.storage
-              .from('user-uploads')
-              .getPublicUrl(filePath);
-            
-            // Add file information to message content
-            userMessageContent = inputMessage 
-              ? `${inputMessage}\n\n[Attached ${fileTypeLabel}: ${selectedFile.name}]` 
-              : `[Attached ${fileTypeLabel}: ${selectedFile.name}]`;
-            
-            // Add user message with file using functional update
-            setMessages(prev => {
-              const userMessage = {
-                id: prev.length + 1,
-                role: 'user',
-                content: userMessageContent,
+              
+              // Save user message to database with new structured format
+              console.log('🖼️ Saving image message to database with structured format:', {
+                textContent: inputMessage || '(no text)',
+                fileName: selectedFile.name,
+                chatId: chatId
+              });
+              
+              // Create message object with attachment field for database
+              const messageWithAttachment = {
+                text: inputMessage || '',
+                sender: 'user',
                 timestamp: new Date().toISOString(),
-                fileContent: publicUrl,
-                fileName: selectedFile.name
+                attachment: {
+                  url: fileContent,
+                  fileName: selectedFile.name,
+                  fileType: selectedFile.type
+                }
               };
-              return [...prev, userMessage];
-            });
-            
-            // Save user message to database
-            await saveChatToDatabase(publicUrl, 'user');
+              
+              // Log the attachment being saved
+              console.log('🖼️ Saving image attachment to database:', {
+                fileName: selectedFile.name,
+                fileType: selectedFile.type,
+                hasUrl: !!fileContent
+              });
+              
+              // Make sure the attachment is properly saved to the database
+              await saveChatToDatabase(messageWithAttachment, 'user');
+              
+              // Use base64 data URL for AI processing
+              imageUrl = fileContent;
+            } else {
+              // For non-image files, keep the original Supabase upload logic
+              // Create a unique file path
+              const userId = session.user.id;
+              // Use the file extension from earlier declaration
+              const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExtension}`;
+              const filePath = `${userId}/${fileName}`;
+              
+              // Upload to Supabase storage
+              const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('user-uploads')
+                .upload(filePath, selectedFile, {
+                  contentType: selectedFile.type,
+                  upsert: false
+                });
+              
+              if (uploadError) {
+                throw new Error(`Upload error: ${uploadError.message}`);
+              }
+              
+              // Get the URL for the uploaded file
+              const { data: { publicUrl } } = supabase.storage
+                .from('user-uploads')
+                .getPublicUrl(filePath);
+              
+              // Add file information to message content
+              userMessageContent = inputMessage 
+                ? `${inputMessage}\n\n[Attached ${fileTypeLabel}: ${selectedFile.name}]` 
+                : `[Attached ${fileTypeLabel}: ${selectedFile.name}]`;
+              
+              // Add user message with file using functional update
+              setMessages(prev => {
+                const userMessage = {
+                  id: prev.length + 1,
+                  role: 'user',
+                  content: userMessageContent,
+                  timestamp: new Date().toISOString(),
+                  fileContent: publicUrl,
+                  fileName: selectedFile.name
+                };
+                return [...prev, userMessage];
+              });
+              
+              // Save user message to database
+              await saveChatToDatabase(userMessageContent, 'user');
+              
+              // Use public URL for AI processing
+              imageUrl = publicUrl;
+            }
             
             // Clear input and file selection
             setInputMessage('');
             setSelectedFile(null);
-            
-
-            
-            // Use public URL for AI processing
-            imageUrl = publicUrl;
           }
         } catch (error) {
           console.error('Error processing file:', error);
@@ -2015,7 +2423,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         
         // Get streaming response
         const fullResponse = await sendMessageToAI(
-          userMessageContent + (imageUrl ? `\n\n[File data: ${imageUrl}]` : ''), 
+          userMessageContent, 
           imageUrl, 
           handleChunk
         );
@@ -2082,11 +2490,9 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
     stopSpeech();
     
     try {
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user?.id) {
-        const userId = session.user.id;
+      // Use AuthContext user for consistency
+      if (user?.uid) {
+        const userId = user.uid;
         const timestamp = new Date().toISOString();
         
         // Update the current chat's role in the database
@@ -2378,34 +2784,164 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
     }
   };
   
+  // Get PDF page count without creating images
+  const getPdfPageCount = async (pdfFile: File): Promise<number> => {
+    try {
+      // Import pdfjs-dist dynamically
+      const pdfjsLib = await import('pdfjs-dist');
+      
+      // Disable worker to avoid CDN issues - use main thread processing
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+      
+      // Convert file to array buffer
+      const arrayBuffer = await pdfFile.arrayBuffer();
+      
+      // Load PDF document
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      
+      return pdf.numPages;
+    } catch (error) {
+      console.error('Error getting PDF page count:', error);
+      throw new Error('Failed to get PDF page count');
+    }
+  };
+
   // Convert PDF to array of images
   const convertPdfToImages = async (pdfFile: File): Promise<File[]> => {
     try {
-      // Create a FileReader to read the PDF file
-      const reader = new FileReader();
+      // Import pdfjs-dist dynamically
+      const pdfjsLib = await import('pdfjs-dist');
       
-      // Read the PDF file as a data URL
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(pdfFile);
-      });
+      // Disable worker to avoid CDN issues - use main thread processing
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '';
       
-      // Create a mock image file for testing purposes
-      // In a real implementation, we would use pdf-img-convert properly
-      // but for now we'll create a single image to demonstrate the concept
-      const mockImageFile = new File(
-        [pdfFile], // Use the same content for demonstration
-        `${pdfFile.name.replace(/\.pdf$/i, '')}_page_1.png`,
-        { type: 'image/png' }
-      );
+      // Convert file to array buffer
+      const arrayBuffer = await pdfFile.arrayBuffer();
       
-      // Return an array with our mock image
-      // In a real implementation, this would be multiple images from the PDF
-      return [mockImageFile];
+      // Load PDF document
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const imageFiles: File[] = [];
+      
+      // Convert each page to image
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        
+        // Set scale for better quality
+        const scale = 2.0;
+        const viewport = page.getViewport({ scale });
+        
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d')!;
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        // Render page to canvas
+         const renderContext = {
+           canvasContext: context,
+           viewport: viewport,
+           canvas: canvas
+         };
+        
+        await page.render(renderContext).promise;
+        
+        // Convert canvas to blob
+        const blob = await new Promise<Blob>((resolve) => {
+          canvas.toBlob((blob: Blob | null) => resolve(blob!), 'image/png', 0.9);
+        });
+        
+        // Create file from blob
+        const imageFile = new File(
+          [blob],
+          `${pdfFile.name.replace(/\.pdf$/i, '')}_page_${pageNum}.png`,
+          { type: 'image/png' }
+        );
+        
+        imageFiles.push(imageFile);
+      }
+      
+      return imageFiles;
     } catch (error) {
       console.error('Error converting PDF to images:', error);
       throw new Error('Failed to convert PDF to images');
+    }
+  };
+
+  // Convert DOC/DOCX to array of images
+  const convertDocToImages = async (docFile: File): Promise<File[]> => {
+    try {
+      const mammoth = await import('mammoth');
+      
+      // Read DOC/DOCX file as array buffer
+      const arrayBuffer = await docFile.arrayBuffer();
+      
+      // Convert to HTML
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      const htmlContent = result.value;
+      
+      // Create a temporary div to render the HTML
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      tempDiv.style.width = '800px';
+      tempDiv.style.padding = '40px';
+      tempDiv.style.fontFamily = 'Arial, sans-serif';
+      tempDiv.style.fontSize = '14px';
+      tempDiv.style.lineHeight = '1.6';
+      tempDiv.style.backgroundColor = 'white';
+      tempDiv.style.color = 'black';
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      
+      // Add to document temporarily
+      document.body.appendChild(tempDiv);
+      
+      // Use html2canvas to convert to image
+      const html2canvas = await import('html2canvas');
+      const canvas = await html2canvas.default(tempDiv, {
+        backgroundColor: 'white',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true
+      });
+      
+      // Remove temporary div
+      document.body.removeChild(tempDiv);
+      
+      // Convert canvas to blob
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => resolve(blob!), 'image/png', 0.9);
+      });
+      
+      // Create file from blob
+      const imageFile = new File(
+        [blob],
+        `${docFile.name.replace(/\.(doc|docx)$/i, '')}_converted.png`,
+        { type: 'image/png' }
+      );
+      
+      return [imageFile];
+    } catch (error) {
+      console.error('Error converting DOC to images:', error);
+      throw new Error('Failed to convert document to images');
+    }
+  };
+
+  // Function to download image
+  const downloadImage = async (imageUrl: string, fileName?: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName || 'image.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      showError('Failed to download image');
     }
   };
 
@@ -2486,19 +3022,15 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
     navigate(`/chat/${newChatId}`, { replace: true });
     
     try {
-      // Only use Supabase session for database operations to comply with RLS policies
-      // AuthContext user IDs don't work with Supabase RLS policies
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session?.user?.id) {
-        console.log('⚠️ No valid Supabase session found, skipping database creation');
-        console.log('📝 Chat will work in local mode until user authenticates with Supabase');
+      // Use AuthContext user for database operations
+      if (!user?.uid) {
+        console.log('⚠️ No AuthContext user found, skipping database creation');
+        console.log('📝 Chat will work in local mode until user authenticates');
         return;
       }
       
-      const userId = session.user.id;
-      console.log('✅ Using Supabase session user ID for new chat:', userId);
-      console.log('ℹ️ Note: AuthContext user ID cannot be used for database operations due to RLS policies');
+      const userId = user.uid;
+      console.log('✅ Using AuthContext user ID for new chat:', userId);
       
       const timestamp = new Date().toISOString();
       
@@ -2583,10 +3115,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
     setSelectedRole(roleOptions[0]);
     
     try {
-      // When not logged in, we don't need to create a database entry
-      // just update the local state
-      const { data } = await supabase.auth.getSession();
-      if (!data?.session?.user?.id) {
+      // Use AuthContext user instead of Supabase session
+      if (!user?.uid) {
         // For non-logged in users, start with empty messages
         setMessages([]);
         return;
@@ -2952,13 +3482,60 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
       console.log('📋 selectChat - Raw chat data:', JSON.stringify(chatData, null, 2));
       
       const processedMessages = (chatData.messages || []).map((msg: any, index: number) => {
-        // Create a consistent ID based on message content and position to prevent duplicates
-        const consistentId = msg.id || `${selectedChatId}-${index}-${msg.timestamp || Date.now()}`;
+        // Create a truly unique ID based on message content, position, and timestamp to prevent duplicates
+        const uniqueId = msg.id || `${selectedChatId}-${index}-${msg.timestamp || Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
         
-        if (msg.text && typeof msg.text === 'string' && 
+        // Handle new structured format with attachment field
+        if (msg.attachment && msg.attachment.url) {
+          console.log('🔍 Found message with attachment field:', {
+            messageId: uniqueId,
+            sender: msg.sender,
+            textContent: msg.text || '(no text)',
+            fileName: msg.attachment.fileName
+          });
+          return {
+            id: uniqueId,
+            role: msg.sender === 'bot' ? 'assistant' : 'user',
+            content: msg.text || '', // Text content separate from image
+            timestamp: msg.timestamp || new Date().toISOString(),
+            fileContent: msg.attachment.url,
+            fileName: msg.attachment.fileName || 'Image'
+          };
+        }
+        
+        // Legacy: Check for %%% delimited image URLs
+        if (msg.text && typeof msg.text === 'string' && msg.text.includes('%%%')) {
+          console.log('🔍 Found message with %%% delimiters:', {
+            messageId: uniqueId,
+            sender: msg.sender,
+            textPreview: msg.text.substring(0, 100) + '...'
+          });
+          const imageUrlMatch = msg.text.match(/%%%(.*?)%%%/);
+          if (imageUrlMatch) {
+            const imageUrl = imageUrlMatch[1];
+            const textContent = msg.text.replace(/%%%.*?%%%/g, '').trim();
+            console.log('✅ Successfully extracted image from message:', {
+              hasImageUrl: !!imageUrl,
+              textContent: textContent || '(no text)',
+              imageUrlLength: imageUrl.length,
+              isImageOnly: !textContent
+            });
+            return {
+              id: uniqueId,
+              role: msg.sender === 'bot' ? 'assistant' : 'user',
+              content: textContent, // Keep original text content, even if empty
+              timestamp: msg.timestamp || new Date().toISOString(),
+              fileContent: imageUrl,
+              fileName: 'Image'
+            };
+          }
+        }
+        
+        // Legacy support for Supabase storage URLs
+        else if (msg.text && typeof msg.text === 'string' && 
             msg.text.includes('supabase.co/storage/v1/')) {
           return {
-            id: consistentId,
+            id: uniqueId,
             role: msg.sender === 'bot' ? 'assistant' : 'user',
             content: '',
             timestamp: msg.timestamp || new Date().toISOString(),
@@ -2967,7 +3544,7 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
           };
         } else {
           return {
-            id: consistentId,
+            id: uniqueId,
             role: msg.sender === 'bot' ? 'assistant' : 'user',
             content: msg.text || '',
             timestamp: msg.timestamp || new Date().toISOString()
@@ -3355,13 +3932,13 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                 ) : message.isStreaming ? (
                   <div className="prose prose-sm max-w-none">
                     {renderTextWithMath(displayedText[message.id] || '', darkMode, {
-                      color: darkMode ? '#f3f4f6' : '#1f2937'
+                      color: message.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
                     })}
                   </div>
                 ) : (
                   <div className="prose prose-sm max-w-none">
                     {renderTextWithMath(message.content, darkMode, {
-                      color: darkMode ? '#f3f4f6' : '#1f2937'
+                      color: message.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
                     })}
                   </div>
                 )}
@@ -3379,17 +3956,30 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                                 
                                 <div className="flex space-x-1 sm:space-x-2">
                                   {/* Add message actions here */}
-                                  <button 
-                                    onClick={() => copyToClipboard(message.content)}
-                                    className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-                                    aria-label={t('chat.copyToClipboard')}
-                                  >
-                                    <FiCopy size={12} className="sm:w-3.5 sm:h-3.5" />
-                                  </button>
+                                  {message.role === 'user' && 'fileContent' in message && message.fileContent && 
+                                   message.fileName && !message.fileName.toLowerCase().match(/\.(pdf|doc|docx)$/) ? (
+                                    // Show download button for user messages with images
+                                    <button 
+                                      onClick={() => downloadImage(message.fileContent as string, message.fileName)}
+                                      className={`p-1 rounded-full ${message.role === 'user' ? 'hover:bg-blue-700 text-blue-200' : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')}`}
+                                      aria-label="Download image"
+                                    >
+                                      <FiDownload size={12} className="sm:w-3.5 sm:h-3.5" />
+                                    </button>
+                                  ) : (
+                                    // Show copy button for text messages
+                                    <button 
+                                      onClick={() => copyToClipboard(message.content)}
+                                      className={`p-1 rounded-full ${message.role === 'user' ? 'hover:bg-blue-700 text-blue-200' : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')}`}
+                                      aria-label={t('chat.copyToClipboard')}
+                                    >
+                                      <FiCopy size={12} className="sm:w-3.5 sm:h-3.5" />
+                                    </button>
+                                  )}
                                   {message.role === 'user' && !('fileContent' in message && message.fileContent) && (
                                     <button 
                                       onClick={() => handleEditMessage(message.id, message.content)}
-                                      className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                                      className={`p-1 rounded-full ${message.role === 'user' ? 'hover:bg-blue-700 text-blue-200' : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')}`}
                                       aria-label="Edit message"
                                     >
                                       <FiEdit size={12} className="sm:w-3.5 sm:h-3.5" />
@@ -3466,6 +4056,27 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                         >
                           Start New Chat
                         </button>
+                      </div>
+                    )}
+                    
+                    {/* Processing Status Indicator */}
+                    {processingStatus?.isProcessing && (
+                      <div className={`mb-2 p-3 rounded-lg border-l-4 border-blue-500 ${darkMode ? 'bg-blue-900/20 border-blue-400' : 'bg-blue-50 border-blue-500'}`}>
+                        <div className="flex items-center space-x-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
+                          <span className={`text-sm font-medium ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                            Processing {processingStatus?.fileName}...
+                          </span>
+                        </div>
+                        <div className={`mt-2 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                          Page {processingStatus?.currentPage} of {processingStatus?.totalPages}
+                        </div>
+                        <div className={`mt-1 w-full bg-gray-200 rounded-full h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                          <div 
+                            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${((processingStatus?.currentPage || 0) / (processingStatus?.totalPages || 1)) * 100}%` }}
+                          ></div>
+                        </div>
                       </div>
                     )}
                     

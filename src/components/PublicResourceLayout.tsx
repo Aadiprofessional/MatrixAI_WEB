@@ -28,21 +28,21 @@ const PublicResourceLayout: React.FC<PublicResourceLayoutProps> = ({ children })
           {
             title: t('layout.footer.categories.tools'),
             links: [
-              { name: t('layout.footer.links.imageGenerator'), url: "tools/image-generator" },
-              { name: t('layout.footer.links.videoGenerator'), url: "tools/video-creator" },
-              { name: t('layout.footer.links.contentWriter'), url: "tools/content-writer" },
-              { name: t('layout.footer.links.speechToText'), url: "tools/speech-to-text" },
+              { name: t('layout.footer.links.imageGenerator'), url: "/tools/image-generator" },
+              { name: t('layout.footer.links.videoGenerator'), url: "/tools/video-creator" },
+              { name: t('layout.footer.links.contentWriter'), url: "/tools/content-writer" },
+              { name: t('layout.footer.links.speechToText'), url: "/tools/speech-to-text" },
               { name: t('layout.footer.links.chat'), url: "/chat" }
             ]
           },
           {
             title: t('layout.footer.categories.features'),
             links: [
-              { name: t('layout.footer.links.imageToVideo'), url: "tools/video-creator" },
-              { name: t('layout.footer.links.textToImage'), url: "tools/image-generator" },
-              { name: t('layout.footer.links.contentGeneration'), url: "tools/content-writer" },
-              { name: t('layout.footer.links.speechToText'), url: "tools/speech-to-text" },
-              { name: t('layout.footer.links.aiChat'), url: "tools/chat" }
+              { name: t('layout.footer.links.imageToVideo'), url: "/tools/video-creator" },
+              { name: t('layout.footer.links.textToImage'), url: "/tools/image-generator" },
+              { name: t('layout.footer.links.contentGeneration'), url: "/tools/content-writer" },
+              { name: t('layout.footer.links.speechToText'), url: "/tools/speech-to-text" },
+              { name: t('layout.footer.links.aiChat'), url: "/tools/chat" }
             ]
           },
           {
