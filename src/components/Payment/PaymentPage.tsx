@@ -102,7 +102,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({
       setError(null);
 
       const airwallex = await init({
-        env: 'prod',
+        env: (process.env.REACT_APP_AIRWALLEX_ENV as 'demo' | 'dev' | 'staging' | 'prod') || 'demo',
         enabledElements: ['payments'],
       });
 

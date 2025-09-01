@@ -156,13 +156,38 @@ const AirwallexPaymentPage: React.FC = () => {
       // Initialize Airwallex SDK and redirect to checkout
       const { init } = await import('@airwallex/components-sdk');
       
+      const airwallexEnv = (process.env.REACT_APP_AIRWALLEX_ENV as 'demo' | 'dev' | 'staging' | 'prod') || 'demo';
+      console.log('🔧 Airwallex Environment:', airwallexEnv);
+      console.log('🔧 Payment Intent ID:', paymentIntent.id);
+      
       const airwallex = await init({
-        env: 'demo', // Demo sandbox environment
+        env: airwallexEnv,
         enabledElements: ['payments'],
       });
+      
+      console.log('✅ Airwallex SDK initialized successfully');
+      console.log('🔧 Airwallex instance:', airwallex);
 
       // Redirect to Airwallex hosted payment page
-      airwallex.payments?.redirectToCheckout({
+      console.log('🚀 Redirecting to Airwallex checkout...');
+      console.log('🔧 Redirect params:', {
+        intent_id: paymentIntent.id,
+        client_secret: paymentIntent.client_secret ? '[REDACTED]' : 'MISSING',
+        currency: 'HKD',
+        country_code: 'HK',
+        successUrl: `${window.location.origin}/payment/airwallex/success?intent_id=${paymentIntent.id}`,
+        failUrl: `${window.location.origin}/payment/airwallex/failure?intent_id=${paymentIntent.id}`,
+        logoUrl: `${window.location.origin}/logo.png`,
+        appearance: {
+          mode: darkMode ? 'dark' : 'light'
+        }
+      });
+      
+      if (!airwallex.payments) {
+        throw new Error('Airwallex payments module not available');
+      }
+      
+      await airwallex.payments.redirectToCheckout({
         intent_id: paymentIntent.id,
         client_secret: paymentIntent.client_secret,
         currency: 'HKD',
@@ -174,10 +199,17 @@ const AirwallexPaymentPage: React.FC = () => {
           mode: darkMode ? 'dark' : 'light'
         }
       });
+      
+      console.log('✅ Redirect initiated successfully');
 
     } catch (err) {
-      console.error('Payment error:', err);
-      setError(err instanceof Error ? err.message : t('airwallexPayment.errors.paymentFailed'));
+      console.error('❌ Error during payment process:', err);
+       console.error('❌ Error details:', {
+         message: err instanceof Error ? err.message : 'Unknown error',
+         stack: err instanceof Error ? err.stack : undefined,
+         environment: process.env.REACT_APP_AIRWALLEX_ENV
+       });
+      setError(`Failed to initialize payment: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`);
       setLoading(false);
     }
   };
