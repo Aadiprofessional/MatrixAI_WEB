@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, useRef, ReactNode } from 'react';
-import { signInWithGoogle as supabaseSignInWithGoogle, signInWithApple as supabaseSignInWithApple, supabase } from '../supabaseClient';
+import { signInWithGoogle as supabaseSignInWithGoogle, signInWithApple as supabaseSignInWithApple, signOut as supabaseSignOut, supabase } from '../supabaseClient';
 
 // Define the User interface
 export interface User {
@@ -282,6 +282,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             localStorage.removeItem('userData');
             localStorage.removeItem('matrixai_session');
             localStorage.removeItem('matrixai_user');
+            localStorage.removeItem('matrixai_userData');
+            localStorage.removeItem('matrixai_userDataTimestamp');
+            
+            // Clear any Supabase-specific storage keys
+            const supabaseKeys = Object.keys(localStorage).filter(key => 
+              key.startsWith('sb-') && key.includes('auth')
+            );
+            supabaseKeys.forEach(key => localStorage.removeItem(key));
+            
+            // Also clear sessionStorage in case Supabase uses it
+             sessionStorage.clear();
+             
+             // Clear Google OAuth related cookies and storage
+             try {
+               document.cookie.split(';').forEach(cookie => {
+                 const eqPos = cookie.indexOf('=');
+                 const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+                 if (name.toLowerCase().includes('google') || name.toLowerCase().includes('oauth') || name.toLowerCase().includes('auth')) {
+                   document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+                   document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
+                   document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+                 }
+               });
+             } catch (error) {
+               console.warn('Could not clear cookies:', error);
+             }
+             
+             console.log('🔄 Supabase SIGNED_OUT event: cleared all auth data including Supabase keys and cookies');
           }
         });
         
@@ -428,7 +456,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       setError(null);
       
-      // Clear all authentication data
+      // First, sign out from Supabase to clear OAuth session
+      await supabaseSignOut();
+      
+      // Clear all authentication data from localStorage
       localStorage.removeItem('authToken');
       localStorage.removeItem('userData');
       localStorage.removeItem('matrixai_session');
@@ -436,11 +467,75 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('matrixai_userData');
       localStorage.removeItem('matrixai_userDataTimestamp');
       
+      // Clear any Supabase-specific storage keys
+      // Supabase stores auth data with keys like 'sb-<project-ref>-auth-token'
+      const supabaseKeys = Object.keys(localStorage).filter(key => 
+        key.startsWith('sb-') && key.includes('auth')
+      );
+      supabaseKeys.forEach(key => localStorage.removeItem(key));
+      
+      // Also clear sessionStorage in case Supabase uses it
+      sessionStorage.clear();
+      
+      // Clear Google OAuth related cookies and storage
+      // This helps prevent automatic re-authentication
+      try {
+        // Clear Google-related cookies by setting them to expire
+        document.cookie.split(';').forEach(cookie => {
+          const eqPos = cookie.indexOf('=');
+          const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+          if (name.toLowerCase().includes('google') || name.toLowerCase().includes('oauth') || name.toLowerCase().includes('auth')) {
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+          }
+        });
+      } catch (error) {
+        console.warn('Could not clear cookies:', error);
+      }
+      
+      // Clear context state
       setUser(null);
       setSession(null);
       
-      console.log('User signed out successfully');
+      console.log('User signed out successfully from both Supabase and local storage');
     } catch (error: any) {
+      console.error('Error during sign out:', error);
+      // Even if Supabase signOut fails, we should still clear local data
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userData');
+      localStorage.removeItem('matrixai_session');
+      localStorage.removeItem('matrixai_user');
+      localStorage.removeItem('matrixai_userData');
+      localStorage.removeItem('matrixai_userDataTimestamp');
+      
+      // Clear any Supabase-specific storage keys
+      const supabaseKeys = Object.keys(localStorage).filter(key => 
+        key.startsWith('sb-') && key.includes('auth')
+      );
+      supabaseKeys.forEach(key => localStorage.removeItem(key));
+      
+      // Also clear sessionStorage in case Supabase uses it
+      sessionStorage.clear();
+      
+      // Clear Google OAuth related cookies and storage
+      try {
+        document.cookie.split(';').forEach(cookie => {
+          const eqPos = cookie.indexOf('=');
+          const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+          if (name.toLowerCase().includes('google') || name.toLowerCase().includes('oauth') || name.toLowerCase().includes('auth')) {
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+          }
+        });
+      } catch (error) {
+        console.warn('Could not clear cookies:', error);
+      }
+      
+      setUser(null);
+      setSession(null);
+      
       setError(error.message || 'Failed to sign out');
       throw error;
     } finally {

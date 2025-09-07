@@ -3,7 +3,27 @@ import { createClient } from '@supabase/supabase-js';
 // Initialize Supabase client
 const supabaseUrl = 'https://ddtgdhehxhgarkonvpfq.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdGdkaGVoeGhnYXJrb252cGZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2Njg4MTIsImV4cCI6MjA1MDI0NDgxMn0.mY8nx-lKrNXjJxHU7eEja3-fTSELQotOP4aZbxvmNPY';
-export const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Configure Supabase client with custom storage to prevent session persistence issues
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    storage: {
+      getItem: (key: string) => {
+        // Use sessionStorage instead of localStorage for auth tokens
+        // This ensures sessions are cleared when browser tab is closed
+        return sessionStorage.getItem(key);
+      },
+      setItem: (key: string, value: string) => {
+        sessionStorage.setItem(key, value);
+      },
+      removeItem: (key: string) => {
+        sessionStorage.removeItem(key);
+      },
+    },
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
 
 // ===== Authentication functions =====
 
@@ -56,9 +76,12 @@ export const signInWithGoogle = async () => {
     options: { 
       redirectTo: redirectUrl,
       queryParams: {
-        // Adding a prompt parameter to ensure user selects an account each time
-        // This helps prevent redirect loops
-        prompt: 'select_account'
+        // Force account selection and consent screen every time
+        prompt: 'select_account consent',
+        // Add a timestamp to prevent caching
+        state: `timestamp_${Date.now()}`,
+        // Force fresh authentication
+        max_age: '0'
       }
     }, 
   });

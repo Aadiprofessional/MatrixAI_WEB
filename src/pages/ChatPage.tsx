@@ -18,9 +18,10 @@ import { useAuth, User } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../supabaseClient';
 import { userService } from '../services/userService';
-import { ProFeatureAlert } from '../components';
+import { ProFeatureAlert, ImageSkeleton } from '../components';
 import AuthRequiredButton from '../components/AuthRequiredButton';
 import { useAlert } from '../context/AlertContext';
+import FilePreviewModal from '../components/FilePreviewModal';
 import './ChatPage.css';
 
 // Add these imports for markdown and math rendering
@@ -29,9 +30,20 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
+import rehypeHighlight from 'rehype-highlight';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import 'katex/dist/katex.min.css';
+
+// Import new text formatting packages
+import { MathJax, MathJaxContext } from 'better-react-mathjax';
+import MarkdownIt from 'markdown-it';
+import DOMPurify from 'dompurify';
+// @assistant-ui/react imports - keeping only what's available
+// import { Thread } from '@assistant-ui/react';
+// import { AssistantRuntimeProvider } from '@assistant-ui/react';
+// import { useAssistantRuntime } from '@assistant-ui/react';
+// import { MarkdownTextRenderer } from '@assistant-ui/react-markdown';
 
 
 // Define interface for message types
@@ -45,6 +57,11 @@ interface Message {
   sender?: string;
   text?: string;
   isStreaming?: boolean;
+  image_url?: string;
+  file_url?: string;
+  file_name?: string;
+  isGenerating?: boolean;
+  generationType?: 'image' | 'spreadsheet' | 'document';
 }
 
 // Define interface for chat type
@@ -68,7 +85,7 @@ const emptyInitialMessages: Message[] = [];
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
-  const { userData, isPro } = useUser();
+  const { userData, isPro, refreshUserData } = useUser();
   const { user } = useAuth();
   console.log('🔍 ChatPage - useAuth result:', { user, hasUser: !!user, userUid: user?.uid, userEmail: user?.email });
   const { showSuccess, showError, showWarning, showConfirmation } = useAlert();
@@ -195,6 +212,30 @@ const preprocessContent = (content: string): string => {
   return processed.trim();
 };
 
+// Initialize MarkdownIt instance with enhanced features
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+  breaks: true
+});
+
+// MathJax configuration for better math rendering
+const mathJaxConfig = {
+  loader: { load: ['[tex]/html'] },
+  tex: {
+    packages: { '[+]': ['html'] },
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true,
+    processEnvironments: true
+  },
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  }
+};
+
 // Function to render text with math expressions and markdown formatting
 const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) => {
   if (!text) return null;
@@ -202,12 +243,39 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   // Preprocess the content to handle math expressions and clean formatting
   const processedText = preprocessContent(text);
   
+  // Process with markdown-it for enhanced markdown parsing
+  const markdownProcessed = md.render(processedText);
+  
+  // Sanitize content with DOMPurify
+  const sanitizedText = DOMPurify.sanitize(markdownProcessed, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'code', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'div', 'span'],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id']
+  });
+  
   return (
-    <div className={`markdown-content ${darkMode ? 'dark' : ''}`} style={textStyle}>
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeKatex, rehypeRaw]}
-        components={{
+    <MathJaxContext config={mathJaxConfig}>
+      <div 
+        className={`markdown-content ${darkMode ? 'dark' : ''}`} 
+        style={textStyle}
+        dangerouslySetInnerHTML={{ __html: sanitizedText }}
+      />
+    </MathJaxContext>
+  );
+};
+
+// Alternative ReactMarkdown renderer for fallback
+const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?: any) => {
+  if (!text) return null;
+  
+  const processedText = preprocessContent(text);
+  
+  return (
+    <MathJaxContext config={mathJaxConfig}>
+      <div className={`markdown-content ${darkMode ? 'dark' : ''}`} style={textStyle}>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm, remarkMath]}
+          rehypePlugins={[rehypeKatex, rehypeRaw, rehypeHighlight]}
+          components={{
           code: CodeBlock,
           pre: ({ children }: any) => <div className="overflow-auto">{children}</div>,
           h1: ({ children }: any) => {
@@ -471,10 +539,11 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
             </td>
           ),
         }}
-      >
+        >
         {processedText}
       </ReactMarkdown>
     </div>
+    </MathJaxContext>
   );
 };
 
@@ -555,7 +624,13 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
   const [isLoadingChats, setIsLoadingChats] = useState(true);
   const [chats, setChats] = useState<Chat[]>([]);
   const [showProAlert, setShowProAlert] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedGenerationType, setSelectedGenerationType] = useState<string | null>(null);
   const [coinsUsed, setCoinsUsed] = useState<{[key: number]: number}>({});
+  const [isFilePreviewOpen, setIsFilePreviewOpen] = useState(false);
+  const [previewFileUrl, setPreviewFileUrl] = useState('');
+  const [previewFileName, setPreviewFileName] = useState('');
+  const [previewFileType, setPreviewFileType] = useState<'spreadsheet' | 'document'>('spreadsheet');
 
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -1864,8 +1939,8 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
         apiMessages.push(currentUserMessage);
 
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', true);
-        xhr.setRequestHeader('Authorization', `Bearer ${process.env.REACT_APP_ALIYUN_API_KEY}`);
+        xhr.open('POST', 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', true);
+        xhr.setRequestHeader('Authorization', `Bearer sk-9f7b91a0bb81406b9da7ff884ddd2592`);
         xhr.setRequestHeader('Content-Type', 'application/json');
 
         let fullContent = '';
@@ -1990,6 +2065,18 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() && !selectedFile) return;
+    
+    // If a generation type is selected, route to generation API
+    if (selectedGenerationType) {
+      const messageToSend = inputMessage.trim() || 'Generate content';
+      
+      // Clear input immediately
+      setInputMessage('');
+      setSelectedFile(null);
+      
+      await sendGenerationRequest(selectedGenerationType, messageToSend);
+      return;
+    }
     
     // Check if 40-message limit is reached for this chat
     const currentUserMessages = messages.filter(m => m.role === 'user').length;
@@ -2945,6 +3032,20 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
     }
   };
 
+  const handleFilePreview = (fileUrl: string, fileName: string, generationType: string) => {
+    const fileType = generationType === 'spreadsheet' ? 'spreadsheet' : 'document';
+    setPreviewFileUrl(fileUrl);
+    setPreviewFileName(fileName);
+    setPreviewFileType(fileType);
+    setIsFilePreviewOpen(true);
+  };
+
+  const handleCloseFilePreview = () => {
+    setIsFilePreviewOpen(false);
+    setPreviewFileUrl('');
+    setPreviewFileName('');
+  };
+
   // Function to show image in full screen
   const handleImageFullScreen = (url: string) => {
     // Create fullscreen modal
@@ -3572,6 +3673,300 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
     }
   };
 
+  // Generation button selection handlers
+  const handleImageGenerate = () => {
+    setSelectedGenerationType('image_generate');
+  };
+
+  const handleXLSXGenerate = () => {
+    setSelectedGenerationType('sheet_generate');
+  };
+
+  const handleDocsGenerate = () => {
+    setSelectedGenerationType('document_generate');
+  };
+
+  // Function to send generation request based on selected type
+  const sendGenerationRequest = async (type: string, message: string) => {
+    setIsGenerating(true);
+    
+    // Add user message to chat immediately
+    const userMessage: Message = {
+      id: Date.now(),
+      role: 'user',
+      content: message,
+      timestamp: new Date().toISOString(),
+      sender: 'user'
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    
+    // Add initial bot message for streaming response
+    const botMessageId = Date.now() + 1;
+    const generationType = type === 'image_generate' ? 'image' : 
+                          type === 'sheet_generate' ? 'spreadsheet' : 'document';
+    const initialBotMessage: Message = {
+      id: botMessageId,
+      role: 'assistant',
+      content: type === 'image_generate' ? 'Generating your image...' : '',
+      timestamp: new Date().toISOString(),
+      sender: 'bot',
+      isStreaming: true,
+      isGenerating: true,
+      generationType: generationType as 'image' | 'spreadsheet' | 'document'
+    };
+    
+    setMessages(prev => [...prev, initialBotMessage]);
+    
+    try {
+      // Use fetch for streaming instead of axios
+      const response = await fetch('https://matrixai123.app.n8n.cloud/webhook-test/ce924f8e-91e2-44f4-a2de-4978c77994b6', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream'
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              uid: user?.uid || 'anonymous',
+              type: type,
+              text: {
+                body: message
+              }
+            }
+          ],
+          stream: true
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedContent = '';
+
+      if (reader) {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+              if (line.trim()) {
+                try {
+                  const data = JSON.parse(line);
+                  
+                  // Handle streaming content chunks
+                  if (data.type === 'item' && data.content && !data.content.includes('output')) {
+                    // Only accumulate content if it's not the final output
+                    if (type !== 'image_generate') {
+                      accumulatedContent += data.content;
+                      
+                      // Update the bot message with streaming content
+                      setMessages(prev => prev.map(msg => 
+                        msg.id === botMessageId 
+                          ? { ...msg, content: accumulatedContent }
+                          : msg
+                      ));
+                    }
+                  } 
+                  // Handle final response with output
+                  else if (data.type === 'item' && data.content && data.content.includes('output')) {
+                    try {
+                      const outputData = JSON.parse(data.content);
+                      if (outputData.output) {
+                        // Extract URLs from the output text
+                        let outputText = outputData.output;
+                        
+                        // Check if output contains nested JSON and extract the actual content
+                        if (outputText.includes('{"output":')) {
+                          try {
+                            const nestedData = JSON.parse(outputText);
+                            if (nestedData.output) {
+                              outputText = nestedData.output;
+                            }
+                          } catch (e) {
+                            // If parsing fails, use the original output text
+                          }
+                        }
+                        
+                        if (type === 'image_generate') {
+                          // Extract image URL from markdown link or backtick-wrapped URL
+                          let imageUrl: string | null = null;
+                          let cleanContent = outputText;
+                          
+                          // Try markdown link pattern first
+                          const markdownMatch = outputText.match(/\[.*?\]\((https?:\/\/[^)]+\.(?:png|jpg|jpeg|gif|webp))\)/);
+                          if (markdownMatch) {
+                            imageUrl = markdownMatch[1];
+                            cleanContent = outputText.replace(/\[.*?\]\(https?:\/\/[^)]+\.(?:png|jpg|jpeg|gif|webp)\)/g, '').trim();
+                          } else {
+                            // Try backtick-wrapped URL pattern
+                            const backtickMatch = outputText.match(/`(https?:\/\/[^`]+\.(?:png|jpg|jpeg|gif|webp))`/);
+                            if (backtickMatch) {
+                              imageUrl = backtickMatch[1];
+                              cleanContent = outputText.replace(/`https?:\/\/[^`]+\.(?:png|jpg|jpeg|gif|webp)`/g, '').trim();
+                            } else {
+                              // Try plain URL pattern
+                              const plainMatch = outputText.match(/(https?:\/\/[^\s]+\.(?:png|jpg|jpeg|gif|webp))/);
+                              if (plainMatch) {
+                                imageUrl = plainMatch[1];
+                                cleanContent = outputText.replace(/https?:\/\/[^\s]+\.(?:png|jpg|jpeg|gif|webp)/g, '').trim();
+                              }
+                            }
+                          }
+                          
+                          if (imageUrl) {
+                            // For image generation, update message with image URL
+                            setMessages(prev => prev.map(msg => 
+                              msg.id === botMessageId 
+                                ? { 
+                                    ...msg, 
+                                    content: cleanContent || 'Image generated successfully!',
+                                    image_url: imageUrl as string,
+                                    isGenerating: false,
+                                    isStreaming: false
+                                  }
+                                : msg
+                            ));
+                          } else {
+                            // No URL found, show error message
+                            setMessages(prev => prev.map(msg => 
+                              msg.id === botMessageId 
+                                ? { 
+                                    ...msg, 
+                                    content: 'Failed to generate image',
+                                    isGenerating: false,
+                                    isStreaming: false
+                                  }
+                                : msg
+                            ));
+                          }
+                        } else if (type === 'sheet_generate' || type === 'document_generate') {
+                          // Extract file URL from markdown link
+                          const fileUrlMatch = outputText.match(/\[.*?\]\((https?:\/\/[^)]+\.(xlsx|docx|pdf))\)/);
+                          if (fileUrlMatch) {
+                            const fileType = type === 'sheet_generate' ? 'Spreadsheet' : 'Document';
+                            const fileName = fileUrlMatch[0].match(/\[(.*?)\]/)?.[1] || `Generated ${fileType}`;
+                            
+                            setMessages(prev => prev.map(msg => 
+                              msg.id === botMessageId 
+                                ? { 
+                                    ...msg, 
+                                    content: `${fileType} generated successfully!`,
+                                    file_url: fileUrlMatch[1],
+                                    file_name: fileName
+                                  }
+                                : msg
+                            ));
+                          }
+                        }
+                      }
+                    } catch (outputParseError) {
+                      // If it's not JSON, treat as regular content
+                      accumulatedContent += data.content;
+                      setMessages(prev => prev.map(msg => 
+                        msg.id === botMessageId 
+                          ? { ...msg, content: accumulatedContent }
+                          : msg
+                      ));
+                    }
+                  }
+                  // Handle error responses
+                  else if (data.type === 'error') {
+                    throw new Error(data.content || 'Generation failed');
+                  }
+                } catch (parseError) {
+                  console.warn('Failed to parse streaming data:', parseError);
+                }
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+      }
+
+      // Mark streaming as complete
+      setMessages(prev => prev.map(msg => 
+        msg.id === botMessageId 
+          ? { ...msg, isStreaming: false, isGenerating: false }
+          : msg
+      ));
+
+      const typeNames = {
+        'image_generate': 'Image',
+        'sheet_generate': 'Spreadsheet', 
+        'document_generate': 'Document'
+      };
+      
+      showSuccess(`${typeNames[type as keyof typeof typeNames]} generated successfully!`);
+      setInputMessage('');
+      setSelectedGenerationType(null);
+      
+      // Deduct coins for generation
+      if (!isPro && userData?.uid) {
+        await userService.subtractCoins(userData.uid, 3, 'AI Generation');
+        await refreshUserData();
+      }
+      
+    } catch (error) {
+      console.error('Error in generation request:', error);
+      
+      // Determine error type and message
+      let errorMessage = 'An unexpected error occurred. Please try again.';
+      let detailedError = '';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage = 'Network connection failed. Please check your internet connection.';
+          detailedError = 'Unable to connect to the generation service.';
+        } else if (error.message.includes('401') || error.message.includes('403')) {
+          errorMessage = 'Authentication failed. Please log in again.';
+          detailedError = 'Your session may have expired.';
+        } else if (error.message.includes('429')) {
+          errorMessage = 'Too many requests. Please wait a moment before trying again.';
+          detailedError = 'Rate limit exceeded.';
+        } else if (error.message.includes('500')) {
+          errorMessage = 'Server error. Our team has been notified.';
+          detailedError = 'The generation service is temporarily unavailable.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      const typeNames = {
+        'image_generate': 'image',
+        'sheet_generate': 'spreadsheet', 
+        'document_generate': 'document'
+      };
+      
+      const contentType = typeNames[type as keyof typeof typeNames] || 'content';
+      
+      // Update bot message with detailed error
+      setMessages(prev => prev.map(msg => 
+        msg.id === botMessageId 
+          ? { 
+              ...msg, 
+              content: `❌ **${contentType.charAt(0).toUpperCase() + contentType.slice(1)} Generation Failed**\n\n${errorMessage}${detailedError ? `\n\n*${detailedError}*` : ''}\n\nPlease try again or contact support if the problem persists.`,
+              isStreaming: false,
+              isGenerating: false 
+            }
+          : msg
+      ));
+      
+      showError(`Failed to generate ${contentType}. ${errorMessage}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="ChatPage flex h-screen overflow-hidden">
       {/* Remove duplicate sidebar - now handled by Layout */}
@@ -3893,6 +4288,191 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                                 </div>
                               )}
                               
+                              {/* Generated Image Display */}
+                              {(message.image_url || (message.isGenerating && message.generationType === 'image')) && (
+                                <div className="mb-3">
+                                  <div className={`relative rounded-lg overflow-hidden border ${
+                                    darkMode ? 'border-gray-600 bg-gray-800' : 'border-gray-200 bg-white'
+                                  } shadow-lg w-full max-w-lg mx-auto`}>
+                                    {message.isGenerating && message.generationType === 'image' && !message.image_url ? (
+                                      <ImageSkeleton className="w-full h-full" />
+                                    ) : message.image_url ? (
+                                      <>
+                                        <img 
+                                          src={message.image_url} 
+                                          alt="Generated image" 
+                                          className="w-full h-auto block rounded-lg transition-opacity duration-300 opacity-0"
+                                          onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                          }}
+                                          onLoad={(e) => {
+                                            e.currentTarget.style.opacity = '1';
+                                          }}
+                                        />
+                                        <div className={`hidden p-4 text-center ${
+                                          darkMode ? 'text-gray-300' : 'text-gray-600'
+                                        }`}>
+                                          <div className="flex items-center justify-center space-x-2 mb-2">
+                                            <FiImage className="text-2xl" />
+                                            <span className="text-sm font-medium">Failed to load image</span>
+                                          </div>
+                                          <p className="text-xs opacity-75">The generated image could not be displayed</p>
+                                        </div>
+                                        
+                                        {/* Image overlay with download button */}
+                                        <div className="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                          <a
+                                            href={message.image_url}
+                                            download="generated-image.png"
+                                            className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
+                                              darkMode 
+                                                ? 'bg-black/50 hover:bg-black/70 text-white' 
+                                                : 'bg-white/50 hover:bg-white/70 text-gray-800'
+                                            }`}
+                                            title="Download image"
+                                          >
+                                            <FiDownload size={16} />
+                                          </a>
+                                        </div>
+                                      </>
+                                    ) : null}
+                                  </div>
+                                  
+                                  {/* Image info */}
+                                  <div className={`mt-2 text-xs ${
+                                    darkMode ? 'text-gray-400' : 'text-gray-500'
+                                  }`}>
+                                    <div className="flex items-center justify-between">
+                                      <span>Generated Image</span>
+                                      <span>Click image to view full size</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Generated File Download */}
+                              {message.file_url && (
+                                <div className="mb-3">
+                                  <div className={`p-4 rounded-lg border ${
+                                    darkMode ? 'border-gray-600 bg-gray-800' : 'border-gray-200 bg-white'
+                                  } shadow-lg transition-all duration-200 hover:shadow-xl`}>
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center space-x-4">
+                                        <div className={`p-3 rounded-xl ${
+                                          message.generationType === 'spreadsheet' 
+                                            ? (darkMode ? 'bg-green-600' : 'bg-green-500')
+                                            : message.generationType === 'document'
+                                            ? (darkMode ? 'bg-blue-600' : 'bg-blue-500')
+                                            : (darkMode ? 'bg-purple-600' : 'bg-purple-500')
+                                        } shadow-md`}>
+                                          {message.generationType === 'spreadsheet' ? (
+                                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 1v3h2V5H5zm4 0v3h2V5H9zm4 0v3h2V5h-2zM5 10v3h2v-3H5zm4 0v3h2v-3H9zm4 0v3h2v-3h-2z" clipRule="evenodd" />
+                                            </svg>
+                                          ) : message.generationType === 'document' ? (
+                                            <FiFileText className="text-white text-xl" />
+                                          ) : (
+                                            <FiFile className="text-white text-xl" />
+                                          )}
+                                        </div>
+                                        <div className="flex-1">
+                                          <p className={`font-semibold text-base ${
+                                            darkMode ? 'text-gray-100' : 'text-gray-900'
+                                          }`}>
+                                            {message.file_name || (
+                                              message.generationType === 'spreadsheet' ? 'Generated Spreadsheet' :
+                                              message.generationType === 'document' ? 'Generated Document' :
+                                              'Generated File'
+                                            )}
+                                          </p>
+                                          <p className={`text-sm mt-1 ${
+                                            darkMode ? 'text-gray-400' : 'text-gray-600'
+                                          }`}>
+                                            {message.generationType === 'spreadsheet' && 'Excel file (.xlsx)'}
+                                            {message.generationType === 'document' && 'Word document (.docx)'}
+                                            {!message.generationType && 'Ready for download'}
+                                          </p>
+                                          <div className={`flex items-center space-x-4 mt-2 text-xs ${
+                                            darkMode ? 'text-gray-500' : 'text-gray-500'
+                                          }`}>
+                                            <span className="flex items-center space-x-1">
+                                              <div className={`w-2 h-2 rounded-full ${
+                                                darkMode ? 'bg-green-400' : 'bg-green-500'
+                                              }`}></div>
+                                              <span>Ready</span>
+                                            </span>
+                                            <span>•</span>
+                                            <span>Click to download</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <button
+                          onClick={() => message.file_url && handleFilePreview(
+                            message.file_url, 
+                            message.file_name || (
+                              message.generationType === 'spreadsheet' ? 'generated-spreadsheet.xlsx' :
+                              message.generationType === 'document' ? 'generated-document.docx' :
+                              'generated-file'
+                            ),
+                            message.generationType || 'document'
+                          )}
+                          className={`px-3 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 border ${
+                            darkMode 
+                              ? 'border-gray-600 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white' 
+                              : 'border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900'
+                          }`}
+                          title="Preview file"
+                        >
+                          <FiMaximize size={14} />
+                          <span className="text-sm hidden sm:inline">Preview</span>
+                        </button>
+                                        <a
+                                          href={message.file_url}
+                                          download={message.file_name || (
+                                            message.generationType === 'spreadsheet' ? 'generated-spreadsheet.xlsx' :
+                                            message.generationType === 'document' ? 'generated-document.docx' :
+                                            'generated-file'
+                                          )}
+                                          className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg ${
+                                            darkMode 
+                                              ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                              : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                          }`}
+                                        >
+                                          <FiDownload size={14} />
+                                          <span className="text-sm font-medium">Download</span>
+                                        </a>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Loading indicator for generation requests */}
+                              {message.isGenerating && (
+                                <div className="mb-3">
+                                  <div className={`p-4 rounded-lg border-2 border-dashed ${darkMode ? 'border-blue-500 bg-blue-900/20' : 'border-blue-300 bg-blue-50'}`}>
+                                    <div className="flex items-center space-x-3">
+                                      <div className="relative">
+                                        <div className={`w-6 h-6 rounded-full border-2 border-transparent ${darkMode ? 'border-t-blue-400' : 'border-t-blue-500'} animate-spin`}></div>
+                                      </div>
+                                      <div>
+                                        <p className={`font-medium text-sm ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                                          {message.generationType === 'image' && 'Generating image...'}
+                                          {message.generationType === 'spreadsheet' && 'Creating spreadsheet...'}
+                                          {message.generationType === 'document' && 'Writing document...'}
+                                        </p>
+                                        <p className={`text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                          This may take a few moments
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
                               {/* Text content with markdown and math rendering */}
               <div className="markdown-content">
                 {editingMessageId === message.id ? (
@@ -4041,6 +4621,74 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                   
                   {/* Input area */}
                   <div className={`p-2 sm:p-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    {/* Fixed Generation Buttons */}
+                    <div className="mb-3">
+                      <div className="flex items-center space-x-2 overflow-x-auto pb-2">
+                        <AuthRequiredButton
+                          onClick={handleImageGenerate}
+                          disabled={isGenerating}
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                            selectedGenerationType === 'image_generate'
+                              ? (darkMode ? 'bg-purple-700 border-2 border-purple-500 text-white' : 'bg-purple-600 border-2 border-purple-400 text-white')
+                              : isGenerating
+                              ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed')
+                              : (darkMode ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white' : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white')
+                          }`}
+                        >
+                          <FiImage className="w-4 h-4" />
+                          <span>Image Generate</span>
+                          {selectedGenerationType === 'image_generate' && (
+                            <FiCheck className="w-4 h-4" />
+                          )}
+                          {isGenerating && (
+                            <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
+                          )}
+                        </AuthRequiredButton>
+
+                        <AuthRequiredButton
+                          onClick={handleXLSXGenerate}
+                          disabled={isGenerating}
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                            selectedGenerationType === 'sheet_generate'
+                              ? (darkMode ? 'bg-green-700 border-2 border-green-500 text-white' : 'bg-green-600 border-2 border-green-400 text-white')
+                              : isGenerating
+                              ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed')
+                              : (darkMode ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white' : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white')
+                          }`}
+                        >
+                          <FiFileText className="w-4 h-4" />
+                          <span>XLSX Generate</span>
+                          {selectedGenerationType === 'sheet_generate' && (
+                            <FiCheck className="w-4 h-4" />
+                          )}
+                          {isGenerating && (
+                            <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
+                          )}
+                        </AuthRequiredButton>
+
+                        <AuthRequiredButton
+                          onClick={handleDocsGenerate}
+                          disabled={isGenerating}
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                            selectedGenerationType === 'document_generate'
+                              ? (darkMode ? 'bg-blue-700 border-2 border-blue-500 text-white' : 'bg-blue-600 border-2 border-blue-400 text-white')
+                              : isGenerating
+                              ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed')
+                              : (darkMode ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white' : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white')
+                          }`}
+                        >
+                          <FiFile className="w-4 h-4" />
+                          <span>Docs Generate</span>
+                          {selectedGenerationType === 'document_generate' && (
+                            <FiCheck className="w-4 h-4" />
+                          )}
+                          {isGenerating && (
+                            <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
+                          )}
+                        </AuthRequiredButton>
+                      </div>
+                    </div>
+
                     {/* Message limit warning */}
                     {isMessageLimitReached && (
                       <div className={`mb-3 p-3 rounded-lg border ${darkMode ? 'bg-red-900/20 border-red-700 text-red-300' : 'bg-red-50 border-red-200 text-red-700'}`}>
@@ -4098,7 +4746,11 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder={isMessageLimitReached ? 'Message limit reached. Start a new chat to continue.' : t('chat.placeholder')}
+                        placeholder={isMessageLimitReached ? 'Message limit reached. Start a new chat to continue.' : 
+                          selectedGenerationType === 'image_generate' ? 'Describe your image...' :
+                          selectedGenerationType === 'sheet_generate' ? 'Describe your spreadsheet...' :
+                          selectedGenerationType === 'document_generate' ? 'Describe your document...' :
+                          t('chat.placeholder')}
                         rows={1}
                         disabled={isMessageLimitReached}
                         className={`flex-1 py-2 sm:py-3 px-3 sm:px-4 bg-transparent focus:outline-none resize-none max-h-32 text-sm sm:text-base ${darkMode ? 'text-white placeholder-gray-400' : 'text-gray-700 placeholder-gray-400'} ${isMessageLimitReached ? 'cursor-not-allowed' : ''}`}
@@ -4121,18 +4773,18 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
                         <div className="relative">
                           <AuthRequiredButton
                             onClick={handleSendMessage}
-                            disabled={(!inputMessage.trim() && !selectedFile) || isMessageLimitReached}
+                            disabled={(!inputMessage.trim() && !selectedFile && !selectedGenerationType) || isMessageLimitReached}
                             className={`p-1.5 sm:p-2 rounded-full flex items-center ${
-                              (!inputMessage.trim() && !selectedFile) || isMessageLimitReached
-                                ? (darkMode ? 'text-gray-500 bg-gray-800' : 'text-gray-400 bg-gray-100') 
-                                : (darkMode ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600')
-                            }`}
+                                (!inputMessage.trim() && !selectedFile && !selectedGenerationType) || isMessageLimitReached
+                                  ? (darkMode ? 'text-gray-500 bg-gray-800' : 'text-gray-400 bg-gray-100') 
+                                  : (darkMode ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600')
+                              }`}
                             aria-label={t('chat.sendMessage')}
                           >
                             <FiSend className="w-4 h-4 sm:w-5 sm:h-5" />
-                            {((inputMessage.trim() || selectedFile) && !isMessageLimitReached) && (
+                            {((inputMessage.trim() || selectedFile || selectedGenerationType) && !isMessageLimitReached) && (
                               <span className="ml-1 text-xs bg-orange-500/20 px-1.5 py-0.5 rounded-full flex items-center">
-                                -{selectedFile ? (
+                                -{selectedGenerationType ? '3' : selectedFile ? (
                                   selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf') ||
                                   selectedFile.type === 'application/msword' || 
                                   selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
@@ -4153,6 +4805,17 @@ const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) =>
           </div>
         </div>
       </div>
+
+      {/* File Preview Modal */}
+      {isFilePreviewOpen && (
+        <FilePreviewModal
+          isOpen={isFilePreviewOpen}
+          onClose={handleCloseFilePreview}
+          fileUrl={previewFileUrl}
+          fileName={previewFileName}
+          fileType={previewFileType}
+        />
+      )}
 
       {/* Pro Feature Alert */}
       {showProAlert && (

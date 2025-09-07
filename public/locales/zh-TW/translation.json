@@ -3034,5 +3034,60 @@
         "contactForm": "聯絡表單"
       }
     }
+  },
+  "chargeModal": {
+    "title": "購買代幣",
+    "currentBalance": "當前餘額",
+    "coins": "代幣",
+    "loadingPlans": "載入套餐中...",
+    "tryAgain": "重試",
+    "chooseYourPlan": "選擇您的套餐",
+    "popular": "熱門",
+    "aiServicesPricing": "AI服務定價",
+    "processing": "處理中...",
+    "purchase": "購買{{planName}}",
+    "plan": "套餐",
+    "features": {
+      "getCoins": "獲得{{coins}}代幣",
+      "validFor": "有效期{{period}}",
+      "accessAllTools": "存取所有AI工具",
+      "prioritySupport": "優先支援",
+      "perfectForTrying": "完美的試用服務",
+      "validFor15Days": "有效期15天",
+      "basicSupport": "基礎支援",
+      "perfectForRegular": "完美的常規用戶",
+      "monthlyAllocation": "每月代幣分配",
+      "fullAccess": "完全存取所有功能",
+      "bestValue": "最佳價值套餐",
+      "coinsEveryMonth": "每月1380代幣",
+      "fullYear": "全年訂閱",
+      "premiumSupport": "高級支援",
+      "discount10": "10%折扣",
+      "extraCoins": "現有用戶額外代幣",
+      "expiresMonthEnd": "月底到期",
+      "addToBalance": "添加到當前餘額",
+      "instantActivation": "即時啟用"
+    },
+    "services": {
+      "aiChat": "AI聊天",
+      "imageGeneration": "圖像生成",
+      "videoGeneration": "影片生成",
+      "audioTranscription": "音頻轉錄",
+      "contentWriting": "內容寫作",
+      "humaniseText": "人性化文本"
+    },
+    "costs": {
+      "oneCoin": "1代幣",
+      "twoCoins": "2代幣",
+      "threeCoins": "3代幣",
+      "thirtyCoins": "30代幣"
+    },
+    "units": {
+      "perMessage": "每條訊息",
+      "perImage": "每張圖片",
+      "perFiveSeconds": "每5秒",
+      "perMinute": "每分鐘",
+      "perRequest": "每次請求"
+    }
   }
 }

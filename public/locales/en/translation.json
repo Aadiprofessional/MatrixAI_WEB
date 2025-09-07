@@ -2945,5 +2945,60 @@
         "contactForm": "Contact form"
       }
     }
+  },
+  "chargeModal": {
+    "title": "Buy Coins",
+    "currentBalance": "Current Balance",
+    "coins": "coins",
+    "loadingPlans": "Loading plans...",
+    "tryAgain": "Try again",
+    "chooseYourPlan": "Choose Your Plan",
+    "popular": "Popular",
+    "aiServicesPricing": "AI Services Pricing",
+    "processing": "Processing...",
+    "purchase": "Purchase {{planName}}",
+    "plan": "Plan",
+    "features": {
+      "getCoins": "Get {{coins}} coins",
+      "validFor": "Valid for {{period}}",
+      "accessAllTools": "Access to all AI tools",
+      "prioritySupport": "Priority support",
+      "perfectForTrying": "Perfect for trying our service",
+      "validFor15Days": "Valid for 15 days",
+      "basicSupport": "Basic support",
+      "perfectForRegular": "Perfect for regular users",
+      "monthlyAllocation": "Monthly allocation of coins",
+      "fullAccess": "Full access to all features",
+      "bestValue": "Best value plan",
+      "coinsEveryMonth": "1380 coins every month",
+      "fullYear": "Full year subscription",
+      "premiumSupport": "Premium support",
+      "discount10": "10% discount",
+      "extraCoins": "Extra coins for existing users",
+      "expiresMonthEnd": "Expires at month end",
+      "addToBalance": "Add to current balance",
+      "instantActivation": "Instant activation"
+    },
+    "services": {
+      "aiChat": "AI Chat",
+      "imageGeneration": "Image Generation",
+      "videoGeneration": "Video Generation",
+      "audioTranscription": "Audio Transcription",
+      "contentWriting": "Content Writing",
+      "humaniseText": "Humanise Text"
+    },
+    "costs": {
+      "oneCoin": "1 coin",
+      "twoCoins": "2 coins",
+      "threeCoins": "3 coins",
+      "thirtyCoins": "30 coins"
+    },
+    "units": {
+      "perMessage": "per message",
+      "perImage": "per image",
+      "perFiveSeconds": "per 5 seconds",
+      "perMinute": "per minute",
+      "perRequest": "per request"
+    }
   }
 }

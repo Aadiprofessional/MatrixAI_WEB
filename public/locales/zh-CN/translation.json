@@ -162,10 +162,6 @@
       "teacher": {
         "description": "你好！我是你的AI教育导师，专门从事学术指导、作业帮助和学习支持。我今天能为您提供什么帮助？",
         "name": "教育导师"
-      },
-      "technical": {
-        "description": "编程，技术和技术解决问题的专家",
-        "name": "技术专家"
       }
     },
     "sendMessage": "发送消息",
@@ -1010,7 +1006,7 @@
     "contentWriting": "内容写作",
     "creativeProjects": "创意项目",
     "imageGeneration": "图像生成",
-    "speechToText": "对文字的讲话",
+    "speechToText": "语音转文字",
     "subtitle": "查看专业人士如何使用我们的AI工具。",
     "title": "为每个创造者制作。",
     "videoCreation": "视频创建"
@@ -3039,6 +3035,61 @@
         "emailUs": "发送邮件",
         "contactForm": "联系表单"
       }
+    }
+  },
+  "chargeModal": {
+    "title": "购买代币",
+    "currentBalance": "当前余额",
+    "coins": "代币",
+    "loadingPlans": "加载套餐中...",
+    "tryAgain": "重试",
+    "chooseYourPlan": "选择您的套餐",
+    "popular": "热门",
+    "aiServicesPricing": "AI服务定价",
+    "processing": "处理中...",
+    "purchase": "购买{{planName}}",
+    "plan": "套餐",
+    "features": {
+      "getCoins": "获得{{coins}}代币",
+      "validFor": "有效期{{period}}",
+      "accessAllTools": "访问所有AI工具",
+      "prioritySupport": "优先支持",
+      "perfectForTrying": "完美的试用服务",
+      "validFor15Days": "有效期15天",
+      "basicSupport": "基础支持",
+      "perfectForRegular": "完美的常规用户",
+      "monthlyAllocation": "每月代币分配",
+      "fullAccess": "完全访问所有功能",
+      "bestValue": "最佳价值套餐",
+      "coinsEveryMonth": "每月1380代币",
+      "fullYear": "全年订阅",
+      "premiumSupport": "高级支持",
+      "discount10": "10%折扣",
+      "extraCoins": "现有用户额外代币",
+      "expiresMonthEnd": "月底到期",
+      "addToBalance": "添加到当前余额",
+      "instantActivation": "即时激活"
+    },
+    "services": {
+      "aiChat": "AI聊天",
+      "imageGeneration": "图像生成",
+      "videoGeneration": "视频生成",
+      "audioTranscription": "音频转录",
+      "contentWriting": "内容写作",
+      "humaniseText": "人性化文本"
+    },
+    "costs": {
+      "oneCoin": "1代币",
+      "twoCoins": "2代币",
+      "threeCoins": "3代币",
+      "thirtyCoins": "30代币"
+    },
+    "units": {
+      "perMessage": "每条消息",
+      "perImage": "每张图片",
+      "perFiveSeconds": "每5秒",
+      "perMinute": "每分钟",
+      "perRequest": "每次请求"
     }
   }
 }

@@ -148,10 +148,10 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
       currency: 'HKD',
       popular: plan.plan_name === 'Monthly', // Mark Monthly as popular
       features: [
-        `Get ${plan.coins} coins`,
-        `Valid for ${plan.plan_period}`,
-        'Access to all AI tools',
-        'Priority support'
+        t('chargeModal.features.getCoins', `Get ${plan.coins} coins`),
+        t('chargeModal.features.validFor', `Valid for ${plan.plan_period}`),
+        t('chargeModal.features.accessAllTools', 'Access to all AI tools'),
+        t('chargeModal.features.prioritySupport', 'Priority support')
       ],
       icon: getPlanIcon(plan.plan_name),
       color: colors.color,
@@ -169,10 +169,10 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
       price: 50,
       currency: 'HKD',
       features: [
-        'Perfect for trying our service',
-        'Valid for 15 days',
-        'Basic support',
-        'Access to all AI tools'
+        t('chargeModal.features.perfectForTrying', 'Perfect for trying our service'),
+        t('chargeModal.features.validFor15Days', 'Valid for 15 days'),
+        t('chargeModal.features.basicSupport', 'Basic support'),
+        t('chargeModal.features.accessAllTools', 'Access to all AI tools')
       ],
       icon: <FiZap className="w-6 h-6" />,
       color: 'blue',
@@ -186,10 +186,10 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
       currency: 'HKD',
       popular: true,
       features: [
-        'Perfect for regular users',
-        'Monthly allocation of coins',
-        'Priority support',
-        'Full access to all features'
+        t('chargeModal.features.perfectForRegular', 'Perfect for regular users'),
+        t('chargeModal.features.monthlyAllocation', 'Monthly allocation of coins'),
+        t('chargeModal.features.prioritySupport', 'Priority support'),
+        t('chargeModal.features.fullAccess', 'Full access to all features')
       ],
       icon: <FiStar className="w-6 h-6" />,
       color: 'purple',
@@ -205,11 +205,11 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
       originalPrice: 1656,
       discount: 'Save 10%',
       features: [
-        'Best value plan',
-        '1380 coins every month',
-        'Full year subscription',
-        'Premium support',
-        '10% discount'
+        t('chargeModal.features.bestValue', 'Best value plan'),
+        t('chargeModal.features.coinsEveryMonth', '1380 coins every month'),
+        t('chargeModal.features.fullYear', 'Full year subscription'),
+        t('chargeModal.features.premiumSupport', 'Premium support'),
+        t('chargeModal.features.discount10', '10% discount')
       ],
       icon: <FiTrendingUp className="w-6 h-6" />,
       color: 'green',
@@ -222,10 +222,10 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
       price: 50,
       currency: 'HKD',
       features: [
-        'Extra coins for existing users',
-        'Expires at month end',
-        'Add to current balance',
-        'Instant activation'
+        t('chargeModal.features.extraCoins', 'Extra coins for existing users'),
+        t('chargeModal.features.expiresMonthEnd', 'Expires at month end'),
+        t('chargeModal.features.addToBalance', 'Add to current balance'),
+        t('chargeModal.features.instantActivation', 'Instant activation')
       ],
       icon: <FiPackage className="w-6 h-6" />,
       color: 'amber',
@@ -235,50 +235,50 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
 
   const aiServicesInfo = [
     {
-      type: 'AI Chat',
+      type: t('chargeModal.services.aiChat', 'AI Chat'),
       icon: <FiMic className="w-5 h-5" />,
-      cost: '1 coin',
-      unit: 'per message',
+      cost: t('chargeModal.costs.oneCoin', '1 coin'),
+      unit: t('chargeModal.units.perMessage', 'per message'),
       color: 'text-blue-600 dark:text-blue-400',
       bgColor: 'bg-blue-100 dark:bg-blue-900/30'
     },
     {
-      type: 'Image Generation',
+      type: t('chargeModal.services.imageGeneration', 'Image Generation'),
       icon: <FiImage className="w-5 h-5" />,
-      cost: '3 coins',
-      unit: 'per image',
+      cost: t('chargeModal.costs.threeCoins', '3 coins'),
+      unit: t('chargeModal.units.perImage', 'per image'),
       color: 'text-purple-600 dark:text-purple-400',
       bgColor: 'bg-purple-100 dark:bg-purple-900/30'
     },
     {
-      type: 'Video Generation',
+      type: t('chargeModal.services.videoGeneration', 'Video Generation'),
       icon: <FiVideo className="w-5 h-5" />,
-      cost: '30 coins',
-      unit: 'per 5 seconds',
+      cost: t('chargeModal.costs.thirtyCoins', '30 coins'),
+      unit: t('chargeModal.units.perFiveSeconds', 'per 5 seconds'),
       color: 'text-red-600 dark:text-red-400',
       bgColor: 'bg-red-100 dark:bg-red-900/30'
     },
     {
-      type: 'Audio Transcription',
+      type: t('chargeModal.services.audioTranscription', 'Audio Transcription'),
       icon: <FiMic className="w-5 h-5" />,
-      cost: '2 coins',
-      unit: 'per minute',
+      cost: t('chargeModal.costs.twoCoins', '2 coins'),
+      unit: t('chargeModal.units.perMinute', 'per minute'),
       color: 'text-green-600 dark:text-green-400',
       bgColor: 'bg-green-100 dark:bg-green-900/30'
     },
     {
-      type: 'Content Writing',
+      type: t('chargeModal.services.contentWriting', 'Content Writing'),
       icon: <FiImage className="w-5 h-5" />,
-      cost: '1 coin',
-      unit: 'per request',
+      cost: t('chargeModal.costs.oneCoin', '1 coin'),
+      unit: t('chargeModal.units.perRequest', 'per request'),
       color: 'text-orange-600 dark:text-orange-400',
       bgColor: 'bg-orange-100 dark:bg-orange-900/30'
     },
     {
-      type: 'Humanise Text',
+      type: t('chargeModal.services.humaniseText', 'Humanise Text'),
       icon: <FiZap className="w-5 h-5" />,
-      cost: '1 coin',
-      unit: 'per request',
+      cost: t('chargeModal.costs.oneCoin', '1 coin'),
+      unit: t('chargeModal.units.perRequest', 'per request'),
       color: 'text-cyan-600 dark:text-cyan-400',
       bgColor: 'bg-cyan-100 dark:bg-cyan-900/30'
     }
@@ -317,7 +317,7 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
   if (!isOpen) return null;
 
   const modalContent = (
-    <div className="fixed inset-0 z-[9999] pointer-events-none">
+    <div className="fixed inset-0 z-40 pointer-events-none">
       {/* Backdrop - only capture clicks for closing */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -344,7 +344,7 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                  Buy Coins
+                  {t('chargeModal.title', 'Buy Coins')}
                 </h2>
               </div>
               <button
@@ -365,14 +365,14 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                    Current Balance
+                    {t('chargeModal.currentBalance', 'Current Balance')}
                   </h3>
                 </div>
                 <div className="text-right">
                   <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
                     {currentCoins}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">coins</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{t('chargeModal.coins', 'coins')}</div>
                 </div>
               </div>
             </div>
@@ -381,7 +381,7 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
             {apiLoading && (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                <span className="ml-3 text-gray-600 dark:text-gray-400">Loading plans...</span>
+                <span className="ml-3 text-gray-600 dark:text-gray-400">{t('chargeModal.loadingPlans', 'Loading plans...')}</span>
               </div>
             )}
 
@@ -397,7 +397,7 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
                   onClick={fetchSubscriptionPlans}
                   className="mt-2 text-sm underline hover:no-underline"
                 >
-                  Try again
+                  {t('chargeModal.tryAgain', 'Try again')}
                 </button>
               </div>
             )}
@@ -406,7 +406,7 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
             {!apiLoading && !apiError && pricingPlans.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                  Choose Your Plan
+                  {t('chargeModal.chooseYourPlan', 'Choose Your Plan')}
                 </h3>
                 <div className="space-y-2">
                   {pricingPlans.map((plan) => (
@@ -437,7 +437,7 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
                             </h4>
                             {plan.popular && (
                               <span className="bg-purple-500 text-white px-1.5 py-0.5 rounded text-xs font-semibold">
-                                Popular
+                                {t('chargeModal.popular', 'Popular')}
                               </span>
                             )}
                             {plan.discount && (
@@ -470,7 +470,7 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
             {/* AI Services Pricing */}
             <div className="mb-4">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                AI Services Pricing
+                {t('chargeModal.aiServicesPricing', 'AI Services Pricing')}
               </h3>
               <div className="space-y-2">
                 {aiServicesInfo.map((service, index) => (
@@ -511,7 +511,7 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
                       : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
                   }`}
                 >
-                  {loading ? 'Processing...' : `Purchase ${pricingPlans.find(p => p.id === selectedPlan)?.name || 'Plan'}`}
+                  {loading ? t('chargeModal.processing', 'Processing...') : t('chargeModal.purchase', 'Purchase {{planName}}', { planName: pricingPlans.find(p => p.id === selectedPlan)?.name || t('chargeModal.plan', 'Plan') })}
                 </button>
               </div>
             )}

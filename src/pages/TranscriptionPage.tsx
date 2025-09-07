@@ -1229,7 +1229,7 @@ const TranscriptionPage: React.FC = () => {
         ];
 
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', true);
+        xhr.open('POST', 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', true);
         xhr.setRequestHeader('Authorization', `Bearer ${process.env.REACT_APP_ALIYUN_API_KEY}`);
         xhr.setRequestHeader('Content-Type', 'application/json');
 
@@ -3115,7 +3115,7 @@ const TranscriptionPage: React.FC = () => {
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-sm sm:text-base text-gray-500 dark:text-gray-400 truncate max-w-xs sm:max-w-none"
+                className="text-sm sm:text-base text-gray-500 dark:text-gray-400 break-words max-w-xs sm:max-w-none relative z-0"
               >
                 {fileName}
               </motion.p>
@@ -3437,7 +3437,7 @@ const TranscriptionPage: React.FC = () => {
 
                   {/* Compact playback rate controls and download for mobile */}
                   <div className="flex items-center space-x-1">
-                    {[0.5, 1, 1.5, 2].map(rate => (
+                    {[0.5, 1, 2].map(rate => (
                       <button 
                         key={rate}
                         onClick={() => {
@@ -4698,10 +4698,10 @@ const TranscriptionPage: React.FC = () => {
                         const highlightedWords = getHighlightedWordsInSegment(currentSegment);
                         
                         return (
-                          <div className={`subtitle-overlay absolute bg-black text-white text-center z-50 ${
+                          <div className={`subtitle-overlay absolute text-white text-center z-10 ${
                             isVideoFullscreen 
-                              ? 'bottom-40 left-1/2 transform -translate-x-1/2 bg-opacity-90 px-10 py-8 rounded-xl text-xl md:text-2xl shadow-2xl' 
-                              : 'bottom-4 left-1/2 transform -translate-x-1/2 bg-opacity-60 px-4 py-3 rounded-lg text-xs mx-auto'
+                              ? 'bottom-40 left-1/2 transform -translate-x-1/2 px-10 py-8 rounded-xl text-xl md:text-2xl shadow-2xl' 
+                              : 'bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-3 rounded-lg text-xs mx-auto'
                           }`} style={{ 
                             maxWidth: highlightedWords.length <= 7 ? 'none' : (isVideoFullscreen ? '85%' : '90%'),
                             whiteSpace: highlightedWords.length <= 7 ? 'nowrap' : 'normal'
@@ -4709,7 +4709,7 @@ const TranscriptionPage: React.FC = () => {
                             <div className="flex justify-center">
                               <div className="text-center leading-tight" style={{ 
                                  lineHeight: isVideoFullscreen ? '1.4' : '1.3',
-                                 fontSize: highlightedWords.length <= 7 ? (isVideoFullscreen ? 'clamp(1rem, 3vw, 1.5rem)' : 'clamp(0.6rem, 2vw, 0.8rem)') : undefined,
+                                 fontSize: highlightedWords.length <= 7 ? (isVideoFullscreen ? 'clamp(1rem, 3vw, 1.2rem)' : 'clamp(0.6rem, 2vw, 0.8rem)') : undefined,
                                  maxHeight: highlightedWords.length <= 7 ? 'none' : (isVideoFullscreen ? '2.8em' : '2.6em'),
                                  overflow: highlightedWords.length <= 7 ? 'visible' : 'hidden',
                                  display: highlightedWords.length <= 7 ? 'block' : '-webkit-box',
@@ -4832,7 +4832,7 @@ const TranscriptionPage: React.FC = () => {
                                   onClick={() => {
                                     const mediaElement = videoRef.current;
                                     if (mediaElement) {
-                                      mediaElement.playbackRate = mediaElement.playbackRate === 1 ? 1.5 : mediaElement.playbackRate === 1.5 ? 2 : 1;
+                                      mediaElement.playbackRate = mediaElement.playbackRate === 1 ? 2 : 1;
                                       setPlaybackRate(mediaElement.playbackRate);
                                     }
                                   }}
@@ -4951,7 +4951,7 @@ const TranscriptionPage: React.FC = () => {
 
                       {/* Playback rate controls and fullscreen button */}
                       <div className="flex space-x-1 items-center">
-                        {[0.5, 1, 1.5, 2].map(rate => (
+                        {[0.5, 1, 2].map(rate => (
                           <button 
                             key={rate}
                             onClick={() => {
