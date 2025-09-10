@@ -13,7 +13,8 @@ import {
   FiMaximize, FiMinimize, FiMenu, FiLayout, FiSave, FiFileText,
   FiBarChart2, FiZap, FiSettings, FiBookmark, FiMic,
   FiMessageSquare, FiGlobe, FiToggleLeft, FiToggleRight,
-  FiCpu, FiUser, FiSquare, FiVolume2, FiChevronDown, FiEdit
+  FiCpu, FiUser, FiSquare, FiVolume2, FiChevronDown, FiEdit,
+  FiFile, FiUpload, FiX, FiSend, FiImage, FiCheck
 } from 'react-icons/fi';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -1044,6 +1045,11 @@ const TranscriptionPage: React.FC = () => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // File upload state for chat
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedGenerationType, setSelectedGenerationType] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Scroll to bottom of chat when messages change
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -2060,10 +2066,10 @@ const TranscriptionPage: React.FC = () => {
       // Get streaming response
       const fullResponse = await sendMessageToAI(contextPrompt, handleChunk);
       
-      // Finalize the streaming message
+      // Finalize the streaming message - use streamingContent instead of fullResponse to avoid JSON display
       setChatMessages(prev => prev.map(msg => 
         msg.id === streamingMessageId 
-          ? { ...msg, content: fullResponse, isStreaming: false }
+          ? { ...msg, content: streamingContent, isStreaming: false }
           : msg
       ));
       
@@ -2208,6 +2214,25 @@ const TranscriptionPage: React.FC = () => {
         }
       );
     }
+  };
+
+  // File upload functions
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleGenerationTypeSelect = (type: string) => {
+    setSelectedGenerationType(selectedGenerationType === type ? null : type);
   };
 
   // Function to translate SRT subtitle segment
@@ -3621,7 +3646,7 @@ const TranscriptionPage: React.FC = () => {
                           <div className="relative custom-language-dropdown">
                             <button
                               onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                              className="px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm w-full sm:w-auto flex items-center justify-between min-w-[120px]"
+                              className="px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border border-blue-400 dark:border-purple-400 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm w-full sm:w-auto flex items-center justify-between min-w-[180px] shadow-md transition-all duration-200"
                               disabled={translatingIndex !== -1 || isTranslationInProgress}
                             >
                               <span>{languages.find(lang => lang.value === selectedLanguage)?.label || 'Select Language'}</span>
@@ -3630,34 +3655,34 @@ const TranscriptionPage: React.FC = () => {
                               </svg>
                             </button>
                             {isLanguageDropdownOpen && (
-                              <div className="absolute z-50 mt-1 w-full bg-gradient-to-br from-white via-blue-100 to-purple-100 dark:from-gray-800 dark:via-blue-800/80 dark:to-purple-800/80 border-2 border-blue-300 dark:border-blue-600 rounded-xl shadow-2xl max-h-64 overflow-hidden" style={{
+                              <div className="absolute z-50 mt-1 w-full bg-black/20 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl max-h-64 overflow-hidden" style={{
                                 scrollbarWidth: 'thin',
-                                scrollbarColor: '#3b82f6 #e5e7eb'
+                                scrollbarColor: 'transparent transparent'
                               }}>
                                 <style>{`
                                   .language-dropdown-content::-webkit-scrollbar {
                                     width: 8px;
                                   }
                                   .language-dropdown-content::-webkit-scrollbar-track {
-                                    background: linear-gradient(to bottom, #f3f4f6, #e5e7eb);
+                                    background: transparent;
                                     border-radius: 4px;
                                   }
                                   .language-dropdown-content::-webkit-scrollbar-thumb {
-                                    background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+                                    background: rgba(255, 255, 255, 0.1);
                                     border-radius: 4px;
-                                    border: 1px solid #1e40af;
+                                    border: 1px solid rgba(255, 255, 255, 0.05);
                                   }
                                   .language-dropdown-content::-webkit-scrollbar-thumb:hover {
-                                    background: linear-gradient(to bottom, #1d4ed8, #1e3a8a);
+                                    background: rgba(255, 255, 255, 0.2);
                                   }
                                 `}</style>
-                                <div className="p-2 border-b border-gray-200/50 dark:border-gray-600/50">
+                                <div className="p-2 border-b border-white/10">
                                   <input
                                     type="text"
                                     placeholder="Search languages..."
                                     value={languageSearchTerm}
                                     onChange={(e) => setLanguageSearchTerm(e.target.value)}
-                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 dark:text-gray-200"
+                                    className="w-full px-3 py-2 text-sm bg-black/10 backdrop-blur-sm border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-white placeholder-white/60"
                                     onClick={(e) => e.stopPropagation()}
                                   />
                                 </div>
@@ -3670,18 +3695,10 @@ const TranscriptionPage: React.FC = () => {
                                       setIsTranslationInProgress(false);
                                       setIsLanguageDropdownOpen(false);
                                     }}
-                                    className={`w-full px-3 py-3 text-left text-xs sm:text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] ${
-                                      index % 3 === 0 ? 'text-blue-700 dark:text-blue-300 hover:bg-gradient-to-r hover:from-blue-200 hover:to-blue-300 dark:hover:from-blue-700/70 dark:hover:to-blue-600/70' :
-                                       index % 3 === 1 ? 'text-purple-700 dark:text-purple-300 hover:bg-gradient-to-r hover:from-purple-200 hover:to-purple-300 dark:hover:from-purple-700/70 dark:hover:to-purple-600/70' :
-                                       'text-green-700 dark:text-green-300 hover:bg-gradient-to-r hover:from-green-200 hover:to-green-300 dark:hover:from-green-700/70 dark:hover:to-green-600/70'
-                                    } first:rounded-t-xl last:rounded-b-xl border-b border-gray-200/50 dark:border-gray-600/50 last:border-b-0`}
+                                    className="w-full px-3 py-3 text-left text-xs sm:text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] text-white/90 hover:bg-white/10 hover:backdrop-blur-sm first:rounded-t-xl last:rounded-b-xl border-b border-white/5 last:border-b-0"
                                   >
                                     <span className="flex items-center gap-2">
-                                      <span className={`w-2 h-2 rounded-full ${
-                                        index % 3 === 0 ? 'bg-blue-500' :
-                                        index % 3 === 1 ? 'bg-purple-500' :
-                                        'bg-green-500'
-                                      }`}></span>
+                                      <span className="w-2 h-2 rounded-full bg-white/30"></span>
                                       {lang.label}
                                     </span>
                                   </button>
@@ -3716,13 +3733,13 @@ const TranscriptionPage: React.FC = () => {
                         <div key={paraIndex} className="mb-4 sm:mb-6">
                           {/* Paragraph timestamp - above paragraph on left side */}
                           <div className="flex items-center mb-2">
-                            <div className="flex flex-col items-start">
+                            <div className="flex items-center gap-3">
                               <span className="text-xs font-mono text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text font-semibold">
                                 {formatTime(paragraph.startTime)}
                               </span>
                             {/* Current time indicator - only show if current time is within this paragraph */}
                             {currentTime >= paragraph.startTime && currentTime <= paragraph.endTime && (
-                              <span className="text-xs font-mono text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md shadow-sm mt-1 animate-pulse">
+                              <span className="text-xs font-mono text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md shadow-sm animate-pulse">
                                 {formatTime(currentTime)}
                               </span>
                             )}
@@ -4181,20 +4198,105 @@ const TranscriptionPage: React.FC = () => {
                   
                   {/* Chat input area - Fixed at the bottom */}
                   <div className="border-t dark:border-gray-700 p-3 sm:p-4 bg-white dark:bg-gray-800 z-10 sticky bottom-0 shadow-md">
+                    {/* File upload display */}
+                    {selectedFile && (
+                      <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <FiFile className="text-blue-600 dark:text-blue-400" />
+                            <span className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                              {selectedFile.name}
+                            </span>
+                            <span className="text-xs text-blue-500 dark:text-blue-400">
+                              ({(selectedFile.size / 1024).toFixed(1)} KB)
+                            </span>
+                          </div>
+                          <button
+                            onClick={removeSelectedFile}
+                            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 transition-colors"
+                          >
+                            <FiX className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Fixed generation buttons */}
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleGenerationTypeSelect('image')}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-1.5 ${
+                          selectedGenerationType === 'image'
+                            ? 'bg-blue-500 text-white shadow-md transform scale-105'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <FiImage className="w-4 h-4" />
+                        <span>Generate Image</span>
+                        {selectedGenerationType === 'image' && <FiCheck className="w-3 h-3" />}
+                      </button>
+                      
+                      <button
+                        type="button"
+                        onClick={() => handleGenerationTypeSelect('xlsx')}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-1.5 ${
+                          selectedGenerationType === 'xlsx'
+                            ? 'bg-green-500 text-white shadow-md transform scale-105'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <FiFile className="w-4 h-4" />
+                        <span>Generate XLSX</span>
+                        {selectedGenerationType === 'xlsx' && <FiCheck className="w-3 h-3" />}
+                      </button>
+                      
+                      <button
+                        type="button"
+                        onClick={() => handleGenerationTypeSelect('document')}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-1.5 ${
+                          selectedGenerationType === 'document'
+                            ? 'bg-purple-500 text-white shadow-md transform scale-105'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <FiFile className="w-4 h-4" />
+                        <span>Generate Document</span>
+                        {selectedGenerationType === 'document' && <FiCheck className="w-3 h-3" />}
+                      </button>
+                    </div>
+
                     <form onSubmit={handleChatSubmit} className="flex space-x-2">
-                      <input
-                        type="text"
-                        value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
-                        placeholder={t('transcription.chat.typeMessage')}
-                        className="flex-1 px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 text-sm sm:text-base"
-                        disabled={isAssistantTyping}
-                      />
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          placeholder={t('transcription.chat.typeMessage')}
+                          className="w-full px-3 sm:px-4 py-2 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 text-sm sm:text-base"
+                          disabled={isAssistantTyping}
+                        />
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif,.xlsx,.xls,.csv"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                          disabled={isAssistantTyping}
+                        >
+                          <FiUpload className="w-4 h-4" />
+                        </button>
+                      </div>
                       <div className="relative">
                         <button
                           type="submit"
                           disabled={!chatInput.trim() || isAssistantTyping}
-                          className={`px-3 sm:px-4 py-2 rounded-lg transition-colors ${
+                          className={`px-3 sm:px-4 py-2 rounded-lg transition-colors flex items-center space-x-1 ${
                             !chatInput.trim() || isAssistantTyping
                               ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
                               : 'bg-blue-500 hover:bg-blue-600 text-white'
@@ -4204,7 +4306,8 @@ const TranscriptionPage: React.FC = () => {
                             <FiLoader className="animate-spin w-4 h-4 sm:w-5 sm:h-5" />
                           ) : (
                             <>
-                              {t('transcription.chat.send')}
+                              <FiSend className="w-4 h-4" />
+                              <span className="hidden sm:inline">{t('transcription.chat.send')}</span>
                               {chatInput.trim() && (
                                 <span className="ml-1 text-xs bg-orange-500/20 px-1.5 py-0.5 rounded-full flex items-center">
                                   -1 <img src={coinIcon} alt="coin" className="w-3 h-3 ml-0.5" />

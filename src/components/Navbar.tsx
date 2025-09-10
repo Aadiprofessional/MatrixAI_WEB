@@ -214,7 +214,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMobileSidebarToggle, isMobileSidebarO
                 console.log('Coin button clicked, opening charge modal');
                 setShowChargeModal(true);
               }}
-              className={`hidden sm:flex items-center px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm hover:opacity-80 transition-opacity ${
+              className={`flex items-center px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm hover:opacity-80 transition-opacity ${
                 darkMode 
                   ? 'bg-amber-900/30 text-amber-300 hover:bg-amber-900/40' 
                   : 'bg-amber-100 text-amber-600 hover:bg-amber-200'

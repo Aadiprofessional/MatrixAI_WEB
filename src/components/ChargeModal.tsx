@@ -327,49 +327,49 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
         onClick={onClose}
       />
       
-      {/* Modal positioned below navbar in top-right */}
-      <div className="fixed top-20 right-4 pointer-events-auto">
+      {/* Modal positioned below navbar - responsive for mobile and desktop */}
+      <div className="fixed top-20 right-4 left-4 md:left-auto pointer-events-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, x: 20, y: -20 }}
           animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, x: 20, y: -20 }}
-          className={`relative w-96 max-w-[calc(100vw-2rem)] rounded-xl shadow-2xl ${
+          className={`relative w-full md:w-96 max-w-[calc(100vw-2rem)] md:max-w-96 rounded-xl shadow-2xl ${
             theme === 'dark' ? 'bg-gray-900 border border-gray-700' : 'bg-white border border-gray-200'
-          } max-h-[calc(100vh-2rem)] overflow-hidden`}
+          } max-h-[calc(100vh-6rem)] overflow-hidden`}
         >
           {/* Header */}
-          <div className={`px-4 py-3 border-b ${
+          <div className={`px-3 md:px-4 py-2 md:py-3 border-b ${
             theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
           }`}>
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">
                   {t('chargeModal.title', 'Buy Coins')}
                 </h2>
               </div>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-1 md:p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                <FiX className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <FiX className="w-4 h-4 md:w-5 md:h-5 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
           </div>
 
           {/* Content */}
-          <div className="p-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
+          <div className="p-3 md:p-4 overflow-y-auto max-h-[calc(100vh-12rem)]">
             {/* Current Balance */}
-            <div className={`mb-4 p-3 rounded-lg ${
+            <div className={`mb-3 md:mb-4 p-2 md:p-3 rounded-lg ${
               theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'
             }`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white">
                     {t('chargeModal.currentBalance', 'Current Balance')}
                   </h3>
                 </div>
                 <div className="text-right">
-                  <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                  <div className="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-400">
                     {currentCoins}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">{t('chargeModal.coins', 'coins')}</div>
@@ -404,17 +404,17 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
 
             {/* Pricing Plans */}
             {!apiLoading && !apiError && pricingPlans.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+              <div className="mb-4 md:mb-6">
+                <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 md:mb-3">
                   {t('chargeModal.chooseYourPlan', 'Choose Your Plan')}
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-1.5 md:space-y-2">
                   {pricingPlans.map((plan) => (
                   <motion.div
                     key={plan.id}
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
-                    className={`relative p-3 rounded-lg border cursor-pointer transition-all ${
+                    className={`relative p-2 md:p-3 rounded-lg border cursor-pointer transition-all ${
                       selectedPlan === plan.id
                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                         : theme === 'dark'
@@ -424,24 +424,24 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
                     onClick={() => setSelectedPlan(plan.id)}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-full bg-gradient-to-r ${plan.bgGradient} text-white flex-shrink-0`}>
-                          <div className="w-4 h-4">
+                      <div className="flex items-center space-x-2 md:space-x-3">
+                        <div className={`p-1.5 md:p-2 rounded-full bg-gradient-to-r ${plan.bgGradient} text-white flex-shrink-0`}>
+                          <div className="w-3 h-3 md:w-4 md:h-4">
                             {plan.icon}
                           </div>
                         </div>
                         <div>
-                          <div className="flex items-center space-x-2">
-                            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                          <div className="flex items-center space-x-1 md:space-x-2">
+                            <h4 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white">
                               {plan.name}
                             </h4>
                             {plan.popular && (
-                              <span className="bg-purple-500 text-white px-1.5 py-0.5 rounded text-xs font-semibold">
+                              <span className="bg-purple-500 text-white px-1 md:px-1.5 py-0.5 rounded text-xs font-semibold">
                                 {t('chargeModal.popular', 'Popular')}
                               </span>
                             )}
                             {plan.discount && (
-                              <span className="bg-green-500 text-white px-1.5 py-0.5 rounded text-xs font-semibold">
+                              <span className="bg-green-500 text-white px-1 md:px-1.5 py-0.5 rounded text-xs font-semibold">
                                 {plan.discount}
                               </span>
                             )}
@@ -452,7 +452,7 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-bold text-gray-900 dark:text-white">
+                        <div className="text-xs md:text-sm font-bold text-gray-900 dark:text-white">
                           {plan.originalPrice && (
                             <span className="text-xs text-gray-500 line-through mr-1">
                               {plan.originalPrice}
@@ -468,21 +468,21 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
             )}
 
             {/* AI Services Pricing */}
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+            <div className="mb-3 md:mb-4">
+              <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 md:mb-3">
                 {t('chargeModal.aiServicesPricing', 'AI Services Pricing')}
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1.5 md:space-y-2">
                 {aiServicesInfo.map((service, index) => (
                   <div
                     key={index}
-                    className={`flex items-center justify-between p-2 rounded-lg ${
+                    className={`flex items-center justify-between p-1.5 md:p-2 rounded-lg ${
                       theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'
                     }`}
                   >
-                    <div className="flex items-center space-x-2">
-                      <div className={`p-1.5 rounded-full ${service.bgColor}`}>
-                        <div className={`w-3 h-3 ${service.color}`}>
+                    <div className="flex items-center space-x-1.5 md:space-x-2">
+                      <div className={`p-1 md:p-1.5 rounded-full ${service.bgColor}`}>
+                        <div className={`w-2.5 h-2.5 md:w-3 md:h-3 ${service.color}`}>
                           {service.icon}
                         </div>
                       </div>
@@ -501,11 +501,11 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
             {/* Purchase Button */}
             {/* Purchase Button */}
             {!apiLoading && !apiError && pricingPlans.length > 0 && (
-              <div className="text-center pt-2">
+              <div className="text-center pt-1 md:pt-2">
                 <button
                   onClick={handlePurchase}
                   disabled={loading || !selectedPlan}
-                  className={`w-full px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all ${
+                  className={`w-full px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-semibold text-white transition-all ${
                     loading || !selectedPlan
                       ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'

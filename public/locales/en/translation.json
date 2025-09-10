@@ -192,6 +192,7 @@
     "viewAllHistory": "View All History",
     "autoSpeakOn": "Auto-speak On",
     "autoSpeakOff": "Auto-speak Off",
+    "thinking": "Thinking...",
     "messagesLeft": "{{count}} messages left",
     "fileTypes": {
       "pdf": "PDF",

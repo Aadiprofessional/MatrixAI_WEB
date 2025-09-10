@@ -105,6 +105,7 @@
     "lastMonth": "上个月",
     "lastWeek": "上星期",
     "messagesLeft": "{{count}}消息留下",
+    "thinking": "思考中...",
     "recentConversations": "最近的对话",
     "roles": {
       "analyst": {

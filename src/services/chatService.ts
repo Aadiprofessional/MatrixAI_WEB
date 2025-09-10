@@ -1,7 +1,31 @@
 import { supabase } from '../supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 
-// Types for the new chat structure
+// Interface for the new message structure
+export interface SupabaseMessage {
+  id: string;
+  chat_id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  status: 'pending' | 'streaming' | 'completed';
+  position: number;
+  created_at: string;
+  metadata?: any;
+  external_ref?: string;
+}
+
+// Interface for chat structure
+export interface SupabaseChat {
+  id: string;
+  owner: string;
+  title: string;
+  created_at: string;
+  position_counter: number;
+  metadata?: any;
+  role?: string;
+}
+
+// Legacy interfaces for backward compatibility
 export interface ChatMessage {
   message_id: string;
   chat_id: string;
@@ -418,4 +442,341 @@ export const migrateOldChat = async (oldChat: any): Promise<string | null> => {
     console.error('Error migrating old chat:', error);
     return null;
   }
+};
+
+// ===== NEW SUPABASE FUNCTIONS =====
+
+// Create a new chat using the new structure
+export const createNewChat = async (userId: string, title: string = 'New Chat', metadata: any = {}, role: string = 'assistant'): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('chats')
+      .insert({
+        owner: userId,
+        title,
+        metadata,
+        role
+      })
+      .select('id')
+      .single();
+
+    if (error) {
+      console.error('Error creating chat:', error);
+      return null;
+    }
+
+    return data.id;
+  } catch (error) {
+    console.error('Error in createNewChat:', error);
+    return null;
+  }
+};
+
+// Add a user message to a chat
+export const addUserMessage = async (
+  chatId: string,
+  userId: string,
+  content: string,
+  metadata: any = {},
+  externalRef?: string
+): Promise<SupabaseMessage | null> => {
+  try {
+    const { data, error } = await supabase
+      .rpc('add_user_message', {
+        p_chat: chatId,
+        p_user: userId,
+        p_content: content,
+        p_metadata: metadata,
+        p_external_ref: externalRef
+      });
+
+    if (error) {
+      console.error('Error adding user message:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in addUserMessage:', error);
+    return null;
+  }
+};
+
+// Start an assistant message
+export const startAssistantMessage = async (
+  chatId: string,
+  userId: string,
+  metadata: any = {},
+  externalRef?: string
+): Promise<SupabaseMessage | null> => {
+  try {
+    const { data, error } = await supabase
+      .rpc('start_assistant_message', {
+        p_chat: chatId,
+        p_created_by: userId,
+        p_metadata: metadata,
+        p_external_ref: externalRef
+      });
+
+    if (error) {
+      console.error('Error starting assistant message:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in startAssistantMessage:', error);
+    return null;
+  }
+};
+
+// Append a chunk to an assistant message
+export const appendMessageChunk = async (
+  messageId: string,
+  chunk: string
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .rpc('append_message_chunk', {
+        p_message: messageId,
+        p_chunk: chunk
+      });
+
+    if (error) {
+      console.error('Error appending message chunk:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in appendMessageChunk:', error);
+    return false;
+  }
+};
+
+// Finalize a message
+export const finalizeMessage = async (messageId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .rpc('finalize_message', {
+        p_message: messageId
+      });
+
+    if (error) {
+      console.error('Error finalizing message:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in finalizeMessage:', error);
+    return false;
+  }
+};
+
+// Get all messages for a chat using new structure
+export const getNewChatMessages = async (chatId: string): Promise<SupabaseMessage[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('chat_id', chatId)
+      .order('position', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching chat messages:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error in getNewChatMessages:', error);
+    return [];
+  }
+};
+
+// Get chat messages with lazy loading support
+export const getChatMessagesLazy = async (
+  chatId: string, 
+  limit: number = 10, 
+  beforePosition?: number
+): Promise<SupabaseMessage[]> => {
+  try {
+    let query = supabase
+      .from('messages')
+      .select('*')
+      .eq('chat_id', chatId)
+      .order('position', { ascending: false })
+      .limit(limit);
+
+    // If beforePosition is provided, load messages before that position
+    if (beforePosition !== undefined) {
+      query = query.lt('position', beforePosition);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching chat messages with lazy loading:', error);
+      return [];
+    }
+
+    // Reverse to get chronological order (oldest first)
+    return (data || []).reverse();
+  } catch (error) {
+    console.error('Error in getChatMessagesLazy:', error);
+    return [];
+  }
+};
+
+// Get the latest messages for initial load
+export const getLatestChatMessages = async (
+  chatId: string, 
+  limit: number = 10
+): Promise<SupabaseMessage[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('chat_id', chatId)
+      .order('position', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching latest chat messages:', error);
+      return [];
+    }
+
+    // Reverse to get chronological order (oldest first)
+    return (data || []).reverse();
+  } catch (error) {
+    console.error('Error in getLatestChatMessages:', error);
+    return [];
+  }
+};
+
+// Get all chats for a user using new structure
+export const getNewUserChats = async (userId: string): Promise<SupabaseChat[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('chats')
+      .select('*')
+      .eq('owner', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching user chats:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error in getNewUserChats:', error);
+    return [];
+  }
+};
+
+// Delete a chat and all its messages using new structure
+export const deleteNewChat = async (chatId: string, userId: string): Promise<boolean> => {
+  try {
+    // First delete all messages in the chat
+    const { error: messagesError } = await supabase
+      .from('messages')
+      .delete()
+      .eq('chat_id', chatId);
+
+    if (messagesError) {
+      console.error('Error deleting chat messages:', messagesError);
+      return false;
+    }
+
+    // Then delete the chat itself
+    const { error: chatError } = await supabase
+      .from('chats')
+      .delete()
+      .eq('id', chatId)
+      .eq('owner', userId);
+
+    if (chatError) {
+      console.error('Error deleting chat:', chatError);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in deleteNewChat:', error);
+    return false;
+  }
+};
+
+// Update chat title using new structure
+export const updateNewChatTitle = async (chatId: string, userId: string, title: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('chats')
+      .update({ title })
+      .eq('id', chatId)
+      .eq('owner', userId);
+
+    if (error) {
+      console.error('Error updating chat title:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in updateNewChatTitle:', error);
+    return false;
+  }
+};
+
+// Update chat role
+export const updateChatRole = async (chatId: string, userId: string, role: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('chats')
+      .update({ role })
+      .eq('id', chatId)
+      .eq('owner', userId);
+
+    if (error) {
+      console.error('Error updating chat role:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in updateChatRole:', error);
+    return false;
+  }
+};
+
+// Convert SupabaseMessage to FrontendMessage for compatibility
+export const supabaseMessageToFrontend = (supabaseMessage: SupabaseMessage): FrontendMessage => {
+  let content = supabaseMessage.content;
+  let fileContent: string | undefined;
+  let fileName: string | undefined;
+  
+  // Check for new ;;%%;; delimited URLs
+  if (content && typeof content === 'string' && content.includes(';;%%;;')) {
+    const urlMatch = content.match(/;;%%;;(.*?);;%%;;/);
+    if (urlMatch) {
+      fileContent = urlMatch[1].trim();
+      content = content.replace(/;;%%;;.*?;;%%;;/g, '').trim();
+      fileName = 'Attachment';
+    }
+  }
+  
+  return {
+    message_id: supabaseMessage.id,
+    chat_id: supabaseMessage.chat_id,
+    sender_type: supabaseMessage.role,
+    role: supabaseMessage.role,
+    content: content,
+    timestamp: supabaseMessage.created_at,
+    content_type: 'text',
+    isStreaming: supabaseMessage.status === 'streaming',
+    fileContent: fileContent,
+    fileName: fileName
+  };
 };
