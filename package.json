@@ -54,6 +54,7 @@
     "lucide-react": "^0.542.0",
     "mammoth": "^1.10.0",
     "markdown-it": "^14.1.0",
+    "markdown-it-katex": "^2.0.3",
     "openai": "^4.93.0",
     "pdf-img-convert": "^2.0.0",
     "pdfjs-dist": "^5.4.54",

@@ -17,7 +17,7 @@ import { useAuth, User } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../supabaseClient';
 import { userService } from '../services/userService';
-import { getNewUserChats, getNewChatMessages, getChatMessagesLazy, getLatestChatMessages, supabaseMessageToFrontend, SupabaseChat, createNewChat, addUserMessage, startAssistantMessage, appendMessageChunk, finalizeMessage, deleteNewChat, FrontendMessage } from '../services/chatService';
+import { getNewUserChats, getNewChatMessages, getChatMessagesLazy, getLatestChatMessages, supabaseMessageToFrontend, SupabaseChat, createNewChat, addUserMessage, addUserMessageWithAttachment, deleteNewChat, FrontendMessage } from '../services/chatService';
 import { ProFeatureAlert, ImageSkeleton } from '../components';
 import AuthRequiredButton from '../components/AuthRequiredButton';
 import ThinkingIndicator from '../components/ThinkingIndicator';
@@ -25,6 +25,8 @@ import { useAlert } from '../context/AlertContext';
 import FilePreviewModal from '../components/FilePreviewModal';
 import FileUploadPopup from '../components/FileUploadPopup';
 import { uploadFileToStorage, FileUploadResult, validateFile, formatFileSize, getFileIcon } from '../utils/fileUpload';
+import { UserMessageAttachments } from '../components/UserMessageAttachments';
+import { BotMessageAttachments } from '../components/BotMessageAttachments';
 import './ChatPage.css';
 
 // Add these imports for markdown and math rendering
@@ -63,14 +65,16 @@ interface Message {
   image_url?: string;
   file_url?: string;
   file_name?: string;
+  file_type?: string;
+  file_size?: number;
   isGenerating?: boolean;
   generationType?: 'image' | 'spreadsheet' | 'document';
   attachments?: {
     url: string;
     fileName: string;
-    fileType: 'image' | 'document';
-    originalName: string;
-    size: number;
+    fileType: string;
+    originalName?: string;
+    size?: number;
   }[];
 }
 
@@ -194,30 +198,112 @@ const TableHeaderCell = ({ children, ...props }: any) => {
   );
 };
 
+// Function to detect if content contains mathematical expressions
+const containsMathExpressions = (content: string): boolean => {
+  if (!content) return false;
+  
+  // Check for various math patterns
+  const mathPatterns = [
+    /\$\$[\s\S]*?\$\$/,           // Display math $$...$$
+    /\$[^$\n]+\$/,               // Inline math $...$
+    /\\\[[\s\S]*?\\\]/,          // LaTeX display math \[...\]
+    /\\\([\s\S]*?\\\)/,          // LaTeX inline math \(...\)
+    /<math[\s\S]*?<\/math>/,     // Custom math tags
+    /<math2[\s\S]*?<\/math2>/,   // Custom math2 tags
+    /<math3[\s\S]*?<\/math3>/,   // Custom math3 tags
+    /\\[a-zA-Z]+\{[^}]*\}/,      // LaTeX commands like \frac{1}{2}
+    /[a-zA-Z]_\{[^}]*\}/,        // Subscripts with braces
+    /[a-zA-Z]\^\{[^}]*\}/,       // Superscripts with braces
+    /\\begin\{[^}]+\}/,          // LaTeX environments
+    /\\end\{[^}]+\}/,            // LaTeX environments
+    /\\[a-zA-Z]+/,               // LaTeX commands
+    /\b[a-zA-Z]+\([^)]*\)\s*=/, // Function definitions like f(x) =
+    /\b\d+\.\d+\b/,              // Decimal numbers
+    /\b[a-zA-Z]\s*[=<>≤≥≠]\s*[a-zA-Z0-9]/, // Mathematical equations
+  ];
+  
+  return mathPatterns.some(pattern => pattern.test(content));
+};
+
 // Function to preprocess content for better markdown rendering
 const preprocessContent = (content: string): string => {
   if (!content) return content;
   
-  // Clean up content and ensure proper formatting
-  let processed = content
-    // Fix math expressions - convert LaTeX to standard markdown math
-    .replace(/\\\(/g, '$')
-    .replace(/\\\)/g, '$')
-    .replace(/\\\[/g, '$$')
-    .replace(/\\\]/g, '$$')
-    // Handle custom math tags
-    .replace(/<math>([\s\S]*?)<\/math>/g, '$$$1$$')
-    .replace(/<math3>([\s\S]*?)<\/math3>/g, '$$$$1$$$$')
+  // Store math expressions temporarily to protect them from markdown processing
+  const mathExpressions: { [key: string]: string } = {};
+  let mathCounter = 0;
+  
+  let processed = content;
+  
+  // First, extract and protect math expressions
+  // Protect display math $$...$$
+  processed = processed.replace(/\$\$([^$]+?)\$\$/g, (match, mathContent) => {
+    const placeholder = `__MATH_DISPLAY_${mathCounter++}__`;
+    mathExpressions[placeholder] = `$$${mathContent}$$`;
+    return placeholder;
+  });
+  
+  // Protect inline math $...$
+  processed = processed.replace(/\$([^$\n]+?)\$/g, (match, mathContent) => {
+    const placeholder = `__MATH_INLINE_${mathCounter++}__`;
+    mathExpressions[placeholder] = `$${mathContent}$`;
+    return placeholder;
+  });
+  
+  // Protect LaTeX display math \[...\]
+  processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, (match, mathContent) => {
+    const placeholder = `__MATH_DISPLAY_${mathCounter++}__`;
+    mathExpressions[placeholder] = `$$${mathContent}$$`;
+    return placeholder;
+  });
+  
+  // Protect LaTeX inline math \(...\)
+  processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (match, mathContent) => {
+    const placeholder = `__MATH_INLINE_${mathCounter++}__`;
+    mathExpressions[placeholder] = `$${mathContent}$`;
+    return placeholder;
+  });
+  
+  // Protect custom math tags
+  processed = processed.replace(/<math>([\s\S]*?)<\/math>/g, (match, mathContent) => {
+    const placeholder = `__MATH_INLINE_${mathCounter++}__`;
+    mathExpressions[placeholder] = `$${mathContent}$`;
+    return placeholder;
+  });
+  
+  processed = processed.replace(/<math2>([\s\S]*?)<\/math2>/g, (match, mathContent) => {
+    const placeholder = `__MATH_DISPLAY_${mathCounter++}__`;
+    mathExpressions[placeholder] = `$$${mathContent}$$`;
+    return placeholder;
+  });
+  
+  processed = processed.replace(/<math3>([\s\S]*?)<\/math3>/g, (match, mathContent) => {
+    const placeholder = `__MATH_DISPLAY_${mathCounter++}__`;
+    mathExpressions[placeholder] = `$$${mathContent}$$`;
+    return placeholder;
+  });
+  
+  // Now process the non-math content for markdown
+  processed = processed
     // Ensure proper line breaks for lists
     .replace(/\n(\d+\.|\*|\-|\+)\s/g, '\n\n$1 ')
     // Ensure proper spacing around headers
     .replace(/([^\n])\n(#{1,6})\s/g, '$1\n\n$2 ')
     // Make sure headings start with # and have a space after
     .replace(/\n(#{1,6})([^\s])/g, '\n$1 $2')
+    // Clean up headers that might have extra # symbols
+    .replace(/^(#{1,6})\s*#+\s*/gm, '$1 ')
+    // Ensure headers have proper spacing
+    .replace(/^(#{1,6})\s+(.+)$/gm, '$1 $2')
     // Ensure proper spacing for blockquotes
     .replace(/\n>/g, '\n\n>')
     // Preserve newlines for paragraph breaks
     .replace(/\n\n\n+/g, '\n\n');
+  
+  // Restore math expressions
+  Object.keys(mathExpressions).forEach(placeholder => {
+    processed = processed.replace(new RegExp(placeholder, 'g'), mathExpressions[placeholder]);
+  });
   
   return processed.trim();
 };
@@ -232,17 +318,41 @@ const md = new MarkdownIt({
 
 // MathJax configuration for better math rendering
 const mathJaxConfig = {
-  loader: { load: ['[tex]/html'] },
+  loader: { load: ['[tex]/html', '[tex]/ams', '[tex]/newcommand', '[tex]/configmacros'] },
   tex: {
-    packages: { '[+]': ['html'] },
+    packages: { '[+]': ['html', 'ams', 'newcommand', 'configmacros'] },
     inlineMath: [['$', '$'], ['\\(', '\\)']],
     displayMath: [['$$', '$$'], ['\\[', '\\]']],
     processEscapes: true,
-    processEnvironments: true
+    processEnvironments: true,
+    processRefs: true,
+    digits: /^(?:[0-9]+(?:\{,\}[0-9]{3})*(?:\.[0-9]*)?|\.[0-9]+)/,
+    tags: 'none',
+    tagSide: 'right',
+    tagIndent: '0.8em',
+    useLabelIds: true,
+    multlineWidth: '85%',
+    macros: {
+      // Common mathematical macros
+      RR: '{\\mathbb{R}}',
+      NN: '{\\mathbb{N}}',
+      ZZ: '{\\mathbb{Z}}',
+      QQ: '{\\mathbb{Q}}',
+      CC: '{\\mathbb{C}}',
+      binom: ['{\\binom{#1}{#2}}', 2]
+    }
   },
   options: {
     ignoreHtmlClass: 'tex2jax_ignore',
-    processHtmlClass: 'tex2jax_process'
+    processHtmlClass: 'tex2jax_process',
+    renderActions: {
+      addMenu: [0, '', '']
+    }
+  },
+  startup: {
+    ready: () => {
+      console.log('MathJax is loaded and ready.');
+    }
   }
 };
 
@@ -250,27 +360,64 @@ const mathJaxConfig = {
 const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) => {
   if (!text) return null;
   
-  // Preprocess the content to handle math expressions and clean formatting
-  const processedText = preprocessContent(text);
-  
-  // Process with markdown-it for enhanced markdown parsing
-  const markdownProcessed = md.render(processedText);
-  
-  // Sanitize content with DOMPurify
-  const sanitizedText = DOMPurify.sanitize(markdownProcessed, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'code', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'div', 'span'],
-    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id']
-  });
-  
-  return (
-    <MathJaxContext config={mathJaxConfig}>
+  try {
+    // Check if content contains math expressions
+    const hasMath = containsMathExpressions(text);
+    
+    // Preprocess the content to handle math expressions and clean formatting
+    const processedText = preprocessContent(text);
+    
+    if (hasMath) {
+      // For content with math, render with minimal processing to preserve math delimiters
+      const simpleHtml = processedText
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        .replace(/^(.*)$/gm, '<p>$1</p>')
+        .replace(/<p><\/p>/g, '')
+        .replace(/<p><br><\/p>/g, '<br>');
+      
+      return (
+        <MathJaxContext config={mathJaxConfig}>
+          <div 
+            className={`markdown-content ${darkMode ? 'dark' : ''}`} 
+            style={textStyle}
+            dangerouslySetInnerHTML={{ __html: simpleHtml }}
+          />
+        </MathJaxContext>
+      );
+    } else {
+      // For non-math content, use full markdown processing
+      const markdownProcessed = md.render(processedText);
+      
+      // Sanitize content with DOMPurify
+      const sanitizedText = DOMPurify.sanitize(markdownProcessed, {
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'code', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'div', 'span'],
+        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id']
+      });
+      
+      return (
+        <div 
+          className={`markdown-content ${darkMode ? 'dark' : ''}`} 
+          style={textStyle}
+          dangerouslySetInnerHTML={{ __html: sanitizedText }}
+        />
+      );
+    }
+  } catch (error) {
+    console.error('Error rendering text with math:', error);
+    // Fallback to simple text rendering
+    return (
       <div 
         className={`markdown-content ${darkMode ? 'dark' : ''}`} 
         style={textStyle}
-        dangerouslySetInnerHTML={{ __html: sanitizedText }}
-      />
-    </MathJaxContext>
-  );
+      >
+        {text}
+      </div>
+    );
+  }
 };
 
 // Alternative ReactMarkdown renderer for fallback
@@ -307,13 +454,14 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
             } else {
               textContent = String(children || '');
             }
-            const cleanText = textContent.replace(/^#+\s*/, '');
+            // Clean text more thoroughly - remove all # symbols and extra spaces
+            const cleanText = textContent.replace(/^#+\s*/, '').replace(/#+/g, '').trim();
             return (
-              <h1 className={`text-2xl font-bold mb-4 mt-6 flex items-center gap-2 ${
-                darkMode ? 'text-white' : 'text-gray-900'
+              <h1 className={`text-2xl font-bold mb-4 mt-6 flex items-center gap-3 border-b-2 pb-2 ${
+                darkMode ? 'text-white border-gray-600' : 'text-gray-900 border-gray-200'
               }`}>
-                <span className="text-blue-500">📋</span>
-                {cleanText}
+                <span className="text-blue-500 text-xl">📋</span>
+                <span>{cleanText}</span>
               </h1>
             );
           },
@@ -336,13 +484,14 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
             } else {
               textContent = String(children || '');
             }
-            const cleanText = textContent.replace(/^#+\s*/, '');
+            // Clean text more thoroughly - remove all # symbols and extra spaces
+            const cleanText = textContent.replace(/^#+\s*/, '').replace(/#+/g, '').trim();
             return (
-              <h2 className={`text-xl font-bold mb-3 mt-5 flex items-center gap-2 ${
+              <h2 className={`text-xl font-semibold mb-3 mt-5 flex items-center gap-2 ${
                 darkMode ? 'text-gray-100' : 'text-gray-800'
               }`}>
-                <span className="text-green-500">📝</span>
-                {cleanText}
+                <span className="text-green-500">•</span>
+                <span>{cleanText}</span>
               </h2>
             );
           },
@@ -365,13 +514,14 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
             } else {
               textContent = String(children || '');
             }
-            const cleanText = textContent.replace(/^#+\s*/, '');
+            // Clean text more thoroughly - remove all # symbols and extra spaces
+            const cleanText = textContent.replace(/^#+\s*/, '').replace(/#+/g, '').trim();
             return (
               <h3 className={`text-lg font-semibold mb-2 mt-4 flex items-center gap-2 ${
                 darkMode ? 'text-gray-200' : 'text-gray-700'
               }`}>
-                <span className="text-purple-500">📌</span>
-                {cleanText}
+                <span className="text-purple-500">▸</span>
+                <span>{cleanText}</span>
               </h3>
             );
           },
@@ -394,13 +544,14 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
             } else {
               textContent = String(children || '');
             }
-            const cleanText = textContent.replace(/^#+\s*/, '');
+            // Clean text more thoroughly - remove all # symbols and extra spaces
+            const cleanText = textContent.replace(/^#+\s*/, '').replace(/#+/g, '').trim();
             return (
               <h4 className={`text-base font-semibold mb-2 mt-3 flex items-center gap-2 ${
                 darkMode ? 'text-gray-300' : 'text-gray-600'
               }`}>
-                <span className="text-orange-500">🔸</span>
-                {cleanText}
+                <span className="text-orange-500">‣</span>
+                <span>{cleanText}</span>
               </h4>
             );
           },
@@ -578,6 +729,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [selectedRole, setSelectedRole] = useState(roleOptions[0]);
   const [showRoleSelector, setShowRoleSelector] = useState(false);
   const [showChatHistory, setShowChatHistory] = useState(false);
@@ -674,7 +826,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
   });
   const [messageHistory, setMessageHistory] = useState<{ role: string, content: string }[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [chatId, setChatId] = useState<string>(routeChatId || Date.now().toString());
+  const [chatId, setChatId] = useState<string>(routeChatId || crypto.randomUUID());
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [speakingMessageId, setSpeakingMessageId] = useState<number | null>(null);
   const [autoSpeak, setAutoSpeak] = useState<boolean>(false);
@@ -727,6 +879,111 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const historyDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Function to detect and extract file URLs from bot responses
+  const extractFileUrlFromBotResponse = (content: string): {
+    cleanContent: string;
+    fileUrl: string | null;
+    fileName: string | null;
+    fileType: string | null;
+  } => {
+    if (!content || typeof content !== 'string') {
+      return { cleanContent: content, fileUrl: null, fileName: null, fileType: null };
+    }
+
+    // Look for the pattern: "The file is ready. You can download it using the following link: `URL`"
+    const fileReadyPattern = /The file is ready\.\s*You can download it using the following link:\s*`([^`]+)`/i;
+    const match = content.match(fileReadyPattern);
+    
+    if (match) {
+      const fileUrl = match[1].trim();
+      
+      // Extract file name from URL
+      let fileName = 'Generated File';
+      let fileType = 'application/octet-stream';
+      
+      try {
+        const urlParts = fileUrl.split('/');
+        const lastPart = urlParts[urlParts.length - 1];
+        
+        if (lastPart.includes('.')) {
+          fileName = lastPart;
+          const extension = lastPart.split('.').pop()?.toLowerCase();
+          
+          // Determine file type based on extension
+          if (extension === 'xlsx') {
+            fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            fileName = fileName || 'Generated Spreadsheet.xlsx';
+          } else if (extension === 'docx') {
+            fileType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+            fileName = fileName || 'Generated Document.docx';
+          } else if (extension === 'pdf') {
+            fileType = 'application/pdf';
+            fileName = fileName || 'Generated Document.pdf';
+          } else if (extension === 'csv') {
+            fileType = 'text/csv';
+            fileName = fileName || 'Generated Data.csv';
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing file URL:', error);
+      }
+      
+      // Remove the file download text from content
+      const cleanContent = content.replace(fileReadyPattern, '').trim();
+      
+      return {
+        cleanContent: cleanContent || 'File generated successfully!',
+        fileUrl,
+        fileName,
+        fileType
+      };
+    }
+    
+    // Also check for direct Supabase storage URLs
+    const supabaseUrlPattern = /(https:\/\/[^\/]+\.supabase\.co\/storage\/v1\/object\/public\/[^\s]+)/i;
+    const supabaseMatch = content.match(supabaseUrlPattern);
+    
+    if (supabaseMatch) {
+      const fileUrl = supabaseMatch[1];
+      let fileName = 'Downloaded File';
+      let fileType = 'application/octet-stream';
+      
+      try {
+        const urlParts = fileUrl.split('/');
+        const lastPart = urlParts[urlParts.length - 1];
+        
+        if (lastPart.includes('.')) {
+          fileName = lastPart;
+          const extension = lastPart.split('.').pop()?.toLowerCase();
+          
+          if (extension === 'xlsx') {
+            fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+          } else if (extension === 'docx') {
+            fileType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          } else if (extension === 'pdf') {
+            fileType = 'application/pdf';
+          } else if (extension === 'csv') {
+            fileType = 'text/csv';
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing Supabase URL:', error);
+      }
+      
+      // Remove the URL from content
+      const cleanContent = content.replace(supabaseUrlPattern, '').trim();
+      
+      return {
+        cleanContent: cleanContent || 'File is ready for download!',
+        fileUrl,
+        fileName,
+        fileType
+      };
+    }
+    
+    return { cleanContent: content, fileUrl: null, fileName: null, fileType: null };
+  };
 
   // Fetch user chats from database without updating current messages
   const fetchUserChatsWithoutMessageUpdate = async () => {
@@ -856,7 +1113,12 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                 fileName: msg.fileName,
                 sender: msg.role === 'assistant' ? 'bot' : 'user',
                 text: msg.content,
-                isStreaming: msg.isStreaming || false
+                isStreaming: msg.isStreaming || false,
+                // Include attachment fields from Supabase
+                file_url: msg.file_url,
+                file_name: msg.file_name,
+                file_type: msg.file_type,
+                file_size: msg.file_size
               };
             });
             
@@ -963,7 +1225,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         } else {
           // No chats found for this user, but user is authenticated - create a new chat
           console.log('✅ No chats found for authenticated user, creating new chat...');
-          const newChatId = routeChatId || Date.now().toString();
+          const newChatId = routeChatId || crypto.randomUUID();
           setChatId(newChatId);
           setMessages([]);
           setSelectedRole(roleOptions[0]);
@@ -995,7 +1257,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         setIsLoadingChats(false);
         
         // Use local chat in case of auth error
-        const localChatId = routeChatId || Date.now().toString();
+        const localChatId = routeChatId || crypto.randomUUID();
         setChatId(localChatId);
         setChats([{
           id: localChatId,
@@ -1013,7 +1275,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         setIsLoadingChats(false);
         
         // Set up a local chat when not authenticated
-        const localChatId = routeChatId || Date.now().toString();
+        const localChatId = routeChatId || crypto.randomUUID();
         setChatId(localChatId);
         setChats([{
           id: localChatId,
@@ -1055,7 +1317,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         setIsLoadingChats(false);
         
         // Use local chat in case of fetch error
-        const localChatId = routeChatId || Date.now().toString();
+        const localChatId = routeChatId || crypto.randomUUID();
         setChatId(localChatId);
         setChats([{
           id: localChatId,
@@ -1148,12 +1410,12 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
           navigate(`/chat/${recentChat.id}`, { replace: true });
         } else {
           // No chats found, create a new one
-          const newChatId = Date.now().toString();
+          const newChatId = crypto.randomUUID();
           startNewChat(newChatId);
         }
       } else {
         // No chats found, create a new one
-        const newChatId = Date.now().toString();
+        const newChatId = crypto.randomUUID();
         startNewChat(newChatId);
         
         // Set empty groups for history
@@ -1172,7 +1434,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
       setIsLoadingChats(false);
       
       // Use local chat in case of any error
-      const localChatId = routeChatId || Date.now().toString();
+      const localChatId = routeChatId || crypto.randomUUID();
       setChatId(localChatId);
       setChats([{
           id: localChatId,
@@ -1282,48 +1544,118 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         }
       }
       
-      // Check if chat exists using new service
-      const existingChats = await getNewUserChats(userId);
-      const existingChat = existingChats.find((chat: SupabaseChat) => chat.id === chatId);
-      const isNewChat = !existingChat;
+      // Check if this will be the first user message (before saving the message)
+      let shouldUpdateTitle = false;
+      if (role === 'user' && textContent && textContent.trim().length > 0) {
+        const { data: existingUserMessages } = await supabase
+          .from('messages')
+          .select('id')
+          .eq('chat_id', chatId)
+          .eq('role', 'user')
+          .limit(1);
+        
+        shouldUpdateTitle = !existingUserMessages || existingUserMessages.length === 0;
+        if (shouldUpdateTitle) {
+          console.log('🏷️ This will be the first user message, will update title after saving...');
+        }
+      }
+      
+      // Check if chat exists using direct database query
+      const { data: existingChats } = await supabase
+        .from('chats')
+        .select('*')
+        .eq('id', chatId)
+        .eq('owner', userId);
+      
+      const isNewChat = !existingChats || existingChats.length === 0;
       
       if (isNewChat) {
-        // Chat doesn't exist - create new chat automatically
+        // Chat doesn't exist - create new chat automatically using direct database insert
         console.log('Chat does not exist, creating new chat automatically...');
-        const newChat = await createNewChat(userId, chatId, {}, selectedRole.id);
-        if (!newChat) {
-          console.error('Failed to create new chat');
+        const { data: newChat, error: chatError } = await supabase
+          .from('chats')
+          .insert({
+            id: chatId,
+            owner: userId,
+            title: 'New Chat',
+            position_counter: 0,
+            metadata: {},
+            role: selectedRole.id
+          })
+          .select()
+          .single();
+        
+        if (chatError) {
+          console.error('Failed to create new chat:', chatError);
           return;
         }
         console.log('✅ New chat created successfully:', newChat);
       }
       
-      // Add message using new service
-      if (role === 'user') {
-        // For user messages with attachments, use delimiter format
-        let finalContent = textContent || '';
-        if (imageData && imageData.url) {
-          // Combine text and attachment URL with delimiter format
-          finalContent = textContent ? `${textContent} ;;%%;; ${imageData.url} ;;%%;;` : `;;%%;; ${imageData.url} ;;%%;;`;
-        }
-        
-        await addUserMessage(chatId, userId, finalContent, imageData || {});
-        
-        // Check if this is the first user message in a new chat
-        if (isNewChat && textContent && textContent.trim().length > 0) {
-          // Update chat title with first 2-3 words of the user's first message
-          await updateChatTitleFromMessage(textContent, chatId, userId);
-        }
-      } else {
-        // For assistant messages, start and finalize immediately
-        const messageId = await startAssistantMessage(chatId, userId);
-        if (messageId) {
-          await appendMessageChunk(messageId.id, textContent || '');
-          await finalizeMessage(messageId.id);
-        }
+      // Get current message count for position
+      const { data: messageCount } = await supabase
+        .from('messages')
+        .select('position', { count: 'exact' })
+        .eq('chat_id', chatId)
+        .order('position', { ascending: false })
+        .limit(1);
+      
+      const nextPosition = messageCount && messageCount.length > 0 ? messageCount[0].position + 1 : 1;
+      
+      // Add message using direct database insert
+      const messageData: any = {
+        chat_id: chatId,
+        role: role,
+        content: textContent || '',
+        status: 'done',
+        position: nextPosition,
+        metadata: { test: false, message_type: role === 'user' ? 'user_message' : 'assistant_reply' }
+      };
+      
+      // Use the new addUserMessageWithAttachment function if there's attachment data
+       let newMessage;
+       let messageError;
+       
+       if (imageData && imageData.url && role === 'user') {
+         // Use the new attachment-aware function for user messages with attachments
+         newMessage = await addUserMessageWithAttachment(
+           chatId,
+           userId,
+           textContent || '',
+           imageData.url,
+           imageData.fileName || 'attachment',
+           imageData.fileType || 'image',
+           imageData.size || null
+         );
+         
+         if (!newMessage) {
+           messageError = { message: 'Failed to create message with attachment' };
+         }
+       } else {
+         // Use regular insert for messages without attachments
+         const result = await supabase
+           .from('messages')
+           .insert(messageData)
+           .select()
+           .single();
+         
+         newMessage = result.data;
+         messageError = result.error;
+       }
+      
+      if (messageError) {
+        console.error('Failed to save message:', messageError);
+        return;
       }
       
-      // Chat history updates are handled by saveChatToDatabase function
+      console.log('✅ Message saved successfully:', newMessage);
+      
+      // Check if this was the first user message in the chat (check was done before saving)
+      if (shouldUpdateTitle) {
+        console.log('🏷️ This was the first user message, updating chat title...');
+        await updateChatTitleFromMessage(textContent, chatId, userId);
+      }
+      
     } catch (error) {
       console.error('Error saving to database:', error);
     }
@@ -1413,7 +1745,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
           localStorage.setItem('lastActiveChatId', newCurrentChat.id);
         } else {
           // No remaining chats, create a completely new one
-          const newChatId = Date.now().toString();
+          const newChatId = crypto.randomUUID();
           setMessages([]);
           setMessageHistory([]);
           setInputMessage('');
@@ -1478,7 +1810,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
       } else {
         // No stored chat - create a new one automatically
         console.log('No stored chat found. Creating new chat automatically...');
-        const newChatId = Date.now().toString();
+        const newChatId = crypto.randomUUID();
         const newChat = await createNewChat(user?.uid!, newChatId, {}, selectedRole.id);
         if (newChat) {
           console.log('✅ Auto-created new chat:', newChat);
@@ -2089,11 +2421,16 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
   const handleSendMessage = async () => {
     if (!inputMessage.trim() && !selectedFile && uploadedFiles.length === 0 && !currentUploadedFile) return;
     
+    // Prevent multiple simultaneous sends
+    if (isSending || isLoading) return;
+    
     // Check if a chat exists - prevent sending messages without a chat
     if (!chatId) {
       showWarning('Please create a new chat first before sending messages.');
       return;
     }
+    
+    setIsSending(true);
     
     // If a generation type is selected, route to generation API
     if (selectedGenerationType) {
@@ -2103,7 +2440,11 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
       setInputMessage('');
       // Don't clear file here - wait until after successful processing
       
-      await sendGenerationRequest(selectedGenerationType, messageToSend);
+      try {
+        await sendGenerationRequest(selectedGenerationType, messageToSend);
+      } finally {
+        setIsSending(false);
+      }
       return;
     }
     
@@ -2112,12 +2453,14 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
     if (currentUserMessages >= 40) {
       setIsMessageLimitReached(true);
       showWarning('You have reached the 40-message limit for this chat. Please start a new chat to continue.');
+      setIsSending(false);
       return;
     }
     
     // Check if user has sufficient coins
     if (!isPro && (!userData?.coins || userData.coins <= 0)) {
       setShowProAlert(true);
+      setIsSending(false);
       return;
     }
     
@@ -2190,16 +2533,16 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                   ? `You need ${totalCoinsNeeded} coins to process this ${fileTypeLabel}.`
                   : `You need ${totalCoinsNeeded} coins to process this ${fileTypeLabel} (${pageCount} pages × 2 coins per page).`;
                 showWarning(`${costDescription} Please purchase more coins.`);
+                setIsSending(false);
                 return;
               }
               
-              // Show simple upload message for PDF with delimiter format
-              const fileDisplayInfo = `📄 PDF uploaded: ${selectedFile.name}`;
+              // Store only the text content, file info will be handled by UserMessageAttachments component
               const fileUrlInfo = `;;%%;;data:application/pdf;base64,placeholder;;%%;; `;
               
               userMessageContent = inputMessage 
-                ? `${inputMessage}\n\n${fileDisplayInfo}\n${fileUrlInfo}` 
-                : `${fileDisplayInfo}\n${fileUrlInfo}`;
+                ? `${inputMessage}${fileUrlInfo}` 
+                : fileUrlInfo;
               
               const userMessage = {
                 id: messages.length + 1,
@@ -2276,13 +2619,15 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
               // Chat history is handled by saveChatToDatabase function
               
               setIsLoading(false);
-              return; // Exit early since we've handled the PDF case
+      setIsSending(false);
+      return; // Exit early since we've handled the PDF case
             } catch (pdfError) {
               console.error('Error processing PDF:', pdfError);
               setProcessingStatus(null);
               const errorMessage = pdfError instanceof Error ? pdfError.message : 'Unknown error occurred';
               showError(`Failed to process ${fileTypeLabel}: ${errorMessage}`);
               setIsLoading(false);
+              setIsSending(false);
               return;
             }
           }
@@ -2292,13 +2637,12 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
             // Create a local URL for the file
             const localUrl = URL.createObjectURL(selectedFile);
             
-            // Add file information to message content with delimiter format
-            const fileDisplayInfo = `[Attached ${fileTypeLabel}: ${selectedFile.name}]`;
+            // Store only the text content and file URL, display info will be handled by UserMessageAttachments component
             const fileUrlInfo = `;;%%;;${localUrl};;%%;; `;
             
             userMessageContent = inputMessage 
-              ? `${inputMessage}\n\n${fileDisplayInfo}\n${fileUrlInfo}` 
-              : `${fileDisplayInfo}\n${fileUrlInfo}`;
+              ? `${inputMessage}${fileUrlInfo}` 
+              : fileUrlInfo;
             
             // Add user message with file
             const userMessage = {
@@ -2445,20 +2789,17 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
               // Mark that user message has been added to prevent duplicates
               userMessageAdded = true;
               
-              // Save user message to database using new Supabase structure
-        if (user?.uid) {
-          try {
-            await addUserMessage(
-              chatId,
-              user.uid,
-              userMessageContent,
-              {},
-              `session_${Date.now()}`
-            );
-          } catch (error) {
-            console.error('Error saving user message:', error);
-          }
-        }
+              // Save user message with attachment to database
+              const messageWithAttachment = {
+                text: inputMessage.trim() || `[Attached ${fileTypeLabel}: ${selectedFile.name}]`,
+                attachment: {
+                  url: publicUrl,
+                  fileName: selectedFile.name,
+                  fileType: fileTypeLabel.toLowerCase(),
+                  size: selectedFile.size
+                }
+              };
+              await saveChatToDatabase(messageWithAttachment, 'user');
               
               // Use public URL for AI processing
               imageUrl = publicUrl;
@@ -2470,60 +2811,87 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
           }
         } catch (error) {
           console.error('Error processing file:', error);
-                      showError('Error uploading file. Please try again.');
+          showError('Error uploading file. Please try again.');
           setIsLoading(false);
+          setIsSending(false);
           return;
         }
       } else {
-          // Only add user message if no file was processed (to avoid duplicate messages)
-          // File processing sections above already handle adding user messages
+          // Consolidate all message creation into one place to prevent duplicates
           if (!userMessageAdded) {
-            // Add user message using functional update to ensure we get the latest state
+            let attachments: any[] = [];
+            let messageToSave: any = null;
+            
+            // Priority 1: Handle uploadedFiles (from drag & drop or file picker)
+            if (uploadedFiles.length > 0) {
+              attachments = uploadedFiles.map(file => ({
+                url: file.url,
+                fileName: file.fileName,
+                fileType: file.fileType,
+                originalName: file.originalName,
+                size: file.size
+              }));
+              
+              // For database saving, use the first attachment
+              const firstAttachment = uploadedFiles[0];
+              messageToSave = {
+                text: userMessageContent,
+                attachment: {
+                  url: firstAttachment.url,
+                  fileName: firstAttachment.fileName || firstAttachment.originalName,
+                  fileType: firstAttachment.fileType,
+                  size: firstAttachment.size
+                }
+              };
+            }
+            // Priority 2: Handle currentUploadedFile (from n8n webhook case)
+            else if (currentUploadedFile) {
+              attachments = [{
+                url: currentUploadedFile.publicUrl,
+                fileName: currentUploadedFile.fileName,
+                fileType: currentUploadedFile.fileType,
+                originalName: currentUploadedFile.originalName,
+                size: currentUploadedFile.size
+              }];
+              
+              messageToSave = {
+                text: userMessageContent,
+                attachment: {
+                  url: currentUploadedFile.publicUrl,
+                  fileName: currentUploadedFile.originalName,
+                  fileType: currentUploadedFile.fileType,
+                  size: currentUploadedFile.size || null
+                }
+              };
+            }
+            // Priority 3: Text-only message
+            else {
+              messageToSave = userMessageContent;
+            }
+            
+            // Add single user message to state
             setMessages(prev => {
               const userMessage = {
                 id: prev.length + 1,
                 role: 'user',
                 content: userMessageContent,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                ...(attachments.length > 0 && { attachments })
               };
               return [...prev, userMessage];
             });
             
-            // Save user message to database
-            await saveChatToDatabase(userMessageContent, 'user');
+            // Save to database
+            await saveChatToDatabase(messageToSave, 'user');
             
             // Mark that user message has been added
             userMessageAdded = true;
           }
           
+          // Clear input and files
           setInputMessage('');
-          setUploadedFiles([]); // Clear uploaded files after sending
-        }
-        
-        // For n8n webhook case, add user message and clear input immediately
-        // Only add if no other file processing has already added a user message
-        if (currentUploadedFile && inputMessage.trim() && !userMessageAdded) {
-          const fileInfo = `📄 ${currentUploadedFile.originalName}`;
-          const userMessageWithFile = `${inputMessage.trim()}\n\n${fileInfo}`;
-          
-          setMessages(prev => {
-            const userMessage = {
-              id: prev.length + 1,
-              role: 'user',
-              content: userMessageWithFile,
-              timestamp: new Date().toISOString()
-            };
-            return [...prev, userMessage];
-          });
-          
-          // Save user message to database
-          await saveChatToDatabase(userMessageWithFile, 'user');
-          
-          // Mark that user message has been added
-          userMessageAdded = true;
-          
-          // Clear input immediately
-          setInputMessage('');
+          setUploadedFiles([]);
+          setCurrentUploadedFile(null);
         }
         
         // Create a streaming bot message that will be updated in real-time
@@ -2532,20 +2900,8 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         let streamingContent = '';
         let assistantMessageId: string | null = null;
         
-        // Start assistant message in Supabase
-        if (user?.uid) {
-          try {
-            const assistantMessage = await startAssistantMessage(
-              chatId,
-              user.uid,
-              { model: 'qwen-vl-max' },
-              `session_${Date.now()}`
-            );
-            assistantMessageId = assistantMessage?.id || null;
-          } catch (error) {
-            console.error('Error starting assistant message:', error);
-          }
-        }
+        // Note: Removed startAssistantMessage to prevent empty database rows
+        // Content will be saved via saveChatToDatabase when streaming completes
         
         // Add initial empty streaming message using functional update
         setMessages(prev => {
@@ -2588,12 +2944,8 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         
         streamingContent += chunk;
         
-        // Append chunk to Supabase if user is authenticated and assistantMessageId exists
-        if (user?.uid && assistantMessageId && chunk && chunk !== '__RESET__') {
-          appendMessageChunk(assistantMessageId, chunk).catch(error => {
-            console.error('Error appending message chunk:', error);
-          });
-        }
+        // Note: Removed appendMessageChunk to prevent empty database operations
+        // Content will be saved via saveChatToDatabase when streaming completes
         
         // Update the streaming message in real-time
         setMessages(prev => prev.map(msg => 
@@ -2648,7 +3000,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
            const attachments = uploadedFiles.map(file => ({
              url: file.url,
              fileName: file.fileName,
-             fileType: file.fileName.split('.').pop()?.toLowerCase() || 'unknown'
+             fileType: file.fileType
            }));
            
            console.log('📎 Sending attachments to webhook API:', attachments);
@@ -2681,19 +3033,8 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
           setCoinsUsed(prev => ({ ...prev, [streamingMessageId]: coinsToDeduct }));
         }
         
-        // Finalize the AI message in Supabase
-        if (user?.uid && assistantMessageId) {
-          try {
-            await finalizeMessage(assistantMessageId);
-          } catch (error) {
-            console.error('Error finalizing message:', error);
-            // Fallback to old method if new method fails
-            await saveChatToDatabase(fullResponse, 'assistant');
-          }
-        } else {
-          // Fallback for unauthenticated users or if assistantMessageId is missing
-          await saveChatToDatabase(fullResponse, 'assistant');
-        }
+        // Save the complete assistant response to database (use clean streaming content, not raw JSON)
+        await saveChatToDatabase(streamingContent, 'assistant');
         
         // Clear uploaded file and selected file after successful sending
         if (currentUploadedFile) {
@@ -2721,13 +3062,14 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         });
         
         // Save error message to database
-        await saveChatToDatabase('Sorry, I encountered an error. Please try again.', 'assistant');
+         await saveChatToDatabase('Sorry, I encountered an error. Please try again.', 'assistant');
       }
     } catch (error) {
       console.error('Error in message handling:', error);
-              showError('An error occurred while sending your message. Please try again.');
+      showError('An error occurred while sending your message. Please try again.');
     } finally {
       setIsLoading(false);
+      setIsSending(false);
     }
   };
 
@@ -2799,7 +3141,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
            setMessages(prev => [...prev, newAssistantMessage]);
            
            // Save the assistant message to database
-           await saveChatToDatabase(roleChangeMessage, 'assistant');
+            await saveChatToDatabase(roleChangeMessage, 'assistant');
            
            console.log('✅ Role change assistant message added');
          }
@@ -2814,7 +3156,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isSending && !isLoading) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -2955,10 +3297,10 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
 
     try {
       // Delete from Supabase using new service
-      const error = await deleteNewChat(chatIdToDelete, user.uid);
+      const success = await deleteNewChat(chatIdToDelete, user.uid);
 
-      if (error) {
-        console.error('Error deleting chat:', error);
+      if (!success) {
+        console.error('Error deleting chat: deleteNewChat returned false');
         showError('Failed to delete chat');
         return;
       }
@@ -2977,7 +3319,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
 
       // If the deleted chat is the current chat, navigate to a new chat
       if (chatIdToDelete === chatId) {
-        const newChatId = Date.now().toString();
+        const newChatId = crypto.randomUUID();
         navigate(`/chat/${newChatId}`, { replace: true });
         setChatId(newChatId);
         setMessages([]);
@@ -3301,7 +3643,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
   // Define proper types for the startNewChat function
   const startNewChat = async (customChatId?: string) => {
     stopSpeech();
-    const newChatId = customChatId || Date.now().toString();
+    const newChatId = customChatId || crypto.randomUUID();
     setChatId(newChatId);
     
     // Clear all state completely to prevent any leakage
@@ -3331,38 +3673,31 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
       const userId = user.uid;
       console.log('✅ Using AuthContext user ID for new chat:', userId);
       
-      const timestamp = new Date().toISOString();
+      // Create empty chat in database using direct database insert
+      console.log('🔄 Creating new chat in database with ID:', newChatId);
       
-      // Create empty chat in database - no initial messages
-      const newChat = {
-        chat_id: newChatId,
-        user_id: userId,
-        name: 'New Chat',
-        messages: [],
-        role: roleOptions[0].id,
-        role_description: roleOptions[0].description,
-        created_at: timestamp,
-        updated_at: timestamp
-      };
+      const { data: createdChat, error: chatError } = await supabase
+        .from('chats')
+        .insert({
+          id: newChatId,
+          owner: userId,
+          title: 'New Chat',
+          position_counter: 0,
+          metadata: {},
+          role: selectedRole.id
+        })
+        .select()
+        .single();
       
-      console.log('🔄 Creating new chat in database:', newChat);
-      
-      // Use new chat service to create chat
-      const createdChatId = await createNewChat(user.uid, 'New Chat', {}, selectedRole.id);
-      
-      if (!createdChatId) {
-        console.error('❌ Error creating new chat');
+      if (chatError) {
+        console.error('❌ Error creating new chat:', chatError);
         // Don't throw error, just log it and continue with local state
       } else {
-        console.log('✅ Successfully created new chat in database with ID:', createdChatId);
-        
-        // Update the chat ID to use the one from database
-        setChatId(createdChatId);
-        navigate(`/chat/${createdChatId}`, { replace: true });
+        console.log('✅ Successfully created new chat in database:', createdChat);
         
         // Update local state with the new chat
         setChats(prev => [{
-          id: createdChatId,
+          id: newChatId,
           title: 'New Chat',
           messages: [],
           role: roleOptions[0].id,
@@ -3371,13 +3706,13 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         }, ...prev]);
         
         // Update local storage with new chat ID
-        localStorage.setItem('lastActiveChatId', createdChatId);
+        localStorage.setItem('lastActiveChatId', newChatId);
         
         // Update chat history groups
         setGroupedChatHistory(prev => ({
           ...prev,
           today: [{ 
-            id: createdChatId, 
+            id: newChatId, 
             title: 'New Chat', 
             role: roleOptions[0].id,
             roleName: roleOptions[0].name
@@ -3395,6 +3730,9 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
     // Ensure the speech is stopped
     stopSpeech();
     
+    // Create a new chat ID first
+    const newChatId = crypto.randomUUID();
+    
     // Clear all message state completely
     setMessages([]);
     setMessageHistory([]);
@@ -3407,29 +3745,48 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
     setUserMessageCount(0);
     setIsMessageLimitReached(false);
     
-    // Create a new chat ID and update URL
-    const newChatId = Date.now().toString();
-    setChatId(newChatId);
-    navigate(`/chat/${newChatId}`, { replace: true });
-    localStorage.setItem('lastActiveChatId', newChatId);
-    
     // Reset to default role
     setSelectedRole(roleOptions[0]);
+    
+    // Update chat ID state immediately
+    setChatId(newChatId);
+    
+    // Store in localStorage immediately
+    localStorage.setItem('lastActiveChatId', newChatId);
     
     try {
       // Use AuthContext user instead of Supabase session
       if (!user?.uid) {
-        // For non-logged in users, start with empty messages
+        console.log('⚠️ No AuthContext user found, creating local chat');
+        // For non-logged in users, start with empty messages and navigate
         setMessages([]);
+        navigate(`/chat/${newChatId}`, { replace: true });
         return;
       }
       
-      // For logged in users, create the new chat in the database
+      // For logged in users, create the new chat in the database first
+      console.log('🔄 Creating new chat with ID:', newChatId);
       await startNewChat(newChatId);
+      
+      console.log('✅ Successfully created new chat with ID:', newChatId);
+      
+      // Small delay to ensure database consistency
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Force navigation after successful creation
+      console.log('✅ Navigating to new chat:', newChatId);
+      navigate(`/chat/${newChatId}`, { replace: true });
+      
+      // Refresh chat list to show the new chat after a small delay
+      setTimeout(async () => {
+        await fetchUserChatsWithoutMessageUpdate();
+      }, 200);
+      
     } catch (error) {
-      console.error('Error starting new chat:', error);
-      // Fallback to empty messages
+      console.error('❌ Error starting new chat:', error);
+      // Even if database operation fails, still navigate to the new chat
       setMessages([]);
+      navigate(`/chat/${newChatId}`, { replace: true });
     }
   };
 
@@ -3966,6 +4323,13 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
     
     setMessages(prev => [...prev, userMessage]);
     
+    // Save user message to database immediately
+    try {
+      await saveChatToDatabase(message, 'user');
+    } catch (error) {
+      console.error('Error saving user message to database:', error);
+    }
+    
     // Add initial bot message for streaming response
     const botMessageId = Date.now() + 1;
     const generationType = type === 'image_generate' ? 'image' : 
@@ -4062,12 +4426,18 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         }
       }
 
-      // Mark streaming as complete
-      setMessages(prev => prev.map(msg => 
-        msg.id === botMessageId 
-          ? { ...msg, isStreaming: false, isGenerating: false }
-          : msg
-      ));
+      // Mark streaming as complete and save final bot response to database
+      setMessages(prev => prev.map(msg => {
+        if (msg.id === botMessageId) {
+          const finalMessage = { ...msg, isStreaming: false, isGenerating: false };
+          // Save the final bot response to database
+          saveChatToDatabase(finalMessage.content, 'assistant').catch(error => {
+            console.error('Error saving bot response to database:', error);
+          });
+          return finalMessage;
+        }
+        return msg;
+      }));
 
       const typeNames = {
         'image_generate': 'Image',
@@ -4424,21 +4794,82 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                       )}
                       
                       {messages.map((message) => {
-                        // Process message to handle delimiter format
+                        // Process message to handle delimiter format and create attachments array
                         let processedMessage = { ...message };
                         
-                        // Check for ;;%%;; delimited URLs in content
-                        if (message.content && typeof message.content === 'string' && message.content.includes(';;%%;;')) {
-                          const urlMatch = message.content.match(/;;%%;;(.*?);;%%;;/);
-                          if (urlMatch) {
-                            const fileUrl = urlMatch[1].trim();
-                            // Keep the full content with delimiters for display
-                            processedMessage = {
-                              ...message,
-                              content: message.content, // Show the combined text with attachment URL
-                              fileContent: fileUrl,
-                              fileName: message.fileName || 'Attachment'
-                            };
+                        // Create attachments array for UserMessageAttachments component
+                        if (message.role === 'user') {
+                          // Initialize attachments array
+                          const attachments: {
+                            url: string;
+                            fileName: string;
+                            fileType: string;
+                            originalName?: string;
+                            size?: number;
+                          }[] = [];
+                          
+                          // Priority 1: Use existing attachments if they exist (from uploadedFiles)
+                          if (message.attachments && message.attachments.length > 0) {
+                            attachments.push(...message.attachments);
+                          }
+                          // Priority 2: Check for ;;%%;; delimited URLs in content (database format) ONLY if no attachments exist
+                          else if (message.content && typeof message.content === 'string' && message.content.includes(';;%%;;')) {
+                            const urlMatch = message.content.match(/;;%%;;(.*?);;%%;;/);
+                            if (urlMatch) {
+                              const fileUrl = urlMatch[1].trim();
+                              attachments.push({
+                                url: fileUrl,
+                                fileName: message.fileName || 'Attachment',
+                                fileType: 'application/octet-stream',
+                                originalName: message.fileName || undefined,
+                                size: undefined
+                              });
+                              processedMessage.fileContent = fileUrl;
+                              processedMessage.fileName = message.fileName || 'Attachment';
+                            }
+                          }
+                          // Priority 3: Check for file_url fields (database format)
+                          else if (message.file_url) {
+                            attachments.push({
+                              url: message.file_url,
+                              fileName: message.file_name || 'Attachment',
+                              fileType: message.file_type || 'application/octet-stream',
+                              originalName: message.file_name || undefined,
+                              size: message.file_size || undefined
+                            });
+                          }
+                          
+                          // Only set attachments if we found any
+                          if (attachments.length > 0) {
+                            processedMessage.attachments = attachments;
+                          }
+                        }
+                        
+                        // Process bot messages for file URLs
+                        if (message.role === 'assistant') {
+                          const fileExtraction = extractFileUrlFromBotResponse(message.content);
+                          
+                          if (fileExtraction.fileUrl) {
+                            // Update the message content to remove the file URL text
+                            processedMessage.content = fileExtraction.cleanContent;
+                            
+                            // Create attachments array for bot message
+                            const botAttachments: {
+                              url: string;
+                              fileName: string;
+                              fileType: string;
+                              originalName?: string;
+                              size?: number;
+                            }[] = [{
+                              url: fileExtraction.fileUrl,
+                              fileName: fileExtraction.fileName || 'Generated File',
+                              fileType: fileExtraction.fileType || 'application/octet-stream',
+                              originalName: fileExtraction.fileName || undefined,
+                              size: undefined
+                            }];
+                            
+                            processedMessage.attachments = botAttachments;
+                            console.log('Created bot file attachment:', processedMessage.id, botAttachments);
                           }
                         }
                         
@@ -4465,32 +4896,13 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                                 ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
                                 : (darkMode ? 'bg-gray-800 border border-gray-700 text-gray-100' : 'bg-white border border-gray-200 shadow-sm text-gray-900')
                             }`}>
-                              {/* File content (if any) */}
-                              {'fileContent' in processedMessage && processedMessage.fileContent && (
-                                <div className="mb-2">
-                                  {processedMessage.fileName && (
-                                    processedMessage.fileName.toLowerCase().endsWith('.pdf') || 
-                                    processedMessage.fileName.toLowerCase().endsWith('.doc') || 
-                                    processedMessage.fileName.toLowerCase().endsWith('.docx')
-                                  ) ? (
-                                    <div className={`p-2 sm:p-3 rounded-lg flex items-center space-x-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                      <FiFile className={`text-base sm:text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
-                                      <span className="text-xs sm:text-sm truncate flex-1">
-                                        {processedMessage.fileName}
-                                        {processedMessage.fileName.toLowerCase().endsWith('.pdf') && ` (${t('chat.fileTypes.pdf')})`}
-                                        {processedMessage.fileName.toLowerCase().endsWith('.doc') && ` (${t('chat.fileTypes.doc')})`}
-                                        {processedMessage.fileName.toLowerCase().endsWith('.docx') && ` (${t('chat.fileTypes.docx')})`}
-                                      </span>
-                                    </div>
-                                  ) : (
-                                    <img 
-                                      src={processedMessage.fileContent as string} 
-                                      alt={processedMessage.fileName as string || t('chat.uploadedImage')} 
-                                      className="max-w-full rounded-lg"
-                                    />
-                                  )}
-                                </div>
+                              {/* User Message Attachments */}
+                              {processedMessage.role === 'user' && 'attachments' in processedMessage && processedMessage.attachments && processedMessage.attachments.length > 0 && (
+                                <UserMessageAttachments 
+                                  attachments={processedMessage.attachments}
+                                />
                               )}
+
                               
                               {/* Generated Image Display */}
                               {(processedMessage.image_url || (processedMessage.isGenerating && processedMessage.generationType === 'image')) && (
@@ -4555,104 +4967,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                                 </div>
                               )}
                               
-                              {/* Generated File Download */}
-                              {processedMessage.file_url && (
-                                <div className="mb-3">
-                                  <div className={`p-4 rounded-lg border ${
-                                    darkMode ? 'border-gray-600 bg-gray-800' : 'border-gray-200 bg-white'
-                                  } shadow-lg transition-all duration-200 hover:shadow-xl`}>
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center space-x-4">
-                                        <div className={`p-3 rounded-xl ${
-                                          processedMessage.generationType === 'spreadsheet' 
-                                            ? (darkMode ? 'bg-green-600' : 'bg-green-500')
-                                            : processedMessage.generationType === 'document'
-                                            ? (darkMode ? 'bg-blue-600' : 'bg-blue-500')
-                                            : (darkMode ? 'bg-purple-600' : 'bg-purple-500')
-                                        } shadow-md`}>
-                                          {processedMessage.generationType === 'spreadsheet' ? (
-                                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 1v3h2V5H5zm4 0v3h2V5H9zm4 0v3h2V5h-2zM5 10v3h2v-3H5zm4 0v3h2v-3H9zm4 0v3h2v-3h-2z" clipRule="evenodd" />
-                                            </svg>
-                                          ) : processedMessage.generationType === 'document' ? (
-                                            <FiFileText className="text-white text-xl" />
-                                          ) : (
-                                            <FiFile className="text-white text-xl" />
-                                          )}
-                                        </div>
-                                        <div className="flex-1">
-                                          <p className={`font-semibold text-base ${
-                                            darkMode ? 'text-gray-100' : 'text-gray-900'
-                                          }`}>
-                                            {message.file_name || (
-                                              message.generationType === 'spreadsheet' ? 'Generated Spreadsheet' :
-                                              message.generationType === 'document' ? 'Generated Document' :
-                                              'Generated File'
-                                            )}
-                                          </p>
-                                          <p className={`text-sm mt-1 ${
-                                            darkMode ? 'text-gray-400' : 'text-gray-600'
-                                          }`}>
-                                            {message.generationType === 'spreadsheet' && 'Excel file (.xlsx)'}
-                                            {message.generationType === 'document' && 'Word document (.docx)'}
-                                            {!message.generationType && 'Ready for download'}
-                                          </p>
-                                          <div className={`flex items-center space-x-4 mt-2 text-xs ${
-                                            darkMode ? 'text-gray-500' : 'text-gray-500'
-                                          }`}>
-                                            <span className="flex items-center space-x-1">
-                                              <div className={`w-2 h-2 rounded-full ${
-                                                darkMode ? 'bg-green-400' : 'bg-green-500'
-                                              }`}></div>
-                                              <span>Ready</span>
-                                            </span>
-                                            <span>•</span>
-                                            <span>Click to download</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <button
-                          onClick={() => message.file_url && handleFilePreview(
-                            message.file_url, 
-                            message.file_name || (
-                              message.generationType === 'spreadsheet' ? 'generated-spreadsheet.xlsx' :
-                              message.generationType === 'document' ? 'generated-document.docx' :
-                              'generated-file'
-                            ),
-                            message.generationType || 'document'
-                          )}
-                          className={`px-3 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 border ${
-                            darkMode 
-                              ? 'border-gray-600 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white' 
-                              : 'border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900'
-                          }`}
-                          title="Preview file"
-                        >
-                          <FiMaximize size={14} />
-                          <span className="text-sm hidden sm:inline">Preview</span>
-                        </button>
-                                        <a
-                                          href={message.file_url}
-                                          download={message.file_name || (
-                                            message.generationType === 'spreadsheet' ? 'generated-spreadsheet.xlsx' :
-                                            message.generationType === 'document' ? 'generated-document.docx' :
-                                            'generated-file'
-                                          )}
-                                          className={`px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg ${
-                                            darkMode 
-                                              ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                              : 'bg-blue-500 hover:bg-blue-600 text-white'
-                                          }`}
-                                        >
-                                          <FiDownload size={14} />
-                                          <span className="text-sm font-medium">Download</span>
-                                        </a>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
+
 
                               {/* Loading indicator for generation requests */}
                               {message.isGenerating && (
@@ -4674,6 +4989,16 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                                       </div>
                                     </div>
                                   </div>
+                                </div>
+                              )}
+
+                              {/* Bot Message Attachments */}
+                              {processedMessage.role === 'assistant' && processedMessage.attachments && processedMessage.attachments.length > 0 && (
+                                <div className="mb-3">
+                                  <BotMessageAttachments 
+                                    attachments={processedMessage.attachments}
+                                    darkMode={darkMode}
+                                  />
                                 </div>
                               )}
 
@@ -4715,38 +5040,31 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                   </div>
                 ) : processedMessage.isStreaming ? (
                   <div className="prose prose-sm max-w-none">
-                    {renderTextWithMath(displayedText[processedMessage.id] || '', darkMode, {
-                      color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
-                    })}
+                    <div className="inline-block">
+                      <span className="inline">
+                        {renderTextWithMath(displayedText[processedMessage.id] || '', darkMode, {
+                          color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
+                        })}
+                      </span>
+                      <span className="inline-flex items-center space-x-1 ml-1 align-baseline">
+                        <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      </span>
+                    </div>
                   </div>
                 ) : (
                   <div className="prose prose-sm max-w-none">
                     {(() => {
-                      // Process user messages with delimiters
+                      // Process user messages with delimiters - only show text content, attachments are handled by UserMessageAttachments component
                       if (processedMessage.role === 'user' && processedMessage.content.includes(';;%%;;')) {
-                        const urlMatch = processedMessage.content.match(/;;%%;;(.*?);;%%;;/);
-                        if (urlMatch) {
-                          const fileUrl = urlMatch[1].trim();
-                          const textContent = processedMessage.content.replace(/;;%%;;.*?;;%%;;/g, '').trim();
-                          return (
-                            <div>
-                              {textContent && renderTextWithMath(textContent, darkMode, {
-                                color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
-                              })}
-                              {fileUrl && (
-                                <div className={`mt-2 p-2 rounded-lg ${darkMode ? 'bg-blue-700' : 'bg-blue-400'}`}>
-                                  <div className="flex items-center space-x-2">
-                                    <FiPaperclip className="w-4 h-4" />
-                                    <span className="text-sm font-medium">Attachment:</span>
-                                  </div>
-                                  <div className="mt-1 text-xs break-all opacity-90">
-                                    {fileUrl}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          );
+                        const textContent = processedMessage.content.replace(/;;%%;;.*?;;%%;;/g, '').trim();
+                        if (textContent) {
+                          return renderTextWithMath(textContent, darkMode, {
+                            color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
+                          });
                         }
+                        return <div className="text-xs opacity-75">Attachment</div>; // Show placeholder text when only attachment without text
                       }
                       // Default rendering for other messages
                       return renderTextWithMath(processedMessage.content, darkMode, {
@@ -4769,26 +5087,14 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                                 
                                 <div className="flex space-x-1 sm:space-x-2">
                                   {/* Add message actions here */}
-                                  {processedMessage.role === 'user' && 'fileContent' in processedMessage && processedMessage.fileContent && 
-                                   processedMessage.fileName && !processedMessage.fileName.toLowerCase().match(/\.(pdf|doc|docx)$/) ? (
-                                    // Show download button for user messages with images
-                                    <button 
-                                      onClick={() => downloadImage(processedMessage.fileContent as string, processedMessage.fileName)}
-                                      className={`p-1 rounded-full ${processedMessage.role === 'user' ? 'hover:bg-blue-700 text-blue-200' : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')}`}
-                                      aria-label="Download image"
-                                    >
-                                      <FiDownload size={12} className="sm:w-3.5 sm:h-3.5" />
-                                    </button>
-                                  ) : (
-                                    // Show copy button for text messages
-                                    <button 
-                                      onClick={() => copyToClipboard(processedMessage.content)}
-                                      className={`p-1 rounded-full ${processedMessage.role === 'user' ? 'hover:bg-blue-700 text-blue-200' : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')}`}
-                                      aria-label={t('chat.copyToClipboard')}
-                                    >
-                                      <FiCopy size={12} className="sm:w-3.5 sm:h-3.5" />
-                                    </button>
-                                  )}
+                                  {/* Copy button for all messages (attachments are handled by UserMessageAttachments component) */}
+                                  <button 
+                                    onClick={() => copyToClipboard(processedMessage.content)}
+                                    className={`p-1 rounded-full ${processedMessage.role === 'user' ? 'hover:bg-blue-700 text-blue-200' : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')}`}
+                                    aria-label={t('chat.copyToClipboard')}
+                                  >
+                                    <FiCopy size={12} className="sm:w-3.5 sm:h-3.5" />
+                                  </button>
                                   {processedMessage.role === 'user' && !('fileContent' in processedMessage && processedMessage.fileContent) && (
                                     <button 
                                       onClick={() => handleEditMessage(processedMessage.id, processedMessage.content)}
@@ -4831,8 +5137,8 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                         );
                       })}
                       
-                      {/* Loading indicator */}
-                      {isLoading && (
+                      {/* Loading indicator - only show when there are no messages */}
+                      {isLoading && messages.length === 0 && (
                         <div className="flex justify-start">
                           <div className="max-w-[90%] sm:max-w-[85%] flex flex-row">
                             <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-2 sm:mr-3 ${darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'}`}>
@@ -4848,13 +5154,6 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                           </div>
                         </div>
                       )}
-                      
-                      {/* Thinking Indicator */}
-                      <ThinkingIndicator 
-                        isThinking={isThinking}
-                        thinkingContent={thinkingContent}
-                        darkMode={darkMode}
-                      />
                       
                       <div ref={messagesEndRef} />
                     </div>
@@ -4922,26 +5221,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                     {/* Fixed Generation Buttons */}
                     <div className="mb-3">
                       <div className="flex items-center space-x-2 overflow-x-auto pb-2">
-                        <AuthRequiredButton
-                          onClick={handleImageGenerate}
-                          disabled={isGenerating}
-                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                            selectedGenerationType === 'image_generate'
-                              ? (darkMode ? 'bg-purple-700 border-2 border-purple-500 text-white' : 'bg-purple-600 border-2 border-purple-400 text-white')
-                              : isGenerating
-                              ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed')
-                              : (darkMode ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white' : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white')
-                          }`}
-                        >
-                          <FiImage className="w-4 h-4" />
-                          <span>Image Generate</span>
-                          {selectedGenerationType === 'image_generate' && (
-                            <FiCheck className="w-4 h-4" />
-                          )}
-                          {isGenerating && (
-                            <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
-                          )}
-                        </AuthRequiredButton>
+
 
                         <AuthRequiredButton
                           onClick={handleXLSXGenerate}
@@ -5101,7 +5381,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                         <div className="relative">
                           <AuthRequiredButton
                             onClick={handleSendMessage}
-                            disabled={(!inputMessage.trim() && !selectedFile && !selectedGenerationType && uploadedFiles.length === 0) || isMessageLimitReached}
+                            disabled={(!inputMessage.trim() && !selectedFile && !selectedGenerationType && uploadedFiles.length === 0) || isMessageLimitReached || isSending}
                             className={`p-1.5 sm:p-2 rounded-full flex items-center ${
                                 (!inputMessage.trim() && !selectedFile && !selectedGenerationType && uploadedFiles.length === 0) || isMessageLimitReached
                                   ? (darkMode ? 'text-gray-500 bg-gray-800' : 'text-gray-400 bg-gray-100') 

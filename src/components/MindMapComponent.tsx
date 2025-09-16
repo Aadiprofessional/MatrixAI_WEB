@@ -606,6 +606,28 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
             type: 'restore'
           });
         });
+        
+        // Add message listener for chart capture
+        window.addEventListener('message', function(event) {
+          if (event.data && event.data.action === 'getChartImage') {
+            try {
+              const canvas = myChart.getDataURL({
+                type: 'png',
+                pixelRatio: 2,
+                backgroundColor: themeBackground
+              });
+              window.parent.postMessage({
+                type: 'chartImage',
+                dataUrl: canvas
+              }, '*');
+            } catch (error) {
+              window.parent.postMessage({
+                type: 'chartError',
+                error: error.message
+              }, '*');
+            }
+          }
+        });
       </script>
     </body>
     </html>
@@ -617,27 +639,10 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
       return;
     }
     
-    // Check if user ID is available
-    if (!uid) {
-      alert('Please log in to download the PDF.');
-      return;
-    }
-    
     setIsDownloading(true);
     console.log('Starting visual PDF download process...');
     
     try {
-      // Deduct 1 coin for PDF download
-      console.log('Deducting coins...');
-      const coinResponse = await userService.subtractCoins(uid, 1, 'mindmap_pdf_download');
-      
-      if (!coinResponse.success) {
-        alert('Failed to deduct coins. Please try again.');
-        setIsDownloading(false);
-        return;
-      }
-      
-      console.log('Coins deducted successfully, capturing chart...');
       
       // Get the iframe and access the chart
       const iframe = webViewRef.current;
@@ -664,12 +669,6 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
           };
           
           window.addEventListener('message', messageHandler);
-          
-          // Timeout after 10 seconds
-          setTimeout(() => {
-            window.removeEventListener('message', messageHandler);
-            reject(new Error('Chart capture timeout'));
-          }, 10000);
         } catch (error) {
           reject(error);
         }
@@ -720,13 +719,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
       
     } catch (error: any) {
       console.error('Error downloading mind map PDF:', error);
-      
-      // Check if error is due to insufficient coins
-      if (error.message && error.message.includes('insufficient')) {
-        alert('You don\'t have enough coins. Please purchase more coins to use this feature.');
-      } else {
-        alert('Failed to generate PDF: ' + (error.message || 'Unknown error'));
-      }
+      alert('Failed to generate PDF: ' + (error.message || 'Unknown error'));
     } finally {
       setIsDownloading(false);
     }

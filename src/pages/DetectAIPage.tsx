@@ -642,6 +642,7 @@ ${text}
                     <textarea
                       value={text}
                       onChange={(e) => handleTextChange(e.target.value)}
+                      onFocus={() => setShowSettings(true)}
                       placeholder={t('detectAI.placeholder')}
                       className="w-full p-4 pr-12 border rounded-lg shadow-sm h-36 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       disabled={isProcessing}

@@ -39,8 +39,8 @@ const HumaniseTextPage: React.FC = () => {
   const [text, setText] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [humanisedText, setHumanisedText] = useState('');
-  const [tone, setTone] = useState('casual');
-  const [level, setLevel] = useState('medium');
+  const [tone, setTone] = useState('Standard');
+  const [mode, setMode] = useState('Medium');
   const [isProcessing, setIsProcessing] = useState(false);
   const [savedContents, setSavedContents] = useState<{id: string, title: string, content: string}[]>([]);
   const [editingTitle, setEditingTitle] = useState('');
@@ -49,8 +49,8 @@ const HumaniseTextPage: React.FC = () => {
   const [showProAlert, setShowProAlert] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [history, setHistory] = useState<{id: string, title: string, original_text: string, humanized_text: string, createdAt: string}[]>([]);
-  const [aiDetector, setAiDetector] = useState('ZeroGPT.com');
+  const [history, setHistory] = useState<{id: string, title: string, original_text: string, humanized_text: string, createdAt: string, tone?: string, mode?: string, detector?: string, coinCost?: number}[]>([]);
+  const [detector, setDetector] = useState('turnitin');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -59,24 +59,31 @@ const HumaniseTextPage: React.FC = () => {
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
 
-  // Tone options
+  // StealthGPT Tone options
   const toneOptions = [
-    { id: 'casual', name: t('casual') },
-    { id: 'friendly', name: t('friendly') },
-    { id: 'conversational', name: t('conversational') },
-    { id: 'professional', name: t('professional') },
-    { id: 'humorous', name: t('humorous') },
-    { id: 'enthusiastic', name: t('enthusiastic') },
-    { id: 'thoughtful', name: t('thoughtful') },
-    { id: 'simple', name: t('simple') },
+    { id: 'Standard', name: 'Standard' },
+    { id: 'HighSchool', name: 'High School' },
+    { id: 'College', name: 'College' },
+    { id: 'PhD', name: 'PhD' },
   ];
 
-  // Humanisation levels
-  const levelOptions = [
-    { id: 'light', name: t('light') },
-    { id: 'medium', name: t('medium') },
-    { id: 'heavy', name: t('heavy') },
-    { id: 'creative', name: t('creative') },
+  // StealthGPT Mode options (Undetectability levels)
+  const modeOptions = [
+    { id: 'Low', name: 'Low' },
+    { id: 'Medium', name: 'Medium' },
+    { id: 'High', name: 'High' },
+  ];
+
+  // StealthGPT Detector options
+  const detectorOptions = [
+    { id: 'turnitin', name: 'Turnitin' },
+    { id: 'originality', name: 'Originality.ai' },
+    { id: 'gptzero', name: 'GPTZero' },
+    { id: 'copyleaks', name: 'CopyLeaks' },
+    { id: 'winston', name: 'Winston AI' },
+    { id: 'zerogpt', name: 'ZeroGPT' },
+    { id: 'sapling', name: 'Sapling.ai' },
+    { id: 'writer', name: 'Writer.com' },
   ];
 
   // Fetch user's humanization history
@@ -172,16 +179,17 @@ const HumaniseTextPage: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Create request payload with all settings
+      // Create request payload with StealthGPT API format
       const requestPayload = {
-        uid: userData?.uid || '0a147ebe-af99-481b-bcaf-ae70c9aeb8d8', // Use default UID if not available
+        uid: userData?.uid || '0a147ebe-af99-481b-bcaf-ae70c9aeb8d8',
         prompt: text,
-        ai_detector: aiDetector,
+        title: `Humanized Text - ${new Date().toLocaleDateString()}`,
         tone: tone,
-        level: level
+        mode: mode,
+        detector: detector
       };
       
-      // Make API request to the new humanization API
+      // Make API request to the new StealthGPT humanization API
       const response = await axios.post(
         'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/humanize/createHumanization',
         requestPayload,
@@ -194,25 +202,30 @@ const HumaniseTextPage: React.FC = () => {
       
       // Set the humanised text from API response
       if (response.data && response.data.humanization) {
-        setHumanisedText(response.data.humanization.humanized_text);
+        const humanization = response.data.humanization;
+        setHumanisedText(humanization.humanized_text);
         
         // Refresh history to include the new item
         fetchUserHumanizations();
         
-        // Show success toast notification with button to transfer to Content Writer
+        // Show success toast notification with humanization details
         toast.success(
           <div>
-            <div>{t('humanizeText.success.textHumanized')}</div>
+            <div className="font-medium">Text Successfully Humanized!</div>
+            <div className="text-sm mt-1 space-y-1">
+              <div>Tone: {humanization.tone || tone}</div>
+              <div>Mode: {humanization.mode || mode}</div>
+              <div>Detector: {humanization.detector || detector}</div>
+              <div>Cost: {humanization.coinCost || 40} coins</div>
+            </div>
             <button 
               onClick={() => {
-                // Store the humanized text in localStorage
-                localStorage.setItem('transferToContentWriter', response.data.humanization.humanized_text);
-                // Navigate to Content Writer tab in parent component
+                localStorage.setItem('transferToContentWriter', humanization.humanized_text);
                 window.dispatchEvent(new CustomEvent('switchToContentWriter'));
               }}
               className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
             >
-              <FiFileText className="mr-1" /> {t('humanizeText.success.useInContentWriter')}
+              <FiFileText className="mr-1" /> Use in Content Writer
             </button>
           </div>
         );
@@ -244,17 +257,16 @@ const HumaniseTextPage: React.FC = () => {
     navigator.clipboard.writeText(humanisedText);
     toast.success(
       <div>
-        <div>{t('humanizeText.success.textCopied')}</div>
+        <div className="font-medium">Text Copied to Clipboard!</div>
+        <div className="text-sm mt-1">Humanized content is ready to use</div>
         <button 
           onClick={() => {
-            // Store the humanized text in localStorage
             localStorage.setItem('transferToContentWriter', humanisedText);
-            // Navigate to Content Writer tab in parent component
             window.dispatchEvent(new CustomEvent('switchToContentWriter'));
           }}
           className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm flex items-center"
         >
-          <FiFileText className="mr-1" /> {t('humanizeText.success.useInContentWriter')}
+          <FiFileText className="mr-1" /> Use in Content Writer
         </button>
       </div>
     );
@@ -330,6 +342,7 @@ const HumaniseTextPage: React.FC = () => {
                     <textarea
                       value={text}
                       onChange={(e) => handleTextChange(e.target.value)}
+                      onFocus={() => setShowSettings(true)}
                       placeholder={t('humanizeText.placeholder')}
                       className="w-full p-4 pr-12 border rounded-lg shadow-sm h-56 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       disabled={isProcessing}
@@ -410,7 +423,7 @@ const HumaniseTextPage: React.FC = () => {
                     className="border-t pt-4 space-y-4"
                   >
                     <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('humanizeText.tone')}</label>
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Writing Tone</label>
                       <select 
                         value={tone}
                         onChange={(e) => setTone(e.target.value)}
@@ -424,43 +437,30 @@ const HumaniseTextPage: React.FC = () => {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('humanizeText.level')}</label>
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Undetectability Mode</label>
                       <select 
-                        value={level}
-                        onChange={(e) => setLevel(e.target.value)}
+                        value={mode}
+                        onChange={(e) => setMode(e.target.value)}
                         className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         disabled={isProcessing}
                       >
-                        {levelOptions.map(option => (
+                        {modeOptions.map(option => (
                           <option key={option.id} value={option.id}>{option.name}</option>
                         ))}
                       </select>
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('humanizeText.aiDetector') || 'AI Detector'}</label>
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">AI Detector Target</label>
                       <select 
-                        value={aiDetector}
-                        onChange={(e) => setAiDetector(e.target.value)}
+                        value={detector}
+                        onChange={(e) => setDetector(e.target.value)}
                         className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         disabled={isProcessing}
                       >
-                        <option value="ZeroGPT.com">ZeroGPT.com</option>
-<option value="Originality.ai">Originality.ai</option>
-<option value="Originality.ai (Legacy)">Originality.ai (Legacy)</option>
-<option value="Winston AI">Winston AI</option>
-<option value="Winston AI (Legacy)">Winston AI (Legacy)</option>
-<option value="Turnitin">Turnitin</option>
-<option value="Turnitin (Legacy)">Turnitin (Legacy)</option>
-<option value="ZeroGPT.com (Legacy)">ZeroGPT.com (Legacy)</option>
-<option value="Sapling.ai">Sapling.ai</option>
-<option value="GPTZero.me">GPTZero.me</option>
-<option value="GPTZero.me (Legacy)">GPTZero.me (Legacy)</option>
-<option value="CopyLeaks.com">CopyLeaks.com</option>
-<option value="CopyLeaks.com (Legacy)">CopyLeaks.com (Legacy)</option>
-<option value="Writer.me">Writer.me</option>
-<option value="Universal Mode (Beta)">Universal Mode (Beta)</option>
-
+                        {detectorOptions.map(option => (
+                          <option key={option.id} value={option.id}>{option.name}</option>
+                        ))}
                       </select>
                     </div>
                   </motion.div>
@@ -515,6 +515,28 @@ const HumaniseTextPage: React.FC = () => {
             <div className="p-6">
               {humanisedText ? (
                 <div className={`w-full ${showHistory ? 'min-h-[400px]' : 'min-h-[600px]'}`}>
+                  {/* Humanization Details */}
+                  <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Tone</div>
+                      <div className="text-gray-800 dark:text-gray-200 font-medium">{tone}</div>
+                    </div>
+                    <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Mode</div>
+                      <div className="text-gray-800 dark:text-gray-200 font-medium">{mode}</div>
+                    </div>
+                    <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Detector</div>
+                      <div className="text-gray-800 dark:text-gray-200 font-medium">{detector}</div>
+                    </div>
+                    <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Cost</div>
+                      <div className="text-gray-800 dark:text-gray-200 font-medium flex items-center">
+                        40 <img src={coinImage} alt="coin" className="w-4 h-4 ml-1" />
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div className="prose prose-sm max-w-none dark:prose-invert mb-4 markdown-content">
                     <ReactMarkdown>
                       {humanisedText}

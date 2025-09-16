@@ -7,11 +7,15 @@ export interface SupabaseMessage {
   chat_id: string;
   role: 'user' | 'assistant';
   content: string;
-  status: 'pending' | 'streaming' | 'completed';
+  status: 'pending' | 'streaming' | 'done';
   position: number;
   created_at: string;
   metadata?: any;
   external_ref?: string;
+  file_url?: string;
+  file_name?: string;
+  file_type?: string;
+  file_size?: number;
 }
 
 // Interface for chat structure
@@ -60,6 +64,17 @@ export interface FrontendMessage {
   fileContent?: string;
   fileName?: string;
   isStreaming?: boolean;
+  attachments?: {
+    url: string;
+    fileName: string;
+    fileType: string;
+    originalName?: string;
+    size?: number;
+  }[];
+  file_url?: string;
+  file_name?: string;
+  file_type?: string;
+  file_size?: number;
 }
 
 // Convert frontend message format to database format
@@ -502,6 +517,49 @@ export const addUserMessage = async (
   }
 };
 
+// Add user message with file attachment support
+export const addUserMessageWithAttachment = async (
+  chatId: string,
+  userId: string,
+  content: string,
+  fileUrl?: string,
+  fileName?: string,
+  fileType?: string,
+  fileSize?: number,
+  metadata: any = {},
+  externalRef?: string
+): Promise<SupabaseMessage | null> => {
+  try {
+    // For now, we'll use direct insert since we don't have the RPC function yet
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({
+        chat_id: chatId,
+        role: 'user',
+        content: content,
+        status: 'done',
+        file_url: fileUrl,
+        file_name: fileName,
+        file_type: fileType,
+        file_size: fileSize,
+        metadata: metadata,
+        external_ref: externalRef
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding user message with attachment:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in addUserMessageWithAttachment:', error);
+    return null;
+  }
+};
+
 // Start an assistant message
 export const startAssistantMessage = async (
   chatId: string,
@@ -513,7 +571,7 @@ export const startAssistantMessage = async (
     const { data, error } = await supabase
       .rpc('start_assistant_message', {
         p_chat: chatId,
-        p_created_by: userId,
+        p_user: userId,
         p_metadata: metadata,
         p_external_ref: externalRef
       });
@@ -767,6 +825,18 @@ export const supabaseMessageToFrontend = (supabaseMessage: SupabaseMessage): Fro
     }
   }
   
+  // Create attachments array if file attachment data exists
+  let attachments: { url: string; fileName: string; fileType: string; originalName?: string; size?: number; }[] | undefined;
+  if (supabaseMessage.file_url) {
+    attachments = [{
+      url: supabaseMessage.file_url,
+      fileName: supabaseMessage.file_name || 'Unknown',
+      fileType: supabaseMessage.file_type || 'application/octet-stream',
+      originalName: supabaseMessage.file_name,
+      size: supabaseMessage.file_size
+    }];
+  }
+  
   return {
     message_id: supabaseMessage.id,
     chat_id: supabaseMessage.chat_id,
@@ -777,6 +847,11 @@ export const supabaseMessageToFrontend = (supabaseMessage: SupabaseMessage): Fro
     content_type: 'text',
     isStreaming: supabaseMessage.status === 'streaming',
     fileContent: fileContent,
-    fileName: fileName
+    fileName: fileName,
+    attachments: attachments,
+    file_url: supabaseMessage.file_url,
+    file_name: supabaseMessage.file_name,
+    file_type: supabaseMessage.file_type,
+    file_size: supabaseMessage.file_size
   };
 };

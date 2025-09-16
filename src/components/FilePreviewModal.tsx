@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { FiX, FiDownload, FiFileText, FiGrid } from 'react-icons/fi';
+import { FiX, FiDownload, FiFileText, FiGrid, FiImage, FiFile } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import * as XLSX from 'xlsx';
 import mammoth from 'mammoth';
@@ -9,7 +9,7 @@ interface FilePreviewModalProps {
   onClose: () => void;
   fileUrl: string;
   fileName: string;
-  fileType: 'spreadsheet' | 'document';
+  fileType: 'spreadsheet' | 'document' | 'image' | 'pdf';
 }
 
 interface SheetData {
@@ -48,14 +48,32 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
       
       const arrayBuffer = await response.arrayBuffer();
       
+      // Validate file size
+      if (arrayBuffer.byteLength === 0) {
+        throw new Error('File is empty');
+      }
+      
+      // Validate file size (max 50MB)
+      if (arrayBuffer.byteLength > 50 * 1024 * 1024) {
+        throw new Error('File is too large to preview');
+      }
+      
       if (fileType === 'spreadsheet') {
         await parseExcelFile(arrayBuffer);
       } else if (fileType === 'document') {
         await parseDocFile(arrayBuffer);
+      } else if (fileType === 'pdf') {
+        // For PDFs, we'll display them using an iframe
+        setPreviewData(null);
+      } else if (fileType === 'image') {
+        // For images, we don't need to parse the arrayBuffer
+        // The image will be displayed directly using the fileUrl
+        setPreviewData(null);
       }
     } catch (err) {
       console.error('Error loading file preview:', err);
-      setError('Failed to load file preview');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load file preview';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -63,30 +81,90 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
 
   const parseExcelFile = async (arrayBuffer: ArrayBuffer) => {
     try {
+      // Check for Excel file signatures
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const isXLSX = uint8Array[0] === 0x50 && uint8Array[1] === 0x4B; // ZIP signature (XLSX)
+      const isXLS = uint8Array[0] === 0xD0 && uint8Array[1] === 0xCF; // OLE signature (XLS)
+      
+      if (!isXLSX && !isXLS) {
+        throw new Error('File does not appear to be a valid Excel file');
+      }
+      
       const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      
+      if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+        throw new Error('No sheets found in the Excel file');
+      }
+      
       const sheets: SheetData[] = [];
       
       workbook.SheetNames.forEach(sheetName => {
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
-        sheets.push({
-          name: sheetName,
-          data: jsonData as any[][]
-        });
+        if (worksheet) {
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+          sheets.push({
+            name: sheetName,
+            data: jsonData as any[][]
+          });
+        }
       });
+      
+      if (sheets.length === 0) {
+        throw new Error('No valid data found in the Excel file');
+      }
       
       setPreviewData(sheets);
     } catch (err) {
-      throw new Error('Failed to parse Excel file');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      throw new Error(`Failed to parse Excel file: ${errorMessage}`);
     }
   };
 
   const parseDocFile = async (arrayBuffer: ArrayBuffer) => {
     try {
+      // Check if the arrayBuffer is valid
+      if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+        throw new Error('Invalid or empty file');
+      }
+      
+      // Check for DOCX file signature (ZIP-based)
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const isZipBased = uint8Array[0] === 0x50 && uint8Array[1] === 0x4B;
+      
+      if (!isZipBased) {
+        throw new Error('File does not appear to be a valid DOCX file (not ZIP-based)');
+      }
+      
+      // Additional check for minimum file size (DOCX files are typically larger than a few KB)
+      if (arrayBuffer.byteLength < 1000) {
+        throw new Error('File is too small to be a valid DOCX document');
+      }
+      
       const result = await mammoth.convertToHtml({ arrayBuffer });
+      
+      // Check if conversion was successful
+      if (!result || typeof result.value !== 'string') {
+        throw new Error('Document conversion failed - no content returned');
+      }
+      
+      // Check if the result contains meaningful content
+      if (result.value.trim().length === 0) {
+        throw new Error('Document appears to be empty or contains no readable content');
+      }
+      
       setPreviewData(result.value);
     } catch (err) {
-      throw new Error('Failed to parse document file');
+      console.error('Document parsing error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      
+      // Provide more user-friendly error messages
+      if (errorMessage.includes('Can\'t find end of central directory')) {
+        throw new Error('File is corrupted or not a valid DOCX document');
+      } else if (errorMessage.includes('Could not find the body element')) {
+        throw new Error('Document structure is invalid or corrupted');
+      } else {
+        throw new Error(`Failed to parse document file: ${errorMessage}`);
+      }
     }
   };
 
@@ -160,12 +238,37 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
     if (!previewData || typeof previewData !== 'string') return null;
     
     return (
-      <div className="prose max-w-none overflow-auto h-full">
-        <div 
-          className={`p-4 ${
+      <div className="h-full overflow-auto">
+        <div className={`prose max-w-none ${
             darkMode ? 'text-gray-300 prose-invert' : 'text-gray-700'
           }`}
           dangerouslySetInnerHTML={{ __html: previewData }}
+        />
+      </div>
+    );
+  };
+
+  const renderImagePreview = () => {
+    return (
+      <div className="h-full flex items-center justify-center overflow-auto">
+        <img
+          src={fileUrl}
+          alt={fileName}
+          className="max-w-full max-h-full object-contain"
+          style={{ maxHeight: '100%', maxWidth: '100%' }}
+        />
+      </div>
+    );
+  };
+
+  const renderPdfPreview = () => {
+    return (
+      <div className="h-full w-full">
+        <iframe
+          src={fileUrl}
+          title={fileName}
+          className="w-full h-full border-0"
+          style={{ minHeight: '500px' }}
         />
       </div>
     );
@@ -187,9 +290,17 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
               <FiGrid className={`text-xl ${
                 darkMode ? 'text-green-400' : 'text-green-500'
               }`} />
-            ) : (
+            ) : fileType === 'document' ? (
               <FiFileText className={`text-xl ${
                 darkMode ? 'text-blue-400' : 'text-blue-500'
+              }`} />
+            ) : fileType === 'pdf' ? (
+              <FiFile className={`text-xl ${
+                darkMode ? 'text-red-400' : 'text-red-500'
+              }`} />
+            ) : (
+              <FiImage className={`text-xl ${
+                darkMode ? 'text-purple-400' : 'text-purple-500'
               }`} />
             )}
             <div>
@@ -201,7 +312,9 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
               <p className={`text-sm ${
                 darkMode ? 'text-gray-400' : 'text-gray-600'
               }`}>
-                {fileType === 'spreadsheet' ? 'Excel Spreadsheet' : 'Word Document'}
+                {fileType === 'spreadsheet' ? 'Excel Spreadsheet' : 
+                 fileType === 'document' ? 'Word Document' : 
+                 fileType === 'pdf' ? 'PDF Document' : 'Image'}
               </p>
             </div>
           </div>
@@ -263,7 +376,9 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
             </div>
           ) : (
             <div className="h-full">
-              {fileType === 'spreadsheet' ? renderExcelPreview() : renderDocPreview()}
+              {fileType === 'spreadsheet' ? renderExcelPreview() : 
+               fileType === 'document' ? renderDocPreview() : 
+               fileType === 'pdf' ? renderPdfPreview() : renderImagePreview()}
             </div>
           )}
         </div>

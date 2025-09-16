@@ -29,7 +29,10 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import 'katex/dist/katex.min.css';
 import katex from 'katex';
+import markdownItKatex from 'markdown-it-katex';
 import MindMapComponent from '../components/MindMapComponent';
+import FileUploadPopup from '../components/FileUploadPopup';
+import { BotMessageAttachments } from '../components/BotMessageAttachments';
 import coinIcon from '../assets/coin.png';
 // FFmpeg imports removed - now using API endpoint for video processing
 
@@ -45,6 +48,32 @@ interface Paragraph {
   words: WordTiming[];
   startTime: number;
   endTime: number;
+}
+
+// Chat-related interfaces
+interface ChatMessage {
+  id?: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+  isStreaming?: boolean;
+  attachments?: FileAttachment[];
+}
+
+interface FileAttachment {
+  url: string;
+  fileName: string;
+  fileType: string;
+  originalName?: string;
+  size?: number;
+}
+
+interface FileUploadResult {
+  url: string;
+  fileName: string;
+  fileType: string;
+  originalName?: string;
+  size?: number;
 }
 
 // Azure Translator configuration removed - using pre-translated data from API
@@ -1049,6 +1078,28 @@ const TranscriptionPage: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedGenerationType, setSelectedGenerationType] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Additional state variables from ChatPage
+  const [selectedRole, setSelectedRole] = useState({ name: 'General Assistant', value: 'general' });
+  const [isFileUploadPopupOpen, setIsFileUploadPopupOpen] = useState(false);
+  const [currentUploadedFile, setCurrentUploadedFile] = useState<FileUploadResult | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadingFileName, setUploadingFileName] = useState('');
+  const [isThinking, setIsThinking] = useState(false);
+  const [thinkingContent, setThinkingContent] = useState('');
+
+  // Role options for AI personas
+  const roleOptions = [
+    { name: 'General Assistant', value: 'general' },
+    { name: 'Code Assistant', value: 'code' },
+    { name: 'Writing Assistant', value: 'writing' },
+    { name: 'Research Assistant', value: 'research' },
+    { name: 'Creative Assistant', value: 'creative' },
+    { name: 'Business Assistant', value: 'business' },
+    { name: 'Educational Assistant', value: 'educational' },
+    { name: 'Technical Assistant', value: 'technical' }
+  ];
 
   // Scroll to bottom of chat when messages change
   useEffect(() => {
@@ -1430,9 +1481,9 @@ const TranscriptionPage: React.FC = () => {
       
       setIsTranslationInProgress(true);
       setTranslationStartTime(Date.now());
-      setTranslationTimeRemaining(180); // Start with 3 minutes estimate
+      setTranslationTimeRemaining(3); // Start with 3 second countdown
       
-      // Update time remaining every second
+      // Update countdown every second (counting down from 3 to 0)
       const timeInterval = setInterval(() => {
         setTranslationTimeRemaining(prev => {
           if (prev <= 1) {
@@ -1442,6 +1493,11 @@ const TranscriptionPage: React.FC = () => {
           return prev - 1;
         });
       }, 1000);
+      
+      // After 3 seconds, switch to loading mode
+      setTimeout(() => {
+        setTranslationTimeRemaining(-1); // Use -1 to indicate loading mode
+      }, 3000);
       
       const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/translateAudioText', {
         method: 'POST',
@@ -1500,6 +1556,7 @@ const TranscriptionPage: React.FC = () => {
         
         // After successful API translation, automatically enable translation display
         setIsTranslationEnabled(true);
+        setShowTranslatedSubtitles(true);
         const newTranslations = paragraphs.map((_, index) => 
           getTranslatedParagraph(index, selectedLanguage)
         );
@@ -1510,6 +1567,17 @@ const TranscriptionPage: React.FC = () => {
       
       // Enable translation and load pre-translated paragraphs
       setIsTranslationEnabled(true);
+      setShowTranslatedSubtitles(true);
+      
+      // Load word translations for video player subtitles
+      const newWordTranslations: {[key: string]: string} = {};
+      translatedData[selectedLanguage].words.forEach((translatedWord: any) => {
+        if (translatedWord.original_word) {
+          newWordTranslations[translatedWord.original_word] = translatedWord.punctuated_word || translatedWord.word;
+        }
+      });
+      setWordTranslations(newWordTranslations);
+      
       const newTranslations = paragraphs.map((_, index) => 
         getTranslatedParagraph(index, selectedLanguage)
       );
@@ -1518,6 +1586,8 @@ const TranscriptionPage: React.FC = () => {
     } else {
       // Disable translation
       setIsTranslationEnabled(false);
+      setShowTranslatedSubtitles(false);
+      setWordTranslations({});
       setTranslations([]);
       setTranslationProgress(0); // Reset progress
     }
@@ -1690,13 +1760,13 @@ const TranscriptionPage: React.FC = () => {
     // Don't manually set state - let the fullscreen change event handle it
   };
 
-  // Create subtitle segments (3-second intervals for better readability)
+  // Create subtitle segments (2-second intervals for better readability)
   const createSubtitleSegments = () => {
     if (!wordTimings.length) return [];
     
     const segments = [];
-    const segmentDuration = 3; // 3 seconds per segment for better readability
-    const maxWordsPerSegment = 8; // Limit words per segment
+    const segmentDuration = 2; // 2 seconds per segment for better readability (reduced by 1 second)
+    const maxWordsPerSegment = 6; // Limit words per segment (reduced for single line)
     let currentSegment = [];
     let segmentStartTime = 0;
     
@@ -3322,24 +3392,19 @@ const TranscriptionPage: React.FC = () => {
                           ? 'bottom-16 left-1/2 transform -translate-x-1/2 mx-auto text-sm py-4 px-6' 
                           : 'bottom-2 left-1/2 transform -translate-x-1/2 mx-auto'
                       }`} style={{ 
-                        maxWidth: highlightedWords.length <= 10 ? 'none' : (isVideoFullscreen ? '85%' : '90%'),
-                        whiteSpace: highlightedWords.length <= 10 ? 'nowrap' : 'normal'
+                        maxWidth: isVideoFullscreen ? '85%' : '90%',
+                        whiteSpace: 'nowrap'
                       }}>
-                        <div className="flex justify-center">
+                        <div className="flex flex-col justify-center">
+                          {/* Original text line (top) */}
                           <div className="text-center leading-tight" style={{ 
                              lineHeight: '1.3',
-                             fontSize: highlightedWords.length <= 10 ? 'clamp(0.6rem, 2vw, 0.8rem)' : undefined,
-                             maxHeight: highlightedWords.length <= 10 ? 'none' : '2.6em',
-                             overflow: highlightedWords.length <= 10 ? 'visible' : 'hidden',
-                             display: highlightedWords.length <= 10 ? 'block' : '-webkit-box',
-                             WebkitLineClamp: highlightedWords.length <= 10 ? 'none' : 2,
-                             WebkitBoxOrient: highlightedWords.length <= 10 ? 'initial' : 'vertical'
+                             fontSize: 'clamp(0.6rem, 2vw, 0.8rem)',
+                             whiteSpace: 'nowrap',
+                             overflow: 'hidden',
+                             textOverflow: 'ellipsis'
                            }}>
                             {highlightedWords.map((word, index) => {
-                              const displayWord = showTranslatedSubtitles && wordTranslations[word.word] 
-                                ? wordTranslations[word.word] 
-                                : word.word;
-                              
                               return (
                                 <span
                                   key={index}
@@ -3350,29 +3415,47 @@ const TranscriptionPage: React.FC = () => {
                                         ? 'text-gray-300' 
                                         : 'text-white'
                                   }`}
-                                  data-lang={isChinese(displayWord) ? 'chinese' : 'other'}
-                                  title={showTranslatedSubtitles && wordTranslations[word.word] ? `Original: ${word.word}` : undefined}
+                                  data-lang={isChinese(word.word) ? 'chinese' : 'other'}
                                 >
-                                  {showDualSubtitles && wordTranslations[word.word] ? (
-                                    highlightedWords.length <= 10 ? (
-                                      <span className="inline-block">
-                                        <span className="inline text-xs text-blue-200 mr-1" data-lang={isChinese(wordTranslations[word.word]) ? 'chinese' : 'other'}>{formatChineseText(wordTranslations[word.word])}</span>
-                                        <span className="inline text-xs" data-lang={isChinese(word.word) ? 'chinese' : 'other'}>({formatChineseText(word.word)})</span>
-                                      </span>
-                                    ) : (
-                                      <span className="inline-block">
-                                        <span className="block text-xs leading-none text-blue-200 mb-1" data-lang={isChinese(wordTranslations[word.word]) ? 'chinese' : 'other'}>{formatChineseText(wordTranslations[word.word])}</span>
-                                        <span className="block text-xs leading-none" data-lang={isChinese(word.word) ? 'chinese' : 'other'}>{formatChineseText(word.word)}</span>
-                                      </span>
-                                    )
-                                  ) : (
-                                    <span data-lang={isChinese(displayWord) ? 'chinese' : 'other'}>{formatChineseText(displayWord)}</span>
-                                  )}
-                                  {index < highlightedWords.length - 1 && !isChinese(displayWord) && ' '}
+                                  <span data-lang={isChinese(word.word) ? 'chinese' : 'other'}>{formatChineseText(word.word)}</span>
+                                  {index < highlightedWords.length - 1 && !isChinese(word.word) && ' '}
                                 </span>
                               );
                             })}
                           </div>
+                          
+                          {/* Translation line (bottom) */}
+                          {showTranslatedSubtitles && highlightedWords.some(word => wordTranslations[word.word]) && (
+                            <div className="text-center leading-tight mt-1" style={{ 
+                               lineHeight: '1.2',
+                               fontSize: 'clamp(0.5rem, 1.5vw, 0.7rem)',
+                               whiteSpace: 'nowrap',
+                               overflow: 'hidden',
+                               textOverflow: 'ellipsis'
+                             }}>
+                              {highlightedWords.map((word, index) => {
+                                const translatedWord = wordTranslations[word.word];
+                                if (!translatedWord) return null;
+                                
+                                return (
+                                  <span
+                                    key={`trans-${index}`}
+                                    className={`transition-all duration-200 inline-block text-blue-200 ${
+                                      word.isActive 
+                                        ? 'text-yellow-200 font-bold scale-110' 
+                                        : word.isPast 
+                                          ? 'text-gray-400' 
+                                          : 'text-blue-200'
+                                    }`}
+                                    data-lang={isChinese(translatedWord) ? 'chinese' : 'other'}
+                                  >
+                                    <span data-lang={isChinese(translatedWord) ? 'chinese' : 'other'}>{formatChineseText(translatedWord)}</span>
+                                    {index < highlightedWords.length - 1 && !isChinese(translatedWord) && ' '}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -3602,7 +3685,11 @@ const TranscriptionPage: React.FC = () => {
                               isTranslationEnabled
                                 ? 'bg-green-500 hover:bg-green-600 text-white'
                                 : isTranslationInProgress
-                                ? 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed'
+                                ? (translationTimeRemaining > 0
+                                  ? `bg-gradient-to-r from-orange-400 to-red-500 text-white animate-pulse cursor-not-allowed`
+                                  : translationTimeRemaining === -1
+                                  ? 'bg-gradient-to-r from-blue-400 to-purple-500 text-white animate-pulse cursor-not-allowed'
+                                  : 'bg-gray-400 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed')
                                 : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200'
                             }`}
                             disabled={translatingIndex !== -1 || isTranslationInProgress}
@@ -3616,8 +3703,13 @@ const TranscriptionPage: React.FC = () => {
                             <span className="hidden sm:inline">
                               {isTranslationInProgress ? 
                                 (translationTimeRemaining > 0 ? 
-                                  `${Math.floor(translationTimeRemaining / 60)}:${(translationTimeRemaining % 60).toString().padStart(2, '0')} remaining` :
-                                  'Translation may take more time, please wait'
+                                  `Starting in ${translationTimeRemaining}...` :
+                                  translationTimeRemaining === -1 ?
+                                    <span className="flex items-center">
+                                      <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></span>
+                                      Loading...
+                                    </span> :
+                                    'Processing...'
                                 ) :
                                 isTranslationEnabled ? 
                                   t('transcription.translationOn') : 
@@ -3627,15 +3719,17 @@ const TranscriptionPage: React.FC = () => {
                             <span className="sm:hidden">
                               {isTranslationInProgress ? 
                                 (translationTimeRemaining > 0 ? 
-                                  `${Math.floor(translationTimeRemaining / 60)}:${(translationTimeRemaining % 60).toString().padStart(2, '0')}` :
-                                  'Please wait'
+                                  translationTimeRemaining :
+                                  translationTimeRemaining === -1 ?
+                                    <span className="animate-spin rounded-full h-2 w-2 border-b-2 border-white"></span> :
+                                    '...'
                                 ) :
                                 isTranslationEnabled ? 'ON' : 'OFF'
                               }
                             </span>
                             {!isTranslationEnabled && !translatedData[selectedLanguage] && (
                               <span className="flex items-center ml-1 text-orange-600 dark:text-orange-400 text-xs font-medium">
-                                <span className="mr-2">-2</span>
+                                <span className="mr-2">-3</span>
                                 <img src={coinIcon} alt="coin" className="w-3 h-3" />
                               </span>
                             )}
@@ -3646,7 +3740,7 @@ const TranscriptionPage: React.FC = () => {
                           <div className="relative custom-language-dropdown">
                             <button
                               onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                              className="px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border border-blue-400 dark:border-purple-400 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm w-full sm:w-auto flex items-center justify-between min-w-[180px] shadow-md transition-all duration-200"
+                              className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 flex items-center justify-between min-w-[200px]"
                               disabled={translatingIndex !== -1 || isTranslationInProgress}
                             >
                               <span>{languages.find(lang => lang.value === selectedLanguage)?.label || 'Select Language'}</span>
@@ -3655,34 +3749,34 @@ const TranscriptionPage: React.FC = () => {
                               </svg>
                             </button>
                             {isLanguageDropdownOpen && (
-                              <div className="absolute z-50 mt-1 w-full bg-black/20 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl max-h-64 overflow-hidden" style={{
+                              <div className="absolute top-full left-0 mt-1 w-full bg-gradient-to-br from-white via-cyan-100 to-teal-100 dark:from-gray-800 dark:via-cyan-800/80 dark:to-teal-800/80 border-2 border-cyan-300 dark:border-cyan-600 rounded-xl shadow-2xl z-50 max-h-64 overflow-hidden" style={{
                                 scrollbarWidth: 'thin',
-                                scrollbarColor: 'transparent transparent'
+                                scrollbarColor: '#06b6d4 #e5e7eb'
                               }}>
                                 <style>{`
                                   .language-dropdown-content::-webkit-scrollbar {
                                     width: 8px;
                                   }
                                   .language-dropdown-content::-webkit-scrollbar-track {
-                                    background: transparent;
+                                    background: linear-gradient(to bottom, #f0fdfa, #ccfbf1);
                                     border-radius: 4px;
                                   }
                                   .language-dropdown-content::-webkit-scrollbar-thumb {
-                                    background: rgba(255, 255, 255, 0.1);
+                                    background: linear-gradient(to bottom, #06b6d4, #0891b2);
                                     border-radius: 4px;
-                                    border: 1px solid rgba(255, 255, 255, 0.05);
+                                    border: 1px solid #0e7490;
                                   }
                                   .language-dropdown-content::-webkit-scrollbar-thumb:hover {
-                                    background: rgba(255, 255, 255, 0.2);
+                                    background: linear-gradient(to bottom, #0891b2, #0e7490);
                                   }
                                 `}</style>
-                                <div className="p-2 border-b border-white/10">
+                                <div className="p-2 border-b border-gray-200/50 dark:border-gray-600/50">
                                   <input
                                     type="text"
                                     placeholder="Search languages..."
                                     value={languageSearchTerm}
                                     onChange={(e) => setLanguageSearchTerm(e.target.value)}
-                                    className="w-full px-3 py-2 text-sm bg-black/10 backdrop-blur-sm border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-white placeholder-white/60"
+                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-gray-700 dark:text-gray-200"
                                     onClick={(e) => e.stopPropagation()}
                                   />
                                 </div>
@@ -3695,10 +3789,20 @@ const TranscriptionPage: React.FC = () => {
                                       setIsTranslationInProgress(false);
                                       setIsLanguageDropdownOpen(false);
                                     }}
-                                    className="w-full px-3 py-3 text-left text-xs sm:text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] text-white/90 hover:bg-white/10 hover:backdrop-blur-sm first:rounded-t-xl last:rounded-b-xl border-b border-white/5 last:border-b-0"
+                                    className={`w-full px-3 py-3 text-left text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] ${
+                                      index % 4 === 0 ? 'text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100/50 dark:hover:bg-cyan-700/30' :
+                                       index % 4 === 1 ? 'text-teal-700 dark:text-teal-300 hover:bg-teal-100/50 dark:hover:bg-teal-700/30' :
+                                       index % 4 === 2 ? 'text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/50 dark:hover:bg-emerald-700/30' :
+                                       'text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/50 dark:hover:bg-indigo-700/30'
+                                    } first:rounded-t-xl last:rounded-b-xl border-b border-gray-200/50 dark:border-gray-600/50 last:border-b-0`}
                                   >
                                     <span className="flex items-center gap-2">
-                                      <span className="w-2 h-2 rounded-full bg-white/30"></span>
+                                      <span className={`w-2 h-2 rounded-full ${
+                                        index % 4 === 0 ? 'bg-cyan-500' :
+                                        index % 4 === 1 ? 'bg-teal-500' :
+                                        index % 4 === 2 ? 'bg-emerald-500' :
+                                        'bg-indigo-500'
+                                      }`}></span>
                                       {lang.label}
                                     </span>
                                   </button>
@@ -3766,14 +3870,30 @@ const TranscriptionPage: React.FC = () => {
                               <span 
                                 key={`${paraIndex}-${wordIndex}`}
                                 ref={globalWordIndex === activeWord ? activeWordRef : null}
-                                className={`inline-flex items-center transition-all duration-150 ${
+                                className={`relative inline-block transition-all duration-150 ${
                                   globalWordIndex === activeWord 
-                                    ? 'bg-blue-500 text-white dark:bg-blue-600 rounded px-1 py-0.5' 
+                                    ? 'text-white' 
                                     : isEditMode && !isCurrentlyEditing
                                     ? 'hover:bg-yellow-100 hover:dark:bg-yellow-900/30 rounded cursor-pointer border border-transparent hover:border-yellow-300'
                                     : 'hover:bg-blue-100 hover:dark:bg-blue-900/30 rounded cursor-pointer'
                                 }`}
+                                style={{
+                                  position: 'relative',
+                                  zIndex: globalWordIndex === activeWord ? 10 : 1
+                                }}
                               >
+                                {globalWordIndex === activeWord && (
+                                  <span 
+                                    className="absolute inset-0 bg-blue-500 dark:bg-blue-600 rounded" 
+                                    style={{
+                                      top: '-2px',
+                                      bottom: '-2px',
+                                      left: '-4px',
+                                      right: '-4px',
+                                      zIndex: -1
+                                    }}
+                                  />
+                                )}
                                 {isCurrentlyEditing ? (
                                   <div className="inline-flex items-center space-x-1 bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-600 rounded px-2 py-1">
                                     <input
@@ -4226,43 +4346,43 @@ const TranscriptionPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleGenerationTypeSelect('image')}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-1.5 ${
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                           selectedGenerationType === 'image'
-                            ? 'bg-blue-500 text-white shadow-md transform scale-105'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            ? (theme === 'dark' ? 'bg-purple-700 border-2 border-purple-500 text-white' : 'bg-purple-600 border-2 border-purple-400 text-white')
+                            : (theme === 'dark' ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white' : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white')
                         }`}
                       >
                         <FiImage className="w-4 h-4" />
                         <span>Generate Image</span>
-                        {selectedGenerationType === 'image' && <FiCheck className="w-3 h-3" />}
+                        {selectedGenerationType === 'image' && <FiCheck className="w-4 h-4" />}
                       </button>
                       
                       <button
                         type="button"
                         onClick={() => handleGenerationTypeSelect('xlsx')}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-1.5 ${
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                           selectedGenerationType === 'xlsx'
-                            ? 'bg-green-500 text-white shadow-md transform scale-105'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            ? (theme === 'dark' ? 'bg-green-700 border-2 border-green-500 text-white' : 'bg-green-600 border-2 border-green-400 text-white')
+                            : (theme === 'dark' ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white' : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white')
                         }`}
                       >
-                        <FiFile className="w-4 h-4" />
+                        <FiFileText className="w-4 h-4" />
                         <span>Generate XLSX</span>
-                        {selectedGenerationType === 'xlsx' && <FiCheck className="w-3 h-3" />}
+                        {selectedGenerationType === 'xlsx' && <FiCheck className="w-4 h-4" />}
                       </button>
                       
                       <button
                         type="button"
                         onClick={() => handleGenerationTypeSelect('document')}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-1.5 ${
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                           selectedGenerationType === 'document'
-                            ? 'bg-purple-500 text-white shadow-md transform scale-105'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            ? (theme === 'dark' ? 'bg-blue-700 border-2 border-blue-500 text-white' : 'bg-blue-600 border-2 border-blue-400 text-white')
+                            : (theme === 'dark' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white' : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white')
                         }`}
                       >
                         <FiFile className="w-4 h-4" />
                         <span>Generate Document</span>
-                        {selectedGenerationType === 'document' && <FiCheck className="w-3 h-3" />}
+                        {selectedGenerationType === 'document' && <FiCheck className="w-4 h-4" />}
                       </button>
                     </div>
 
@@ -4476,10 +4596,10 @@ const TranscriptionPage: React.FC = () => {
                             setIsSrtLanguageDropdownOpen(false);
                           }}
                           className={`w-full px-3 py-3 text-left text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] ${
-                            index % 4 === 0 ? 'text-cyan-700 dark:text-cyan-300 hover:bg-gradient-to-r hover:from-cyan-200 hover:to-cyan-300 dark:hover:from-cyan-700/70 dark:hover:to-cyan-600/70' :
-                             index % 4 === 1 ? 'text-teal-700 dark:text-teal-300 hover:bg-gradient-to-r hover:from-teal-200 hover:to-teal-300 dark:hover:from-teal-700/70 dark:hover:to-teal-600/70' :
-                             index % 4 === 2 ? 'text-emerald-700 dark:text-emerald-300 hover:bg-gradient-to-r hover:from-emerald-200 hover:to-emerald-300 dark:hover:from-emerald-700/70 dark:hover:to-emerald-600/70' :
-                             'text-indigo-700 dark:text-indigo-300 hover:bg-gradient-to-r hover:from-indigo-200 hover:to-indigo-300 dark:hover:from-indigo-700/70 dark:hover:to-indigo-600/70'
+                            index % 4 === 0 ? 'text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100/50 dark:hover:bg-cyan-700/30' :
+                             index % 4 === 1 ? 'text-teal-700 dark:text-teal-300 hover:bg-teal-100/50 dark:hover:bg-teal-700/30' :
+                             index % 4 === 2 ? 'text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/50 dark:hover:bg-emerald-700/30' :
+                             'text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/50 dark:hover:bg-indigo-700/30'
                           } first:rounded-t-xl last:rounded-b-xl border-b border-gray-200/50 dark:border-gray-600/50 last:border-b-0`}
                         >
                           <span className="flex items-center gap-2">
@@ -4530,7 +4650,7 @@ const TranscriptionPage: React.FC = () => {
                                   {/* Show coin indicator only for unsaved languages */}
                                   {!translatedData || !translatedData[srtSelectedLanguage] ? (
                                     <>
-                                      <span className="font-bold text-yellow-300">-2</span>
+                                      <span className="font-bold text-yellow-300">-3</span>
                                       <img src={coinIcon} alt="Cost" className="w-4 h-4" />
                                     </>
                                   ) : null}
@@ -4803,27 +4923,22 @@ const TranscriptionPage: React.FC = () => {
                         return (
                           <div className={`subtitle-overlay absolute text-white text-center z-10 ${
                             isVideoFullscreen 
-                              ? 'bottom-40 left-1/2 transform -translate-x-1/2 px-10 py-8 rounded-xl text-xl md:text-2xl shadow-2xl' 
+                              ? 'bottom-40 left-1/2 transform -translate-x-1/2 px-10 py-8 rounded-xl text-xl md:text-2xl' 
                               : 'bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-3 rounded-lg text-xs mx-auto'
                           }`} style={{ 
-                            maxWidth: highlightedWords.length <= 7 ? 'none' : (isVideoFullscreen ? '85%' : '90%'),
-                            whiteSpace: highlightedWords.length <= 7 ? 'nowrap' : 'normal'
+                            maxWidth: isVideoFullscreen ? '85%' : '90%',
+                            whiteSpace: 'nowrap'
                           }}>
-                            <div className="flex justify-center">
+                            <div className="flex flex-col justify-center">
+                              {/* Original text line (top) */}
                               <div className="text-center leading-tight" style={{ 
                                  lineHeight: isVideoFullscreen ? '1.4' : '1.3',
-                                 fontSize: highlightedWords.length <= 7 ? (isVideoFullscreen ? 'clamp(1rem, 3vw, 1.2rem)' : 'clamp(0.6rem, 2vw, 0.8rem)') : undefined,
-                                 maxHeight: highlightedWords.length <= 7 ? 'none' : (isVideoFullscreen ? '2.8em' : '2.6em'),
-                                 overflow: highlightedWords.length <= 7 ? 'visible' : 'hidden',
-                                 display: highlightedWords.length <= 7 ? 'block' : '-webkit-box',
-                                 WebkitLineClamp: highlightedWords.length <= 7 ? 'none' : 2,
-                                 WebkitBoxOrient: highlightedWords.length <= 7 ? 'initial' : 'vertical'
+                                 fontSize: isVideoFullscreen ? 'clamp(1rem, 3vw, 1.2rem)' : 'clamp(0.6rem, 2vw, 0.8rem)',
+                                 whiteSpace: 'nowrap',
+                                 overflow: 'hidden',
+                                 textOverflow: 'ellipsis'
                                }}>
                                 {highlightedWords.map((word: any, index: number) => {
-                                  const displayWord = showTranslatedSubtitles && wordTranslations[word.word] 
-                                    ? wordTranslations[word.word] 
-                                    : word.word;
-                                  
                                   return (
                                     <span
                                       key={index}
@@ -4834,29 +4949,47 @@ const TranscriptionPage: React.FC = () => {
                                             ? 'text-gray-300' 
                                             : 'text-white'
                                       }`}
-                                      data-lang={isChinese(displayWord) ? 'chinese' : 'other'}
-                                      title={showTranslatedSubtitles && wordTranslations[word.word] ? `Original: ${word.word}` : undefined}
+                                      data-lang={isChinese(word.word) ? 'chinese' : 'other'}
                                     >
-                                      {showDualSubtitles && wordTranslations[word.word] ? (
-                                         highlightedWords.length <= 7 ? (
-                                           <span className="inline-block">
-                                             <span className="inline text-xs text-blue-200 mr-1" data-lang={isChinese(wordTranslations[word.word]) ? 'chinese' : 'other'}>{formatChineseText(wordTranslations[word.word])}</span>
-                                             <span className="inline text-xs" data-lang={isChinese(word.word) ? 'chinese' : 'other'}>({formatChineseText(word.word)})</span>
-                                           </span>
-                                         ) : (
-                                           <span className="inline-block">
-                                             <span className="block text-xs leading-none text-blue-200 mb-1" data-lang={isChinese(wordTranslations[word.word]) ? 'chinese' : 'other'}>{formatChineseText(wordTranslations[word.word])}</span>
-                                             <span className="block text-xs leading-none" data-lang={isChinese(word.word) ? 'chinese' : 'other'}>{formatChineseText(word.word)}</span>
-                                           </span>
-                                         )
-                                       ) : (
-                                         <span data-lang={isChinese(displayWord) ? 'chinese' : 'other'}>{formatChineseText(displayWord)}</span>
-                                       )}
-                                       {index < highlightedWords.length - 1 && !isChinese(displayWord) && ' '}
+                                      <span data-lang={isChinese(word.word) ? 'chinese' : 'other'}>{formatChineseText(word.word)}</span>
+                                       {index < highlightedWords.length - 1 && !isChinese(word.word) && ' '}
                                     </span>
                                   );
                                 })}
                               </div>
+                              
+                              {/* Translation line (bottom) */}
+                              {showTranslatedSubtitles && highlightedWords.some(word => wordTranslations[word.word]) && (
+                                <div className="text-center leading-tight mt-2" style={{ 
+                                   lineHeight: isVideoFullscreen ? '1.3' : '1.2',
+                                   fontSize: isVideoFullscreen ? 'clamp(0.8rem, 2vw, 1rem)' : 'clamp(0.5rem, 1.5vw, 0.7rem)',
+                                   whiteSpace: 'nowrap',
+                                   overflow: 'hidden',
+                                   textOverflow: 'ellipsis'
+                                 }}>
+                                  {highlightedWords.map((word: any, index: number) => {
+                                    const translatedWord = wordTranslations[word.word];
+                                    if (!translatedWord) return null;
+                                    
+                                    return (
+                                      <span
+                                        key={`trans-${index}`}
+                                        className={`transition-all duration-200 inline-block text-blue-200 ${
+                                          word.isActive 
+                                            ? 'text-yellow-200 font-bold scale-110' 
+                                            : word.isPast 
+                                              ? 'text-gray-400' 
+                                              : 'text-blue-200'
+                                        }`}
+                                        data-lang={isChinese(translatedWord) ? 'chinese' : 'other'}
+                                      >
+                                        <span data-lang={isChinese(translatedWord) ? 'chinese' : 'other'}>{formatChineseText(translatedWord)}</span>
+                                        {index < highlightedWords.length - 1 && !isChinese(translatedWord) && ' '}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              )}
                             </div>
                           </div>
                         );
@@ -4944,6 +5077,7 @@ const TranscriptionPage: React.FC = () => {
                                 >
                                   {playbackRate}x
                                 </button>
+                                {/* Translation controls for video */}
                                 <button
                                   onClick={toggleTranslation}
                                   className={`p-1 sm:p-2 rounded transition-colors ${
@@ -5076,18 +5210,21 @@ const TranscriptionPage: React.FC = () => {
                         {/* Translation and Fullscreen buttons for video */}
                         {videoUrl && (
                           <>
-                            <button
-                              onClick={toggleTranslation}
-                              className={`p-1.5 sm:p-2 rounded-full transition-colors ${
-                                isTranslationEnabled
-                                  ? 'bg-green-500 hover:bg-green-600 text-white'
-                                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                              }`}
-                              title={isTranslationEnabled ? 'Disable Translation' : 'Enable Translation'}
-                              disabled={translatingIndex !== -1 || isTranslationInProgress}
-                            >
-                              <FiGlobe size={14} />
-                            </button>
+                            {/* Translation controls for audio info section */}
+                            <div className="flex items-center">
+                              <button
+                                onClick={toggleTranslation}
+                                className={`p-1.5 sm:p-2 rounded-full transition-colors ${
+                                  isTranslationEnabled
+                                    ? 'bg-green-500 hover:bg-green-600 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                }`}
+                                title={isTranslationEnabled ? 'Disable Translation' : 'Enable Translation'}
+                                disabled={translatingIndex !== -1 || isTranslationInProgress}
+                              >
+                                <FiGlobe size={14} />
+                              </button>
+                            </div>
                             <button
                               onClick={toggleVideoFullscreen}
                               className="p-1.5 sm:p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full transition-colors"

@@ -114,7 +114,10 @@ const SpeechToTextPage: React.FC = () => {
 
   // Pagination state
   const [page, setPage] = useState(1);
-  const [filesPerPage] = useState(6);
+  const [limit, setLimit] = useState(10);
+  const [totalFiles, setTotalFiles] = useState(0);
+
+
 
   // Add polling intervals state
   const [pollingIntervals, setPollingIntervals] = useState<Map<string, NodeJS.Timeout>>(new Map());
@@ -161,6 +164,13 @@ const SpeechToTextPage: React.FC = () => {
     }
   }, [user]);
 
+  // Reload files when search, pagination, or filter parameters change
+  useEffect(() => {
+    if (user?.id) {
+      loadFiles(true);
+    }
+  }, [page, limit, searchQuery, sortBy, sortDirection, user?.id]);
+
 
 
   const loadFiles = async (forceRefresh = false) => {
@@ -175,26 +185,26 @@ const SpeechToTextPage: React.FC = () => {
           setFiles(cachedFiles);
           setIsLoading(false);
           
-          // Start polling for any files that are still processing
-          cachedFiles.forEach((file: AudioFile) => {
-            if (file.status === 'pending' || file.status === 'processing') {
-              setLoadingAudioIds(prev => new Set(prev).add(file.audioid));
-              startStatusPolling(file.audioid);
-            }
-          });
+          // Don't automatically start polling for cached files
+          // User can manually click on files to check their status
           return;
         }
       }
       
-      // If forcing refresh or no cached data, fetch from correct API
-      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/getAllAudioFiles', {
-        method: 'POST',
+      // If forcing refresh or no cached data, fetch from new API
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+        ...(searchQuery && { search: searchQuery }),
+        ...(sortBy && { sortBy: sortBy === 'date' ? 'uploaded_at' : sortBy === 'name' ? 'audio_name' : 'duration' }),
+        ...(sortDirection && { sortOrder: sortDirection })
+      });
+      
+      const response = await fetch(`https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/getAudio/${user?.id}?${queryParams}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          uid: user?.id
-        }),
       });
       
       // Check if response is ok first
@@ -225,41 +235,41 @@ const SpeechToTextPage: React.FC = () => {
         return;
       }
       
-      if (data.success) {
+      if (data.audioData || data.success) {
         // Handle successful response
-        const audioFiles = data.audioFiles || [];
+        const audioFiles = data.audioData || data.audioFiles || [];
+        const pagination = data.pagination || {};
         console.log('Raw audioFiles from API:', audioFiles);
+        console.log('Pagination info:', pagination);
         
-        // Sort files by uploaded_at in descending order (newest first)
-        const sortedFiles = audioFiles.map((file: any) => ({
+        // Process files without sorting (API handles sorting)
+        const processedFiles = audioFiles.map((file: any) => ({
           ...file,
           // Map server fields to frontend interface
           audio_url: file.audio_url || file.file_path, // Use audio_url or fallback to file_path
           audio_name: file.audio_name || file.audio_url?.split('/').pop()?.split('?')[0] || file.audioid,
           status: file.status || (file.transcription ? 'completed' : 'pending') // Set default status based on transcription
-        })).sort((a: AudioFile, b: AudioFile) => 
-          new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime()
-        );
+        }));
         
-        console.log('Processed sortedFiles:', sortedFiles);
-        setFiles(sortedFiles);
+        console.log('Processed files:', processedFiles);
+        setFiles(processedFiles);
+        
+        // Update pagination state
+        setTotalFiles(pagination.totalItems || pagination.total || processedFiles.length);
+        setPage(pagination.currentPage || page);
         
         // Save to local storage for future use with longer persistence
-        saveFilesToLocalStorage(sortedFiles);
+        saveFilesToLocalStorage(processedFiles);
         
-        // Start polling for any files that are still processing
-        sortedFiles.forEach((file: AudioFile) => {
-          if (file.status === 'pending' || file.status === 'processing') {
-            setLoadingAudioIds(prev => new Set(prev).add(file.audioid));
-            startStatusPolling(file.audioid);
-          }
-        });
+        // Don't automatically start polling for existing files
+        // Status polling will only be initiated for newly uploaded files or when user manually clicks on a file
         
-        console.log('Successfully loaded', sortedFiles.length, 'audio files');
+        console.log('Successfully loaded', processedFiles.length, 'audio files');
       } else {
         // Handle API error response
         console.log('API returned error:', data.message || data.error || 'Unknown error');
         setFiles([]);
+        setTotalFiles(0);
       }
     } catch (error) {
       console.log('Network error fetching audio files:', error);
@@ -798,12 +808,9 @@ const SpeechToTextPage: React.FC = () => {
     return filteredFiles;
   };
 
-  // Pagination logic
-  const totalPages = Math.ceil(getFilteredAndSortedFiles().length / filesPerPage);
-  const paginatedFiles = getFilteredAndSortedFiles().slice(
-    (page - 1) * filesPerPage,
-    page * filesPerPage
-  );
+  // Pagination logic (for local filtering when API doesn't handle it)
+  const totalPages = Math.ceil(totalFiles / limit);
+  const paginatedFiles = files; // API will handle pagination
 
   const nextPage = () => {
     if (page < totalPages) {
@@ -885,13 +892,7 @@ const SpeechToTextPage: React.FC = () => {
           );
           saveFilesToLocalStorage(updatedFiles);
           
-          // Navigate to transcription page
-          navigate(`/transcription/${audioid}`, {
-            state: {
-              uid: user?.id,
-              audioid: audioid
-            }
-          });
+          // Don't automatically navigate - let user click to open transcription
         } else if (response.ok && data.success && data.status === 'failed') {
           // Stop polling on failure
           clearInterval(interval);
@@ -1105,75 +1106,23 @@ const SpeechToTextPage: React.FC = () => {
     }
   };
   
-  // Remove the old handleProcessAudio function and replace with new getAudioFile logic
-  const handleFileClick = async (item: AudioFile) => {
-    if (loadingAudioIds.has(item.audioid)) {
-      // If already processing, do nothing
-      return;
-    }
-    
-    // If the file already has a completed status and transcription, navigate directly
-    if (item.status === 'completed' && item.transcription) {
-      navigate(`/transcription/${item.audioid}`, {
-        state: {
-          uid: user?.id,
-          audioid: item.audioid,
-          transcription: item.transcription,
-          audio_url: item.audio_url,
-          words_data: item.words_data,
-          audio_name: item.audio_name,
-          language: item.language,
-          duration: item.duration,
-          ...(item.video_file && { video_file: item.video_file }) // Add video_file only if it exists
-        }
-      });
-      return;
-    }
-    
-    // Always fetch the latest file data using the correct API
-    try {
-      const response = await fetch('https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/audio/getAudioFile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          uid: user?.id,
-          audioid: item.audioid
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (response.ok && data.success) {
-        if (data.status === 'completed' || data.transcription) {
-          // Navigate to transcription page with the data
-          navigate(`/transcription/${item.audioid}`, {
-            state: {
-              uid: user?.id,
-              audioid: item.audioid,
-              transcription: data.transcription,
-              audio_url: data.audioUrl || data.audio_url,
-              words_data: data.words_data,
-              audio_name: data.audio_name,
-              language: data.language,
-              duration: data.duration,
-              ...(data.video_file && { video_file: data.video_file }), // Add video_file only if it exists
-              ...(data.translated_data && { translated_data: data.translated_data }) // Add translated_data only if it exists
-            }
-          });
-        } else {
-          // If still processing, start polling
-          setLoadingAudioIds(prev => new Set(prev).add(item.audioid));
-          startStatusPolling(item.audioid);
-        }
-      } else {
-        showError(t('speechToText.errors.getAudioDataFailed', { error: data.error || data.message || t('speechToText.errors.unknownError') }));
+  // Navigate immediately to transcription page - let transcription page handle loading
+  const handleFileClick = (item: AudioFile) => {
+    // Navigate immediately to transcription page with available data
+    navigate(`/transcription/${item.audioid}`, {
+      state: {
+        uid: user?.id,
+        audioid: item.audioid,
+        transcription: item.transcription,
+        audio_url: item.audio_url,
+        words_data: item.words_data,
+        audio_name: item.audio_name || item.audio_url?.split('/').pop()?.split('?')[0] || item.audioid,
+        language: item.language,
+        duration: item.duration,
+        status: item.status,
+        ...(item.video_file && { video_file: item.video_file }) // Add video_file only if it exists
       }
-    } catch (error) {
-      console.error('Error fetching audio file:', error);
-      showError(t('speechToText.errors.networkError'));
-    }
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -1487,7 +1436,8 @@ const SpeechToTextPage: React.FC = () => {
             <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200">{t('speechToText.recentTranscriptions')}</h2>
             
             <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:space-x-2">
-              <div className="flex items-center space-x-2">
+              {/* Search and Filter Controls */}
+              <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:space-x-2">
                 <button
                   onClick={refreshFiles}
                   disabled={isRefreshing}
@@ -1506,6 +1456,28 @@ const SpeechToTextPage: React.FC = () => {
                     className="pl-9 pr-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto transition-colors"
                   />
                   <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+                
+
+                
+                {/* Sort Controls */}
+                <div className="flex space-x-2">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as 'date' | 'name' | 'duration')}
+                    className="px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    <option value="date">Sort by Date</option>
+                    <option value="name">Sort by Name</option>
+                    <option value="duration">Sort by Duration</option>
+                  </select>
+                  <button
+                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                    className="px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    title={`Sort ${sortDirection === 'asc' ? 'Descending' : 'Ascending'}`}
+                  >
+                    {sortDirection === 'asc' ? '↑' : '↓'}
+                  </button>
                 </div>
                 
                 <div className="flex">
@@ -1568,41 +1540,65 @@ const SpeechToTextPage: React.FC = () => {
               </div>
               
               {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center mt-6 sm:mt-8 space-x-2 sm:space-x-4">
-                  <button
-                    onClick={prevPage}
-                    disabled={page === 1}
-                    className={`flex items-center px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
-                      page === 1
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
-                    }`}
+              <div className="mt-6 sm:mt-8 space-y-4">
+                {/* Items per page selector */}
+                <div className="flex justify-center items-center space-x-4">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Items per page:</span>
+                  <select
+                    value={limit}
+                    onChange={(e) => {
+                      setLimit(Number(e.target.value));
+                      setPage(1); // Reset to first page when changing limit
+                    }}
+                    className="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <FiChevronLeft className="mr-1" />
-                    <span className="hidden sm:inline">{t('speechToText.previous')}</span>
-                    <span className="sm:hidden">Prev</span>
-                  </button>
-                  
-                  <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base px-2">
-                    {page}/{totalPages}
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Showing {Math.min((page - 1) * limit + 1, totalFiles)} - {Math.min(page * limit, totalFiles)} of {totalFiles} files
                   </span>
-                  
-                  <button
-                    onClick={nextPage}
-                    disabled={page === totalPages}
-                    className={`flex items-center px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
-                      page === totalPages
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <span className="hidden sm:inline">{t('speechToText.next')}</span>
-                    <span className="sm:hidden">Next</span>
-                    <FiChevronRight className="ml-1" />
-                  </button>
                 </div>
-              )}
+                
+                {/* Pagination buttons */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center space-x-2 sm:space-x-4">
+                    <button
+                      onClick={prevPage}
+                      disabled={page === 1}
+                      className={`flex items-center px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
+                        page === 1
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <FiChevronLeft className="mr-1" />
+                      <span className="hidden sm:inline">{t('speechToText.previous')}</span>
+                      <span className="sm:hidden">Prev</span>
+                    </button>
+                    
+                    <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base px-2">
+                      Page {page} of {totalPages}
+                    </span>
+                    
+                    <button
+                      onClick={nextPage}
+                      disabled={page === totalPages}
+                      className={`flex items-center px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
+                        page === totalPages
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <span className="hidden sm:inline">{t('speechToText.next')}</span>
+                      <span className="sm:hidden">Next</span>
+                      <FiChevronRight className="ml-1" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <div className="p-10 bg-white dark:bg-gray-800 border border-dashed rounded-xl text-center dark:border-gray-700 shadow-sm">
