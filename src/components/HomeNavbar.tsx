@@ -4,7 +4,7 @@ import { FiArrowRight, FiChevronDown, FiImage, FiVideo, FiMaximize, FiCrop, FiLa
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import SimpleLanguageSelector from './SimpleLanguageSelector';
-import matrixLogo from '../assets/matrix.png';
+import matrixLogo from '../assets/matrix.svg';
 
 interface HomeNavbarProps {}
 
@@ -31,7 +31,7 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2">
-                <img src={matrixLogo} alt="Matrix AI" className="w-16 h-16 object-contain -my-2" />
+                <img src={matrixLogo} alt="Matrix AI" className="w-8 h-8 object-contain rounded-lg -my-2" />
                 <span className={`font-bold text-xl hidden sm:block ${
                   darkMode ? 'text-white' : 'text-gray-900'
                 }`}>matrixai<span className="text-red-500">.</span>asia</span>

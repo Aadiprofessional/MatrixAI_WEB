@@ -1,0 +1,101 @@
+/* Enhanced KaTeX Math expressions styling */
+.ai-response-content .katex-block-container {
+  display: block;
+  text-align: center;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ai-response-content .katex-inline-container {
+  display: inline;
+  margin: 0 0.1rem;
+  vertical-align: baseline;
+}
+
+.ai-response-content .katex-block-container .katex-display {
+  margin: 0 !important;
+  text-align: center;
+}
+
+.ai-response-content .katex {
+  font-size: 1.1em !important;
+  line-height: 1.4 !important;
+}
+
+.ai-response-content .katex-block-container .katex {
+  font-size: 1.2em !important;
+}
+
+/* Math error fallback styling */
+.ai-response-content .math-error {
+  color: #d32f2f;
+  background: rgba(211, 47, 47, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+/* Dark mode adjustments for KaTeX */
+.ai-response-content.dark .katex-block-container {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ai-response-content.dark .math-error {
+  color: #f48fb1;
+  background: rgba(244, 143, 177, 0.1);
+}
+
+/* Improve KaTeX font rendering */
+.ai-response-content .katex .mathnormal {
+  font-style: italic;
+}
+
+.ai-response-content .katex .mathit {
+  font-style: italic;
+}
+
+.ai-response-content .katex .mathbf {
+  font-weight: bold;
+}
+
+/* Better spacing for complex expressions */
+.ai-response-content .katex .mord + .mord,
+.ai-response-content .katex .mord + .mop,
+.ai-response-content .katex .mop + .mord {
+  margin-left: 0.1em;
+}
+
+/* Improve fraction display */
+.ai-response-content .katex .frac-line {
+  border-bottom-width: 0.06em;
+}
+
+/* Better superscript and subscript positioning */
+.ai-response-content .katex .msupsub {
+  text-align: left;
+}
+
+/* Responsive math expressions */
+@media (max-width: 768px) {
+  .ai-response-content .katex-block-container {
+    padding: 0.75rem;
+    margin: 1rem 0;
+    font-size: 0.95em;
+  }
+  
+  .ai-response-content .katex {
+    font-size: 1em !important;
+  }
+  
+  .ai-response-content .katex-block-container .katex {
+    font-size: 1.1em !important;
+  }
+}

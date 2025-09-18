@@ -21,7 +21,10 @@ import {
   FiGrid,
   FiList,
   FiChevronLeft,
-  FiChevronRight
+  FiChevronRight,
+  FiInfo,
+  FiEye,
+  FiTarget
 } from 'react-icons/fi';
 import { AuthRequiredButton, ProFeatureAlert } from '../components';
 import { useUser } from '../context/UserContext';
@@ -74,15 +77,42 @@ const DetectAIPage: React.FC = () => {
     fake_percentage?: number;
     ai_words?: number;
     text_words?: number;
-    sentences?: string[];
+    sentences?: Array<{
+      generated_prob: number;
+      sentence: string;
+      perplexity: number;
+      class_probabilities: {
+        human: number;
+        ai: number;
+        paraphrased: number;
+      };
+      highlight_sentence_for_ai: boolean;
+      special_highlight_type?: string | null;
+    }>;
     tags?: string[];
     language?: string;
     createdAt?: string;
     other_feedback?: string | null;
+    // New GPTZero fields
+    confidence_score?: number;
+    confidence_category?: string;
+    predicted_class?: string;
+    document_classification?: string;
+    overall_burstiness?: number;
+    gptzero_version?: string;
+    scan_id?: string;
+    result_message?: string;
+    paragraphs?: Array<{
+      start_sentence_index: number;
+      num_sentences: number;
+      completely_generated_prob: number;
+    }>;
+    subclass_data?: any;
+    full_gptzero_response?: any;
   } | null>(null);
-  const [sensitivity, setSensitivity] = useState('balanced');
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [savedContents, setSavedContents] = useState<{id: string, title: string, text: string, is_human: boolean, fake_percentage: number, ai_words: number, text_words: number, sentences: string[], tags: string[], language: string, createdAt: string, other_feedback: string | null}[]>([]);
+  const [savedContents, setSavedContents] = useState<{id: string, title: string, text: string, is_human: boolean, fake_percentage: number, ai_words: number, text_words: number, sentences: any[], tags: string[], language: string, createdAt: string, other_feedback: string | null}[]>([]);
   const [editingTitle, setEditingTitle] = useState('');
   const [showTitleEdit, setShowTitleEdit] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -102,6 +132,17 @@ const DetectAIPage: React.FC = () => {
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const itemsPerPage = 10;
+  
+  // New state for enhanced UI
+  const [hoveredWord, setHoveredWord] = useState<{
+    word: string;
+    index: number;
+    confidence: number;
+    position: { x: number; y: number };
+    sentenceData?: any;
+  } | null>(null);
+  const [showWordTooltip, setShowWordTooltip] = useState(false);
+  const [analysisMode, setAnalysisMode] = useState<'sentence' | 'word'>('word');
   
   const historyRef = useRef<HTMLDivElement>(null);
   
@@ -184,12 +225,16 @@ const DetectAIPage: React.FC = () => {
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
-  // Sensitivity levels
-  const sensitivityOptions = [
-    { id: 'low', name: t('low') },
-    { id: 'balanced', name: t('balanced') },
-    { id: 'high', name: t('high') },
-    { id: 'very-high', name: t('veryHigh') },
+  // Language options for detection
+  const languageOptions = [
+    { id: 'en', name: 'English', flag: '🇺🇸' },
+    { id: 'es', name: 'Spanish', flag: '🇪🇸' },
+    { id: 'fr', name: 'French', flag: '🇫🇷' },
+    { id: 'de', name: 'German', flag: '🇩🇪' },
+    { id: 'it', name: 'Italian', flag: '🇮🇹' },
+    { id: 'pt', name: 'Portuguese', flag: '🇵🇹' },
+    { id: 'zh', name: 'Chinese', flag: '🇨🇳' },
+    { id: 'ja', name: 'Japanese', flag: '🇯🇵' },
   ];
 
   const handleTextChange = (value: string) => {
@@ -211,6 +256,12 @@ const DetectAIPage: React.FC = () => {
   const handleDetectAI = async () => {
     if (!text.trim()) return;
     
+    // Check if user is authenticated
+    if (!userData?.uid) {
+      toast.error('Please log in to use AI detection');
+      return;
+    }
+    
     // If user is not pro and has insufficient coins, show charge modal
     if (!isPro && (!userData?.coins || userData.coins < 1)) {
       setShowProAlert(true);
@@ -220,16 +271,18 @@ const DetectAIPage: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Create request payload with all settings
+      // Create request payload with all required fields
       const requestPayload = {
-        uid: userData?.uid || '0a147ebe-af99-481b-bcaf-ae70c9aeb8d8', // Use default UID if not available
-        text: text,
+        uid: userData.uid, // Use authenticated user's UID
+        text: text.trim(),
         title: `Detection: ${text.substring(0, 30)}${text.length > 30 ? '...' : ''}`,
-        tags: ['web-app'],
-        language: 'en'
+        tags: ['web-app', 'detection'],
+        language: selectedLanguage
       };
       
-      // Make API request to the new detection API
+      console.log('Sending detection request:', requestPayload);
+      
+      // Make API request to the detection API
       const response = await axios.post(
         'https://main-matrixai-server-lujmidrakh.cn-hangzhou.fcapp.run/api/detection/createDetection',
         requestPayload,
@@ -240,14 +293,62 @@ const DetectAIPage: React.FC = () => {
         }
       );
       
+      console.log('Detection API response:', response.data);
+      
       // Set the detection result from API response
       if (response.data && response.data.detection) {
         const detection = response.data.detection;
+        
+        // Enhanced analysis with GPTZero data
+        const confidenceCategory = detection.confidence_category || 'unknown';
+        const predictedClass = detection.predicted_class || 'unknown';
+        const confidenceScore = detection.confidence_score || 0;
+        const documentClassification = detection.document_classification || 'unknown';
+        
+        // Build detailed sentence analysis
+        const sentenceAnalysis = detection.sentences?.map((sentenceData: any, index: number) => {
+          if (typeof sentenceData === 'string') {
+            return `${index + 1}. ${sentenceData}`;
+          } else {
+            const prob = Math.round((sentenceData.generated_prob || 0) * 100);
+            const sentence = sentenceData.sentence || '';
+            const highlight = sentenceData.highlight_sentence_for_ai ? ' 🔴' : ' 🟢';
+            return `${index + 1}. ${sentence} (AI Probability: ${prob}%)${highlight}`;
+          }
+        }).join('\n\n') || 'No sentence data available';
+        
+        // Enhanced analysis text
+        const enhancedAnalysis = `## AI Detection Results
+
+**Overall Assessment:**
+- **Predicted Class:** ${predictedClass.toUpperCase()}
+- **Confidence Score:** ${Math.round(confidenceScore * 100)}%
+- **Confidence Category:** ${confidenceCategory.toUpperCase()}
+- **Document Classification:** ${documentClassification}
+
+**Text Statistics:**
+- **Total Words:** ${detection.text_words || 0}
+- **AI-Generated Words:** ${detection.ai_words || 0}
+- **AI Probability:** ${detection.fake_percentage || 0}%
+- **Overall Burstiness:** ${detection.overall_burstiness || 0}
+
+**GPTZero Analysis:**
+- **Version:** ${detection.gptzero_version || 'Unknown'}
+- **Scan ID:** ${detection.scan_id || 'Unknown'}
+- **Result:** ${detection.result_message || 'No message available'}
+
+**Detailed Sentence Analysis:**
+${sentenceAnalysis}
+
+**Legend:**
+🟢 = Likely Human-written
+🔴 = Likely AI-generated`;
+
         setDetectionResult({
           id: detection.id,
           isAIGenerated: !detection.is_human,
           score: detection.fake_percentage / 100, // Convert percentage to decimal
-          analysis: `## AI Detection Results\n\n**Text Analysis:**\n\nThis text contains ${detection.ai_words} AI-generated words out of ${detection.text_words} total words (${detection.fake_percentage}% AI probability).\n\n**Sentence Breakdown:**\n\n${detection.sentences.map((sentence: string, index: number) => `${index + 1}. ${sentence}`).join('\n\n')}`,
+          analysis: enhancedAnalysis,
           summary: detection.is_human ? t('detectAI.summary.humanWritten') : t('detectAI.summary.aiGenerated'),
           fake_percentage: detection.fake_percentage,
           ai_words: detection.ai_words,
@@ -256,7 +357,18 @@ const DetectAIPage: React.FC = () => {
           tags: detection.tags,
           language: detection.language,
           createdAt: detection.createdAt,
-          other_feedback: detection.other_feedback
+          other_feedback: detection.other_feedback,
+          confidence_score: detection.confidence_score,
+          confidence_category: detection.confidence_category,
+          predicted_class: detection.predicted_class,
+          document_classification: detection.document_classification,
+          overall_burstiness: detection.overall_burstiness,
+          gptzero_version: detection.gptzero_version,
+          scan_id: detection.scan_id,
+          result_message: detection.result_message,
+          paragraphs: detection.paragraphs,
+          subclass_data: detection.subclass_data,
+          full_gptzero_response: detection.full_gptzero_response
         });
         
         // Show appropriate toast notification based on AI probability
@@ -331,9 +443,10 @@ const DetectAIPage: React.FC = () => {
         setHistory(prev => [text.substring(0, 50), ...prev.slice(0, 3)]);
       }
       
-      // Coin deduction will be handled by the backend
+      
     } catch (error) {
       console.error('Error detecting AI:', error);
+      toast.error('Failed to analyze text. Please try again.');
       setDetectionResult({
         isAIGenerated: false,
         score: 0,
@@ -355,6 +468,57 @@ const DetectAIPage: React.FC = () => {
     }
     
     return title;
+  };
+
+  // Helper function to get word confidence based on sentence data
+  const getWordConfidence = (wordIndex: number, sentenceIndex: number) => {
+    if (!detectionResult?.sentences || !detectionResult.sentences[sentenceIndex]) {
+      return 0;
+    }
+    
+    const sentence = detectionResult.sentences[sentenceIndex];
+    return sentence.generated_prob || 0;
+  };
+
+  // Helper function to get color based on confidence
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 0.8) return 'bg-red-200 dark:bg-red-900/50 border-red-400 text-red-800 dark:text-red-200';
+    if (confidence >= 0.6) return 'bg-orange-200 dark:bg-orange-900/50 border-orange-400 text-orange-800 dark:text-orange-200';
+    if (confidence >= 0.4) return 'bg-yellow-200 dark:bg-yellow-900/50 border-yellow-400 text-yellow-800 dark:text-yellow-200';
+    if (confidence >= 0.2) return 'bg-blue-200 dark:bg-blue-900/50 border-blue-400 text-blue-800 dark:text-blue-200';
+    return 'bg-green-200 dark:bg-green-900/50 border-green-400 text-green-800 dark:text-green-200';
+  };
+
+  // Helper function to parse text into words with sentence mapping
+  const parseTextWithSentences = () => {
+    if (!detectionResult?.sentences || !text) return [];
+    
+    const words: Array<{
+      word: string;
+      sentenceIndex: number;
+      wordIndex: number;
+      confidence: number;
+      sentenceData: any;
+    }> = [];
+    
+    let currentPosition = 0;
+    
+    detectionResult.sentences.forEach((sentenceData, sentenceIndex) => {
+      const sentence = sentenceData.sentence;
+      const sentenceWords = sentence.split(/(\s+)/).filter(word => word.trim().length > 0);
+      
+      sentenceWords.forEach((word, wordIndex) => {
+        words.push({
+          word: word.trim(),
+          sentenceIndex,
+          wordIndex,
+          confidence: sentenceData.generated_prob || 0,
+          sentenceData
+        });
+      });
+    });
+    
+    return words;
   };
 
   const handleCopyContent = () => {
@@ -428,12 +592,57 @@ ${text}
   const handleLoadSaved = (savedItem: any) => {
     setText(savedItem.text);
     
+    // Build enhanced analysis for saved items (may have limited data)
+    const confidenceCategory = savedItem.confidence_category || 'unknown';
+    const predictedClass = savedItem.predicted_class || (savedItem.is_human ? 'human' : 'ai');
+    const confidenceScore = savedItem.confidence_score || (savedItem.fake_percentage / 100);
+    const documentClassification = savedItem.document_classification || 'unknown';
+    
+    // Build detailed sentence analysis
+    const sentenceAnalysis = savedItem.sentences?.map((sentenceData: any, index: number) => {
+      if (typeof sentenceData === 'string') {
+        return `${index + 1}. ${sentenceData}`;
+      } else {
+        const prob = Math.round((sentenceData.generated_prob || 0) * 100);
+        const sentence = sentenceData.sentence || '';
+        const highlight = sentenceData.highlight_sentence_for_ai ? ' 🔴' : ' 🟢';
+        return `${index + 1}. ${sentence} (AI Probability: ${prob}%)${highlight}`;
+      }
+    }).join('\n\n') || 'No sentence data available';
+    
+    // Enhanced analysis text for saved items
+    const enhancedAnalysis = `## AI Detection Results (Saved)
+
+**Overall Assessment:**
+- **Predicted Class:** ${predictedClass.toUpperCase()}
+- **Confidence Score:** ${Math.round(confidenceScore * 100)}%
+- **Confidence Category:** ${confidenceCategory.toUpperCase()}
+- **Document Classification:** ${documentClassification}
+
+**Text Statistics:**
+- **Total Words:** ${savedItem.text_words || 0}
+- **AI-Generated Words:** ${savedItem.ai_words || 0}
+- **AI Probability:** ${savedItem.fake_percentage || 0}%
+- **Overall Burstiness:** ${savedItem.overall_burstiness || 0}
+
+**GPTZero Analysis:**
+- **Version:** ${savedItem.gptzero_version || 'Unknown'}
+- **Scan ID:** ${savedItem.scan_id || 'Unknown'}
+- **Result:** ${savedItem.result_message || 'No message available'}
+
+**Detailed Sentence Analysis:**
+${sentenceAnalysis}
+
+**Legend:**
+🟢 = Likely Human-written
+🔴 = Likely AI-generated`;
+    
     // Also set the detection result
     setDetectionResult({
       id: savedItem.id,
       isAIGenerated: !savedItem.is_human,
       score: savedItem.fake_percentage / 100, // Convert percentage to decimal
-      analysis: `## AI Detection Results\n\n**Text Analysis:**\n\nThis text contains ${savedItem.ai_words} AI-generated words out of ${savedItem.text_words} total words (${savedItem.fake_percentage}% AI probability).\n\n**Sentence Breakdown:**\n\n${savedItem.sentences.map((sentence: string, index: number) => `${index + 1}. ${sentence}`).join('\n\n')}`,
+      analysis: enhancedAnalysis,
       summary: savedItem.is_human ? t('detectAI.summary.humanWritten') : t('detectAI.summary.aiGenerated'),
       fake_percentage: savedItem.fake_percentage,
        ai_words: savedItem.ai_words,
@@ -446,165 +655,333 @@ ${text}
     });
   };
 
+  // Component to render highlighted text with sentence-level analysis
+  const renderHighlightedText = () => {
+    if (!detectionResult?.sentences || !text) return null;
+    
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <h3 className="text-xl font-bold mb-4 flex items-center">
+          <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1.5 rounded-md mr-2">
+            <FiEdit className="w-5 h-5" />
+          </span>
+          Text Analysis with Highlighting
+        </h3>
+        
+        <div className="mb-4 flex flex-wrap gap-2">
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-red-200 dark:bg-red-900/50 border border-red-400 rounded mr-2"></div>
+            <span className="text-sm text-gray-600 dark:text-gray-400">AI-Generated (High Confidence)</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-yellow-200 dark:bg-yellow-900/50 border border-yellow-400 rounded mr-2"></div>
+            <span className="text-sm text-gray-600 dark:text-gray-400">AI-Generated (Medium Confidence)</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-green-200 dark:bg-green-900/50 border border-green-400 rounded mr-2"></div>
+            <span className="text-sm text-gray-600 dark:text-gray-400">Human-Written</span>
+          </div>
+        </div>
+        
+        <div className="prose prose-lg max-w-none dark:prose-invert leading-relaxed">
+          {detectionResult.sentences.map((sentenceData: any, index: number) => {
+            const sentence = typeof sentenceData === 'string' ? sentenceData : sentenceData.sentence;
+            const prob = typeof sentenceData === 'object' ? sentenceData.generated_prob : 0;
+            const highlight = typeof sentenceData === 'object' ? sentenceData.highlight_sentence_for_ai : false;
+            
+            let bgColor = 'bg-green-200 dark:bg-green-900/50';
+            let borderColor = 'border-green-400';
+            
+            if (prob > 0.8) {
+              bgColor = 'bg-red-200 dark:bg-red-900/50';
+              borderColor = 'border-red-400';
+            } else if (prob > 0.5) {
+              bgColor = 'bg-yellow-200 dark:bg-yellow-900/50';
+              borderColor = 'border-yellow-400';
+            }
+            
+            return (
+              <span
+                key={index}
+                className={`inline-block mr-1 mb-1 px-2 py-1 rounded border ${bgColor} ${borderColor} cursor-pointer transition-all hover:shadow-sm`}
+                title={`AI Probability: ${Math.round(prob * 100)}%${highlight ? ' (Flagged by GPTZero)' : ''}`}
+              >
+                {sentence}
+                {highlight && <span className="ml-1 text-red-600 dark:text-red-400">🔴</span>}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   const renderDetectionResult = () => {
     if (!detectionResult) return null;
     
     const score = Math.round(detectionResult.score * 100);
+    const confidenceScore = detectionResult.confidence_score ? Math.round(detectionResult.confidence_score * 100) : score;
     
-    let statusComponent;
-    let scoreClass;
-    let scoreColor;
-    
-    if (score >= 80) {
-      statusComponent = (
-        <div className="flex items-center text-red-500">
-          <FiAlertTriangle className="mr-2" />
-          <span className="font-medium">Likely AI-Generated</span>
-        </div>
-      );
-      scoreClass = "text-red-500";
-        scoreColor = darkMode ? "#ef4444" : "#dc2626";
-    } else if (score >= 50) {
-      statusComponent = (
-        <div className="flex items-center text-yellow-500">
-          <FiAlertTriangle className="mr-2" />
-          <span className="font-medium">Possibly AI-Generated</span>
-        </div>
-      );
-      scoreClass = "text-yellow-500";
-        scoreColor = darkMode ? "#eab308" : "#d97706";
-    } else {
-      statusComponent = (
-        <div className="flex items-center text-green-500">
-          <FiCheckCircle className="mr-2" />
-          <span className="font-medium">Likely Human-Written</span>
-        </div>
-      );
-      scoreClass = "text-green-500";
-        scoreColor = darkMode ? "#22c55e" : "#16a34a";
-    }
+    // Parse text into words with sentence mapping
+    const wordsWithSentences = parseTextWithSentences();
     
     return (
-      <div className="mb-8">
-        <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl mb-6 border border-indigo-100 dark:border-indigo-800">
-          <div className="flex flex-col md:flex-row justify-between">
-            <div className="md:w-1/2 mb-4 md:mb-0">
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
-                {statusComponent}
-                <h3 className="text-xl font-bold mt-4 mb-2">Analysis Summary</h3>
-                <p className="text-gray-700 dark:text-gray-300">{detectionResult.summary}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+        {/* Left Section - Original Text Display */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold flex items-center">
+              <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-1.5 rounded-md mr-2">
+                <FiFileText className="w-4 h-4" />
+              </span>
+              Original Text
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {detectionResult.text_words || 0} words
+              </span>
+            </div>
+          </div>
+          
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 max-h-96 overflow-y-auto">
+            <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+              {text}
+            </div>
+          </div>
+          
+          {/* Quick Stats */}
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
+              <div className="text-sm text-green-600 dark:text-green-400 font-medium">Human Words</div>
+              <div className="text-lg font-bold text-green-700 dark:text-green-300">
+                {(detectionResult.text_words || 0) - (detectionResult.ai_words || 0)}
               </div>
             </div>
-            
-            <div className="md:w-1/3 flex flex-col items-center justify-center">
-              {/* Modern gauge-style circular progress */}
-              <div className="relative h-40 w-40">
-                <svg className="w-full h-full" viewBox="0 0 100 100">
-                  {/* Background circle */}
-                  <circle 
-                    cx="50" 
-                    cy="50" 
-                    r="45" 
-                    fill="none" 
-                    stroke="#e5e7eb" 
-                    strokeWidth="10" 
-                    className="dark:opacity-20"
-                  />
-                  
-                  {/* Progress arc with gradient */}
-                  <circle 
-                    cx="50" 
-                    cy="50" 
-                    r="45" 
-                    fill="none" 
-                    stroke={scoreColor} 
-                    strokeWidth="10" 
-                    strokeDasharray={`${score * 2.83}, 283`} 
-                    strokeDashoffset="0" 
-                    strokeLinecap="round"
-                    transform="rotate(-90 50 50)"
-                    className="drop-shadow-md"
-                  />
-                  
-                  {/* Inner circle with drop shadow effect */}
-                  <circle 
-                    cx="50" 
-                    cy="50" 
-                    r="35" 
-                    fill="white" 
-                    className="dark:fill-gray-800 drop-shadow-sm"
-                  />
-                  
-                  {/* Score text */}
-                  <text 
-                    x="50" 
-                    y="45" 
-                    textAnchor="middle" 
-                    fontSize="22" 
-                    fontWeight="bold" 
-                    fill={scoreColor}
-                  >
-                    {score}%
-                  </text>
-                  
-                  <text 
-                    x="50" 
-                    y="50" 
-                    textAnchor="middle" 
-                    fontSize="10" 
-                    fill="#6b7280"
-                    className="dark:fill-gray-400"
-                  >
-                    {t('detectAI.aiProbability')}
-                  </text>
-                </svg>
+            <div className="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-lg p-3 border border-red-200 dark:border-red-800">
+              <div className="text-sm text-red-600 dark:text-red-400 font-medium">AI Words</div>
+              <div className="text-lg font-bold text-red-700 dark:text-red-300">
+                {detectionResult.ai_words || 0}
               </div>
-              
-              <div className="text-center mt-4">
-                <div className="flex justify-center gap-2 mb-2">
-                  <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                    {t('detectAI.ranges.human')}
-                  </span>
-                  <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
-                    {t('detectAI.ranges.mixed')}
-                  </span>
-                  <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
-                    {t('detectAI.ranges.ai')}
-                  </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Section - Enhanced Analysis with Word Highlighting */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          {/* Analysis Header */}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold flex items-center">
+              <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-md mr-2">
+                <FiTarget className="w-4 h-4" />
+              </span>
+              AI Detection Analysis
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAnalysisMode(analysisMode === 'word' ? 'sentence' : 'word')}
+                className="px-3 py-1 text-xs font-medium rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
+              >
+                {analysisMode === 'word' ? 'Word View' : 'Sentence View'}
+              </button>
+            </div>
+          </div>
+
+          {/* Confidence Score Display */}
+          <div className="mb-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg border border-indigo-100 dark:border-indigo-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Overall Confidence</div>
+                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                  {confidenceScore}%
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                  {detectionResult.confidence_category || 'Unknown'} confidence
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-gray-600 dark:text-gray-400">Classification</div>
+                <div className={`text-lg font-semibold ${
+                  score >= 80 ? 'text-red-600 dark:text-red-400' :
+                  score >= 50 ? 'text-yellow-600 dark:text-yellow-400' :
+                  'text-green-600 dark:text-green-400'
+                }`}>
+                  {score >= 80 ? 'AI Generated' : score >= 50 ? 'Mixed Content' : 'Human Written'}
                 </div>
               </div>
             </div>
+            
+            {/* Progress Bar */}
+            <div className="mt-3">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div 
+                  className={`h-2 rounded-full transition-all duration-500 ${
+                    score >= 80 ? 'bg-red-500' :
+                    score >= 50 ? 'bg-yellow-500' : 'bg-green-500'
+                  }`}
+                  style={{ width: `${confidenceScore}%` }}
+                ></div>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-xl font-bold mb-3 flex items-center">
-            <span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 p-1.5 rounded-md mr-2">
-              <FiFileText className="w-5 h-5" />
-            </span>
-            {t('detectAI.detailedAnalysis')}
-          </h3>
-          <div className="prose prose-sm max-w-none dark:prose-invert">
-            <ReactMarkdown>
-              {detectionResult.analysis}
-            </ReactMarkdown>
-          </div>
-          
-          {detectionResult.other_feedback && (
-            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <h4 className="text-lg font-medium mb-3 flex items-center">
-                <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1 rounded-md mr-2">
-                  <FiMessageCircle className="w-4 h-4" />
-                </span>
-                {t('detectAI.additionalFeedback')}
+
+          {/* Highlighted Text Analysis */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-semibold text-gray-800 dark:text-gray-200">
+                Text Analysis with Highlighting
               </h4>
-              <div className="prose prose-sm max-w-none dark:prose-invert">
-                <ReactMarkdown>
-                  {detectionResult.other_feedback}
-                </ReactMarkdown>
+              <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                  <span className="text-gray-600 dark:text-gray-400">Human</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                  <span className="text-gray-600 dark:text-gray-400">Mixed</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                  <span className="text-gray-600 dark:text-gray-400">AI</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 max-h-80 overflow-y-auto relative">
+              <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                {wordsWithSentences.map((wordData, index) => {
+                  const confidence = getWordConfidence(wordData.wordIndex, wordData.sentenceIndex);
+                  const color = getConfidenceColor(confidence);
+                  
+                  return (
+                    <span
+                      key={index}
+                      className="relative inline-block cursor-pointer transition-all duration-200 hover:scale-105"
+                      style={{
+                        backgroundColor: `${color}20`,
+                        borderBottom: `2px solid ${color}`,
+                        margin: '0 1px',
+                        padding: '1px 2px',
+                        borderRadius: '2px'
+                      }}
+                      onMouseEnter={() => {
+                        setHoveredWord({
+                          word: wordData.word,
+                          index: wordData.wordIndex,
+                          confidence,
+                          position: { x: 0, y: 0 },
+                          sentenceData: wordData.sentenceData
+                        });
+                        setShowWordTooltip(true);
+                      }}
+                      onMouseLeave={() => {
+                        setShowWordTooltip(false);
+                        setHoveredWord(null);
+                      }}
+                    >
+                      {wordData.word}
+                    </span>
+                  );
+                })}
+              </div>
+              
+              {/* Word Tooltip */}
+              {showWordTooltip && hoveredWord && (
+                <div 
+                  className="absolute z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 min-w-48"
+                  style={{
+                    left: hoveredWord.position.x,
+                    top: hoveredWord.position.y - 10,
+                    transform: 'translateX(-50%)'
+                  }}
+                >
+                  <div className="text-sm">
+                    <div className="font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                      "{hoveredWord.word}"
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">AI Confidence:</span>
+                        <span className="font-medium">{Math.round(hoveredWord.confidence * 100)}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Word Position:</span>
+                        <span className="font-medium">#{hoveredWord.index + 1}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Classification:</span>
+                        <span className={`font-medium ${
+                          hoveredWord.confidence >= 0.8 ? 'text-red-600 dark:text-red-400' :
+                          hoveredWord.confidence >= 0.5 ? 'text-yellow-600 dark:text-yellow-400' :
+                          'text-green-600 dark:text-green-400'
+                        }`}>
+                          {hoveredWord.confidence >= 0.8 ? 'AI' : 
+                           hoveredWord.confidence >= 0.5 ? 'Mixed' : 'Human'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Sentence Breakdown */}
+          {detectionResult.sentences && detectionResult.sentences.length > 0 && (
+            <div className="mt-6">
+              <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center">
+                <FiList className="w-4 h-4 mr-2" />
+                Sentence Analysis
+              </h4>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {detectionResult.sentences.map((sentenceData: any, index: number) => {
+                  const sentence = typeof sentenceData === 'string' ? sentenceData : sentenceData.sentence;
+                  const prob = typeof sentenceData === 'object' ? sentenceData.generated_prob : 0;
+                  const aiProb = Math.round(prob * 100);
+                  
+                  return (
+                    <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                          Sentence {index + 1}
+                        </span>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          aiProb >= 80 ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
+                          aiProb >= 50 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
+                          'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                        }`}>
+                          {aiProb}% AI
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">{sentence}</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
+
+          {/* Additional Details */}
+          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-600 dark:text-gray-400">GPTZero Version:</span>
+                <div className="font-medium">{detectionResult.gptzero_version || 'Unknown'}</div>
+              </div>
+              <div>
+                <span className="text-gray-600 dark:text-gray-400">Scan ID:</span>
+                <div className="font-mono text-xs">{detectionResult.scan_id?.slice(0, 8) || 'Unknown'}...</div>
+              </div>
+            </div>
+            
+            {detectionResult.result_message && (
+              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <FiInfo className="w-4 h-4 inline mr-1" />
+                  {detectionResult.result_message}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -674,35 +1051,40 @@ ${text}
                       className="mt-4 p-4 border rounded-lg shadow-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                     >
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('detectAI.sensitivity.title')}</label>
-                        <div className="grid grid-cols-4 gap-2">
-                          {sensitivityOptions.map(option => (
+                        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                          <FiMessageCircle className="inline mr-1" />
+                          Text Language
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {languageOptions.map(option => (
                             <button
                               key={option.id}
-                              onClick={() => setSensitivity(option.id)}
-                              className={`py-2 px-3 text-xs text-center rounded-lg transition-colors ${
-                                sensitivity === option.id
+                              onClick={() => setSelectedLanguage(option.id)}
+                              className={`py-2 px-3 text-xs text-center rounded-lg transition-colors flex items-center justify-center ${
+                                selectedLanguage === option.id
                                   ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border-2 border-indigo-400 dark:border-indigo-600'
                                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-2 border-transparent'
                               }`}
                               disabled={isProcessing}
                             >
-                              {option.id === 'low' && t('detectAI.sensitivity.low')}
-                              {option.id === 'balanced' && t('detectAI.sensitivity.balanced')}
-                              {option.id === 'high' && t('detectAI.sensitivity.high')}
-                              {option.id === 'very-high' && t('detectAI.sensitivity.veryHigh')}
+                              <span className="mr-1">{option.flag}</span>
+                              {option.name}
                             </button>
                           ))}
                         </div>
                         <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                          {sensitivity === 'low' && t('detectAI.sensitivityDescriptions.low')}
-                          {sensitivity === 'balanced' && t('detectAI.sensitivityDescriptions.balanced')}
-                          {sensitivity === 'high' && t('detectAI.sensitivityDescriptions.high')}
-                          {sensitivity === 'very-high' && t('detectAI.sensitivityDescriptions.veryHigh')}
+                          Select the language of your text for more accurate AI detection results.
                         </div>
                       </div>
                     </motion.div>
                   )}
+                </div>
+                
+                <div className="w-full bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-xs text-gray-700 dark:text-gray-300 border border-blue-100 dark:border-blue-800/50 mb-3">
+                  <div className="flex items-start">
+                    <FiInfo className="text-blue-500 dark:text-blue-400 mt-0.5 mr-2 flex-shrink-0" />
+                    <span><strong>Note:</strong> Our AI detection system uses ZeroGPT detector by default for accurate results. The analysis provides comprehensive insights into AI-generated content patterns.</span>
+                  </div>
                 </div>
                 
                 <div className="w-full bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-3 text-xs text-gray-700 dark:text-gray-300 border border-indigo-100 dark:border-indigo-800/50">

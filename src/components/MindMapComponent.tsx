@@ -186,7 +186,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
       };
 
       const requestBody = {
-        model: "qwen-plus",
+        model: "qwen-max",
         messages: [
           {
             role: "user",
@@ -214,7 +214,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
           }
         ],
         temperature: 0.7,
-        max_tokens: 2048
+        max_tokens: 4096
       };
 
       xhr.send(JSON.stringify(requestBody));

@@ -114,7 +114,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({
         country_code: 'US', // You can make this dynamic based on user location
         successUrl: `${window.location.origin}/payment/success?id=${paymentIntent.id}`,
         failUrl: `${window.location.origin}/payment/failure?id=${paymentIntent.id}`,
-        logoUrl: `${window.location.origin}/logo.png`, // Optional: Add your logo
+        logoUrl: `${window.location.origin}/logo.svg`, // Optional: Add your logo
         appearance: {
           mode: 'light',
           variables: {

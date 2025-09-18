@@ -29,7 +29,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import matrix from '../assets/matrix.png';
+import matrix from '../assets/matrix.svg';
 
 interface SidebarProps {
   onToggle?: (collapsed: boolean) => void;
@@ -244,9 +244,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpe
               /* Collapsed desktop layout - logo centered, button below */
               <div className="flex flex-col items-center mb-8">
                 <Link to="/dashboard" className="flex justify-center mb-4">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-white">
-                    <img src={matrix} alt="MatrixAI Logo" className="h-12 w-12 object-contain" />
-                  </div>
+                  <img src={matrix} alt="MatrixAI Logo" className="h-12 w-12 object-contain rounded-lg" />
                 </Link>
                 <button 
                   onClick={toggleSidebar}
@@ -263,9 +261,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpe
               /* Expanded layout - logo and button side by side */
               <div className="flex items-center justify-between mb-8 px-2">
                 <Link to="/dashboard" className="flex items-center">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-white">
-                    <img src={matrix} alt="MatrixAI Logo" className="h-10 w-10 object-contain" />
-                  </div>
+                  <img src={matrix} alt="MatrixAI Logo" className="h-12 w-12 object-contain rounded-lg" />
                   {(!collapsed || isMobile) ? (
                     <div className="flex items-center">
                       <span className="ml-2 text-lg font-bold">matrixai</span>

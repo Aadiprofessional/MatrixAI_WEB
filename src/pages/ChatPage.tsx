@@ -4,13 +4,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from '../utils/axiosInterceptor';
 import OpenAI from 'openai';
 import { useTranslation } from 'react-i18next';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+import DOMPurify from 'dompurify';
 import { 
   FiMessageSquare, FiSend, FiUser, FiCpu, FiChevronDown, FiPlus, FiClock, FiX,
   FiCopy, FiShare2, FiVolume2, FiPause, FiPlay, FiDownload, FiUpload, FiImage,
   FiMaximize, FiMinimize, FiSettings, FiChevronLeft, FiChevronRight, FiMoon, FiSun,
   FiCreditCard, FiBookmark, FiStar, FiEdit, FiTrash2, FiCheck, FiRotateCcw, FiVolumeX,
   FiMenu, FiHome, FiMic, FiFileText, FiVideo, FiZap, FiTrendingUp, FiTarget, FiSquare,
-  FiVolume, FiFile, FiPaperclip
+  FiVolume, FiFile, FiPaperclip, FiSidebar
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth, User } from '../context/AuthContext';
@@ -27,28 +30,10 @@ import FileUploadPopup from '../components/FileUploadPopup';
 import { uploadFileToStorage, FileUploadResult, validateFile, formatFileSize, getFileIcon } from '../utils/fileUpload';
 import { UserMessageAttachments } from '../components/UserMessageAttachments';
 import { BotMessageAttachments } from '../components/BotMessageAttachments';
+import coinIcon from '../assets/coin.png';
 import './ChatPage.css';
 
-// Add these imports for markdown and math rendering
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import rehypeRaw from 'rehype-raw';
-import rehypeHighlight from 'rehype-highlight';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import 'katex/dist/katex.min.css';
-
-// Import new text formatting packages
-import { MathJax, MathJaxContext } from 'better-react-mathjax';
-import MarkdownIt from 'markdown-it';
-import DOMPurify from 'dompurify';
-// @assistant-ui/react imports - keeping only what's available
-// import { Thread } from '@assistant-ui/react';
-// import { AssistantRuntimeProvider } from '@assistant-ui/react';
-// import { useAssistantRuntime } from '@assistant-ui/react';
-// import { MarkdownTextRenderer } from '@assistant-ui/react-markdown';
+// HTML text formatting will be implemented from scratch
 
 
 // Define interface for message types
@@ -106,606 +91,174 @@ const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   
-  // Enhanced Code Block Component
-  const CodeBlock = ({ node, inline, className, children, language, value, ...props }: any) => {
-  const match = /language-(\w+)/.exec(className || '');
-  const lang = language || (match ? match[1] : '');
-  const codeString = value || String(children).replace(/\n$/, '');
-  
-  if (!inline && (lang || codeString.includes('\n'))) {
-    return (
-      <div className="relative my-4 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-        {/* Language label */}
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-300 uppercase">
-            {lang || 'code'}
-          </span>
-          <AuthRequiredButton
-            onClick={() => navigator.clipboard.writeText(codeString)}
-            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            title="Copy code"
-          >
-            <FiCopy size={12} />
-            Copy
-          </AuthRequiredButton>
-        </div>
-        
-        {/* Code content - Replace SyntaxHighlighter with pre/code */}
-        <pre
-          className={`m-0 p-4 bg-transparent text-sm leading-normal overflow-x-auto font-mono ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}
-        >
-          <code>
-            {codeString}
-          </code>
-        </pre>
-      </div>
-    );
-  }
-  
-  // Inline code
-  return (
-    <code 
-      className="px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-sm font-mono text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700" 
-      {...props}
-    >
-      {children}
-    </code>
-  );
-};
+  // All formatting components removed - HTML formatting will be implemented from scratch
 
 
 
-// Enhanced Table Components
-const TableWrapper = ({ children, ...props }: any) => {
-  return (
-    <div className="overflow-x-auto w-full my-4">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
-        {children}
-      </table>
-    </div>
-  );
-};
 
-const TableHead = ({ children, ...props }: any) => {
-  return <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>;
-};
 
-const TableBody = ({ children, ...props }: any) => {
-  return <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">{children}</tbody>;
-};
 
-const TableRow = ({ children, ...props }: any) => {
-  return (
-    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-      {children}
-    </tr>
-  );
-};
 
-const TableCell = ({ children, ...props }: any) => {
-  return (
-    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700">
-      {children}
-    </td>
-  );
-};
-
-const TableHeaderCell = ({ children, ...props }: any) => {
-  return (
-    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-gray-50 dark:bg-gray-800">
-      {children}
-    </th>
-  );
-};
-
-// Function to detect if content contains mathematical expressions
-const containsMathExpressions = (content: string): boolean => {
-  if (!content) return false;
-  
-  // Check for various math patterns
-  const mathPatterns = [
-    /\$\$[\s\S]*?\$\$/,           // Display math $$...$$
-    /\$[^$\n]+\$/,               // Inline math $...$
-    /\\\[[\s\S]*?\\\]/,          // LaTeX display math \[...\]
-    /\\\([\s\S]*?\\\)/,          // LaTeX inline math \(...\)
-    /<math[\s\S]*?<\/math>/,     // Custom math tags
-    /<math2[\s\S]*?<\/math2>/,   // Custom math2 tags
-    /<math3[\s\S]*?<\/math3>/,   // Custom math3 tags
-    /\\[a-zA-Z]+\{[^}]*\}/,      // LaTeX commands like \frac{1}{2}
-    /[a-zA-Z]_\{[^}]*\}/,        // Subscripts with braces
-    /[a-zA-Z]\^\{[^}]*\}/,       // Superscripts with braces
-    /\\begin\{[^}]+\}/,          // LaTeX environments
-    /\\end\{[^}]+\}/,            // LaTeX environments
-    /\\[a-zA-Z]+/,               // LaTeX commands
-    /\b[a-zA-Z]+\([^)]*\)\s*=/, // Function definitions like f(x) =
-    /\b\d+\.\d+\b/,              // Decimal numbers
-    /\b[a-zA-Z]\s*[=<>≤≥≠]\s*[a-zA-Z0-9]/, // Mathematical equations
-  ];
-  
-  return mathPatterns.some(pattern => pattern.test(content));
-};
-
-// Function to preprocess content for better markdown rendering
-const preprocessContent = (content: string): string => {
-  if (!content) return content;
-  
-  // Store math expressions temporarily to protect them from markdown processing
-  const mathExpressions: { [key: string]: string } = {};
-  let mathCounter = 0;
-  
-  let processed = content;
-  
-  // First, extract and protect math expressions
-  // Protect display math $$...$$
-  processed = processed.replace(/\$\$([^$]+?)\$\$/g, (match, mathContent) => {
-    const placeholder = `__MATH_DISPLAY_${mathCounter++}__`;
-    mathExpressions[placeholder] = `$$${mathContent}$$`;
-    return placeholder;
-  });
-  
-  // Protect inline math $...$
-  processed = processed.replace(/\$([^$\n]+?)\$/g, (match, mathContent) => {
-    const placeholder = `__MATH_INLINE_${mathCounter++}__`;
-    mathExpressions[placeholder] = `$${mathContent}$`;
-    return placeholder;
-  });
-  
-  // Protect LaTeX display math \[...\]
-  processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, (match, mathContent) => {
-    const placeholder = `__MATH_DISPLAY_${mathCounter++}__`;
-    mathExpressions[placeholder] = `$$${mathContent}$$`;
-    return placeholder;
-  });
-  
-  // Protect LaTeX inline math \(...\)
-  processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (match, mathContent) => {
-    const placeholder = `__MATH_INLINE_${mathCounter++}__`;
-    mathExpressions[placeholder] = `$${mathContent}$`;
-    return placeholder;
-  });
-  
-  // Protect custom math tags
-  processed = processed.replace(/<math>([\s\S]*?)<\/math>/g, (match, mathContent) => {
-    const placeholder = `__MATH_INLINE_${mathCounter++}__`;
-    mathExpressions[placeholder] = `$${mathContent}$`;
-    return placeholder;
-  });
-  
-  processed = processed.replace(/<math2>([\s\S]*?)<\/math2>/g, (match, mathContent) => {
-    const placeholder = `__MATH_DISPLAY_${mathCounter++}__`;
-    mathExpressions[placeholder] = `$$${mathContent}$$`;
-    return placeholder;
-  });
-  
-  processed = processed.replace(/<math3>([\s\S]*?)<\/math3>/g, (match, mathContent) => {
-    const placeholder = `__MATH_DISPLAY_${mathCounter++}__`;
-    mathExpressions[placeholder] = `$$${mathContent}$$`;
-    return placeholder;
-  });
-  
-  // Now process the non-math content for markdown
-  processed = processed
-    // Ensure proper line breaks for lists
-    .replace(/\n(\d+\.|\*|\-|\+)\s/g, '\n\n$1 ')
-    // Ensure proper spacing around headers
-    .replace(/([^\n])\n(#{1,6})\s/g, '$1\n\n$2 ')
-    // Make sure headings start with # and have a space after
-    .replace(/\n(#{1,6})([^\s])/g, '\n$1 $2')
-    // Clean up headers that might have extra # symbols
-    .replace(/^(#{1,6})\s*#+\s*/gm, '$1 ')
-    // Ensure headers have proper spacing
-    .replace(/^(#{1,6})\s+(.+)$/gm, '$1 $2')
-    // Ensure proper spacing for blockquotes
-    .replace(/\n>/g, '\n\n>')
-    // Preserve newlines for paragraph breaks
-    .replace(/\n\n\n+/g, '\n\n');
-  
-  // Restore math expressions
-  Object.keys(mathExpressions).forEach(placeholder => {
-    processed = processed.replace(new RegExp(placeholder, 'g'), mathExpressions[placeholder]);
-  });
-  
-  return processed.trim();
-};
-
-// Initialize MarkdownIt instance with enhanced features
-const md = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true,
-  breaks: true
-});
-
-// MathJax configuration for better math rendering
-const mathJaxConfig = {
-  loader: { load: ['[tex]/html', '[tex]/ams', '[tex]/newcommand', '[tex]/configmacros'] },
-  tex: {
-    packages: { '[+]': ['html', 'ams', 'newcommand', 'configmacros'] },
-    inlineMath: [['$', '$'], ['\\(', '\\)']],
-    displayMath: [['$$', '$$'], ['\\[', '\\]']],
-    processEscapes: true,
-    processEnvironments: true,
-    processRefs: true,
-    digits: /^(?:[0-9]+(?:\{,\}[0-9]{3})*(?:\.[0-9]*)?|\.[0-9]+)/,
-    tags: 'none',
-    tagSide: 'right',
-    tagIndent: '0.8em',
-    useLabelIds: true,
-    multlineWidth: '85%',
-    macros: {
-      // Common mathematical macros
-      RR: '{\\mathbb{R}}',
-      NN: '{\\mathbb{N}}',
-      ZZ: '{\\mathbb{Z}}',
-      QQ: '{\\mathbb{Q}}',
-      CC: '{\\mathbb{C}}',
-      binom: ['{\\binom{#1}{#2}}', 2]
-    }
-  },
-  options: {
-    ignoreHtmlClass: 'tex2jax_ignore',
-    processHtmlClass: 'tex2jax_process',
-    renderActions: {
-      addMenu: [0, '', '']
-    }
-  },
-  startup: {
-    ready: () => {
-      console.log('MathJax is loaded and ready.');
-    }
-  }
-};
-
-// Function to render text with math expressions and markdown formatting
-const renderTextWithMath = (text: string, darkMode: boolean, textStyle?: any) => {
+// Enhanced HTML text formatting function with math support
+const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) => {
   if (!text) return null;
   
   try {
-    // Check if content contains math expressions
-    const hasMath = containsMathExpressions(text);
+    // Check if the text is already HTML (contains HTML tags)
+    const isHTML = /<[^>]*>/g.test(text);
     
-    // Preprocess the content to handle math expressions and clean formatting
-    const processedText = preprocessContent(text);
+    let processedText = text;
     
-    if (hasMath) {
-      // For content with math, render with minimal processing to preserve math delimiters
-      const simpleHtml = processedText
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/\n/g, '<br>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/`(.*?)`/g, '<code>$1</code>')
-        .replace(/^(.*)$/gm, '<p>$1</p>')
-        .replace(/<p><\/p>/g, '')
-        .replace(/<p><br><\/p>/g, '<br>');
-      
-      return (
-        <MathJaxContext config={mathJaxConfig}>
-          <div 
-            className={`markdown-content ${darkMode ? 'dark' : ''}`} 
-            style={textStyle}
-            dangerouslySetInnerHTML={{ __html: simpleHtml }}
-          />
-        </MathJaxContext>
-      );
+    if (isHTML) {
+      // If it's already HTML, sanitize it and apply our styling
+      processedText = DOMPurify.sanitize(text, {
+        ALLOWED_TAGS: [
+          'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
+          'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'a', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+          'div', 'span', 'img', 'hr', 'sub', 'sup'
+        ],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id', 'src', 'alt', 'title', 'border', 'cellpadding', 'cellspacing']
+      });
     } else {
-      // For non-math content, use full markdown processing
-      const markdownProcessed = md.render(processedText);
+      // If it's plain text, convert markdown-like syntax to HTML
+      const escapeHtml = (unsafe: string) => {
+        return unsafe
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      };
+
+      processedText = escapeHtml(text);
       
-      // Sanitize content with DOMPurify
-      const sanitizedText = DOMPurify.sanitize(markdownProcessed, {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'code', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'div', 'span'],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id']
+      // Convert line breaks to <br> tags
+      processedText = processedText.replace(/\n/g, '<br>');
+      
+      // Convert **bold** to <strong>
+      processedText = processedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      
+      // Convert *italic* to <em>
+      processedText = processedText.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      
+      // Convert `code` to <code>
+      processedText = processedText.replace(/`(.*?)`/g, '<code>$1</code>');
+      
+      // Convert URLs to links
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      processedText = processedText.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+      
+      // Convert code blocks ```code``` to <pre><code>
+      processedText = processedText.replace(/```([\s\S]*?)```/g, (match, code) => {
+        const cleanCode = code.trim();
+        return `<pre><code>${cleanCode}</code></pre>`;
       });
       
-      return (
-        <div 
-          className={`markdown-content ${darkMode ? 'dark' : ''}`} 
-          style={textStyle}
-          dangerouslySetInnerHTML={{ __html: sanitizedText }}
-        />
-      );
+      // Convert headers # Header to <h1>
+      processedText = processedText.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+      processedText = processedText.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+      processedText = processedText.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+      
+      // Convert blockquotes > text to <blockquote>
+      processedText = processedText.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
     }
+    
+    // Process math expressions using KaTeX for better rendering
+    const renderMathWithKaTeX = (text: string) => {
+      let result = text;
+      
+      // Handle block math expressions (display mode)
+      // LaTeX-style block math \[...\]
+      result = result.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
+        try {
+          const rendered = katex.renderToString(math.trim(), {
+            displayMode: true,
+            throwOnError: false,
+            strict: false,
+            trust: true
+          });
+          return `<div class="katex-block-container">${rendered}</div>`;
+        } catch (error) {
+          console.warn('KaTeX block render error:', error);
+          return `<div class="math-error">\\[${math}\\]</div>`;
+        }
+      });
+      
+      // Dollar sign block math $$...$$
+      result = result.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
+        try {
+          const rendered = katex.renderToString(math.trim(), {
+            displayMode: true,
+            throwOnError: false,
+            strict: false,
+            trust: true
+          });
+          return `<div class="katex-block-container">${rendered}</div>`;
+        } catch (error) {
+          console.warn('KaTeX block render error:', error);
+          return `<div class="math-error">$$${math}$$</div>`;
+        }
+      });
+      
+      // Handle inline math expressions
+      // LaTeX-style inline math \(...\)
+      result = result.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
+        try {
+          const rendered = katex.renderToString(math.trim(), {
+            displayMode: false,
+            throwOnError: false,
+            strict: false,
+            trust: true
+          });
+          return `<span class="katex-inline-container">${rendered}</span>`;
+        } catch (error) {
+          console.warn('KaTeX inline render error:', error);
+          return `<span class="math-error">\\(${math}\\)</span>`;
+        }
+      });
+      
+      // Dollar sign inline math $...$
+      result = result.replace(/\$([^$\n]+)\$/g, (match, math) => {
+        try {
+          const rendered = katex.renderToString(math.trim(), {
+            displayMode: false,
+            throwOnError: false,
+            strict: false,
+            trust: true
+          });
+          return `<span class="katex-inline-container">${rendered}</span>`;
+        } catch (error) {
+          console.warn('KaTeX inline render error:', error);
+          return `<span class="math-error">$${math}$</span>`;
+        }
+      });
+      
+      return result;
+    };
+
+    // Apply KaTeX rendering to the processed text
+    processedText = renderMathWithKaTeX(processedText);
+
+    return (
+      <div 
+        className={`ai-response-content ${darkMode ? 'dark' : ''}`} 
+        style={textStyle}
+      >
+        <div dangerouslySetInnerHTML={{ __html: processedText }} />
+      </div>
+    );
   } catch (error) {
-    console.error('Error rendering text with math:', error);
+    console.error('Error rendering text with HTML:', error);
     // Fallback to simple text rendering
     return (
       <div 
-        className={`markdown-content ${darkMode ? 'dark' : ''}`} 
+        className={`ai-response-content ${darkMode ? 'dark' : ''}`} 
         style={textStyle}
       >
         {text}
       </div>
     );
   }
-};
-
-// Alternative ReactMarkdown renderer for fallback
-const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?: any) => {
-  if (!text) return null;
-  
-  const processedText = preprocessContent(text);
-  
-  return (
-    <MathJaxContext config={mathJaxConfig}>
-      <div className={`markdown-content ${darkMode ? 'dark' : ''}`} style={textStyle}>
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkMath]}
-          rehypePlugins={[rehypeKatex, rehypeRaw, rehypeHighlight]}
-          components={{
-          code: CodeBlock,
-          pre: ({ children }: any) => <div className="overflow-auto">{children}</div>,
-          h1: ({ children }: any) => {
-            // Handle different types of children properly
-            let textContent = '';
-            if (Array.isArray(children)) {
-              textContent = children.map(child => {
-                if (typeof child === 'object' && child !== null) {
-                  return child.props?.children ? 
-                    (typeof child.props.children === 'string' ? child.props.children : 
-                     Array.isArray(child.props.children) ? child.props.children.join('') : '') : '';
-                }
-                return String(child || '');
-              }).join('');
-            } else if (typeof children === 'object' && children !== null) {
-              textContent = children.props?.children ? 
-                (typeof children.props.children === 'string' ? children.props.children : 
-                 Array.isArray(children.props.children) ? children.props.children.join('') : '') : '';
-            } else {
-              textContent = String(children || '');
-            }
-            // Clean text more thoroughly - remove all # symbols and extra spaces
-            const cleanText = textContent.replace(/^#+\s*/, '').replace(/#+/g, '').trim();
-            return (
-              <h1 className={`text-2xl font-bold mb-4 mt-6 flex items-center gap-3 border-b-2 pb-2 ${
-                darkMode ? 'text-white border-gray-600' : 'text-gray-900 border-gray-200'
-              }`}>
-                <span className="text-blue-500 text-xl">📋</span>
-                <span>{cleanText}</span>
-              </h1>
-            );
-          },
-          h2: ({ children }: any) => {
-            // Handle different types of children properly
-            let textContent = '';
-            if (Array.isArray(children)) {
-              textContent = children.map(child => {
-                if (typeof child === 'object' && child !== null) {
-                  return child.props?.children ? 
-                    (typeof child.props.children === 'string' ? child.props.children : 
-                     Array.isArray(child.props.children) ? child.props.children.join('') : '') : '';
-                }
-                return String(child || '');
-              }).join('');
-            } else if (typeof children === 'object' && children !== null) {
-              textContent = children.props?.children ? 
-                (typeof children.props.children === 'string' ? children.props.children : 
-                 Array.isArray(children.props.children) ? children.props.children.join('') : '') : '';
-            } else {
-              textContent = String(children || '');
-            }
-            // Clean text more thoroughly - remove all # symbols and extra spaces
-            const cleanText = textContent.replace(/^#+\s*/, '').replace(/#+/g, '').trim();
-            return (
-              <h2 className={`text-xl font-semibold mb-3 mt-5 flex items-center gap-2 ${
-                darkMode ? 'text-gray-100' : 'text-gray-800'
-              }`}>
-                <span className="text-green-500">•</span>
-                <span>{cleanText}</span>
-              </h2>
-            );
-          },
-          h3: ({ children }: any) => {
-            // Handle different types of children properly
-            let textContent = '';
-            if (Array.isArray(children)) {
-              textContent = children.map(child => {
-                if (typeof child === 'object' && child !== null) {
-                  return child.props?.children ? 
-                    (typeof child.props.children === 'string' ? child.props.children : 
-                     Array.isArray(child.props.children) ? child.props.children.join('') : '') : '';
-                }
-                return String(child || '');
-              }).join('');
-            } else if (typeof children === 'object' && children !== null) {
-              textContent = children.props?.children ? 
-                (typeof children.props.children === 'string' ? children.props.children : 
-                 Array.isArray(children.props.children) ? children.props.children.join('') : '') : '';
-            } else {
-              textContent = String(children || '');
-            }
-            // Clean text more thoroughly - remove all # symbols and extra spaces
-            const cleanText = textContent.replace(/^#+\s*/, '').replace(/#+/g, '').trim();
-            return (
-              <h3 className={`text-lg font-semibold mb-2 mt-4 flex items-center gap-2 ${
-                darkMode ? 'text-gray-200' : 'text-gray-700'
-              }`}>
-                <span className="text-purple-500">▸</span>
-                <span>{cleanText}</span>
-              </h3>
-            );
-          },
-          h4: ({ children }: any) => {
-            // Handle different types of children properly
-            let textContent = '';
-            if (Array.isArray(children)) {
-              textContent = children.map(child => {
-                if (typeof child === 'object' && child !== null) {
-                  return child.props?.children ? 
-                    (typeof child.props.children === 'string' ? child.props.children : 
-                     Array.isArray(child.props.children) ? child.props.children.join('') : '') : '';
-                }
-                return String(child || '');
-              }).join('');
-            } else if (typeof children === 'object' && children !== null) {
-              textContent = children.props?.children ? 
-                (typeof children.props.children === 'string' ? children.props.children : 
-                 Array.isArray(children.props.children) ? children.props.children.join('') : '') : '';
-            } else {
-              textContent = String(children || '');
-            }
-            // Clean text more thoroughly - remove all # symbols and extra spaces
-            const cleanText = textContent.replace(/^#+\s*/, '').replace(/#+/g, '').trim();
-            return (
-              <h4 className={`text-base font-semibold mb-2 mt-3 flex items-center gap-2 ${
-                darkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                <span className="text-orange-500">‣</span>
-                <span>{cleanText}</span>
-              </h4>
-            );
-          },
-          h5: ({ children }: any) => {
-            // Handle different types of children properly
-            let textContent = '';
-            if (Array.isArray(children)) {
-              textContent = children.map(child => {
-                if (typeof child === 'object' && child !== null) {
-                  return child.props?.children ? 
-                    (typeof child.props.children === 'string' ? child.props.children : 
-                     Array.isArray(child.props.children) ? child.props.children.join('') : '') : '';
-                }
-                return String(child || '');
-              }).join('');
-            } else if (typeof children === 'object' && children !== null) {
-              textContent = children.props?.children ? 
-                (typeof children.props.children === 'string' ? children.props.children : 
-                 Array.isArray(children.props.children) ? children.props.children.join('') : '') : '';
-            } else {
-              textContent = String(children || '');
-            }
-            const cleanText = textContent.replace(/^#+\s*/, '');
-            return (
-              <h5 className={`text-sm font-medium mb-1 mt-2 flex items-center gap-2 ${
-                darkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}>
-                <span className="text-yellow-500">🔹</span>
-                {cleanText}
-              </h5>
-            );
-          },
-          h6: ({ children }: any) => {
-            // Handle different types of children properly
-            let textContent = '';
-            if (Array.isArray(children)) {
-              textContent = children.map(child => {
-                if (typeof child === 'object' && child !== null) {
-                  return child.props?.children ? 
-                    (typeof child.props.children === 'string' ? child.props.children : 
-                     Array.isArray(child.props.children) ? child.props.children.join('') : '') : '';
-                }
-                return String(child || '');
-              }).join('');
-            } else if (typeof children === 'object' && children !== null) {
-              textContent = children.props?.children ? 
-                (typeof children.props.children === 'string' ? children.props.children : 
-                 Array.isArray(children.props.children) ? children.props.children.join('') : '') : '';
-            } else {
-              textContent = String(children || '');
-            }
-            const cleanText = textContent.replace(/^#+\s*/, '');
-            return (
-              <h6 className={`text-xs font-medium mb-1 mt-2 flex items-center gap-2 ${
-                darkMode ? 'text-gray-500' : 'text-gray-400'
-              }`}>
-                <span className="text-gray-500">▪️</span>
-                {cleanText}
-              </h6>
-            );
-          },
-          p: ({ children }: any) => (
-            <p className={`mb-4 leading-relaxed ${
-              darkMode ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              {children}
-            </p>
-          ),
-          ul: ({ children }: any) => (
-            <ul className={`mb-4 ml-6 space-y-1 list-disc ${
-              darkMode ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              {children}
-            </ul>
-          ),
-          ol: ({ children }: any) => (
-            <ol className={`mb-4 ml-6 space-y-1 list-decimal ${
-              darkMode ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              {children}
-            </ol>
-          ),
-          li: ({ children }: any) => (
-            <li className="mb-1">{children}</li>
-          ),
-          blockquote: ({ children }: any) => (
-            <blockquote className={`border-l-4 pl-4 py-2 my-4 italic ${
-              darkMode 
-                ? 'border-blue-400 bg-blue-900/20 text-blue-200' 
-                : 'border-blue-500 bg-blue-50 text-blue-800'
-            }`}>
-              {children}
-            </blockquote>
-          ),
-          strong: ({ children }: any) => (
-            <strong className={`font-semibold ${
-              darkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              {children}
-            </strong>
-          ),
-          em: ({ children }: any) => (
-            <em className={`italic ${
-              darkMode ? 'text-gray-200' : 'text-gray-700'
-            }`}>
-              {children}
-            </em>
-          ),
-          a: ({ children, href }: any) => (
-            <a 
-              href={href}
-              className={`underline ${
-                darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'
-              }`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {children}
-            </a>
-          ),
-          table: ({ children }: any) => (
-            <div className="overflow-x-auto my-4">
-              <table className={`min-w-full border-collapse border ${
-                darkMode ? 'border-gray-600' : 'border-gray-300'
-              }`}>
-                {children}
-              </table>
-            </div>
-          ),
-          th: ({ children }: any) => (
-            <th className={`px-4 py-2 text-left font-semibold border ${
-              darkMode 
-                ? 'border-gray-600 bg-gray-800 text-gray-200' 
-                : 'border-gray-300 bg-gray-100 text-gray-800'
-            }`}>
-              {children}
-            </th>
-          ),
-          td: ({ children }: any) => (
-            <td className={`px-4 py-2 border ${
-              darkMode 
-                ? 'border-gray-600 text-gray-300' 
-                : 'border-gray-300 text-gray-700'
-            }`}>
-              {children}
-            </td>
-          ),
-        }}
-        >
-        {processedText}
-      </ReactMarkdown>
-    </div>
-    </MathJaxContext>
-  );
 };
 
   // Role options with translations
@@ -809,6 +362,172 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
       document.documentElement.style.removeProperty('--collapsed-sidebar-width');
     };
   }, []);
+
+  // Drag and drop event handlers
+  const handleDragEnter = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(prev => prev + 1);
+    if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
+      setIsDragOver(true);
+    }
+  };
+
+  const handleDragLeave = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(prev => {
+      const newCount = prev - 1;
+      if (newCount === 0) {
+        setIsDragOver(false);
+      }
+      return newCount;
+    });
+  };
+
+  const handleDragOver = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    setDragCounter(0);
+
+    const files = Array.from(e.dataTransfer?.files || []);
+    if (files.length === 0) return;
+
+    if (files.length > 1) {
+      showWarning('Please drop only one file at a time');
+      return;
+    }
+
+    const file = files[0];
+    
+    // Check authentication using the same approach as the main file attachment system
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session?.user?.id && !user?.uid) {
+      showError('Please sign in to upload files');
+      return;
+    }
+
+    // Show upload progress
+    setUploadProgress(0);
+    setIsUploading(true);
+
+    try {
+      // Validate file using the same validation as FileUploadPopup
+      const validation = validateFile(file);
+      if (!validation.isValid) {
+        showError(validation.error || 'Invalid file');
+        return;
+      }
+
+      // Use the same user ID approach as the main file attachment system
+      const userId = session?.user?.id || user?.uid || '';
+      
+      if (!userId) {
+        showError('Unable to identify user for file upload');
+        return;
+      }
+
+      // Upload file using the same approach as the main attachment system
+      const fileType = validation.fileType as 'image' | 'document';
+      const uploadResult = await uploadFileToStorage(file, userId, fileType);
+      
+      if (uploadResult) {
+        // Map FileUploadResult to the expected uploadedFiles structure
+        const mappedResult = {
+          url: uploadResult.publicUrl,
+          fileName: uploadResult.fileName,
+          fileType: uploadResult.fileType,
+          originalName: uploadResult.originalName,
+          size: uploadResult.size
+        };
+        
+        setUploadedFiles(prev => [...prev, mappedResult]);
+        // Clear generation type when file is dropped
+        setSelectedGenerationType(null);
+        showSuccess(`File "${file.name}" uploaded successfully`);
+        
+        // Log the successful upload for debugging
+        console.log('🎯 Drag & Drop - File uploaded successfully:', {
+          fileName: file.name,
+          userId: userId,
+          fileType: fileType,
+          uploadResult: mappedResult
+        });
+      }
+    } catch (error) {
+      console.error('Error uploading dropped file:', error);
+      showError('Failed to upload file');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  // Add global drag and drop event listeners
+  useEffect(() => {
+    const handleGlobalDragEnter = (e: DragEvent) => handleDragEnter(e);
+    const handleGlobalDragLeave = (e: DragEvent) => handleDragLeave(e);
+    const handleGlobalDragOver = (e: DragEvent) => handleDragOver(e);
+    const handleGlobalDrop = (e: DragEvent) => handleDrop(e);
+
+    document.addEventListener('dragenter', handleGlobalDragEnter);
+    document.addEventListener('dragleave', handleGlobalDragLeave);
+    document.addEventListener('dragover', handleGlobalDragOver);
+    document.addEventListener('drop', handleGlobalDrop);
+
+    return () => {
+      document.removeEventListener('dragenter', handleGlobalDragEnter);
+      document.removeEventListener('dragleave', handleGlobalDragLeave);
+      document.removeEventListener('dragover', handleGlobalDragOver);
+      document.removeEventListener('drop', handleGlobalDrop);
+    };
+  }, [user?.uid]);
+
+  // Function to calculate coin cost based on current state
+  const calculateCoinCost = () => {
+    // Check for generation types first (highest priority)
+    if (selectedGenerationType === 'sheet_generate' || selectedGenerationType === 'document_generate') {
+      return 5; // -5 coins for xlsx/docx generation
+    }
+    
+    // Check for file attachments
+    if (selectedFile) {
+      // Check if it's an image
+      if (selectedFile.type.startsWith('image/')) {
+        return 2; // -2 coins for images
+      }
+      // For other files (documents, PDFs, etc.)
+      return 10; // -10 coins for file attachments
+    }
+    
+    // Check for uploaded files
+    if (uploadedFiles.length > 0) {
+      // Check if any uploaded file is an image
+      const hasImage = uploadedFiles.some(file => file.fileType === 'image');
+      if (hasImage && uploadedFiles.length === 1 && uploadedFiles[0].fileType === 'image') {
+        return 2; // -2 coins for single image
+      }
+      return 10; // -10 coins for file attachments
+    }
+    
+    // Check for current uploaded file
+    if (currentUploadedFile) {
+      if (currentUploadedFile.fileType === 'image') {
+        return 2; // -2 coins for images
+      }
+      return 10; // -10 coins for documents
+    }
+    
+    // Default for text messages
+    return 1; // -1 coin for simple text
+  };
   
 
   const [groupedChatHistory, setGroupedChatHistory] = useState<{
@@ -846,6 +565,10 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
   const [isLoadingChats, setIsLoadingChats] = useState(true);
   const [chats, setChats] = useState<Chat[]>([]);
   const [showProAlert, setShowProAlert] = useState(false);
+  
+  // Drag and drop state
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [dragCounter, setDragCounter] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedGenerationType, setSelectedGenerationType] = useState<string | null>(null);
   const [coinsUsed, setCoinsUsed] = useState<{[key: number]: number}>({});
@@ -871,6 +594,11 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
   const [uploadProgress, setUploadProgress] = useState(0);
   const [currentUploadedFile, setCurrentUploadedFile] = useState<FileUploadResult | null>(null);
   const [uploadingFileName, setUploadingFileName] = useState('');
+
+  // Right panel state management
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
+  const [rightPanelWidth, setRightPanelWidth] = useState(320);
+  const [isDragging, setIsDragging] = useState(false);
 
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -1934,7 +1662,32 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         }
 
         // Prepare messages array with selected role
-        const systemPrompt = `You are a ${selectedRole.name}. ${selectedRole.description} Provide helpful, professional responses that align with your role. Use proper markdown formatting for better readability. IMPORTANT: When including mathematical expressions, please wrap inline math with <math>...</math> tags and display math (block equations) with <math3>...</math3> tags. For example: <math>x^2 + y^2 = z^2</math> for inline math, and <math3>\\int_0^1 x^2 dx = \\frac{1}{3}</math3> for display math. This helps with proper mathematical rendering.`;
+        const systemPrompt = `You are a ${selectedRole.name}. ${selectedRole.description} 
+
+CRITICAL FORMATTING REQUIREMENT: You MUST ALWAYS respond in HTML format with full formatting. Never respond in plain text or markdown. Your entire response should be properly formatted HTML.
+
+HTML FORMATTING RULES:
+- Use <h1>, <h2>, <h3> for headings
+- Use <p> tags for paragraphs
+- Use <strong> for bold text and <em> for italic text
+- Use <ul> and <li> for bullet lists
+- Use <ol> and <li> for numbered lists
+- Use <blockquote> for quotes
+- Use <code> for inline code and <pre><code> for code blocks
+- Use <table>, <tr>, <th>, <td> for tables
+- Use <br> for line breaks when needed
+- Use <div> with appropriate classes for styling when needed
+
+EXAMPLE HTML RESPONSE FORMAT:
+<h2>Response Title</h2>
+<p>This is a paragraph with <strong>bold text</strong> and <em>italic text</em>.</p>
+<ul>
+<li>First bullet point</li>
+<li>Second bullet point</li>
+</ul>
+<p>Example with inline code: <code>console.log('Hello World')</code></p>
+
+Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax like # or ** or *. Always use proper HTML tags.`;
         
         const apiMessages = [
           {
@@ -2173,9 +1926,10 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         xhr.timeout = 60000; // 60 second timeout
 
         const requestBody = JSON.stringify({
-          model: "qwen-vl-max",
+          model: "qwen-max",
           messages: apiMessages,
-          stream: true
+          stream: true,
+          max_tokens: 4096
         });
 
         console.log('📊 Sending request to streaming API...');
@@ -2392,13 +2146,19 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
 
         xhr.timeout = 60000;
 
-        // Generate unique ID for the message
-        const uid = crypto.randomUUID();
+        // Get authenticated user UID - use the same approach as the main file attachment system
+        const { data: { session } } = await supabase.auth.getSession();
+        const userUID = session?.user?.id || user?.uid || '';
+        
+        if (!userUID) {
+          reject(new Error('User not authenticated - cannot send message to n8n webhook'));
+          return;
+        }
         
         const requestBody = JSON.stringify({
           messages: [
             {
-              uid: uid,
+              uid: userUID,
               type: uploadedFile.fileType === 'image' ? 'image' : 'document',
               text: {
                 body: message
@@ -2413,6 +2173,126 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         xhr.send(requestBody);
       } catch (error) {
         console.error('Error in sendMessageToN8NWebhook:', error);
+        reject(new Error('Failed to get response from AI. Please try again.'));
+      }
+    });
+  };
+
+  // Function to send image understanding requests to the specific n8n webhook
+  const sendImageUnderstandingToN8N = async (message: string, imageUrl: string, onChunk?: (chunk: string) => void): Promise<string> => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://matrixai123.app.n8n.cloud/webhook-test/ce924f8e-91e2-44f4-a2de-4978c77994b6');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Accept', 'text/event-stream');
+
+        let fullResponse = '';
+        let processedLength = 0;
+        let finalContent = '';
+        let hasStartedFinalResponse = false;
+
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === XMLHttpRequest.LOADING || xhr.readyState === XMLHttpRequest.DONE) {
+            const responseText = xhr.responseText;
+            const newContent = responseText.substring(processedLength);
+            processedLength = responseText.length;
+            
+            if (newContent && onChunk) {
+              // Parse streaming content - handle structured JSON format from webhook
+              const lines = newContent.split('\n');
+              
+              for (const line of lines) {
+                if (line.trim()) {
+                  try {
+                    const chunk = JSON.parse(line.trim());
+                    
+                    // Handle structured streaming responses from n8n webhook
+                    if (chunk.type === 'begin') {
+                      // Start of a new content stream
+                      if (!hasStartedFinalResponse) {
+                        hasStartedFinalResponse = true;
+                        finalContent = '';
+                        onChunk('__RESET__');
+                      }
+                    } else if (chunk.type === 'item' && chunk.content) {
+                      // Stream content chunks
+                      if (hasStartedFinalResponse) {
+                        finalContent += chunk.content;
+                        onChunk(chunk.content);
+                      }
+                    } else if (chunk.type === 'end') {
+                      // End of content stream - continue to next stream if any
+                      continue;
+                    }
+                  } catch (parseError) {
+                    // This is plain text, not JSON - handle as fallback
+                    const trimmedLine = line.trim();
+                    
+                    if (!hasStartedFinalResponse) {
+                      hasStartedFinalResponse = true;
+                      finalContent = trimmedLine;
+                      onChunk('__RESET__');
+                      onChunk(trimmedLine);
+                    } else {
+                      // Add new plain text content
+                      finalContent += '\n' + trimmedLine;
+                      onChunk('\n' + trimmedLine);
+                    }
+                  }
+                }
+              }
+            }
+            
+            fullResponse = responseText;
+            
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+              if (xhr.status === 200) {
+                resolve(finalContent || '');
+              } else {
+                reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+              }
+            }
+          }
+        };
+
+        xhr.onerror = function() {
+          reject(new Error('Failed to get response from AI. Please try again.'));
+        };
+
+        xhr.ontimeout = function() {
+          reject(new Error('Request timed out. Please try again.'));
+        };
+
+        xhr.timeout = 60000;
+
+        // Get authenticated user UID - use the same approach as the main file attachment system
+        const { data: { session } } = await supabase.auth.getSession();
+        const userUID = session?.user?.id || user?.uid || '';
+        
+        if (!userUID) {
+          reject(new Error('User not authenticated - cannot send image understanding request to n8n webhook'));
+          return;
+        }
+        
+        const requestBody = JSON.stringify({
+          messages: [
+            {
+              uid: userUID,
+              type: 'image',
+              text: {
+                body: message
+              },
+              url: imageUrl
+            }
+          ],
+          stream: true
+        });
+
+        console.log('📤 Sending image understanding request to n8n webhook:', requestBody);
+        xhr.send(requestBody);
+      } catch (error) {
+        console.error('Error in sendImageUnderstandingToN8N:', error);
         reject(new Error('Failed to get response from AI. Please try again.'));
       }
     });
@@ -2986,7 +2866,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
           }
         }
         
-        // Get streaming response - use n8n webhook API if there's both text and uploaded file
+        // Get streaming response - route to appropriate API based on file type
         let fullResponse: string;
         if (currentUploadedFile && inputMessage.trim()) {
           // Call n8n webhook with the specific format
@@ -2996,22 +2876,56 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
             handleChunk
           );
         } else if (uploadedFiles.length > 0) {
-          // Prepare attachments for webhook API
-           const attachments = uploadedFiles.map(file => ({
-             url: file.url,
-             fileName: file.fileName,
-             fileType: file.fileType
-           }));
-           
-           console.log('📎 Sending attachments to webhook API:', attachments);
-          
-          fullResponse = await sendMessageWithAttachments(
-            userMessageContent,
-            attachments,
-            handleChunk
+          // Check if any uploaded file is an image for image understanding
+          const imageFile = uploadedFiles.find(file => 
+            file.fileType.startsWith('image/') || 
+            file.fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i)
           );
+          
+          if (imageFile) {
+            // Use image understanding API for images
+            console.log('🖼️ Using image understanding API for:', imageFile.fileName);
+            fullResponse = await sendImageUnderstandingToN8N(
+              userMessageContent,
+              imageFile.url,
+              handleChunk
+            );
+          } else {
+            // Prepare attachments for webhook API (documents)
+            const attachments = uploadedFiles.map(file => ({
+              url: file.url,
+              fileName: file.fileName,
+              fileType: file.fileType
+            }));
+            
+            console.log('📎 Sending document attachments to webhook API:', attachments);
+            
+            fullResponse = await sendMessageWithAttachments(
+              userMessageContent,
+              attachments,
+              handleChunk
+            );
+          }
+        } else if (imageUrl && selectedFile) {
+          // Check if selectedFile is an image
+          if (selectedFile.type.startsWith('image/')) {
+            // Use image understanding API for selected image files
+            console.log('🖼️ Using image understanding API for selected file:', selectedFile.name);
+            fullResponse = await sendImageUnderstandingToN8N(
+              userMessageContent,
+              imageUrl,
+              handleChunk
+            );
+          } else {
+            // Use original API for non-image files
+            fullResponse = await sendMessageToAI(
+              userMessageContent, 
+              imageUrl, 
+              handleChunk
+            );
+          }
         } else {
-          // Use original API for regular messages and selectedFile uploads
+          // Use original API for regular text messages
           fullResponse = await sendMessageToAI(
             userMessageContent, 
             imageUrl, 
@@ -3372,6 +3286,8 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
       }
       
       setSelectedFile(file);
+      // Clear generation type when file is attached
+      setSelectedGenerationType(null);
     }
   };
 
@@ -3398,6 +3314,8 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
       
       setUploadedFiles(prev => [...prev, ...uploadedFilesList]);
       setIsFileUploadPopupOpen(false);
+      // Clear generation type when files are uploaded
+      setSelectedGenerationType(null);
       showSuccess(`${files.length} file(s) uploaded successfully!`);
     } catch (error) {
       console.error('Error uploading files:', error);
@@ -4033,49 +3951,79 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
     return (
       <div 
         key={chat.id}
-        className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-2 mb-1 cursor-pointer group ${
+        className={`group relative mx-2 mb-3 p-4 rounded-xl cursor-pointer transition-all duration-300 ${
           isSelected 
-            ? (darkMode 
-                ? 'bg-blue-700/40 text-white' 
-                : 'bg-blue-100 text-blue-700')
-            : (darkMode 
-                ? 'hover:bg-gray-700 text-gray-200' 
-                : 'hover:bg-gray-100 text-gray-700')
-        }`}
+            ? `${darkMode ? 'bg-blue-600/20 border-blue-500/50 shadow-lg' : 'bg-blue-50 border-blue-200 shadow-md'} border-2` 
+            : `${darkMode ? 'bg-gray-800/50 hover:bg-gray-700/70 border-gray-700/50' : 'bg-gray-50/50 hover:bg-white border-gray-200/50'} border hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg`
+        } transform hover:scale-[1.02] hover:-translate-y-1`}
         onClick={() => selectChat(chat.id)}
       >
-        <FiMessageSquare className={`w-4 h-4 ${isSelected ? (darkMode ? 'text-blue-400' : 'text-blue-500') : 'text-gray-400'}`} />
-        <div className="flex-1 min-w-0">
-          <div className="truncate font-medium text-sm">
-            {chat.title}
-          </div>
-          <div className={`flex flex-wrap items-center text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            <span className="mr-1">{timeframe}</span>
-            <span className={`px-1.5 py-0.5 text-xs rounded-full ${
-              darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
-            }`}>
-              {roleName}
-            </span>
-          </div>
-        </div>
+        {/* Active indicator */}
+        {isSelected && (
+          <div className={`absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-10 rounded-r-full ${
+            darkMode ? 'bg-blue-500' : 'bg-blue-600'
+          }`} />
+        )}
         
-        {/* Delete button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            showConfirmation('Are you sure you want to delete this chat?', () => {
-              handleDeleteChat(chat.id, e);
-            });
-          }}
-          className={`p-1 rounded-full transition-all duration-200 ${
-            darkMode 
-              ? 'hover:bg-red-600 text-gray-400 hover:text-white' 
-              : 'hover:bg-red-100 text-gray-500 hover:text-red-600'
-          }`}
-          title="Delete chat"
-        >
-          <FiTrash2 className="w-3 h-3" />
-        </button>
+        <div className="flex items-start gap-3">
+          {/* Chat Icon */}
+          <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+            isSelected 
+              ? `${darkMode ? 'bg-blue-600' : 'bg-blue-500'} text-white` 
+              : `${darkMode ? 'bg-gray-700' : 'bg-gray-200'} ${darkMode ? 'text-gray-300' : 'text-gray-600'}`
+          } transition-all duration-200`}>
+            <FiMessageSquare className="w-5 h-5" />
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            {/* Chat Title */}
+            <div className={`font-semibold text-sm mb-1 truncate ${
+              isSelected
+                ? `${darkMode ? 'text-blue-300' : 'text-blue-700'}`
+                : `${darkMode ? 'text-gray-200' : 'text-gray-900'}`
+            }`}>
+              {chat.title}
+            </div>
+            
+            {/* Role Badge */}
+            <div className="flex items-center gap-2 mb-2">
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                isSelected
+                  ? `${darkMode ? 'bg-blue-700/50 text-blue-200' : 'bg-blue-100 text-blue-700'}`
+                  : `${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`
+              }`}>
+                {roleName}
+              </span>
+            </div>
+            
+            {/* Timestamp */}
+            <div className={`text-xs ${
+              isSelected
+                ? `${darkMode ? 'text-blue-200/70' : 'text-blue-600/70'}`
+                : `${darkMode ? 'text-gray-500' : 'text-gray-500'}`
+            }`}>
+              {timeframe}
+            </div>
+          </div>
+          
+          {/* Delete button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              showConfirmation('Are you sure you want to delete this chat?', () => {
+                handleDeleteChat(chat.id, e);
+              });
+            }}
+            className={`opacity-0 group-hover:opacity-100 p-2 rounded-lg transition-all duration-200 ${
+              darkMode 
+                ? 'hover:bg-red-600/20 text-gray-500 hover:text-red-400' 
+                : 'hover:bg-red-50 text-gray-400 hover:text-red-600'
+            } transform hover:scale-110`}
+            title="Delete chat"
+          >
+            <FiTrash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     );
   };
@@ -4295,17 +4243,102 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
     }
   };
 
+  // Right panel drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return;
+    
+    const newWidth = window.innerWidth - e.clientX;
+    const minWidth = 280;
+    const maxWidth = 600;
+    
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      setRightPanelWidth(newWidth);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Add global mouse event listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging]);
+
+  // Toggle right panel
+  const toggleRightPanel = () => {
+    setIsRightPanelOpen(!isRightPanelOpen);
+  };
+
+  // Create new chat handler
+  const handleNewChat = async () => {
+    if (!user?.uid) {
+      showWarning('Please log in to create a new chat');
+      return;
+    }
+
+    try {
+      const newChatId = crypto.randomUUID();
+      const newChat = await createNewChat(user.uid, newChatId, {}, selectedRole.id);
+      
+      if (newChat) {
+        localStorage.setItem('lastActiveChatId', newChatId);
+        navigate(`/chat/${newChatId}`, { replace: true });
+        showSuccess('New chat created!');
+      } else {
+        showError('Failed to create new chat');
+      }
+    } catch (error) {
+      console.error('Error creating new chat:', error);
+      showError('Failed to create new chat');
+    }
+  };
+
   // Generation button selection handlers
   const handleImageGenerate = () => {
     setSelectedGenerationType('image_generate');
+    // Clear file attachment when generation is selected
+    setSelectedFile(null);
+    setCurrentUploadedFile(null);
+    setUploadedFiles([]);
   };
 
   const handleXLSXGenerate = () => {
     setSelectedGenerationType('sheet_generate');
+    // Clear file attachment when generation is selected
+    setSelectedFile(null);
+    setCurrentUploadedFile(null);
+    setUploadedFiles([]);
   };
 
   const handleDocsGenerate = () => {
     setSelectedGenerationType('document_generate');
+    // Clear file attachment when generation is selected
+    setSelectedFile(null);
+    setCurrentUploadedFile(null);
+    setUploadedFiles([]);
   };
 
   // Function to send generation request based on selected type
@@ -4507,52 +4540,125 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
   };
 
   return (
-    <div className="ChatPage flex h-screen overflow-hidden">
-      {/* Remove duplicate sidebar - now handled by Layout */}
+      <div className="ChatPage flex h-screen overflow-hidden">
+      {/* Full-screen drag and drop overlay */}
+      {isDragOver && (
+        <div className="drag-overlay">
+          <div className={`drag-drop-zone ${darkMode ? 'dark' : ''}`}>
+            <div className="text-center">
+              <FiUpload className={`drag-icon ${darkMode ? 'dark' : ''}`} />
+              <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                Drop your file here
+              </h3>
+              <p className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                Release to upload and attach to your message
+              </p>
+              <div className={`mt-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Supports images, documents, and more
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
-      {/* Mobile sidebar toggle button - Remove since Layout handles this */}
-      
-      {/* Mobile sidebar/chat history - Keep this as it's specific to chat */}
+      {/* Mobile sidebar/chat history - Enhanced design */}
       {showChatHistory && (
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div 
-            className="bg-black bg-opacity-50 flex-1"
+            className="bg-black bg-opacity-60 flex-1"
             onClick={() => setShowChatHistory(false)}
           ></div>
-          <div className={`w-72 ${darkMode ? 'bg-gray-800' : 'bg-white'} flex flex-col h-full`}>
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-              <h2 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{t('chat.chatHistory')}</h2>
+          <div className={`w-80 ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} border-l shadow-2xl flex flex-col h-full`}>
+            {/* Enhanced Mobile Header */}
+            <div className={`px-4 py-4 border-b ${darkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'} flex items-center justify-between`}>
+              <div className="flex items-center space-x-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${darkMode ? 'bg-blue-600' : 'bg-blue-500'}`}>
+                  <FiMessageSquare className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h2 className={`font-semibold text-lg ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                    {t('chat.chatHistory')}
+                  </h2>
+                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {groupedChatHistory.today.length + groupedChatHistory.yesterday.length + groupedChatHistory.lastWeek.length + groupedChatHistory.lastMonth.length} conversations
+                  </p>
+                </div>
+              </div>
               <AuthRequiredButton 
                 onClick={() => setShowChatHistory(false)}
-                className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`p-2 rounded-lg transition-all duration-200 ${
+                  darkMode 
+                    ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-200' 
+                    : 'hover:bg-gray-200 text-gray-600 hover:text-gray-800'
+                }`}
               >
                 <FiX className="w-5 h-5" />
               </AuthRequiredButton>
             </div>
-            <div className="flex-1 overflow-y-auto p-3">
-              <div className="mb-4">
-                <h3 className="px-3 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.today')}</h3>
-                {groupedChatHistory.today.map(chat => renderChatHistoryItem(chat, 'Today'))}
-              </div>
-              
-              <div className="mb-4">
-                <h3 className="px-3 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.yesterday')}</h3>
-                {groupedChatHistory.yesterday.map(chat => renderChatHistoryItem(chat, 'Yesterday'))}
-              </div>
-
-              {/* Last week chats */}
-              {groupedChatHistory.lastWeek.length > 0 && (
-                <div className="mb-3">
-                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.lastWeek')}</h4>
-                  {groupedChatHistory.lastWeek.map(chat => renderChatHistoryItem(chat, 'Last week'))}
+            
+            {/* Enhanced Mobile Content */}
+            <div className={`flex-1 overflow-y-auto py-4 ${darkMode ? 'bg-gray-900' : 'bg-white'} custom-scrollbar`}>
+              {/* Today */}
+              {groupedChatHistory.today.length > 0 && (
+                <div className="mb-6">
+                  <div className={`flex items-center gap-3 px-4 py-3 mb-3 ${darkMode ? 'bg-gray-800/30' : 'bg-gray-100/50'} rounded-lg mx-2`}>
+                    <div className={`w-2 h-2 rounded-full ${darkMode ? 'bg-green-500' : 'bg-green-600'}`} />
+                    <h4 className={`text-sm font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'} tracking-wide`}>
+                      {t('chat.today')}
+                    </h4>
+                    <div className={`ml-auto text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                      {groupedChatHistory.today.length}
+                    </div>
+                  </div>
+                  {groupedChatHistory.today.map(chat => renderChatHistoryItem(chat, t('chat.today')))}
                 </div>
               )}
               
-              {/* Last month chats */}
+              {/* Yesterday */}
+              {groupedChatHistory.yesterday.length > 0 && (
+                <div className="mb-6">
+                  <div className={`flex items-center gap-3 px-4 py-3 mb-3 ${darkMode ? 'bg-gray-800/30' : 'bg-gray-100/50'} rounded-lg mx-2`}>
+                    <div className={`w-2 h-2 rounded-full ${darkMode ? 'bg-yellow-500' : 'bg-yellow-600'}`} />
+                    <h4 className={`text-sm font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'} tracking-wide`}>
+                      {t('chat.yesterday')}
+                    </h4>
+                    <div className={`ml-auto text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                      {groupedChatHistory.yesterday.length}
+                    </div>
+                  </div>
+                  {groupedChatHistory.yesterday.map(chat => renderChatHistoryItem(chat, t('chat.yesterday')))}
+                </div>
+              )}
+
+              {/* Last Week */}
+              {groupedChatHistory.lastWeek.length > 0 && (
+                <div className="mb-6">
+                  <div className={`flex items-center gap-3 px-4 py-3 mb-3 ${darkMode ? 'bg-gray-800/30' : 'bg-gray-100/50'} rounded-lg mx-2`}>
+                    <div className={`w-2 h-2 rounded-full ${darkMode ? 'bg-blue-500' : 'bg-blue-600'}`} />
+                    <h4 className={`text-sm font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'} tracking-wide`}>
+                      {t('chat.lastWeek')}
+                    </h4>
+                    <div className={`ml-auto text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                      {groupedChatHistory.lastWeek.length}
+                    </div>
+                  </div>
+                  {groupedChatHistory.lastWeek.map(chat => renderChatHistoryItem(chat, t('chat.lastWeek')))}
+                </div>
+              )}
+              
+              {/* Last Month */}
               {groupedChatHistory.lastMonth.length > 0 && (
-                <div>
-                  <h4 className="px-3 mb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">{t('chat.lastMonth')}</h4>
-                  {groupedChatHistory.lastMonth.map(chat => renderChatHistoryItem(chat, 'Last month'))}
+                <div className="mb-6">
+                  <div className={`flex items-center gap-3 px-4 py-3 mb-3 ${darkMode ? 'bg-gray-800/30' : 'bg-gray-100/50'} rounded-lg mx-2`}>
+                    <div className={`w-2 h-2 rounded-full ${darkMode ? 'bg-purple-500' : 'bg-purple-600'}`} />
+                    <h4 className={`text-sm font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'} tracking-wide`}>
+                      {t('chat.lastMonth')}
+                    </h4>
+                    <div className={`ml-auto text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                      {groupedChatHistory.lastMonth.length}
+                    </div>
+                  </div>
+                  {groupedChatHistory.lastMonth.map(chat => renderChatHistoryItem(chat, t('chat.lastMonth')))}
                 </div>
               )}
             </div>
@@ -4560,8 +4666,10 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
         </div>
       )}
       
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+      {/* Main content area - now with flex layout for desktop right sidebar */}
+      <div className="flex-1 flex h-screen overflow-hidden chat-layout-container">
+        {/* Chat content area */}
+        <div className="flex-1 flex flex-col h-screen overflow-hidden chat-main-content">
         {/* Main content area */}
         <div className={`flex-1 flex flex-col overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
           <div className="flex-1 overflow-hidden relative">
@@ -4575,8 +4683,10 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
               )}
             </AnimatePresence>
             
-            {/* Main chat container */}
-            <div className="h-full w-full sm:max-w-6xl sm:mx-auto px-0 sm:px-4 pt-2 sm:pt-4 pb-0 flex flex-col">
+            {/* Main chat container - responsive to right panel state */}
+            <div className={`h-full w-full px-0 sm:px-4 pt-2 sm:pt-4 pb-0 flex flex-col transition-all duration-300 ${
+              isRightPanelOpen ? 'sm:max-w-4xl' : 'sm:max-w-6xl'
+            } sm:mx-auto`}>
               <div className="bg-opacity-80 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-xl overflow-hidden flex-1 flex flex-col">
                 {/* Chat interface */}
                 <div ref={chatContainerRef} className="flex flex-col h-full">
@@ -4639,89 +4749,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                         <FiMessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
                       </AuthRequiredButton>
                       
-                      {/* Desktop chat history button */}
-                      <div className="hidden md:block relative" ref={historyDropdownRef}>
-                        <AuthRequiredButton 
-                          onClick={() => setShowHistoryDropdown(!showHistoryDropdown)}
-                          className={`p-1.5 sm:p-2 rounded-lg ${
-                            showHistoryDropdown
-                              ? (darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-700') 
-                              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                          }`}
-                          title={t('chat.toggleChatHistory')}
-                        >
-                          <FiClock className="w-4 h-4 sm:w-5 sm:h-5" />
-                        </AuthRequiredButton>
-                        
-                        {/* History dropdown */}
-                        {showHistoryDropdown && (
-                          <div className={`absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-lg shadow-lg border z-50 ${
-                            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-                          }`}>
-                            <div className="p-3">
-                              <h3 className={`text-sm font-medium mb-3 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                                {t('chat.chatHistory')}
-                              </h3>
-                              
-                              {isLoadingChats ? (
-                                <ChatHistorySkeleton />
-                              ) : (
-                                <>
-                                  {/* Today */}
-                                  {groupedChatHistory.today.length > 0 && (
-                                    <div className="mb-4">
-                                      <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
-                                        {t('chat.today')}
-                                      </h4>
-                                      {groupedChatHistory.today.map(chat => renderChatHistoryItem(chat, t('chat.today')))}
-                                    </div>
-                                  )}
-                                  
-                                  {/* Yesterday */}
-                                  {groupedChatHistory.yesterday.length > 0 && (
-                                    <div className="mb-4">
-                                      <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
-                                        {t('chat.yesterday')}
-                                      </h4>
-                                      {groupedChatHistory.yesterday.map(chat => renderChatHistoryItem(chat, t('chat.yesterday')))}
-                                    </div>
-                                  )}
-                                  
-                                  {/* Last Week */}
-                                  {groupedChatHistory.lastWeek.length > 0 && (
-                                    <div className="mb-4">
-                                      <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
-                                        {t('chat.lastWeek')}
-                                      </h4>
-                                      {groupedChatHistory.lastWeek.map(chat => renderChatHistoryItem(chat, t('chat.lastWeek')))}
-                                    </div>
-                                  )}
-                                  
-                                  {/* Last Month */}
-                                  {groupedChatHistory.lastMonth.length > 0 && (
-                                    <div>
-                                      <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
-                                        {t('chat.lastMonth')}
-                                      </h4>
-                                      {groupedChatHistory.lastMonth.map(chat => renderChatHistoryItem(chat, t('chat.lastMonth')))}
-                                    </div>
-                                  )}
-                                  
-                                  {/* Empty state */}
-                                  {groupedChatHistory.today.length === 0 && 
-                                   groupedChatHistory.yesterday.length === 0 && 
-                                   groupedChatHistory.lastWeek.length === 0 && 
-                                   groupedChatHistory.lastMonth.length === 0 && (
-                                    <div className={`text-center py-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                      {t('chat.noHistory') || 'No chat history'}
-                                    </div>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
+
                       
                       <AuthRequiredButton 
                         onClick={handleStartNewChat}
@@ -4745,6 +4773,19 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                       >
                         {autoSpeak ? <FiVolume2 className="w-4 h-4 sm:w-5 sm:h-5" /> : <FiVolume className="w-4 h-4 sm:w-5 sm:h-5" />}
                       </AuthRequiredButton>
+
+                      {/* Right panel toggle button - only show when panel is closed */}
+                      {!isRightPanelOpen && (
+                        <AuthRequiredButton 
+                          onClick={toggleRightPanel}
+                          className={`p-1.5 sm:p-2 rounded ${
+                            darkMode ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                          }`}
+                          title={t('chat.showChatHistory')}
+                        >
+                          <FiSidebar className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </AuthRequiredButton>
+                      )}
                       
                       {/* Call button */}
                     
@@ -5002,7 +5043,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                                 </div>
                               )}
 
-                              {/* Text content with markdown and math rendering */}
+                              {/* Text content with HTML formatting */}
               <div className="markdown-content">
                 {editingMessageId === message.id ? (
                   <div className="space-y-2">
@@ -5042,7 +5083,7 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                   <div className="prose prose-sm max-w-none">
                     <div className="inline-block">
                       <span className="inline">
-                        {renderTextWithMath(displayedText[processedMessage.id] || '', darkMode, {
+                        {renderTextWithHTML(displayedText[processedMessage.id] || '', darkMode, {
                           color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
                         })}
                       </span>
@@ -5060,14 +5101,14 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                       if (processedMessage.role === 'user' && processedMessage.content.includes(';;%%;;')) {
                         const textContent = processedMessage.content.replace(/;;%%;;.*?;;%%;;/g, '').trim();
                         if (textContent) {
-                          return renderTextWithMath(textContent, darkMode, {
+                          return renderTextWithHTML(textContent, darkMode, {
                             color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
                           });
                         }
                         return <div className="text-xs opacity-75">Attachment</div>; // Show placeholder text when only attachment without text
                       }
                       // Default rendering for other messages
-                      return renderTextWithMath(processedMessage.content, darkMode, {
+                      return renderTextWithHTML(processedMessage.content, darkMode, {
                         color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
                       });
                     })()} 
@@ -5392,14 +5433,8 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
                             <FiSend className="w-4 h-4 sm:w-5 sm:h-5" />
                             {((inputMessage.trim() || selectedFile || selectedGenerationType || uploadedFiles.length > 0) && !isMessageLimitReached) && (
                               <span className="ml-1 text-xs bg-orange-500/20 px-1.5 py-0.5 rounded-full flex items-center">
-                                -{selectedGenerationType ? '3' : selectedFile ? (
-                                  selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf') ||
-                                  selectedFile.type === 'application/msword' || 
-                                  selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-                                  selectedFile.name.toLowerCase().endsWith('.doc') || selectedFile.name.toLowerCase().endsWith('.docx')
-                                    ? '2p' : '2'
-                                ) : '1'}
-
+                                -{calculateCoinCost()}
+                                <img src={coinIcon} alt="coin" className="w-3 h-3 ml-1" />
                               </span>
                             )}
                           </AuthRequiredButton>
@@ -5478,6 +5513,152 @@ const renderTextWithReactMarkdown = (text: string, darkMode: boolean, textStyle?
           onClose={() => setShowProAlert(false)}
         />
       )}
+        
+        {/* Desktop Right Sidebar for Chat History */}
+        <div 
+          className={`hidden md:block chat-right-sidebar transition-all duration-300 ${
+            isRightPanelOpen ? 'translate-x-0' : 'translate-x-full closed'
+          } ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} border-l shadow-lg`}
+          style={{ width: isRightPanelOpen ? `${rightPanelWidth}px` : '0px' }}
+        >
+          {/* Drag handle */}
+          <div 
+            className={`absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-blue-500 transition-colors duration-200 ${
+              isDragging ? 'bg-blue-500' : 'bg-transparent hover:bg-blue-400'
+            }`}
+            onMouseDown={handleMouseDown}
+          />
+          
+          <div className="h-full flex flex-col ml-1">
+            {/* Enhanced Header */}
+            <div className={`px-4 py-4 border-b ${darkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'} flex items-center justify-between`}>
+              <div className="flex items-center space-x-3">
+                {/* Logo/Icon */}
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${darkMode ? 'bg-blue-600' : 'bg-blue-500'}`}>
+                  <FiMessageSquare className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h2 className={`font-semibold text-lg ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                    {t('chat.chatHistory')}
+                  </h2>
+                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {groupedChatHistory.today.length + groupedChatHistory.yesterday.length + groupedChatHistory.lastWeek.length + groupedChatHistory.lastMonth.length} conversations
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-1">
+                {/* New Chat Button - Enhanced */}
+                <AuthRequiredButton
+                  onClick={handleNewChat}
+                  className={`p-2.5 rounded-lg transition-all duration-200 ${
+                    darkMode 
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl' 
+                      : 'bg-blue-500 hover:bg-blue-600 text-white shadow-md hover:shadow-lg'
+                  } transform hover:scale-105`}
+                  title={t('chat.newChat')}
+                >
+                  <FiPlus className="w-4 h-4" />
+                </AuthRequiredButton>
+                
+                {/* Toggle Panel Button */}
+                <AuthRequiredButton
+                  onClick={toggleRightPanel}
+                  className={`p-2 rounded-lg transition-all duration-200 ${
+                    darkMode 
+                      ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-200' 
+                      : 'hover:bg-gray-200 text-gray-600 hover:text-gray-800'
+                  }`}
+                  title={t('chat.togglePanel')}
+                >
+                  <FiX className="w-4 h-4" />
+                </AuthRequiredButton>
+              </div>
+            </div>
+            <div className={`flex-1 overflow-y-auto py-4 ${darkMode ? 'bg-gray-900' : 'bg-white'} custom-scrollbar`}>
+              {isLoadingChats ? (
+                <ChatHistorySkeleton />
+              ) : (
+                <>
+                  {/* Today */}
+                  {groupedChatHistory.today.length > 0 && (
+                    <div className="mb-6">
+                      <div className={`flex items-center gap-3 px-4 py-3 mb-3 ${darkMode ? 'bg-gray-800/30' : 'bg-gray-100/50'} rounded-lg mx-2`}>
+                        <div className={`w-2 h-2 rounded-full ${darkMode ? 'bg-green-500' : 'bg-green-600'}`} />
+                        <h4 className={`text-sm font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'} tracking-wide`}>
+                          {t('chat.today')}
+                        </h4>
+                        <div className={`ml-auto text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                          {groupedChatHistory.today.length}
+                        </div>
+                      </div>
+                      {groupedChatHistory.today.map(chat => renderChatHistoryItem(chat, t('chat.today')))}
+                    </div>
+                  )}
+                  
+                  {/* Yesterday */}
+                  {groupedChatHistory.yesterday.length > 0 && (
+                    <div className="mb-6">
+                      <div className={`flex items-center gap-3 px-4 py-3 mb-3 ${darkMode ? 'bg-gray-800/30' : 'bg-gray-100/50'} rounded-lg mx-2`}>
+                        <div className={`w-2 h-2 rounded-full ${darkMode ? 'bg-yellow-500' : 'bg-yellow-600'}`} />
+                        <h4 className={`text-sm font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'} tracking-wide`}>
+                          {t('chat.yesterday')}
+                        </h4>
+                        <div className={`ml-auto text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                          {groupedChatHistory.yesterday.length}
+                        </div>
+                      </div>
+                      {groupedChatHistory.yesterday.map(chat => renderChatHistoryItem(chat, t('chat.yesterday')))}
+                    </div>
+                  )}
+                  
+                  {/* Last Week */}
+                  {groupedChatHistory.lastWeek.length > 0 && (
+                    <div className="mb-6">
+                      <div className={`flex items-center gap-3 px-4 py-3 mb-3 ${darkMode ? 'bg-gray-800/30' : 'bg-gray-100/50'} rounded-lg mx-2`}>
+                        <div className={`w-2 h-2 rounded-full ${darkMode ? 'bg-blue-500' : 'bg-blue-600'}`} />
+                        <h4 className={`text-sm font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'} tracking-wide`}>
+                          {t('chat.lastWeek')}
+                        </h4>
+                        <div className={`ml-auto text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                          {groupedChatHistory.lastWeek.length}
+                        </div>
+                      </div>
+                      {groupedChatHistory.lastWeek.map(chat => renderChatHistoryItem(chat, t('chat.lastWeek')))}
+                    </div>
+                  )}
+                  
+                  {/* Last Month */}
+                  {groupedChatHistory.lastMonth.length > 0 && (
+                    <div className="mb-6">
+                      <div className={`flex items-center gap-3 px-4 py-3 mb-3 ${darkMode ? 'bg-gray-800/30' : 'bg-gray-100/50'} rounded-lg mx-2`}>
+                        <div className={`w-2 h-2 rounded-full ${darkMode ? 'bg-purple-500' : 'bg-purple-600'}`} />
+                        <h4 className={`text-sm font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'} tracking-wide`}>
+                          {t('chat.lastMonth')}
+                        </h4>
+                        <div className={`ml-auto text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                          {groupedChatHistory.lastMonth.length}
+                        </div>
+                      </div>
+                      {groupedChatHistory.lastMonth.map(chat => renderChatHistoryItem(chat, t('chat.lastMonth')))}
+                    </div>
+                  )}
+                  
+                  {/* Empty state */}
+                  {groupedChatHistory.today.length === 0 && 
+                   groupedChatHistory.yesterday.length === 0 && 
+                   groupedChatHistory.lastWeek.length === 0 && 
+                   groupedChatHistory.lastMonth.length === 0 && (
+                    <div className={`text-center py-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {t('chat.noHistory') || 'No chat history'}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

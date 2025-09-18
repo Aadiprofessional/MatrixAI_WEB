@@ -12,7 +12,12 @@ import {
   FiImage, 
   FiMic, 
   FiVideo,
-  FiPackage
+  FiPackage,
+  FiEdit,
+  FiFileText,
+  FiFile,
+  FiMap,
+  FiGlobe
 } from 'react-icons/fi';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -235,52 +240,108 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
 
   const aiServicesInfo = [
     {
-      type: t('chargeModal.services.aiChat', 'AI Chat'),
-      icon: <FiMic className="w-5 h-5" />,
-      cost: t('chargeModal.costs.oneCoin', '1 coin'),
-      unit: t('chargeModal.units.perMessage', 'per message'),
+      type: 'Change pic background',
+      icon: <FiImage className="w-4 h-4" />,
+      cost: '15 cons',
+      unit: '',
       color: 'text-blue-600 dark:text-blue-400',
       bgColor: 'bg-blue-100 dark:bg-blue-900/30'
     },
     {
-      type: t('chargeModal.services.imageGeneration', 'Image Generation'),
-      icon: <FiImage className="w-5 h-5" />,
-      cost: t('chargeModal.costs.threeCoins', '3 coins'),
-      unit: t('chargeModal.units.perImage', 'per image'),
+      type: 'Generate image',
+      icon: <FiImage className="w-4 h-4" />,
+      cost: '5 cons',
+      unit: '',
       color: 'text-purple-600 dark:text-purple-400',
       bgColor: 'bg-purple-100 dark:bg-purple-900/30'
     },
     {
-      type: t('chargeModal.services.videoGeneration', 'Video Generation'),
-      icon: <FiVideo className="w-5 h-5" />,
-      cost: t('chargeModal.costs.thirtyCoins', '30 coins'),
-      unit: t('chargeModal.units.perFiveSeconds', 'per 5 seconds'),
+      type: 'Generate video (basic)',
+      icon: <FiVideo className="w-4 h-4" />,
+      cost: '35 cons',
+      unit: '',
       color: 'text-red-600 dark:text-red-400',
       bgColor: 'bg-red-100 dark:bg-red-900/30'
     },
     {
-      type: t('chargeModal.services.audioTranscription', 'Audio Transcription'),
-      icon: <FiMic className="w-5 h-5" />,
-      cost: t('chargeModal.costs.twoCoins', '2 coins'),
-      unit: t('chargeModal.units.perMinute', 'per minute'),
+      type: 'Generate video (advance)',
+      icon: <FiVideo className="w-4 h-4" />,
+      cost: '55 cons',
+      unit: '',
+      color: 'text-pink-600 dark:text-pink-400',
+      bgColor: 'bg-pink-100 dark:bg-pink-900/30'
+    },
+    {
+      type: 'Speed to text',
+      icon: <FiMic className="w-4 h-4" />,
+      cost: '2 cons/min',
+      unit: '',
       color: 'text-green-600 dark:text-green-400',
       bgColor: 'bg-green-100 dark:bg-green-900/30'
     },
     {
-      type: t('chargeModal.services.contentWriting', 'Content Writing'),
-      icon: <FiImage className="w-5 h-5" />,
-      cost: t('chargeModal.costs.oneCoin', '1 coin'),
-      unit: t('chargeModal.units.perRequest', 'per request'),
+      type: 'Context writer',
+      icon: <FiEdit className="w-4 h-4" />,
+      cost: '3 cons/time',
+      unit: '',
       color: 'text-orange-600 dark:text-orange-400',
       bgColor: 'bg-orange-100 dark:bg-orange-900/30'
     },
     {
-      type: t('chargeModal.services.humaniseText', 'Humanise Text'),
-      icon: <FiZap className="w-5 h-5" />,
-      cost: t('chargeModal.costs.oneCoin', '1 coin'),
-      unit: t('chargeModal.units.perRequest', 'per request'),
+      type: 'Humanize AI Text',
+      icon: <FiZap className="w-4 h-4" />,
+      cost: '40 cons/time',
+      unit: '(Maximum 2000 words)',
       color: 'text-cyan-600 dark:text-cyan-400',
       bgColor: 'bg-cyan-100 dark:bg-cyan-900/30'
+    },
+    {
+      type: 'AI content detector',
+      icon: <FiShield className="w-4 h-4" />,
+      cost: '40 cons/time',
+      unit: '(Maximum 2000 words)',
+      color: 'text-indigo-600 dark:text-indigo-400',
+      bgColor: 'bg-indigo-100 dark:bg-indigo-900/30'
+    },
+    {
+      type: 'PDF or image understanding',
+      icon: <FiFileText className="w-4 h-4" />,
+      cost: '2 cons/pages',
+      unit: '',
+      color: 'text-teal-600 dark:text-teal-400',
+      bgColor: 'bg-teal-100 dark:bg-teal-900/30'
+    },
+    {
+      type: 'Normal PDF or image',
+      icon: <FiFile className="w-4 h-4" />,
+      cost: '1 con/page',
+      unit: '',
+      color: 'text-gray-600 dark:text-gray-400',
+      bgColor: 'bg-gray-100 dark:bg-gray-900/30'
+    },
+    {
+      type: 'Document generation',
+      icon: <FiFileText className="w-4 h-4" />,
+      cost: '5 cons',
+      unit: '',
+      color: 'text-yellow-600 dark:text-yellow-400',
+      bgColor: 'bg-yellow-100 dark:bg-yellow-900/30'
+    },
+    {
+      type: 'Mindmap',
+      icon: <FiMap className="w-4 h-4" />,
+      cost: '3 cons',
+      unit: '',
+      color: 'text-emerald-600 dark:text-emerald-400',
+      bgColor: 'bg-emerald-100 dark:bg-emerald-900/30'
+    },
+    {
+      type: 'Translate',
+      icon: <FiGlobe className="w-4 h-4" />,
+      cost: '3 cons',
+      unit: '',
+      color: 'text-violet-600 dark:text-violet-400',
+      bgColor: 'bg-violet-100 dark:bg-violet-900/30'
     }
   ];
 
@@ -481,8 +542,8 @@ const ChargeModal: React.FC<ChargeModalProps> = ({ isOpen, onClose, currentCoins
                     }`}
                   >
                     <div className="flex items-center space-x-1.5 md:space-x-2">
-                      <div className={`p-1 md:p-1.5 rounded-full ${service.bgColor}`}>
-                        <div className={`w-2.5 h-2.5 md:w-3 md:h-3 ${service.color}`}>
+                      <div className={`p-2 md:p-2.5 rounded-full ${service.bgColor} flex items-center justify-center`}>
+                        <div className={`${service.color} flex items-center justify-center`}>
                           {service.icon}
                         </div>
                       </div>

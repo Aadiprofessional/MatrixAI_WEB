@@ -177,7 +177,7 @@ const AirwallexPaymentPage: React.FC = () => {
         country_code: 'HK',
         successUrl: `${window.location.origin}/payment/airwallex/success?intent_id=${paymentIntent.id}`,
         failUrl: `${window.location.origin}/payment/airwallex/failure?intent_id=${paymentIntent.id}`,
-        logoUrl: `${window.location.origin}/logo.png`,
+        logoUrl: `${window.location.origin}/logo.svg`,
         appearance: {
           mode: darkMode ? 'dark' : 'light'
         }
@@ -194,7 +194,7 @@ const AirwallexPaymentPage: React.FC = () => {
         country_code: 'HK',
         successUrl: `${window.location.origin}/payment/airwallex/success?intent_id=${paymentIntent.id}`,
         failUrl: `${window.location.origin}/payment/airwallex/failure?intent_id=${paymentIntent.id}`,
-        logoUrl: `${window.location.origin}/logo.png`,
+        logoUrl: `${window.location.origin}/logo.svg`,
         appearance: {
           mode: darkMode ? 'dark' : 'light'
         }

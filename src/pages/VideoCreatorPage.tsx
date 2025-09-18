@@ -1908,7 +1908,7 @@ const VideoCreatorPage: React.FC = () => {
                       {t('videoCreator.generateVideo')}
                       <div className="ml-2 flex items-center bg-black/20 px-2 py-0.5 rounded-full">
                         <span className="text-sm font-bold mr-1">
-                          {templateVideos.find(t => t.name === selectedTemplate)?.category === 'premium' ? '-55' : '-30'}
+                          {templateVideos.find(t => t.name === selectedTemplate)?.category === 'premium' ? '-55' : '-35'}
                         </span>
                         <img src={coinImage} alt="Coins" className="h-4 w-4" />
                       </div>

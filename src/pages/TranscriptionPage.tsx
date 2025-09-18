@@ -4,6 +4,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from '../utils/axiosInterceptor';
 import OpenAI from 'openai';
+import DOMPurify from 'dompurify';
 import { userService } from '../services/userService';
 import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +15,7 @@ import {
   FiBarChart2, FiZap, FiSettings, FiBookmark, FiMic,
   FiMessageSquare, FiGlobe, FiToggleLeft, FiToggleRight,
   FiCpu, FiUser, FiSquare, FiVolume2, FiChevronDown, FiEdit,
-  FiFile, FiUpload, FiX, FiSend, FiImage, FiCheck
+  FiFile, FiUpload, FiX, FiSend, FiCheck
 } from 'react-icons/fi';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../context/AuthContext';
@@ -30,9 +31,11 @@ import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/pris
 import 'katex/dist/katex.min.css';
 import katex from 'katex';
 import markdownItKatex from 'markdown-it-katex';
+import './TranscriptionPage.css';
 import MindMapComponent from '../components/MindMapComponent';
 import FileUploadPopup from '../components/FileUploadPopup';
-import { BotMessageAttachments } from '../components/BotMessageAttachments';
+import BotMessageAttachments from '../components/BotMessageAttachments';
+import { uploadFileToStorage as uploadFile, FileUploadResult as UtilFileUploadResult, validateFile, formatFileSize, getFileIcon } from '../utils/fileUpload';
 import coinIcon from '../assets/coin.png';
 // FFmpeg imports removed - now using API endpoint for video processing
 
@@ -62,18 +65,16 @@ interface ChatMessage {
 
 interface FileAttachment {
   url: string;
-  fileName: string;
-  fileType: string;
-  originalName?: string;
-  size?: number;
+  name: string;
+  type: string;
+  size: number;
 }
 
 interface FileUploadResult {
   url: string;
-  fileName: string;
-  fileType: string;
-  originalName?: string;
-  size?: number;
+  name: string;
+  type: string;
+  size: number;
 }
 
 // Azure Translator configuration removed - using pre-translated data from API
@@ -465,6 +466,262 @@ const MarkdownComponents = {
   }
 };
 
+// Function to detect and extract file URLs from bot responses
+const extractFileUrlFromBotResponse = (content: string) => {
+  // Look for file preparation prompt pattern
+  const filePreparationPattern = /The file is ready\. You can download it using the following link:\s*(https?:\/\/[^\s]+)/i;
+  const match = content.match(filePreparationPattern);
+  
+  if (match) {
+    const url = match[1];
+    
+    // Extract filename and type from URL
+    let fileName = 'download';
+    let fileType = '';
+    
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      const segments = pathname.split('/');
+      const lastSegment = segments[segments.length - 1];
+      
+      if (lastSegment && lastSegment.includes('.')) {
+        const parts = lastSegment.split('.');
+        fileName = parts.slice(0, -1).join('.');
+        fileType = parts[parts.length - 1];
+      }
+    } catch (error) {
+      console.error('Error parsing URL:', error);
+    }
+    
+    // Clean the content by removing the file preparation text and the URL
+    let cleanedContent = content.replace(filePreparationPattern, '').trim();
+    
+    // Remove any remaining standalone URLs that might be left
+    cleanedContent = cleanedContent.replace(/https?:\/\/[^\s]+/g, '').trim();
+    
+    return {
+      hasFile: true,
+      fileUrl: url,
+      fileName,
+      fileType,
+      cleanedContent
+    };
+  }
+  
+  // Check for Supabase storage URLs
+  const supabasePattern = /https:\/\/[^\/]+\.supabase\.co\/storage\/v1\/object\/public\/[^\s]+/g;
+  const supabaseMatches = content.match(supabasePattern);
+  
+  if (supabaseMatches && supabaseMatches.length > 0) {
+    const url = supabaseMatches[0];
+    
+    // Extract filename and type from Supabase URL
+    let fileName = 'download';
+    let fileType = '';
+    
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      const segments = pathname.split('/');
+      const lastSegment = segments[segments.length - 1];
+      
+      if (lastSegment && lastSegment.includes('.')) {
+        const parts = lastSegment.split('.');
+        fileName = parts.slice(0, -1).join('.');
+        fileType = parts[parts.length - 1];
+      }
+    } catch (error) {
+      console.error('Error parsing Supabase URL:', error);
+    }
+    
+    // Clean the content by removing all Supabase URLs and any surrounding text
+    let cleanedContent = content.replace(supabasePattern, '').trim();
+    
+    // Remove any remaining standalone URLs
+    cleanedContent = cleanedContent.replace(/https?:\/\/[^\s]+/g, '').trim();
+    
+    // Remove common file-related phrases that might be left
+    cleanedContent = cleanedContent.replace(/You can download it here:?\s*/gi, '').trim();
+    cleanedContent = cleanedContent.replace(/Download link:?\s*/gi, '').trim();
+    cleanedContent = cleanedContent.replace(/File link:?\s*/gi, '').trim();
+    
+    return {
+      hasFile: true,
+      fileUrl: url,
+      fileName,
+      fileType,
+      cleanedContent
+    };
+  }
+  
+  return {
+    hasFile: false,
+    fileUrl: '',
+    fileName: '',
+    fileType: '',
+    cleanedContent: content
+  };
+};
+
+// Enhanced HTML text formatting function with math support
+const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) => {
+  if (!text) return null;
+  
+  try {
+    // Check if the text is already HTML (contains HTML tags)
+    const isHTML = /<[^>]*>/g.test(text);
+    
+    let processedText = text;
+    
+    if (isHTML) {
+      // If it's already HTML, sanitize it and apply our styling
+      processedText = DOMPurify.sanitize(text, {
+        ALLOWED_TAGS: [
+          'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
+          'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'a', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+          'div', 'span', 'img', 'hr', 'sub', 'sup'
+        ],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id', 'src', 'alt', 'title', 'border', 'cellpadding', 'cellspacing']
+      });
+    } else {
+      // If it's plain text, convert markdown-like syntax to HTML
+      const escapeHtml = (unsafe: string) => {
+        return unsafe
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      };
+
+      processedText = escapeHtml(text);
+      
+      // Convert line breaks to <br> tags
+      processedText = processedText.replace(/\n/g, '<br>');
+      
+      // Convert **bold** to <strong>
+      processedText = processedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      
+      // Convert *italic* to <em>
+      processedText = processedText.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      
+      // Convert `code` to <code>
+      processedText = processedText.replace(/`(.*?)`/g, '<code>$1</code>');
+      
+      // Convert URLs to links
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      processedText = processedText.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+      
+      // Convert code blocks ```code``` to <pre><code>
+      processedText = processedText.replace(/```([\s\S]*?)```/g, (match, code) => {
+        const cleanCode = code.trim();
+        return `<pre><code>${cleanCode}</code></pre>`;
+      });
+      
+      // Convert headers # Header to <h1>
+      processedText = processedText.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+      processedText = processedText.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+      processedText = processedText.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+      
+      // Convert blockquotes > text to <blockquote>
+      processedText = processedText.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
+    }
+    
+    // Process math expressions using KaTeX for better rendering
+    const renderMathWithKaTeX = (text: string) => {
+      let result = text;
+      
+      // Handle block math expressions (display mode)
+      // LaTeX-style block math \[...\]
+      result = result.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
+        try {
+          const rendered = katex.renderToString(math.trim(), {
+            displayMode: true,
+            throwOnError: false,
+            strict: false,
+            trust: true
+          });
+          return `<div class="katex-block-container">${rendered}</div>`;
+        } catch (error) {
+          console.warn('KaTeX block render error:', error);
+          return `<div class="math-error">\\[${math}\\]</div>`;
+        }
+      });
+      
+      // Dollar sign block math $$...$$
+      result = result.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
+        try {
+          const rendered = katex.renderToString(math.trim(), {
+            displayMode: true,
+            throwOnError: false,
+            strict: false,
+            trust: true
+          });
+          return `<div class="katex-block-container">${rendered}</div>`;
+        } catch (error) {
+          console.warn('KaTeX block render error:', error);
+          return `<div class="math-error">$$${math}$$</div>`;
+        }
+      });
+      
+      // Handle inline math expressions
+      // LaTeX-style inline math \(...\)
+      result = result.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
+        try {
+          const rendered = katex.renderToString(math.trim(), {
+            displayMode: false,
+            throwOnError: false,
+            strict: false,
+            trust: true
+          });
+          return `<span class="katex-inline-container">${rendered}</span>`;
+        } catch (error) {
+          console.warn('KaTeX inline render error:', error);
+          return `<span class="math-error">\\(${math}\\)</span>`;
+        }
+      });
+      
+      // Dollar sign inline math $...$
+      result = result.replace(/\$([^$\n]+)\$/g, (match, math) => {
+        try {
+          const rendered = katex.renderToString(math.trim(), {
+            displayMode: false,
+            throwOnError: false,
+            strict: false,
+            trust: true
+          });
+          return `<span class="katex-inline-container">${rendered}</span>`;
+        } catch (error) {
+          console.warn('KaTeX inline render error:', error);
+          return `<span class="math-error">$${math}$</span>`;
+        }
+      });
+      
+      return result;
+    };
+
+    // Apply KaTeX rendering to the processed text
+    processedText = renderMathWithKaTeX(processedText);
+
+    return (
+      <div 
+        className={`ai-response-content ${darkMode ? 'dark' : ''}`} 
+        style={textStyle}
+      >
+        <div dangerouslySetInnerHTML={{ __html: processedText }} />
+      </div>
+    );
+  } catch (error) {
+    console.error('Error rendering text with HTML:', error);
+    return (
+      <div className="text-red-500">
+        Error rendering content: {error instanceof Error ? error.message : 'Unknown error'}
+      </div>
+    );
+  }
+};
+
 // Function to render text with math expressions and markdown formatting
 const renderTextWithMath = (text: string, theme: string, textStyle?: string, language?: string) => {
   if (!text) return null;
@@ -797,6 +1054,12 @@ const TranscriptionPage: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
   const audioRef = useRef<HTMLAudioElement>(null);
+  
+  // File upload state
+  const [showFileUploadPopup, setShowFileUploadPopup] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [currentUploadedFile, setCurrentUploadedFile] = useState<FileUploadResult | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
@@ -985,6 +1248,11 @@ const TranscriptionPage: React.FC = () => {
   const [editingWordIndex, setEditingWordIndex] = useState<number | null>(null);
   const [editingWordText, setEditingWordText] = useState<string>('');
   const [isWordEditMode, setIsWordEditMode] = useState<boolean>(false);
+
+  // Text-to-speech state
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+  const [autoSpeak, setAutoSpeak] = useState<boolean>(false);
   
   // SRT segment editing state
   const [editingSrtIndex, setEditingSrtIndex] = useState<number | null>(null);
@@ -1058,14 +1326,7 @@ const TranscriptionPage: React.FC = () => {
   });
   const [translationLanguage, setTranslationLanguage] = useState<string>('Spanish');
   
-  // Chat interface state
-  interface ChatMessage {
-    role: 'user' | 'assistant';
-    content: string;
-    timestamp: number;
-    isStreaming?: boolean;
-    id?: number;
-  }
+  // Chat interface state - using the interface defined at the top of the file
   
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState<string>('');
@@ -1082,31 +1343,54 @@ const TranscriptionPage: React.FC = () => {
   // Additional state variables from ChatPage
   const [selectedRole, setSelectedRole] = useState({ name: 'General Assistant', value: 'general' });
   const [isFileUploadPopupOpen, setIsFileUploadPopupOpen] = useState(false);
-  const [currentUploadedFile, setCurrentUploadedFile] = useState<FileUploadResult | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadingFileName, setUploadingFileName] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [thinkingContent, setThinkingContent] = useState('');
 
   // Role options for AI personas
   const roleOptions = [
-    { name: 'General Assistant', value: 'general' },
-    { name: 'Code Assistant', value: 'code' },
-    { name: 'Writing Assistant', value: 'writing' },
-    { name: 'Research Assistant', value: 'research' },
-    { name: 'Creative Assistant', value: 'creative' },
-    { name: 'Business Assistant', value: 'business' },
-    { name: 'Educational Assistant', value: 'educational' },
-    { name: 'Technical Assistant', value: 'technical' }
+    { id: 'general', name: t('chat.roles.general.name'), description: t('chat.roles.general.description') },
+    { id: 'analyst', name: t('chat.roles.analyst.name'), description: t('chat.roles.analyst.description') },
+    { id: 'doctor', name: t('chat.roles.doctor.name'), description: t('chat.roles.doctor.description') },
+    { id: 'lawyer', name: t('chat.roles.lawyer.name'), description: t('chat.roles.lawyer.description') },
+    { id: 'teacher', name: t('chat.roles.teacher.name'), description: t('chat.roles.teacher.description') },
+    { id: 'programmer', name: t('chat.roles.programmer.name'), description: t('chat.roles.programmer.description') },
+    { id: 'psychologist', name: t('chat.roles.psychologist.name'), description: t('chat.roles.psychologist.description') },
+    { id: 'engineer', name: t('chat.roles.engineer.name'), description: t('chat.roles.engineer.description') },
+    { id: 'surveyor', name: t('chat.roles.surveyor.name'), description: t('chat.roles.surveyor.description') },
+    { id: 'architect', name: t('chat.roles.architect.name'), description: t('chat.roles.architect.description') },
+    { id: 'financial', name: t('chat.roles.financial.name'), description: t('chat.roles.financial.description') },
   ];
+
+  // Calculate coin cost based on current state
+  const calculateCoinCost = () => {
+    if (selectedGenerationType === 'xlsx' || selectedGenerationType === 'document') {
+      return 5;
+    }
+    if (selectedFile) {
+      if (selectedFile.type.startsWith('image/')) {
+        return 2;
+      }
+      return 10; // Other file types
+    }
+    if (currentUploadedFile) {
+      if (currentUploadedFile.type.startsWith('image/')) {
+        return 2;
+      }
+      return 10; // Other file types
+    }
+    return 1; // Simple text
+  };
 
   // Scroll to bottom of chat when messages change
   useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    if (messagesEndRef.current) {
+      // Using scrollIntoView with a slight delay to ensure it works after DOM updates
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 100);
     }
-  }, [chatMessages]);
+  }, [chatMessages, isAssistantTyping]);
 
   // Close language dropdown when clicking outside
   useEffect(() => {
@@ -1143,6 +1427,25 @@ const TranscriptionPage: React.FC = () => {
     };
   }, [isLanguageDropdownOpen, isSrtLanguageDropdownOpen]);
 
+  // TTS cleanup effects
+  useEffect(() => {
+    // Stop speech when changing tabs
+    return () => {
+      if (isSpeaking) {
+        stopSpeech();
+      }
+    };
+  }, [activeTab]);
+
+  useEffect(() => {
+    // Stop speech when component unmounts
+    return () => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
   // Function to handle quick actions with formatted responses and language detection
   const handleQuickAction = async (action: 'keypoints' | 'summary' | 'translate') => {
     if (!transcription || isChatProcessing[action]) return;
@@ -1156,8 +1459,8 @@ const TranscriptionPage: React.FC = () => {
     setIsChatProcessing({...isChatProcessing, [action]: true});
     
     try {
-      // Deduct 1 coin before processing
-      await userService.subtractCoins(user.uid, 1, `quick_${action}`);
+      // Deduct 3 coins before processing
+      await userService.subtractCoins(user.uid, 3, `quick_${action}`);
       
       let prompt = '';
       let actionLabel = '';
@@ -1182,13 +1485,13 @@ const TranscriptionPage: React.FC = () => {
         role: 'user',
         content: `Generate ${actionLabel}`,
         timestamp: Date.now(),
-        id: Date.now()
+        id: Date.now().toString()
       };
       
       setChatMessages(prev => [...prev, userMessage]);
       
       // Create a streaming assistant message that will be updated in real-time
-      const streamingMessageId = Date.now() + 1;
+      const streamingMessageId = (Date.now() + 1).toString();
       let streamingContent = '';
       
       // Add initial empty streaming message
@@ -1248,7 +1551,7 @@ const TranscriptionPage: React.FC = () => {
           role: 'assistant',
           content: 'You don\'t have enough coins to perform this action. Please purchase more coins.',
           timestamp: Date.now(),
-          id: Date.now()
+          id: Date.now().toString()
         };
         setChatMessages(prev => [...prev, errorMessage]);
       } else {
@@ -1263,14 +1566,41 @@ const TranscriptionPage: React.FC = () => {
   const sendMessageToAI = async (message: string, onChunk?: (chunk: string) => void): Promise<string> => {
     return new Promise((resolve, reject) => {
       try {
-        // Prepare messages array for streaming API with better formatting instructions
+        // Prepare messages array for streaming API with HTML formatting instructions
         const messages = [
           {
             role: "system",
             content: [
               {
                 type: "text", 
-                text: "You are an AI tutor assistant helping students with their homework and studies. Provide helpful, educational responses with clear explanations and examples that students can easily understand. Use proper markdown formatting for better readability. IMPORTANT: When including mathematical expressions, please wrap inline math with <math>...</math> tags and display math (block equations) with <math2>...</math2> tags. For example: <math>x^2 + y^2 = z^2</math> for inline math, and <math2>\\int_0^1 x^2 dx = \\frac{1}{3}</math2> for display math. This helps with proper mathematical rendering."
+                text: `You are an AI tutor assistant helping students with their homework and studies. Provide helpful, educational responses with clear explanations and examples that students can easily understand.
+
+CRITICAL FORMATTING REQUIREMENT: You MUST ALWAYS respond in HTML format with full formatting. Never respond in plain text or markdown. Your entire response should be properly formatted HTML.
+
+HTML FORMATTING RULES:
+- Use <h1>, <h2>, <h3> for headings
+- Use <p> tags for paragraphs
+- Use <strong> for bold text and <em> for italic text
+- Use <ul> and <li> for bullet lists
+- Use <ol> and <li> for numbered lists
+- Use <blockquote> for quotes
+- Use <code> for inline code and <pre><code> for code blocks
+- Use <table>, <tr>, <th>, <td> for tables
+- Use <br> for line breaks when needed
+- Use <div> with appropriate classes for styling when needed
+- IMPORTANT: When including mathematical expressions, please wrap inline math with <math>...</math> tags and display math (block equations) with <math2>...</math2> tags. For example: <math>x^2 + y^2 = z^2</math> for inline math, and <math2>\\int_0^1 x^2 dx = \\frac{1}{3}</math2> for display math.
+
+EXAMPLE HTML RESPONSE FORMAT:
+<h2>Response Title</h2>
+<p>This is a paragraph with <strong>bold text</strong> and <em>italic text</em>.</p>
+<ul>
+<li>First bullet point</li>
+<li>Second bullet point</li>
+</ul>
+<p>Example with inline code: <code>console.log('Hello World')</code></p>
+<p>Math example: The formula <math>E = mc^2</math> is Einstein's famous equation.</p>
+
+Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax like # or ** or *. Always use proper HTML tags.`
               }
             ]
           },
@@ -1364,9 +1694,10 @@ const TranscriptionPage: React.FC = () => {
         xhr.timeout = 60000; // 60 second timeout
 
         const requestBody = JSON.stringify({
-          model: "qwen-vl-max",
+          model: "qwen-max",
           messages: messages,
-          stream: true
+          stream: true,
+          max_tokens: 4096
         });
 
         console.log('📊 Sending request to streaming API...');
@@ -1377,6 +1708,167 @@ const TranscriptionPage: React.FC = () => {
         reject(new Error(t('transcription.errors.failedToGetResponse')));
       }
     });
+  };
+
+  // Helper function to determine message type based on file extension or generation type
+  const getMessageType = (generationType: string, fileUrl?: string): string => {
+    if (generationType === 'xlsx') return 'sheet_generate';
+    if (generationType === 'docs') return 'document_generate';
+    
+    // For file attachments, determine type based on file extension
+    if (fileUrl) {
+      const extension = fileUrl.split('.').pop()?.toLowerCase();
+      if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension || '')) {
+        return 'image';
+      } else {
+        return 'document';
+      }
+    }
+    
+    return 'text'; // Default for regular text messages
+  };
+
+  // N8N Webhook function for workflow integration
+  const sendMessageToN8NWebhook = async (
+    messageUid: string,
+    generationType: string,
+    messageText: string,
+    fileUrl?: string,
+    onChunk?: (chunk: string) => void
+  ): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://matrixai21.app.n8n.cloud/webhook/910d8b7e-6462-463b-90ef-42056a296c73', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Accept', 'text/event-stream');
+
+        let fullContent = '';
+        let processedLength = 0;
+
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 3 || xhr.readyState === 4) {
+            const responseText = xhr.responseText;
+            const newContent = responseText.substring(processedLength);
+            
+            if (newContent) {
+              processedLength = responseText.length;
+              
+              // Try to parse as JSON chunks first
+              const lines = newContent.split('\n');
+              for (const line of lines) {
+                if (line.trim()) {
+                  try {
+                    const parsed = JSON.parse(line);
+                    if (parsed.content) {
+                      fullContent += parsed.content;
+                      if (onChunk) {
+                        onChunk(parsed.content);
+                      }
+                    }
+                  } catch (parseError) {
+                    // If not JSON, treat as plain text
+                    fullContent += line;
+                    if (onChunk) {
+                      onChunk(line);
+                    }
+                  }
+                }
+              }
+            }
+            
+            if (xhr.readyState === 4) {
+              if (xhr.status === 200) {
+                resolve(fullContent.trim() || 'No response received');
+              } else {
+                reject(new Error(`N8N request failed: ${xhr.status} ${xhr.statusText}`));
+              }
+            }
+          }
+        };
+
+        xhr.onerror = function() {
+          reject(new Error('N8N request failed'));
+        };
+
+        xhr.ontimeout = function() {
+          reject(new Error('N8N request timeout'));
+        };
+
+        xhr.timeout = 60000;
+
+        // Determine the message type based on generation type or file type
+        const messageType = getMessageType(generationType, fileUrl);
+        
+        // Create the message object in the format expected by n8n webhook
+        const message: {
+          uid: string;
+          type: string;
+          text: { body: string };
+          url?: string;
+        } = {
+          uid: messageUid,
+          type: messageType,
+          text: {
+            body: messageText
+          }
+        };
+
+        // Add URL for file attachments or image understanding
+        if (fileUrl) {
+          message.url = fileUrl;
+        }
+
+        const requestBody = JSON.stringify({
+          messages: [message],
+          stream: true
+        });
+
+        xhr.send(requestBody);
+      } catch (error) {
+        reject(new Error('Failed to send message to N8N webhook'));
+      }
+    });
+  };
+
+  // Function to send message with attachments
+  const sendMessageWithAttachments = async (
+    message: string,
+    attachments: FileAttachment[],
+    onChunk?: (chunk: string) => void
+  ): Promise<string> => {
+    try {
+      // Use n8n webhook for file processing
+      if (attachments && attachments.length > 0) {
+        const attachment = attachments[0]; // Use the first attachment
+        const messageUid = Date.now().toString();
+        
+        // Determine the appropriate message text based on file type
+        let processedMessage = message;
+        if (!processedMessage || processedMessage.trim() === '') {
+          const extension = attachment.url.split('.').pop()?.toLowerCase();
+          if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension || '')) {
+            processedMessage = "Can you see what is in this image";
+          } else {
+            processedMessage = "Can you perform as a ocr and extract all the text if this file";
+          }
+        }
+        
+        return await sendMessageToN8NWebhook(
+          messageUid,
+          'file', // This will be processed by getMessageType function
+          processedMessage,
+          attachment.url,
+          onChunk
+        );
+      } else {
+        // No attachments, use regular AI function
+        return await sendMessageToAI(message, onChunk);
+      }
+    } catch (error) {
+      console.error('Error sending message with attachments:', error);
+      throw error;
+    }
   };
 
   // Simple language detection function
@@ -1472,6 +1964,99 @@ const TranscriptionPage: React.FC = () => {
     }
   };
 
+  // TTS Functions
+  const stopSpeech = () => {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
+    setSpeakingMessageId(null);
+  };
+
+  const handleTextToSpeech = (text: string, messageId: string) => {
+    // Stop any current speech
+    if (isSpeaking) {
+      stopSpeech();
+      return;
+    }
+
+    if (!window.speechSynthesis) {
+      console.error('Speech synthesis not supported');
+      return;
+    }
+
+    try {
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Set voice properties
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      // Set voice if available
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.lang.startsWith('en') && voice.name.includes('Google')
+      ) || voices.find(voice => voice.lang.startsWith('en'));
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        setSpeakingMessageId(messageId);
+      };
+
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        setSpeakingMessageId(null);
+        
+        // Auto-speak next message if enabled
+        if (autoSpeak) {
+          const currentIndex = chatMessages.findIndex(msg => msg.id === messageId);
+          const nextMessage = chatMessages[currentIndex + 1];
+          
+          if (nextMessage && nextMessage.role === 'assistant' && nextMessage.content.trim() && nextMessage.id) {
+            setTimeout(() => {
+              handleTextToSpeech(nextMessage.content, nextMessage.id!);
+            }, 500);
+          }
+        }
+      };
+
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        setIsSpeaking(false);
+        setSpeakingMessageId(null);
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error('Error in text-to-speech:', error);
+      setIsSpeaking(false);
+      setSpeakingMessageId(null);
+    }
+  };
+
+  const toggleAutoSpeak = () => {
+    const newAutoSpeak = !autoSpeak;
+    setAutoSpeak(newAutoSpeak);
+    
+    if (!newAutoSpeak && isSpeaking) {
+      stopSpeech();
+    } else if (newAutoSpeak && !isSpeaking && chatMessages.length > 0) {
+      // Find the last assistant message and start speaking
+      const lastAssistantMessage = [...chatMessages].reverse().find(msg => 
+        msg.role === 'assistant' && msg.content.trim() && !msg.isStreaming
+      );
+      
+      if (lastAssistantMessage && lastAssistantMessage.id) {
+        handleTextToSpeech(lastAssistantMessage.content, lastAssistantMessage.id);
+      }
+    }
+  };
+
   // Function to translate audio text via API
   const translateAudioText = async (language: string) => {
     try {
@@ -1521,8 +2106,8 @@ const TranscriptionPage: React.FC = () => {
       if (result.success) {
         clearInterval(timeInterval);
         setTranslationTimeRemaining(0);
-        // Refresh audio file data to get updated translations
-        await fetchAudioMetadata(uid, audioid);
+        // Refresh audio file data to get updated translations (suppress errors since this is background refresh)
+        await fetchAudioMetadata(uid, audioid, true);
         showSuccess(`Translation to ${language} completed successfully!`);
         return true;
       } else {
@@ -1594,7 +2179,7 @@ const TranscriptionPage: React.FC = () => {
   };
 
   // Fetch audio metadata and transcription
-  const fetchAudioMetadata = async (uid: string, audioid: string) => {
+  const fetchAudioMetadata = async (uid: string, audioid: string, suppressErrorToasts: boolean = false) => {
     try {
       setIsLoading(true);
       
@@ -1678,12 +2263,70 @@ const TranscriptionPage: React.FC = () => {
           translated_data: data.translated_data || null, // Cache translated_data
         }));
       } else {
+        // Log error but don't show toast for big audio files or when suppressed
         console.error(t('transcription.errors.audioMetadata'), data.error || data.message);
-        showError(t('transcription.errors.failedToLoadAudio'));
+        
+        // Try to load from cache as fallback
+        const cachedData = localStorage.getItem(`audioData-${audioid}`);
+        if (cachedData) {
+          try {
+            const parsed = JSON.parse(cachedData);
+            console.log('🔄 Loading from cache as fallback due to API error');
+            setTranscription(parsed.transcription || '');
+            setFileName(parsed.audio_name || '');
+            setDuration(parsed.duration || 0);
+            setAudioUrl(parsed.audioUrl || '');
+            setVideoUrl(parsed.videoUrl || '');
+            if (parsed.words_data) {
+              setWordsData(parsed.words_data);
+              setWordTimings(processWordTimings(parsed.words_data));
+              const { paragraphs } = createParagraphsFromWordsData(parsed.words_data);
+              setParagraphs(paragraphs);
+            }
+            if (parsed.translated_data) {
+              setTranslatedData(parsed.translated_data);
+            }
+          } catch (cacheError) {
+            console.error('Failed to parse cached data:', cacheError);
+          }
+        }
+        
+        if (!suppressErrorToasts) {
+          showError(t('transcription.errors.failedToLoadAudio'));
+        }
       }
     } catch (error) {
+      // Log error but don't show toast for big audio files or when suppressed
       console.error(t('transcription.errors.fetchAudioMetadata'), error);
-      showError(t('transcription.errors.unexpectedError'));
+      
+      // Try to load from cache as fallback
+      const cachedData = localStorage.getItem(`audioData-${audioid}`);
+      if (cachedData) {
+        try {
+          const parsed = JSON.parse(cachedData);
+          console.log('🔄 Loading from cache as fallback due to network error');
+          setTranscription(parsed.transcription || '');
+          setFileName(parsed.audio_name || '');
+          setDuration(parsed.duration || 0);
+          setAudioUrl(parsed.audioUrl || '');
+          setVideoUrl(parsed.videoUrl || '');
+          if (parsed.words_data) {
+            setWordsData(parsed.words_data);
+            setWordTimings(processWordTimings(parsed.words_data));
+            const { paragraphs } = createParagraphsFromWordsData(parsed.words_data);
+            setParagraphs(paragraphs);
+          }
+          if (parsed.translated_data) {
+            setTranslatedData(parsed.translated_data);
+          }
+        } catch (cacheError) {
+          console.error('Failed to parse cached data:', cacheError);
+        }
+      }
+      
+      if (!suppressErrorToasts) {
+        showError(t('transcription.errors.unexpectedError'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -2066,12 +2709,22 @@ const TranscriptionPage: React.FC = () => {
       return;
     }
     
+    // Prepare file URL if there's an uploaded file
+    const fileUrl = currentUploadedFile?.url || undefined;
+    const attachments: FileAttachment[] = currentUploadedFile ? [{
+      name: currentUploadedFile.name,
+      url: currentUploadedFile.url,
+      type: currentUploadedFile.type,
+      size: currentUploadedFile.size
+    }] : [];
+    
     // Add user message to chat
     const userMessage: ChatMessage = {
       role: 'user',
       content: chatInput.trim(),
       timestamp: Date.now(),
-      id: Date.now()
+      id: Date.now().toString(),
+      attachments: attachments.length > 0 ? attachments : undefined
     };
     
     setChatMessages(prev => [...prev, userMessage]);
@@ -2079,11 +2732,14 @@ const TranscriptionPage: React.FC = () => {
     setChatInput(''); // Clear input immediately
     setIsAssistantTyping(true);
     
+    // Clear uploaded file after sending
+    setCurrentUploadedFile(null);
+    
     // Save user message to database
     await saveChatToDatabase(currentInput, 'user');
     
     // Create a streaming assistant message that will be updated in real-time
-    const streamingMessageId = Date.now() + 1;
+    const streamingMessageId = (Date.now() + 1).toString();
     let streamingContent = '';
     
     // Add initial empty streaming message
@@ -2133,8 +2789,33 @@ const TranscriptionPage: React.FC = () => {
       
       contextPrompt += `User question: ${currentInput}`;
       
-      // Get streaming response
-      const fullResponse = await sendMessageToAI(contextPrompt, handleChunk);
+      let fullResponse = '';
+      
+      // Route to appropriate function based on generation type and attachments
+      if (selectedGenerationType && selectedGenerationType !== 'general') {
+        // Use N8N workflow for specific generation types
+        // Get authenticated user UID - use the same approach as the main file attachment system
+        const { data: { session } } = await supabase.auth.getSession();
+        const userUID = session?.user?.id || user?.uid || '';
+        
+        if (!userUID) {
+          throw new Error('User not authenticated - cannot send message to n8n webhook');
+        }
+        
+        fullResponse = await sendMessageToN8NWebhook(
+          userUID,
+          selectedGenerationType,
+          contextPrompt,
+          fileUrl,
+          handleChunk
+        );
+      } else if (attachments.length > 0) {
+        // Use attachment handler for messages with files
+        fullResponse = await sendMessageWithAttachments(contextPrompt, attachments, handleChunk);
+      } else {
+        // Use regular AI function for general chat
+        fullResponse = await sendMessageToAI(contextPrompt, handleChunk);
+      }
       
       // Finalize the streaming message - use streamingContent instead of fullResponse to avoid JSON display
       setChatMessages(prev => prev.map(msg => 
@@ -2162,6 +2843,8 @@ const TranscriptionPage: React.FC = () => {
     } finally {
       setIsAssistantTyping(false);
       setIsSubmitting(false);
+      // Reset generation type after sending
+      setSelectedGenerationType(null);
     }
   };
   
@@ -2287,15 +2970,64 @@ const TranscriptionPage: React.FC = () => {
   };
 
   // File upload functions
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
+  const handleFileUpload = async () => {
+    setIsFileUploadPopupOpen(true);
+  };
+
+  const handleFileUploadFromPopup = async (files: File[]) => {
+    if (files.length === 0) return;
+    
+    const file = files[0];
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadingFileName(file.name);
+    
+    try {
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
+      // Upload file using the file upload utility
+      const fileType = file.type.startsWith('image/') ? 'image' : 'document';
+      const uploadResult = await uploadFile(file, user?.uid || 'anonymous', fileType);
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      // Set the uploaded file result
+      setCurrentUploadedFile({
+        name: uploadResult.originalName,
+        url: uploadResult.publicUrl,
+        type: file.type,
+        size: uploadResult.size
+      });
+      
       setSelectedFile(file);
+      setIsFileUploadPopupOpen(false);
+      
+      // Clear generation type when file is uploaded (mutual exclusion)
+      setSelectedGenerationType(null);
+      
+    } catch (error) {
+      console.error('File upload failed:', error);
+      showError('File upload failed. Please try again.');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+      setUploadingFileName('');
     }
   };
 
   const removeSelectedFile = () => {
     setSelectedFile(null);
+    setCurrentUploadedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -2303,6 +3035,14 @@ const TranscriptionPage: React.FC = () => {
 
   const handleGenerationTypeSelect = (type: string) => {
     setSelectedGenerationType(selectedGenerationType === type ? null : type);
+    // Clear file attachment when generation is selected (mutual exclusion)
+    if (type && selectedGenerationType !== type) {
+      setSelectedFile(null);
+      setCurrentUploadedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   // Function to translate SRT subtitle segment
@@ -3005,7 +3745,8 @@ const TranscriptionPage: React.FC = () => {
     console.log('useEffect triggered - uid:', uid, 'audioid:', audioid, 'locationState:', locationState);
     
     if (uid && audioid) {
-      fetchAudioMetadata(uid, audioid);
+      // Suppress error toasts for initial load to avoid confusing users with big audio files
+      fetchAudioMetadata(uid, audioid, true);
       // Only load chat history if chat tab is active
       if (activeTab === 'chat') {
         loadChatFromDatabase(); // Load chat history
@@ -4023,86 +4764,139 @@ const TranscriptionPage: React.FC = () => {
                   className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-200px)] max-h-[800px]"
                 >
                   {/* Fixed Header */}
-                  <div className="flex justify-between items-center p-3 sm:p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-20 sticky top-0">
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.chat.title')}</h2>
-                    <div className="flex space-x-2">
+                  <div className="flex justify-between items-center p-2 sm:p-3 md:p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-20 sticky top-0">
+                    <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.chat.title')}</h2>
+                    <div className="flex space-x-1 sm:space-x-2">
                       <button 
                         onClick={resetChat} 
-                        className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                        className="p-1.5 sm:p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
                         title={t('transcription.chat.clearChat')}
                       >
-                        <FiRefreshCw />
+                        <FiRefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                       <button 
                         onClick={() => setShowSidebar(!showSidebar)}
-                        className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors" 
+                        className="p-1.5 sm:p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors" 
                         title={showSidebar ? t('transcription.ui.hideSidebar') : t('transcription.ui.showSidebar')}
                       >
-                        <FiLayout />
+                        <FiLayout className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     </div>
                   </div>
 
                   {/* Quick Actions - Fixed below header */}
-                  <div className="p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-10 sticky top-[67px]">
-                    <h3 className="text-lg font-medium mb-3 dark:text-gray-300">{t('transcription.chat.quickActions')}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => handleQuickAction('keypoints')}
-                        disabled={isChatProcessing.keypoints || !transcription}
-                        className={`px-3 py-2 rounded-lg flex items-center transition-colors text-sm ${
-                          isChatProcessing.keypoints
-                            ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                            : 'bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-800/40 text-blue-700 dark:text-blue-300'
-                        }`}
-                      >
-                        {isChatProcessing.keypoints ? (
-                          <FiLoader className="animate-spin mr-2" />
-                        ) : (
-                          <FiZap className="mr-2" />
-                        )}
-                        {t('transcription.chat.keyPoints')}
-                      </button>
+                  <div className="p-2 sm:p-3 md:p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-10 sticky top-[55px] sm:top-[67px]">
+                    <h3 className="text-sm sm:text-base md:text-lg font-medium mb-2 sm:mb-3 dark:text-gray-300">{t('transcription.chat.quickActions')}</h3>
+                    <div className="space-y-2">
+                      {/* First row - Main quick actions */}
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                        <button
+                          onClick={() => handleQuickAction('keypoints')}
+                          disabled={isChatProcessing.keypoints || !transcription}
+                          className={`flex-1 min-w-0 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg flex items-center justify-center transition-colors text-xs sm:text-sm ${
+                            isChatProcessing.keypoints
+                              ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                              : 'bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-800/40 text-blue-700 dark:text-blue-300'
+                          }`}
+                        >
+                          {isChatProcessing.keypoints ? (
+                            <FiLoader className="animate-spin mr-1 w-3 h-3 sm:w-4 sm:h-4" />
+                          ) : (
+                            <FiZap className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
+                          )}
+                          <span className="hidden sm:inline">{t('transcription.chat.keyPoints')}</span>
+                          <span className="sm:hidden">Key</span>
+                          <span className="ml-1 text-xs bg-orange-500/20 px-1 py-0.5 rounded-full flex items-center">
+                            -3 <img src={coinIcon} alt="coin" className="w-2.5 h-2.5 ml-0.5" />
+                          </span>
+                        </button>
+                        
+                        <button
+                          onClick={() => handleQuickAction('summary')}
+                          disabled={isChatProcessing.summary || !transcription}
+                          className={`flex-1 min-w-0 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg flex items-center justify-center transition-colors text-xs sm:text-sm ${
+                            isChatProcessing.summary
+                              ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                              : 'bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-800/40 text-purple-700 dark:text-purple-300'
+                          }`}
+                        >
+                          {isChatProcessing.summary ? (
+                            <FiLoader className="animate-spin mr-1 w-3 h-3 sm:w-4 sm:h-4" />
+                          ) : (
+                            <FiFileText className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
+                          )}
+                          <span className="hidden sm:inline">{t('transcription.chat.quickSummary')}</span>
+                          <span className="sm:hidden">Sum</span>
+                          <span className="ml-1 text-xs bg-orange-500/20 px-1 py-0.5 rounded-full flex items-center">
+                            -3 <img src={coinIcon} alt="coin" className="w-2.5 h-2.5 ml-0.5" />
+                          </span>
+                        </button>
+                      </div>
                       
-                      <button
-                        onClick={() => handleQuickAction('summary')}
-                        disabled={isChatProcessing.summary || !transcription}
-                        className={`px-3 py-2 rounded-lg flex items-center transition-colors text-sm ${
-                          isChatProcessing.summary
-                            ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                            : 'bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-800/40 text-purple-700 dark:text-purple-300'
-                        }`}
-                      >
-                        {isChatProcessing.summary ? (
-                          <FiLoader className="animate-spin mr-2" />
-                        ) : (
-                          <FiFileText className="mr-2" />
-                        )}
-                        {t('transcription.chat.quickSummary')}
-                      </button>
-                      
-                      <div className="flex items-center">
+                      {/* Second row - Translate and Audio controls */}
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         <button
                           onClick={() => handleQuickAction('translate')}
                           disabled={isChatProcessing.translate || !transcription}
-                          className={`px-3 py-2 rounded-lg flex items-center transition-colors text-sm ${
+                          className={`flex-1 min-w-0 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg flex items-center justify-center transition-colors text-xs sm:text-sm ${
                             isChatProcessing.translate
                               ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                               : 'bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-800/40 text-green-700 dark:text-green-300'
                           }`}
                         >
                           {isChatProcessing.translate ? (
-                            <FiLoader className="animate-spin mr-2" />
+                            <FiLoader className="animate-spin mr-1 w-3 h-3 sm:w-4 sm:h-4" />
                           ) : (
-                            <FiBookmark className="mr-2" />
+                            <FiBookmark className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
                           )}
-                          {t('transcription.actions.translate')}
+                          <span className="hidden sm:inline">{t('transcription.actions.translate')}</span>
+                          <span className="sm:hidden">Trans</span>
+                          <span className="ml-1 text-xs bg-orange-500/20 px-1 py-0.5 rounded-full flex items-center">
+                            -3 <img src={coinIcon} alt="coin" className="w-2.5 h-2.5 ml-0.5" />
+                          </span>
                         </button>
                         
+                        {/* Auto-speak toggle */}
+                        <button
+                          onClick={toggleAutoSpeak}
+                          className={`flex-1 min-w-0 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg flex items-center justify-center transition-colors text-xs sm:text-sm ${
+                            autoSpeak
+                              ? (theme === 'dark' ? 'bg-green-700 text-white' : 'bg-green-600 text-white')
+                              : (theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+                          }`}
+                          title={autoSpeak ? "Disable auto-speak" : "Enable auto-speak"}
+                        >
+                          <FiVolume2 className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline">Auto-speak</span>
+                          <span className="sm:hidden">Auto</span>
+                          {autoSpeak ? (
+                            <FiToggleRight className="ml-1 w-4 h-4" />
+                          ) : (
+                            <FiToggleLeft className="ml-1 w-4 h-4" />
+                          )}
+                        </button>
+                        
+                        {/* Stop speaking button (when speaking) */}
+                        {isSpeaking && (
+                          <button
+                            onClick={stopSpeech}
+                            className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg flex items-center transition-colors text-xs sm:text-sm ${
+                              theme === 'dark' ? 'bg-red-700 text-white hover:bg-red-600' : 'bg-red-600 text-white hover:bg-red-700'
+                            }`}
+                            title="Stop speaking"
+                          >
+                            <FiSquare className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
+                            <span className="hidden sm:inline">Stop</span>
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* Translation language selector */}
+                      <div className="flex items-center justify-center mt-2">
                         <select
                           value={translationLanguage}
                           onChange={(e) => setTranslationLanguage(e.target.value)}
-                          className="ml-2 px-2 py-1 text-xs sm:text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 max-h-20 overflow-y-auto"
+                          className="px-2 py-1 text-xs sm:text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
                         >
                           <option value="Spanish">{t('transcription.languages.spanish')}</option>
                           <option value="French">{t('transcription.languages.french')}</option>
@@ -4113,32 +4907,35 @@ const TranscriptionPage: React.FC = () => {
                         </select>
                       </div>
                       
-                      <button
-                        onClick={setTranscriptionAsContext}
-                        disabled={!transcription || chatMessages.length > 0}
-                        className={`px-3 py-2 rounded-lg flex items-center transition-colors text-sm ${
-                          !transcription || chatMessages.length > 0
-                            ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                            : 'bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-800/40 text-amber-700 dark:text-amber-300'
-                        }`}
-                      >
-                        <FiFileText className="mr-2" />
-                        {t('transcription.chat.useAsContext')}
-                      </button>
+                      {/* Use as Context button */}
+                      <div className="flex justify-center mt-2">
+                        <button
+                          onClick={setTranscriptionAsContext}
+                          disabled={!transcription || chatMessages.length > 0}
+                          className={`px-3 py-2 rounded-lg flex items-center transition-colors text-sm ${
+                            !transcription || chatMessages.length > 0
+                              ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                              : 'bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-800/40 text-amber-700 dark:text-amber-300'
+                          }`}
+                        >
+                          <FiFileText className="mr-2" />
+                          {t('transcription.chat.useAsContext')}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
                   {/* Chat display area with messages - Scrollable */}
                   <div 
                     ref={chatContainerRef}
-                    className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 pb-4"
+                    className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3 md:space-y-4 pb-2 sm:pb-3 md:pb-4"
                     style={{ scrollBehavior: 'smooth', overscrollBehavior: 'contain' }}
                   >
 
                     
                     {/* Chat Messages */}
                     {chatMessages.length > 0 ? (
-                      <div className="space-y-6">
+                      <div className="space-y-3 sm:space-y-4 md:space-y-6">
                         {chatMessages.map((message) => (
                           <motion.div
                             key={message.id || message.timestamp}
@@ -4146,22 +4943,22 @@ const TranscriptionPage: React.FC = () => {
                             animate={{ opacity: 1, y: 0 }}
                             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                           >
-                            <div className={`max-w-[90%] flex ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                            <div className={`max-w-[95%] sm:max-w-[90%] flex ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                               {/* Enhanced Avatar */}
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md ${
+                              <div className={`w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md ${
                                 message.role === 'assistant' 
                                   ? 'bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 text-white' 
                                   : 'bg-gradient-to-br from-gray-600 to-gray-800 text-white'
-                              } ${message.role === 'user' ? 'ml-3' : 'mr-3'}`}>
+                              } ${message.role === 'user' ? 'ml-2 sm:ml-3' : 'mr-2 sm:mr-3'}`}>
                                 {message.role === 'assistant' ? (
-                                  <FiCpu className="w-5 h-5" />
+                                  <FiCpu className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                                 ) : (
-                                  <FiUser className="w-5 h-5" />
+                                  <FiUser className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                                 )}
                               </div>
                               
                               {/* Enhanced Message Bubble */}
-                              <div className={`rounded-2xl px-5 py-4 shadow-lg ${
+                              <div className={`rounded-xl sm:rounded-2xl px-3 py-2 sm:px-4 sm:py-3 md:px-5 md:py-4 shadow-lg ${
                                 message.role === 'assistant' 
                                   ? (theme === 'dark' ? 'bg-gray-800 border border-gray-700 text-gray-100' : 'bg-white border border-gray-200 text-gray-800') 
                                   : (theme === 'dark' ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white' : 'bg-gradient-to-br from-blue-500 to-purple-500 text-white')
@@ -4169,35 +4966,82 @@ const TranscriptionPage: React.FC = () => {
                                 
                                 {/* Message Content */}
                                 {message.role === 'assistant' ? (
-                                  <div className={`prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                                    {message.isStreaming ? (
-                                      <div className="streaming-content">
-                                        {renderTextWithMath(message.content, theme, `text-gray-800 dark:text-gray-200 leading-relaxed text-sm`, selectedLanguage)}
-                                        <span className="typing-cursor animate-pulse ml-1 text-blue-500">▋</span>
-                                      </div>
-                                    ) : (
+                                  (() => {
+                                    // Extract file URLs from bot response
+                                    const fileExtraction = extractFileUrlFromBotResponse(message.content);
+                                    console.log('File extraction result:', fileExtraction);
+                                    
+                                    // Create bot attachments if file URL is found
+                                    const botAttachments = [];
+                                    if (fileExtraction.hasFile && fileExtraction.fileUrl) {
+                                      botAttachments.push({
+                                        url: fileExtraction.fileUrl,
+                                        fileName: fileExtraction.fileName || 'Generated File',
+                                        fileType: fileExtraction.fileType || 'application/octet-stream',
+                                        originalName: fileExtraction.fileName || 'Generated File',
+                                        size: undefined
+                                      });
+                                    }
+                                    
+                                    // Merge with existing attachments
+                                    const allAttachments = [
+                                      ...(message.attachments || []).map(att => ({
+                                        url: att.url,
+                                        fileName: att.name,
+                                        fileType: att.type,
+                                        originalName: att.name,
+                                        size: att.size
+                                      })),
+                                      ...botAttachments
+                                    ];
+                                    
+                                    // Use cleaned content to remove file URLs from display, matching ChatPage behavior
+                                    const displayContent = fileExtraction.cleanedContent || message.content;
+                                    
+                                    return (
                                       <div>
-                                        {message.content ? (
-                                          renderTextWithMath(message.content, theme, `text-gray-800 dark:text-gray-200 leading-relaxed text-sm`, selectedLanguage)
-                                        ) : (
-                                          <span>Loading content...</span>
+                                        <div className={`prose prose-xs sm:prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content text-xs sm:text-sm`}>
+                                          {message.isStreaming ? (
+                                            <div className="streaming-content">
+                                              {renderTextWithHTML(displayContent, theme === 'dark', {color: theme === 'dark' ? '#e5e7eb' : '#374151', fontSize: '12px', lineHeight: '1.5'})}
+                                              <span className="typing-cursor animate-pulse ml-1 text-blue-500">▋</span>
+                                            </div>
+                                          ) : (
+                                            <div>
+                                              {displayContent ? (
+                                                renderTextWithHTML(displayContent, theme === 'dark', {color: theme === 'dark' ? '#e5e7eb' : '#374151', fontSize: '12px', lineHeight: '1.5'})
+                                              ) : (
+                                                <span>Loading content...</span>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                        
+                                        {/* File Attachments */}
+                                        {allAttachments.length > 0 && (
+                                          <div className="mt-3">
+                                            <BotMessageAttachments 
+                                              attachments={allAttachments}
+                                              darkMode={theme === 'dark'}
+                                            />
+                                          </div>
                                         )}
                                       </div>
-                                    )}
-                                  </div>
+                                    );
+                                  })()
                                 ) : (
-                                  <div className="whitespace-pre-wrap text-white leading-relaxed">
-                                    {renderTextWithMath(message.content, theme, "text-white leading-relaxed", selectedLanguage)}
+                                  <div className="whitespace-pre-wrap text-white leading-relaxed text-xs sm:text-sm">
+                                    {renderTextWithHTML(message.content, false, {color: 'white', lineHeight: '1.5', fontSize: '12px'})}
                                   </div>
                                 )}
                                 
                                 {/* Enhanced Message Footer */}
-                                <div className={`mt-3 pt-3 border-t ${
+                                <div className={`mt-2 sm:mt-3 pt-2 sm:pt-3 border-t ${
                                   message.role === 'assistant' 
                                     ? (theme === 'dark' ? 'border-gray-700' : 'border-gray-200') 
                                     : 'border-white/20'
                                 } flex items-center justify-between text-xs`}>
-                                  <span className={`${
+                                  <span className={`text-xs ${
                                     message.role === 'assistant' 
                                       ? (theme === 'dark' ? 'text-gray-500' : 'text-gray-500') 
                                       : 'text-white/70'
@@ -4205,30 +5049,33 @@ const TranscriptionPage: React.FC = () => {
                                     {formatTimestamp(message.timestamp)}
                                   </span>
                                   
-                                  <div className="flex space-x-2">
+                                  <div className="flex space-x-1 sm:space-x-2">
                                     <button 
                                       onClick={() => navigator.clipboard.writeText(message.content)}
-                                      className={`p-1.5 rounded-full transition-colors ${
+                                      className={`p-1 sm:p-1.5 rounded-full transition-colors ${
                                         message.role === 'assistant'
                                           ? (theme === 'dark' ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700')
                                           : 'hover:bg-white/20 text-white/70 hover:text-white'
                                       }`}
                                       title="Copy message"
                                     >
-                                      <FiCopy size={12} />
+                                      <FiCopy size={10} className="sm:w-3 sm:h-3" />
                                     </button>
-                                    {message.role === 'assistant' && (
+                                    {message.role === 'assistant' && message.id && (
                                       <button 
-                                        onClick={() => {
-                                          const utterance = new SpeechSynthesisUtterance(message.content);
-                                          window.speechSynthesis.speak(utterance);
-                                        }}
-                                        className={`p-1.5 rounded-full transition-colors ${
-                                          theme === 'dark' ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'
+                                        onClick={() => handleTextToSpeech(message.content, message.id!)}
+                                        className={`p-1 sm:p-1.5 rounded-full transition-colors ${
+                                          speakingMessageId === message.id
+                                            ? (theme === 'dark' ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
+                                            : (theme === 'dark' ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700')
                                         }`}
-                                        title="Speak message"
+                                        title={speakingMessageId === message.id ? "Stop speaking" : "Speak message"}
                                       >
-                                        <FiVolume2 size={12} />
+                                        {speakingMessageId === message.id ? (
+                                          <FiSquare size={10} className="sm:w-3 sm:h-3" />
+                                        ) : (
+                                          <FiVolume2 size={10} className="sm:w-3 sm:h-3" />
+                                        )}
                                       </button>
                                     )}
                                   </div>
@@ -4272,7 +5119,7 @@ const TranscriptionPage: React.FC = () => {
                                   <FiZap className="mr-2" /> Key Points
                                 </h4>
                                 <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                                  {renderTextWithMath(chatResponses.keypoints, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm", selectedLanguage)}
+                                  {renderTextWithHTML(chatResponses.keypoints, theme === 'dark', {color: theme === 'dark' ? '#d1d5db' : '#374151', fontSize: '14px', lineHeight: '1.6'})}
                                 </div>
                               </div>
                             )}
@@ -4283,7 +5130,7 @@ const TranscriptionPage: React.FC = () => {
                                   <FiFileText className="mr-2" /> Summary
                                 </h4>
                                 <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                                  {renderTextWithMath(chatResponses.summary, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm", selectedLanguage)}
+                                  {renderTextWithHTML(chatResponses.summary, theme === 'dark', {color: theme === 'dark' ? '#d1d5db' : '#374151', fontSize: '14px', lineHeight: '1.6'})}
                                 </div>
                               </div>
                             )}
@@ -4294,7 +5141,7 @@ const TranscriptionPage: React.FC = () => {
                                   <FiBookmark className="mr-2" /> Translation ({translationLanguage})
                                 </h4>
                                 <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                                  {renderTextWithMath(chatResponses.translate, theme, "text-gray-700 dark:text-gray-300 leading-relaxed text-sm", selectedLanguage)}
+                                  {renderTextWithHTML(chatResponses.translate, theme === 'dark', {color: theme === 'dark' ? '#d1d5db' : '#374151', fontSize: '14px', lineHeight: '1.6'})}
                                 </div>
                               </div>
                             )}
@@ -4345,20 +5192,6 @@ const TranscriptionPage: React.FC = () => {
                     <div className="mb-3 flex flex-wrap gap-2">
                       <button
                         type="button"
-                        onClick={() => handleGenerationTypeSelect('image')}
-                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                          selectedGenerationType === 'image'
-                            ? (theme === 'dark' ? 'bg-purple-700 border-2 border-purple-500 text-white' : 'bg-purple-600 border-2 border-purple-400 text-white')
-                            : (theme === 'dark' ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white' : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white')
-                        }`}
-                      >
-                        <FiImage className="w-4 h-4" />
-                        <span>Generate Image</span>
-                        {selectedGenerationType === 'image' && <FiCheck className="w-4 h-4" />}
-                      </button>
-                      
-                      <button
-                        type="button"
                         onClick={() => handleGenerationTypeSelect('xlsx')}
                         className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                           selectedGenerationType === 'xlsx'
@@ -4386,6 +5219,8 @@ const TranscriptionPage: React.FC = () => {
                       </button>
                     </div>
 
+
+
                     <form onSubmit={handleChatSubmit} className="flex space-x-2">
                       <div className="flex-1 relative">
                         <input
@@ -4405,7 +5240,7 @@ const TranscriptionPage: React.FC = () => {
                         />
                         <button
                           type="button"
-                          onClick={() => fileInputRef.current?.click()}
+                          onClick={handleFileUpload}
                           className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                           disabled={isAssistantTyping}
                         >
@@ -4428,9 +5263,9 @@ const TranscriptionPage: React.FC = () => {
                             <>
                               <FiSend className="w-4 h-4" />
                               <span className="hidden sm:inline">{t('transcription.chat.send')}</span>
-                              {chatInput.trim() && (
+                              {(chatInput.trim() || selectedFile || selectedGenerationType) && (
                                 <span className="ml-1 text-xs bg-orange-500/20 px-1.5 py-0.5 rounded-full flex items-center">
-                                  -1 <img src={coinIcon} alt="coin" className="w-3 h-3 ml-0.5" />
+                                  -{calculateCoinCost()} <img src={coinIcon} alt="coin" className="w-3 h-3 ml-0.5" />
                                 </span>
                               )}
                             </>
@@ -4453,15 +5288,16 @@ const TranscriptionPage: React.FC = () => {
                     <>
                       {/* Header with Format Tabs */}
                       <div className="border-b dark:border-gray-700">
-                        <div className="flex justify-between items-center p-4">
-                          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.wordsData.title')}</h2>
-                          <div className="flex space-x-2">
+                        <div className="flex justify-between items-center p-2 sm:p-3 md:p-4">
+                          <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-800 dark:text-gray-200">{t('transcription.wordsData.title')}</h2>
+                          <div className="flex space-x-1 sm:space-x-2">
                             <button 
                               onClick={copyAllSRTSegments}
-                              className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                              className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                               title="Copy all SRT segments with formatting"
                             >
-                              {t('transcription.wordsData.copySrt')}
+                              <span className="hidden sm:inline">{t('transcription.wordsData.copySrt')}</span>
+                              <span className="sm:hidden">Copy</span>
                             </button>
                             <button 
                               onClick={() => {
@@ -4474,20 +5310,21 @@ const TranscriptionPage: React.FC = () => {
                                 link.click();
                                 URL.revokeObjectURL(url);
                               }}
-                              className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                              className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                               title="Download formatted SRT document"
                             >
-                              {t('transcription.wordsData.downloadSrt')}
+                              <span className="hidden sm:inline">{t('transcription.wordsData.downloadSrt')}</span>
+                              <span className="sm:hidden">DL</span>
                             </button>
                             <button 
                               onClick={() => {
                                 navigator.clipboard.writeText(JSON.stringify(wordsData, null, 2));
                                 showSuccess(t('transcription.wordsData.jsonCopied'));
                               }}
-                              className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                              className="p-1.5 sm:p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
                               title="Copy JSON"
                             >
-                              <FiCopy />
+                              <FiCopy className="w-3 h-3 sm:w-4 sm:h-4" />
                             </button>
                           </div>
                         </div>
@@ -4508,47 +5345,47 @@ const TranscriptionPage: React.FC = () => {
                       </div>
                       
                       {/* Content */}
-                      <div className="flex-1 overflow-auto p-4">
+                      <div className="flex-1 overflow-auto p-2 sm:p-3 md:p-4">
                         {/* Statistics */}
-                        <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
-                          <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">{t('transcription.wordsData.statistics')}</h3>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
+                          <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-gray-800 dark:text-gray-200">{t('transcription.wordsData.statistics')}</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm">
                             <div className="text-center">
-                              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{wordsData.length}</div>
-                              <div className="text-gray-600 dark:text-gray-400">{t('transcription.wordsData.totalWords')}</div>
+                              <div className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{wordsData.length}</div>
+                              <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{t('transcription.wordsData.totalWords')}</div>
                             </div>
                             <div className="text-center">
-                              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{formatTime(duration)}</div>
-                              <div className="text-gray-600 dark:text-gray-400">{t('transcription.wordsData.duration')}</div>
+                              <div className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">{formatTime(duration)}</div>
+                              <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{t('transcription.wordsData.duration')}</div>
                             </div>
                             <div className="text-center">
-                              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                              <div className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
                                 {(wordsData.reduce((acc, word) => acc + word.word.length, 0) / wordsData.length).toFixed(1)}
                               </div>
-                              <div className="text-gray-600 dark:text-gray-400">{t('transcription.wordsData.avgCharsPerWord')}</div>
+                              <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{t('transcription.wordsData.avgCharsPerWord')}</div>
                             </div>
                             <div className="text-center">
-                              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                              <div className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400">
                                 {duration > 0 ? Math.round((wordsData.length / duration) * 60) : 0}
                               </div>
-                              <div className="text-gray-600 dark:text-gray-400">{t('transcription.wordsData.wordsPerMinute')}</div>
+                              <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{t('transcription.wordsData.wordsPerMinute')}</div>
                             </div>
                           </div>
                         </div>
                         
                         {/* SRT Format Display with Translation */}
-                        <div className="mb-6">
-                          <div className="flex justify-between items-center mb-3">
-                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                        <div className="mb-4 sm:mb-6">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 sm:mb-3 gap-2 sm:gap-0">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200">
                               {t('transcription.wordsData.srtSubtitles')}
                             </h3>
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2 sm:space-x-3">
                               {/* Language Selector */}
               {languages.length > 0 ? (
                  <div className="relative custom-srt-language-dropdown">
                   <button
                     onClick={() => setIsSrtLanguageDropdownOpen(!isSrtLanguageDropdownOpen)}
-                    className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 flex items-center justify-between min-w-[200px]"
+                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 flex items-center justify-between min-w-[120px] sm:min-w-[200px]"
                   >
                     <span>{subtitleLanguages.find(lang => lang.code === srtSelectedLanguage)?.name || 'Select Language'}</span>
                     <svg className={`w-4 h-4 transition-transform ${isSrtLanguageDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -5295,6 +6132,14 @@ const TranscriptionPage: React.FC = () => {
         )}
       </div>
       
+      {/* File Upload Popup */}
+      {isFileUploadPopupOpen && (
+        <FileUploadPopup
+          isOpen={isFileUploadPopupOpen}
+          onClose={() => setIsFileUploadPopupOpen(false)}
+          onFileSelect={(file, type) => handleFileUploadFromPopup([file])}
+        />
+      )}
 
     </div>
   );

@@ -9,6 +9,7 @@ import { useAlert } from '../context/AlertContext';
 import { imageService } from '../services/imageService';
 import { uploadImageToStorage } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
+import coinIcon from '../assets/coin.png';
 import './ImageGeneratorPage.css';
 
 // Add gradient animation style
@@ -91,6 +92,11 @@ const ImageGeneratorPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [allImageHistory, setAllImageHistory] = useState<ImageHistoryItem[]>([]);
+
+  // Function to calculate coin cost based on whether image is uploaded
+  const calculateCoinCost = () => {
+    return uploadedImage ? 15 : 5;
+  };
 
 
 
@@ -975,6 +981,12 @@ const ImageGeneratorPage: React.FC = () => {
                   >
                     <FiImage className="mr-1.5 md:mr-2" />
                     {uploadedImage ? t('imageGenerator.enhanceImage') : t('imageGenerator.generateImages')}
+                    {message.trim() && (
+                      <span className="ml-2 text-xs bg-orange-500/20 px-1.5 py-0.5 rounded-full flex items-center">
+                        -{calculateCoinCost()}
+                        <img src={coinIcon} alt="coin" className="w-3 h-3 ml-1" />
+                      </span>
+                    )}
                   </AuthRequiredButton>
                 )}
               </div>

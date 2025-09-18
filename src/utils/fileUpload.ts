@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient';
+import { compressImage, CompressionResult, shouldCompressImage } from './imageCompression';
 
 export interface FileUploadResult {
   fileName: string;
@@ -7,6 +8,7 @@ export interface FileUploadResult {
   fileType: 'image' | 'document';
   originalName: string;
   size: number;
+  compressionStats?: string;
 }
 
 export interface FileValidationResult {
@@ -96,7 +98,7 @@ const generateUniqueFileName = (originalName: string, userId: string): string =>
 };
 
 /**
- * Uploads a file to Supabase storage
+ * Uploads a file to Supabase storage with automatic image compression
  */
 export const uploadFileToStorage = async (
   file: File, 
@@ -110,8 +112,42 @@ export const uploadFileToStorage = async (
       throw new Error(validation.error);
     }
 
+    let fileToUpload = file;
+    let compressionStats: string | undefined;
+
+    // Compress image files before upload
+    if (fileType === 'image' && file.type.startsWith('image/')) {
+      console.log(`Original image size: ${Math.round(file.size / 1024)}KB`);
+      
+      try {
+        // Check if compression is needed
+        const needsCompression = await shouldCompressImage(file, 500);
+        
+        if (needsCompression) {
+          console.log('Compressing image...');
+          const compressionResult = await compressImage(file, {
+            maxWidth: 1920,
+            maxHeight: 1080,
+            quality: 0.8,
+            maxSizeKB: 500,
+            outputFormat: 'jpeg'
+          });
+          
+          fileToUpload = compressionResult.compressedFile;
+          compressionStats = `Compressed from ${Math.round(file.size / 1024)}KB to ${Math.round(compressionResult.compressedSize / 1024)}KB (${compressionResult.compressionRatio.toFixed(1)}% reduction)`;
+          
+          console.log(compressionStats);
+        } else {
+          console.log('Image compression not needed - file already optimized');
+        }
+      } catch (compressionError) {
+        console.warn('Image compression failed, uploading original:', compressionError);
+        // Continue with original file if compression fails
+      }
+    }
+
     // Generate unique file name
-    const fileName = generateUniqueFileName(file.name, userId);
+    const fileName = generateUniqueFileName(fileToUpload.name, userId);
     
     // Determine storage path based on file type
     const folderPath = fileType === 'image' ? 'images' : 'documents';
@@ -120,7 +156,7 @@ export const uploadFileToStorage = async (
     // Upload file to Supabase storage
     const { data, error } = await supabase.storage
       .from('user-uploads')
-      .upload(filePath, file, {
+      .upload(filePath, fileToUpload, {
         cacheControl: '3600',
         upsert: false
       });
@@ -141,7 +177,8 @@ export const uploadFileToStorage = async (
       publicUrl,
       fileType,
       originalName: file.name,
-      size: file.size
+      size: fileToUpload.size,
+      compressionStats
     };
   } catch (error) {
     console.error('Error uploading file:', error);

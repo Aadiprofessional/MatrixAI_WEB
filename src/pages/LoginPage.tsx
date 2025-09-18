@@ -5,7 +5,7 @@ import { FiMail, FiLock, FiEye, FiEyeOff, FiMoon, FiSun } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import matrix from '../assets/matrix.png';
+import matrix from '../assets/matrix.svg';
 import LanguageSelector from '../components/LanguageSelector';
 import { Turnstile } from '@marsidev/react-turnstile';
 
@@ -260,9 +260,7 @@ const LoginPage: React.FC = () => {
               className="relative"
             >
               <div className="relative flex items-center justify-center">
-                <div className="bg-white rounded-2xl p-3 shadow-lg">
-                  <img src={matrix} alt="MatrixAI" className="h-16 w-16 object-contain" />
-                </div>
+                <img src={matrix} alt="MatrixAI" className="h-16 w-16 object-contain rounded-2xl shadow-lg" />
               </div>
             </motion.div>
           </div>

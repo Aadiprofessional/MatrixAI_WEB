@@ -50,7 +50,7 @@ const HumaniseTextPage: React.FC = () => {
   const [showComparison, setShowComparison] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<{id: string, title: string, original_text: string, humanized_text: string, createdAt: string, tone?: string, mode?: string, detector?: string, coinCost?: number}[]>([]);
-  const [detector, setDetector] = useState('turnitin');
+  const [detector, setDetector] = useState('default');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -76,14 +76,10 @@ const HumaniseTextPage: React.FC = () => {
 
   // StealthGPT Detector options
   const detectorOptions = [
-    { id: 'turnitin', name: 'Turnitin' },
-    { id: 'originality', name: 'Originality.ai' },
-    { id: 'gptzero', name: 'GPTZero' },
-    { id: 'copyleaks', name: 'CopyLeaks' },
-    { id: 'winston', name: 'Winston AI' },
+    { id: 'default', name: 'Default' },
+    { id: 'college', name: 'College' },
+    { id: 'high', name: 'High' },
     { id: 'zerogpt', name: 'ZeroGPT' },
-    { id: 'sapling', name: 'Sapling.ai' },
-    { id: 'writer', name: 'Writer.com' },
   ];
 
   // Fetch user's humanization history
@@ -466,6 +462,12 @@ const HumaniseTextPage: React.FC = () => {
                   </motion.div>
                 )}
                 
+                {/* Reminder Text */}
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    <strong>Remind:</strong> Default is ZeroGPT. If you prefer Turnitin or another option, please adjust the settings and results for reference only.
+                  </p>
+                </div>
               
               </div>
             </div>

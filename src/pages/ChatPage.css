@@ -7,6 +7,11 @@
   position: relative;
 }
 
+/* HTML content styles */
+.html-content {
+  line-height: 1.6;
+}
+
 /* Make the main container non-scrollable while maintaining responsiveness with sidebar */
 .ChatPage .flex.h-screen.overflow-hidden {
   overflow: hidden;
@@ -43,7 +48,91 @@
 .ChatPage .flex.flex-col.h-full {
   height: 100%;
   display: flex;
-  flex-direction: column;
+}
+
+/* Drag and drop styles */
+.ChatPage .drag-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.ChatPage .drag-drop-zone {
+  padding: 2rem;
+  border: 2px dashed #3b82f6;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: scaleIn 0.3s ease-out;
+  transition: all 0.3s ease;
+}
+
+.ChatPage .drag-drop-zone.dark {
+  background: rgba(31, 41, 55, 0.95);
+  border-color: #60a5fa;
+}
+
+.ChatPage .drag-drop-zone:hover {
+  transform: scale(1.05);
+  border-color: #2563eb;
+}
+
+.ChatPage .drag-drop-zone.dark:hover {
+  border-color: #3b82f6;
+}
+
+.ChatPage .drag-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem;
+  color: #3b82f6;
+  animation: bounce 2s infinite;
+}
+
+.ChatPage .drag-icon.dark {
+  color: #60a5fa;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40%, 43% {
+    transform: translateY(-10px);
+  }
+  70% {
+    transform: translateY(-5px);
+  }
 }
 
 /* Fix the chat header at the top with space for navbar */
@@ -300,14 +389,7 @@
   background-color: #1f2937;
 }
 
-/* Math rendering */
-.katex {
-  font-size: 1em !important;
-}
-
-.katex-display {
-  margin: 1em 0 !important;
-}
+/* HTML content rendering */
 
 /* Streaming animation */
 .streaming-content {
@@ -493,154 +575,25 @@
   }
 }
 
-/* Enhanced KaTeX Math Rendering */
-.katex {
-  font-size: 1.1em !important;
-  line-height: 1.4 !important;
+/* Enhanced HTML Content Rendering */
+.html-content {
+  font-size: 1em;
+  line-height: 1.6;
 }
 
-.katex-display {
-  margin: 1.5em 0 !important;
-  text-align: center !important;
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
+.html-content code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
 }
 
-.katex-display > .katex {
-  display: inline-block !important;
-  white-space: nowrap !important;
+.html-content pre {
+  overflow-x: auto;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 1rem;
 }
 
-/* Inline math styling */
-.katex:not(.katex-display) {
-  padding: 0.1em 0.3em !important;
-  background-color: rgba(59, 130, 246, 0.08) !important;
-  border-radius: 4px !important;
-  border: 1px solid rgba(59, 130, 246, 0.15) !important;
-  margin: 0 0.1em !important;
-}
-
-.dark .katex:not(.katex-display) {
-  background-color: rgba(96, 165, 250, 0.12) !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-}
-
-/* Math block styling */
-.katex-display .katex {
-  padding: 0.8em 1.2em !important;
-  background-color: rgba(59, 130, 246, 0.04) !important;
-  border-radius: 8px !important;
-  border: 1px solid rgba(59, 130, 246, 0.12) !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-}
-
-.dark .katex-display .katex {
-  background-color: rgba(96, 165, 250, 0.08) !important;
-  border-color: rgba(96, 165, 250, 0.15) !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-}
-
-/* Boxed answers styling */
-.katex .boxed {
-  border: 2px solid #3b82f6 !important;
-  padding: 0.4em 0.6em !important;
-  border-radius: 6px !important;
-  background-color: rgba(59, 130, 246, 0.1) !important;
-  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2) !important;
-}
-
-.dark .katex .boxed {
-  border-color: #60a5fa !important;
-  background-color: rgba(96, 165, 250, 0.15) !important;
-  box-shadow: 0 1px 3px rgba(96, 165, 250, 0.3) !important;
-}
-
-/* Math expression improvements */
-.katex .mord,
-.katex .mop,
-.katex .mbin,
-.katex .mrel,
-.katex .mopen,
-.katex .mclose,
-.katex .mpunct {
-  color: inherit !important;
-}
-
-/* Fraction styling */
-.katex .frac-line {
-  border-bottom-color: currentColor !important;
-}
-
-/* Square root styling */
-.katex .sqrt > .root {
-  border-top-color: currentColor !important;
-}
-
-/* Matrix and array styling */
-.katex .arraycolsep {
-  width: 0.5em !important;
-}
-
-/* Subscript and superscript improvements */
-.katex .msupsub {
-  position: relative !important;
-}
-
-/* Math operators */
-.katex .mop {
-  font-family: "KaTeX_Main", "Times New Roman", serif !important;
-}
-
-/* Delimiters */
-.katex .delimsizing {
-  color: inherit !important;
-}
-
-/* Accent marks */
-.katex .accent-body {
-  color: inherit !important;
-}
-
-/* Math spacing improvements */
-.katex .mspace {
-  display: inline-block !important;
-}
-
-/* Responsive math */
-@media (max-width: 640px) {
-  .katex {
-    font-size: 1em !important;
-  }
-  
-  .katex-display {
-    margin: 1em 0 !important;
-  }
-  
-  .katex-display .katex {
-    padding: 0.6em 0.8em !important;
-  }
-  
-  .katex:not(.katex-display) {
-    padding: 0.08em 0.2em !important;
-  }
-}
-
-/* Math text selection */
-.katex * {
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
-  user-select: text !important;
-}
-
-/* Math hover effects */
-.katex-display .katex:hover {
-  background-color: rgba(59, 130, 246, 0.06) !important;
-  transition: background-color 0.2s ease !important;
-}
-
-.dark .katex-display .katex:hover {
-  background-color: rgba(96, 165, 250, 0.12) !important;
+.dark .html-content pre {
+  background-color: #1f2937;
 }
 
 /* Force user message text to always be white */
@@ -649,4 +602,684 @@
 .bg-blue-500 .markdown-content *,
 .bg-blue-600 .markdown-content * {
   color: #ffffff !important;
+}
+
+/* Right sidebar styles */
+.chat-right-sidebar {
+  width: 320px;
+  min-width: 280px;
+  max-width: 500px;
+  border-left: 1px solid #e5e7eb;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.dark .chat-right-sidebar {
+  border-left-color: #374151;
+  background-color: #1f2937;
+}
+
+/* Right sidebar header */
+.chat-right-sidebar-header {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.dark .chat-right-sidebar-header {
+  border-bottom-color: #374151;
+  background-color: #111827;
+}
+
+/* Right sidebar content */
+.chat-right-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+}
+
+/* Responsive adjustments for right sidebar */
+@media (max-width: 1024px) {
+  .chat-right-sidebar {
+    width: 280px;
+    min-width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .chat-right-sidebar {
+    display: none;
+  }
+}
+
+/* Ensure main chat area adjusts properly with right sidebar */
+.chat-main-content {
+  flex: 1;
+  min-width: 0; /* Allows flex item to shrink below its content size */
+  transition: all 0.3s ease;
+}
+
+/* Smooth transitions for layout changes */
+.chat-layout-container {
+  transition: all 0.3s ease;
+  display: flex;
+  width: 100%;
+}
+
+/* Drag handle for resizing right panel */
+.resize-handle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: transparent;
+  cursor: col-resize;
+  z-index: 10;
+  transition: background-color 0.2s ease;
+}
+
+.resize-handle:hover {
+  background-color: #3b82f6;
+}
+
+.resize-handle:active {
+  background-color: #2563eb;
+}
+
+.dark .resize-handle:hover {
+  background-color: #60a5fa;
+}
+
+.dark .resize-handle:active {
+  background-color: #3b82f6;
+}
+
+/* Prevent text selection during resize */
+.resizing {
+  user-select: none;
+  cursor: col-resize;
+}
+
+.resizing * {
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Right panel closed state */
+.chat-right-sidebar.closed {
+  width: 0 !important;
+  min-width: 0 !important;
+  border-left: none;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* New chat button in right panel header */
+.new-chat-button {
+  transition: all 0.2s ease;
+}
+
+.new-chat-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark .new-chat-button:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Toggle panel button */
+.toggle-panel-button {
+  transition: all 0.2s ease;
+}
+
+.toggle-panel-button:hover {
+  transform: scale(1.05);
+}
+
+/* Responsive behavior for resizable panel */
+@media (max-width: 1024px) {
+  .chat-right-sidebar {
+    min-width: 250px;
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .chat-right-sidebar {
+    display: none;
+  }
+  
+  .resize-handle {
+    display: none;
+  }
+}
+
+/* Enhanced responsive layout for chat content */
+.chat-main-content {
+  transition: max-width 0.3s ease, width 0.3s ease;
+}
+
+/* Ensure chat container adjusts smoothly */
+.chat-main-content > div {
+  transition: max-width 0.3s ease;
+}
+
+/* Prevent layout shift during transitions */
+.chat-layout-container * {
+  box-sizing: border-box;
+}
+
+/* ===== AI RESPONSE CONTENT STYLING ===== */
+.ai-response-content {
+  line-height: 1.7;
+  color: inherit;
+  font-size: 1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Typography Hierarchy */
+.ai-response-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 1.5rem 0 1rem 0;
+  color: #1f2937;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.ai-response-content h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.75rem 0;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.25rem;
+}
+
+.ai-response-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem 0;
+  color: #4b5563;
+}
+
+.ai-response-content h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0.875rem 0 0.5rem 0;
+  color: #6b7280;
+}
+
+.ai-response-content h5 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.5rem 0;
+  color: #6b7280;
+}
+
+.ai-response-content h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.5rem 0;
+  color: #6b7280;
+}
+
+/* Dark mode typography */
+.dark .ai-response-content h1 {
+  color: #f9fafb;
+  border-bottom-color: #374151;
+}
+
+.dark .ai-response-content h2 {
+  color: #e5e7eb;
+  border-bottom-color: #374151;
+}
+
+.dark .ai-response-content h3,
+.dark .ai-response-content h4,
+.dark .ai-response-content h5,
+.dark .ai-response-content h6 {
+  color: #d1d5db;
+}
+
+/* Paragraph styling */
+.ai-response-content p {
+  margin: 0.75rem 0;
+  line-height: 1.7;
+  color: inherit;
+}
+
+.ai-response-content p:first-child {
+  margin-top: 0;
+}
+
+.ai-response-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* List styling */
+.ai-response-content ul,
+.ai-response-content ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.ai-response-content ul {
+  list-style-type: disc;
+}
+
+.ai-response-content ol {
+  list-style-type: decimal;
+}
+
+.ai-response-content li {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.ai-response-content ul ul,
+.ai-response-content ol ol,
+.ai-response-content ul ol,
+.ai-response-content ol ul {
+  margin: 0.25rem 0;
+}
+
+.ai-response-content ul ul {
+  list-style-type: circle;
+}
+
+.ai-response-content ul ul ul {
+  list-style-type: square;
+}
+
+/* Blockquote styling */
+.ai-response-content blockquote {
+  margin: 1.5rem 0;
+  padding: 1rem 1.5rem;
+  border-left: 4px solid #3b82f6;
+  background-color: rgba(59, 130, 246, 0.05);
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: italic;
+  color: #4b5563;
+}
+
+.dark .ai-response-content blockquote {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #d1d5db;
+}
+
+/* Inline code styling */
+.ai-response-content code:not(pre code) {
+  background-color: #f3f4f6;
+  color: #dc2626;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 0.875em;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+}
+
+.dark .ai-response-content code:not(pre code) {
+  background-color: #374151;
+  color: #fca5a5;
+  border-color: #4b5563;
+}
+
+/* Code block styling */
+.ai-response-content pre {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dark .ai-response-content pre {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.ai-response-content pre code {
+  background: none !important;
+  color: inherit !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: inherit !important;
+}
+
+/* Table styling */
+.ai-response-content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.5rem 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dark .ai-response-content table {
+  border-color: #374151;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.ai-response-content th {
+  background-color: #f8fafc;
+  color: #374151;
+  font-weight: 600;
+  padding: 0.875rem 1rem;
+  text-align: left;
+  border-bottom: 2px solid #e5e7eb;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dark .ai-response-content th {
+  background-color: #374151;
+  color: #f3f4f6;
+  border-bottom-color: #4b5563;
+}
+
+.ai-response-content td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: inherit;
+  vertical-align: top;
+}
+
+.dark .ai-response-content td {
+  border-bottom-color: #334155;
+}
+
+.ai-response-content tr:nth-child(even) td {
+  background-color: #f8fafc;
+}
+
+.dark .ai-response-content tr:nth-child(even) td {
+  background-color: #1e293b;
+}
+
+.ai-response-content tr:hover td {
+  background-color: #f1f5f9;
+}
+
+.dark .ai-response-content tr:hover td {
+  background-color: #334155;
+}
+
+/* Link styling */
+.ai-response-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+  text-decoration-color: rgba(59, 130, 246, 0.3);
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.ai-response-content a:hover {
+  color: #2563eb;
+  text-decoration-color: rgba(37, 99, 235, 0.8);
+}
+
+.dark .ai-response-content a {
+  color: #60a5fa;
+}
+
+.dark .ai-response-content a:hover {
+  color: #93c5fd;
+}
+
+/* Emphasis styling */
+.ai-response-content strong,
+.ai-response-content b {
+  font-weight: 700;
+  color: inherit;
+}
+
+.ai-response-content em,
+.ai-response-content i {
+  font-style: italic;
+  color: inherit;
+}
+
+/* Horizontal rule styling */
+.ai-response-content hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #d1d5db, transparent);
+  margin: 2rem 0;
+  border-radius: 1px;
+}
+
+.dark .ai-response-content hr {
+  background: linear-gradient(to right, transparent, #4b5563, transparent);
+}
+
+/* Enhanced KaTeX Math expressions styling */
+.ai-response-content .katex-block-container {
+  display: block;
+  text-align: center;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ai-response-content .katex-inline-container {
+  display: inline;
+  margin: 0 0.1rem;
+  vertical-align: baseline;
+}
+
+.ai-response-content .katex-block-container .katex-display {
+  margin: 0 !important;
+  text-align: center;
+}
+
+.ai-response-content .katex {
+  font-size: 1.1em !important;
+  line-height: 1.4 !important;
+}
+
+.ai-response-content .katex-block-container .katex {
+  font-size: 1.2em !important;
+}
+
+/* Math error fallback styling */
+.ai-response-content .math-error {
+  color: #d32f2f;
+  background: rgba(211, 47, 47, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+/* Dark mode adjustments for KaTeX */
+.ai-response-content.dark .katex-block-container {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ai-response-content.dark .math-error {
+  color: #f48fb1;
+  background: rgba(244, 143, 177, 0.1);
+}
+
+/* Improve KaTeX font rendering */
+.ai-response-content .katex .mathnormal {
+  font-style: italic;
+}
+
+.ai-response-content .katex .mathit {
+  font-style: italic;
+}
+
+.ai-response-content .katex .mathbf {
+  font-weight: bold;
+}
+
+/* Better spacing for complex expressions */
+.ai-response-content .katex .mord + .mord,
+.ai-response-content .katex .mord + .mop,
+.ai-response-content .katex .mop + .mord {
+  margin-left: 0.1em;
+}
+
+/* Improve fraction display */
+.ai-response-content .katex .frac-line {
+  border-bottom-width: 0.06em;
+}
+
+/* Better superscript and subscript positioning */
+.ai-response-content .katex .msupsub {
+  text-align: left;
+}
+
+/* Responsive math expressions */
+@media (max-width: 768px) {
+  .ai-response-content .katex-block-container {
+    padding: 0.75rem;
+    margin: 1rem 0;
+    font-size: 0.95em;
+  }
+  
+  .ai-response-content .katex {
+    font-size: 1em !important;
+  }
+  
+  .ai-response-content .katex-block-container .katex {
+    font-size: 1.1em !important;
+  }
+}
+
+/* Image styling */
+.ai-response-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin: 1rem 0;
+}
+
+.dark .ai-response-content img {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .ai-response-content {
+    font-size: 0.9rem;
+  }
+  
+  .ai-response-content h1 {
+    font-size: 1.75rem;
+  }
+  
+  .ai-response-content h2 {
+    font-size: 1.5rem;
+  }
+  
+  .ai-response-content h3 {
+    font-size: 1.25rem;
+  }
+  
+  .ai-response-content h4 {
+    font-size: 1.125rem;
+  }
+  
+  .ai-response-content h5,
+  .ai-response-content h6 {
+    font-size: 1rem;
+  }
+  
+  .ai-response-content pre {
+    font-size: 0.8rem;
+    padding: 1rem;
+  }
+  
+  .ai-response-content table {
+    font-size: 0.875rem;
+  }
+  
+  .ai-response-content th,
+  .ai-response-content td {
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .ai-response-content {
+    color: black !important;
+  }
+  
+  .ai-response-content h1,
+  .ai-response-content h2,
+  .ai-response-content h3,
+  .ai-response-content h4,
+  .ai-response-content h5,
+  .ai-response-content h6 {
+    color: black !important;
+    border-color: #ccc !important;
+  }
+  
+  .ai-response-content a {
+    color: black !important;
+    text-decoration: underline !important;
+  }
+  
+  .ai-response-content pre,
+  .ai-response-content .math-block {
+    border: 1px solid #ccc !important;
+    background-color: #f9f9f9 !important;
+    page-break-inside: avoid;
+  }
+  
+  .ai-response-content table {
+    border: 1px solid #ccc !important;
+    page-break-inside: avoid;
+  }
+  
+  .ai-response-content th,
+  .ai-response-content td {
+    border: 1px solid #ccc !important;
+    background-color: transparent !important;
+  }
+}
+
+/* Accessibility improvements */
+.ai-response-content:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+/* Selection styling */
+.ai-response-content ::selection {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: inherit;
+}
+
+.dark .ai-response-content ::selection {
+  background-color: rgba(59, 130, 246, 0.3);
 }

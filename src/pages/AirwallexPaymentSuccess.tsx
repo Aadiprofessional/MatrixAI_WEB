@@ -18,7 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
 import { useTranslation } from 'react-i18next';
 import jsPDF from 'jspdf';
-import matrixLogo from '../assets/matrix.png';
+import matrixLogo from '../assets/matrix.svg';
 import airwallexService, { PaymentIntentStatusResponse } from '../services/airwallexService';
 
 const AirwallexPaymentSuccess: React.FC = () => {

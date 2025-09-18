@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { compressImage, shouldCompressImage } from './utils/imageCompression';
 
 // Initialize Supabase client
 const supabaseUrl = 'https://ddtgdhehxhgarkonvpfq.supabase.co';
@@ -273,18 +274,49 @@ export const updateUserProfile = async (userId: string, userData: any) => {
 
 // ===== Storage functions =====
 
-// Upload file to Supabase storage
+// Upload file to Supabase storage with automatic image compression
 export const uploadImageToStorage = async (file: File, userId: string) => {
   try {
+    let fileToUpload = file;
+    
+    // Compress image before upload
+    if (file.type.startsWith('image/')) {
+      console.log(`Original image size: ${Math.round(file.size / 1024)}KB`);
+      
+      try {
+        // Check if compression is needed
+        const needsCompression = await shouldCompressImage(file, 500);
+        
+        if (needsCompression) {
+          console.log('Compressing image...');
+          const compressionResult = await compressImage(file, {
+            maxWidth: 1920,
+            maxHeight: 1080,
+            quality: 0.8,
+            maxSizeKB: 500,
+            outputFormat: 'jpeg'
+          });
+          
+          fileToUpload = compressionResult.compressedFile;
+          console.log(`Compressed to: ${Math.round(compressionResult.compressedSize / 1024)}KB (${compressionResult.compressionRatio.toFixed(1)}% reduction)`);
+        } else {
+          console.log('Image compression not needed - file already optimized');
+        }
+      } catch (compressionError) {
+        console.warn('Image compression failed, uploading original:', compressionError);
+        // Continue with original file if compression fails
+      }
+    }
+    
     // Create a unique file name
-    const fileExt = file.name.split('.').pop();
+    const fileExt = fileToUpload.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
     const filePath = `user-uploads/${fileName}`;
     
     // Upload the file
     const { data, error } = await supabase.storage
       .from('user-uploads')
-      .upload(filePath, file, {
+      .upload(filePath, fileToUpload, {
         cacheControl: '3600',
         upsert: false
       });
