@@ -5,24 +5,25 @@ import { compressImage, shouldCompressImage } from './utils/imageCompression';
 const supabaseUrl = 'https://ddtgdhehxhgarkonvpfq.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdGdkaGVoeGhnYXJrb252cGZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2Njg4MTIsImV4cCI6MjA1MDI0NDgxMn0.mY8nx-lKrNXjJxHU7eEja3-fTSELQotOP4aZbxvmNPY';
 
-// Configure Supabase client with custom storage to prevent session persistence issues
+// Configure Supabase client with localStorage for proper OAuth session persistence
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     storage: {
       getItem: (key: string) => {
-        // Use sessionStorage instead of localStorage for auth tokens
-        // This ensures sessions are cleared when browser tab is closed
-        return sessionStorage.getItem(key);
+        // Use localStorage for auth tokens to ensure OAuth redirects work properly
+        return localStorage.getItem(key);
       },
       setItem: (key: string, value: string) => {
-        sessionStorage.setItem(key, value);
+        localStorage.setItem(key, value);
       },
       removeItem: (key: string) => {
-        sessionStorage.removeItem(key);
+        localStorage.removeItem(key);
       },
     },
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true, // Important for OAuth redirects
+    flowType: 'pkce', // Use PKCE flow for better security
   },
 });
 
@@ -61,37 +62,46 @@ export const signIn = async (email: string, password: string) => {
 
 // Sign in with Google
 export const signInWithGoogle = async () => {
-  // Get the current URL path (login or signup)
-  const currentPath = window.location.pathname;
-  
-  // Set redirectTo to the current page instead of dashboard
-  // This way we can handle the redirect in the current page
-  const redirectUrl = window.location.hostname === 'localhost'
-    ? `http://localhost:3000${currentPath}`
-    : `https://matrixai.asia${currentPath}`;
+  try {
+    // Clear any existing auth state to prevent conflicts
+    await supabase.auth.signOut();
     
-  console.log('Setting Google OAuth redirectTo:', redirectUrl);
-  
-  const { data, error } = await supabase.auth.signInWithOAuth({ 
-    provider: 'google', 
-    options: { 
-      redirectTo: redirectUrl,
-      queryParams: {
-        // Force account selection and consent screen every time
-        prompt: 'select_account consent',
-        // Add a timestamp to prevent caching
-        state: `timestamp_${Date.now()}`,
-        // Force fresh authentication
-        max_age: '0'
-      }
-    }, 
-  });
-  
-  if (error) {
+    // Get the current URL path (login or signup)
+    const currentPath = window.location.pathname;
+    
+    // Set redirectTo to the dashboard for successful authentication
+    const redirectUrl = window.location.hostname === 'localhost'
+      ? `http://localhost:3000/dashboard`
+      : `https://matrixai.asia/dashboard`;
+      
+    console.log('🔄 Starting Google OAuth with redirectTo:', redirectUrl);
+    
+    const { data, error } = await supabase.auth.signInWithOAuth({ 
+      provider: 'google', 
+      options: { 
+        redirectTo: redirectUrl,
+        queryParams: {
+          // Force account selection and consent screen
+          prompt: 'select_account',
+          // Request necessary scopes
+          scope: 'openid email profile',
+          // Force fresh authentication
+          max_age: '0'
+        }
+      }, 
+    });
+    
+    if (error) {
+      console.error('❌ Google OAuth error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Google OAuth initiated successfully');
+    return data;
+  } catch (error) {
+    console.error('❌ Error in signInWithGoogle:', error);
     throw error;
   }
-  
-  return data;
 };
 
 // Sign in with Apple

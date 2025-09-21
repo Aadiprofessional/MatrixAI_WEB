@@ -39,8 +39,8 @@ const HumaniseTextPage: React.FC = () => {
   const [text, setText] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [humanisedText, setHumanisedText] = useState('');
-  const [tone, setTone] = useState('Standard');
-  const [mode, setMode] = useState('Medium');
+  const [tone, setTone] = useState('College');
+  const [mode, setMode] = useState('High');
   const [isProcessing, setIsProcessing] = useState(false);
   const [savedContents, setSavedContents] = useState<{id: string, title: string, content: string}[]>([]);
   const [editingTitle, setEditingTitle] = useState('');
@@ -50,7 +50,7 @@ const HumaniseTextPage: React.FC = () => {
   const [showComparison, setShowComparison] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<{id: string, title: string, original_text: string, humanized_text: string, createdAt: string, tone?: string, mode?: string, detector?: string, coinCost?: number}[]>([]);
-  const [detector, setDetector] = useState('default');
+  const [detector, setDetector] = useState('zerogpt');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -76,10 +76,18 @@ const HumaniseTextPage: React.FC = () => {
 
   // StealthGPT Detector options
   const detectorOptions = [
-    { id: 'default', name: 'Default' },
-    { id: 'college', name: 'College' },
-    { id: 'high', name: 'High' },
     { id: 'zerogpt', name: 'ZeroGPT' },
+    { id: 'turnitin', name: 'Turnitin' },
+    { id: 'gptzero', name: 'GPTZero' },
+    { id: 'originality', name: 'Originality.ai' },
+    { id: 'winston', name: 'Winston AI' },
+    { id: 'copyleaks', name: 'Copyleaks' },
+    { id: 'crossplag', name: 'Crossplag' },
+    { id: 'scribbr', name: 'Scribbr' },
+    { id: 'quillbot', name: 'Quillbot' },
+    { id: 'sapling', name: 'Sapling' },
+    { id: 'writer', name: 'Writer' },
+    { id: 'contentatscale', name: 'Content at Scale' },
   ];
 
   // Fetch user's humanization history
@@ -465,7 +473,7 @@ const HumaniseTextPage: React.FC = () => {
                 {/* Reminder Text */}
                 <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                   <p className="text-sm text-blue-700 dark:text-blue-300">
-                    <strong>Remind:</strong> Default is ZeroGPT. If you prefer Turnitin or another option, please adjust the settings and results for reference only.
+                    <strong>Reminder:</strong> Default detector is ZeroGPT. You can select other detectors like Turnitin, but results are for reference only.
                   </p>
                 </div>
               

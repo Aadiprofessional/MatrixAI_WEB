@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
+import matrixLogo from '../assets/matrix.png';
 
 interface FooterCategory {
   title: string;
@@ -62,12 +63,20 @@ const Footer: React.FC<FooterProps> = ({
         <div className={`mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center ${
           darkMode ? 'border-gray-800' : 'border-gray-200'
         }`}>
-          <div className={`mb-4 md:mb-0 ${
+          <div className={`mb-4 md:mb-0 flex flex-col items-center md:items-start space-y-2 ${
             darkMode ? 'text-gray-500' : 'text-gray-600'
           }`}>
-            <span className={`text-xl font-medium ${
-              darkMode ? 'text-white' : 'text-gray-900'
-            }`}>{companyName}</span>
+            <div className="flex items-center space-x-2">
+              <img src={matrixLogo} alt="Matrix AI" className="w-8 h-8 object-contain rounded-lg" />
+              <span className={`text-xl font-bold ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>matrixai<span className="text-red-500">.</span>asia</span>
+            </div>
+            <div className={`text-sm text-center md:text-left ${
+              darkMode ? 'text-gray-400' : 'text-gray-500'
+            }`}>
+              Copyright © 2025 MatrixAI. All rights reserved.
+            </div>
           </div>
           
           {socialLinks.length > 0 && (

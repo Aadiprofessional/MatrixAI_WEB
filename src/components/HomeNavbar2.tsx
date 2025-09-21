@@ -4,7 +4,7 @@ import { FiArrowRight, FiChevronDown, FiImage, FiVideo, FiMessageSquare, FiMoon,
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import SimpleLanguageSelector from './SimpleLanguageSelector';
-import matrixLogo from '../assets/matrix.svg';
+import matrixLogo from '../assets/matrix.png';
 
 interface HomeNavbarProps {}
 
@@ -43,7 +43,7 @@ const HomeNavbar2: React.FC<HomeNavbarProps> = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 md:space-x-4">
               <Link to="/" className="flex items-center space-x-2 pl-0">
-                <img src={matrixLogo} alt="Matrix AI" className="w-5 h-5 md:w-8 md:h-8 object-contain rounded-lg -my-2" />
+                <img src={matrixLogo} alt="Matrix AI" className="w-16 h-16 md:w-8 md:h-8 object-contain rounded-lg -my-2" />
                 <span className={`font-bold text-sm md:text-base hidden sm:block ${darkMode ? 'text-white' : 'text-gray-800'}`}>matrixai<span className="text-red-500">.</span>asia</span>
               </Link>
               
@@ -216,11 +216,11 @@ const HomeNavbar2: React.FC<HomeNavbarProps> = () => {
               </div>
               
               <Link 
-                to="/signup" 
+                to="/login" 
                 className="inline-flex items-center px-2 py-1 md:px-3 md:py-1.5 rounded-lg font-medium text-xs bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-300"
               >
-                <span className="hidden sm:inline">Get started now</span>
-                <span className="sm:hidden">Sign up</span>
+                <span className="hidden sm:inline">Login</span>
+                <span className="sm:hidden">Login</span>
                 <FiArrowRight className="ml-1 md:ml-1.5 w-3 h-3" />
               </Link>
             </div>

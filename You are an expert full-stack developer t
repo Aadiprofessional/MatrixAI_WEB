@@ -1,0 +1,261 @@
+You are an expert full-stack developer tasked with testing and implementing chat saving functionality for a React/TypeScript application using Supabase as the backend. 
+
+## CONTEXT
+The application has a chat system where users can send messages with text and file attachments. The system uses:
+- **Frontend**: React/TypeScript with Supabase client
+- **Backend**: Supabase (PostgreSQL + Storage)
+- **Authentication**: Supabase Auth
+- **File Storage**: Supabase Storage
+
+## DATABASE SCHEMA
+```sql
+-- Chats table
+CREATE TABLE chats (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  title TEXT,
+  role TEXT DEFAULT 'general',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Messages table  
+CREATE TABLE messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  chat_id UUID REFERENCES chats(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  file_url TEXT,
+  file_name TEXT,
+  file_type TEXT,
+  file_size BIGINT,
+  position INTEGER,
+  status TEXT DEFAULT 'completed',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+## TASK 1: TEST EXISTING FUNCTIONALITY WITH CURL
+
+First, test the current chat saving logic using curl commands. You need to:
+
+### 1.1 Test Chat Creation
+```bash
+# Test creating a new chat
+curl -X POST 'https://ddtgdhehxhgarkonvpfq.supabase.co/rest/v1/chats' \
+  -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdGdkaGVoeGhnYXJrb252cGZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2Njg4MTIsImV4cCI6MjA1MDI0NDgxMn0.mY8nx-lKrNXjJxHU7eEja3-fTSELQotOP4aZbxvmNPY' \
+  -H 'Authorization: Bearer [USER_JWT_TOKEN]' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "user_id": "[USER_ID]",
+    "title": "Test Chat",
+    "role": "general"
+  }'
+```
+
+### 1.2 Test Text Message Saving
+```bash
+# Test saving a text-only message
+curl -X POST 'https://ddtgdhehxhgarkonvpfq.supabase.co/rest/v1/messages' \
+  -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdGdkaGVoeGhnYXJrb252cGZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2Njg4MTIsImV4cCI6MjA1MDI0NDgxMn0.mY8nx-lKrNXjJxHU7eEja3-fTSELQotOP4aZbxvmNPY' \
+  -H 'Authorization: Bearer [USER_JWT_TOKEN]' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "chat_id": "[CHAT_ID]",
+    "role": "user",
+    "content": "Hello, this is a test message",
+    "position": 1
+  }'
+```
+
+### 1.3 Test File Upload to Storage
+```bash
+# Test file upload to Supabase Storage
+curl -X POST 'https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/user-uploads/users/[USER_ID]/images/test-image.jpg' \
+  -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdGdkaGVoeGhnYXJrb252cGZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2Njg4MTIsImV4cCI6MjA1MDI0NDgxMn0.mY8nx-lKrNXjJxHU7eEja3-fTSELQotOP4aZbxvmNPY' \
+  -H 'Authorization: Bearer [USER_JWT_TOKEN]' \
+  -H 'Content-Type: image/jpeg' \
+  --data-binary @test-image.jpg
+```
+
+### 1.4 Test Message with File Attachment
+```bash
+# Test saving a message with file attachment
+curl -X POST 'https://ddtgdhehxhgarkonvpfq.supabase.co/rest/v1/messages' \
+  -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdGdkaGVoeGhnYXJrb252cGZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2Njg4MTIsImV4cCI6MjA1MDI0NDgxMn0.mY8nx-lKrNXjJxHU7eEja3-fTSELQotOP4aZbxvmNPY' \
+  -H 'Authorization: Bearer [USER_JWT_TOKEN]' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "chat_id": "[CHAT_ID]",
+    "role": "user", 
+    "content": "Here is an image I want to share",
+    "file_url": "https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/[USER_ID]/images/test-image.jpg",
+    "file_name": "test-image.jpg",
+    "file_type": "image/jpeg",
+    "file_size": 1024000,
+    "position": 2
+  }'
+```
+
+### 1.5 Test Data Retrieval
+```bash
+# Test retrieving chat messages
+curl -X GET 'https://ddtgdhehxhgarkonvpfq.supabase.co/rest/v1/messages?chat_id=eq.[CHAT_ID]&order=position.asc' \
+  -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdGdkaGVoeGhnYXJrb252cGZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2Njg4MTIsImV4cCI6MjA1MDI0NDgxMn0.mY8nx-lKrNXjJxHU7eEja3-fTSELQotOP4aZbxvmNPY' \
+  -H 'Authorization: Bearer [USER_JWT_TOKEN]'
+```
+
+## TASK 2: IMPLEMENT ROBUST CHAT SAVING
+
+After testing, implement the following improvements WITHOUT changing the existing codebase structure:
+
+### 2.1 Enhanced Error Handling
+- Add retry logic for failed uploads
+- Implement transaction rollback for partial failures
+- Add comprehensive error logging
+
+### 2.2 File Validation Enhancement
+```typescript
+// Add to existing fileUpload.ts validation
+const validateFileForChat = (file: File): ValidationResult => {
+  // Size limits by type
+  const sizeLimits = {
+    'image/*': 10 * 1024 * 1024, // 10MB
+    'application/pdf': 25 * 1024 * 1024, // 25MB
+    'text/*': 1 * 1024 * 1024, // 1MB
+  };
+  
+  // Security checks
+  const allowedTypes = [
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+    'application/pdf', 'text/plain', 'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ];
+  
+  return {
+    isValid: allowedTypes.includes(file.type) && file.size <= getSizeLimit(file.type),
+    error: getValidationError(file)
+  };
+};
+```
+
+### 2.3 Optimized Saving Function
+```typescript
+// Enhance existing saveChatToDatabase function
+const saveChatWithAttachment = async (
+  messageContent: string,
+  role: 'user' | 'assistant',
+  attachments?: FileAttachment[]
+) => {
+  try {
+    // 1. Validate session
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) throw new Error('No authenticated user');
+
+    // 2. Create/get chat
+    const chatId = await ensureChatExists(session.user.id);
+
+    // 3. Upload files in parallel
+    const uploadPromises = attachments?.map(file => uploadFileToStorage(file)) || [];
+    const uploadResults = await Promise.allSettled(uploadPromises);
+
+    // 4. Save message with file metadata
+    const messageData = {
+      chat_id: chatId,
+      role,
+      content: messageContent,
+      position: await getNextMessagePosition(chatId),
+      ...(uploadResults.length > 0 && {
+        file_url: uploadResults[0].status === 'fulfilled' ? uploadResults[0].value.url : null,
+        file_name: attachments?.[0]?.name,
+        file_type: attachments?.[0]?.type,
+        file_size: attachments?.[0]?.size
+      })
+    };
+
+    const { data, error } = await supabase
+      .from('messages')
+      .insert(messageData)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+
+  } catch (error) {
+    console.error('Error saving chat with attachment:', error);
+    throw error;
+  }
+};
+```
+
+### 2.4 Streaming Message Support
+```typescript
+// Enhance existing streaming functionality
+const handleStreamingMessage = async (chatId: string, content: string) => {
+  const { data, error } = await supabase
+    .from('messages')
+    .insert({
+      chat_id: chatId,
+      role: 'assistant',
+      content: '',
+      status: 'streaming',
+      position: await getNextMessagePosition(chatId)
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  // Update content as stream progresses
+  return {
+    messageId: data.id,
+    updateContent: async (newContent: string) => {
+      await supabase
+        .from('messages')
+        .update({ content: newContent })
+        .eq('id', data.id);
+    },
+    finalize: async (finalContent: string) => {
+      await supabase
+        .from('messages')
+        .update({ content: finalContent, status: 'completed' })
+        .eq('id', data.id);
+    }
+  };
+};
+```
+
+## REQUIREMENTS
+1. **DO NOT** modify the existing UI components or change the overall architecture
+2. **DO NOT** change the database schema
+3. **DO NOT** alter the existing API endpoints or webhook integrations
+4. **ENSURE** backward compatibility with existing chat data
+5. **MAINTAIN** the current user experience and interface
+6. **ADD** comprehensive error handling and logging
+7. **IMPLEMENT** proper file validation and security measures
+8. **OPTIMIZE** for performance and reliability
+
+## TESTING CHECKLIST
+- [ ] Text-only messages save correctly
+- [ ] Image attachments upload and save with proper metadata
+- [ ] Document attachments work with all supported formats
+- [ ] Multiple file attachments are handled properly
+- [ ] Error scenarios are handled gracefully
+- [ ] File size and type validation works
+- [ ] Streaming messages update correctly
+- [ ] Chat history loads properly with attachments
+- [ ] File URLs are accessible and secure
+- [ ] Database constraints are respected
+
+## DELIVERABLES
+1. Test results from all curl commands
+2. Enhanced error handling implementation
+3. Improved file validation logic
+4. Optimized saving functions
+5. Comprehensive test coverage
+6. Performance benchmarks
+7. Security audit results
+
+Focus on reliability, security, and maintaining the existing user experience while enhancing the underlying chat saving mechanisms.

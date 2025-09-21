@@ -59,6 +59,80 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
   };
 
   const formatGraphData = (root: any): MindMapNode[] => {
+    try {
+      // Handle meeting XML structure
+      if (root.meeting) {
+        const meeting = root.meeting;
+        const rootNode: MindMapNode = { 
+          name: "会议组织", 
+          children: [] 
+        };
+
+        // Process topics
+        if (meeting.topic) {
+          const topics = Array.isArray(meeting.topic) ? meeting.topic : [meeting.topic];
+          
+          topics.forEach((topic: any) => {
+            const topicNode: MindMapNode = { 
+              name: topic['@_name'] || topic.name || "主题", 
+              children: [] 
+            };
+            
+            // Add topic description if exists
+            if (topic.description) {
+              const descText = typeof topic.description === 'string' ? topic.description : topic.description['#text'] || '';
+              // Keep the full text without artificial truncation
+              topicNode.children?.push({ name: descText.trim() });
+            }
+            
+            // Process subtopics
+            if (topic.subtopic) {
+              const subtopics = Array.isArray(topic.subtopic) ? topic.subtopic : [topic.subtopic];
+              
+              subtopics.forEach((subtopic: any) => {
+                const subtopicNode: MindMapNode = { 
+                  name: subtopic['@_name'] || subtopic.name || "子主题", 
+                  children: [] 
+                };
+                
+                // Add subtopic description
+                if (subtopic.description) {
+                  const descText = typeof subtopic.description === 'string' ? subtopic.description : subtopic.description['#text'] || '';
+                  // Keep the full text without artificial truncation
+                  subtopicNode.children?.push({ name: descText.trim() });
+                }
+                
+                // Process action items
+                if (subtopic.action_items?.item) {
+                  const items = Array.isArray(subtopic.action_items.item) 
+                    ? subtopic.action_items.item 
+                    : [subtopic.action_items.item];
+                    
+                  items.forEach((item: string) => {
+                    subtopicNode.children?.push({ name: item });
+                  });
+                }
+                
+                topicNode.children?.push(subtopicNode);
+              });
+            }
+            
+            rootNode.children?.push(topicNode);
+          });
+        }
+        
+        return [rootNode];
+      }
+
+      // Fallback for other XML structures
+      return formatLegacyData(root);
+    } catch (error) {
+      console.error('Error formatting graph data:', error);
+      return [];
+    }
+  };
+
+  const formatLegacyData = (root: any): MindMapNode[] => {
     const formatNode = (node: any, name = 'Root'): MindMapNode | null => {
       const formattedNode: MindMapNode = { name, children: [] };
 
@@ -152,7 +226,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     setLoading(true);
     try {
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', true);
+      xhr.open('POST', 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', true);
       xhr.setRequestHeader('Authorization', `Bearer ${process.env.REACT_APP_ALIYUN_API_KEY}`);
       xhr.setRequestHeader('Content-Type', 'application/json');
 
@@ -428,17 +502,14 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
         const coloredGraphData = ${JSON.stringify(graphData)}.map((node, idx) => assignColors(node, idx));
         const { repulsion, edgeLength, layerSpacing, nodeSpacing } = detectOptimalChartSize(coloredGraphData);
 
-        // Function to wrap text into multiple lines with truncation
+        // Function to wrap text into multiple lines
         function wrapText(text, nodeType) {
-          // Truncate text if it exceeds 150 characters
+          // Keep the full text without truncation
           let displayText = text;
-          if (text.length > 150) {
-            displayText = text.substring(0, 150) + '...';
-          }
           
-          let maxLineLength = 16; // Reduced for topic and subtopic nodes
+          let maxLineLength = 25; // Increased for topic and subtopic nodes
           if (nodeType === 'description') {
-            maxLineLength = 70; // Reduced for description nodes
+            maxLineLength = 100; // Increased for description nodes to show more complete text
           }
 
           const words = displayText.split(' ');
@@ -633,6 +704,310 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     </html>
   `;
 
+  // Calculate node positions for graph layout with proper tree structure
+  const calculateNodePositions = (data: MindMapNode[]) => {
+    const positions: { [key: string]: { x: number; y: number; level: number; node: MindMapNode; width: number; height: number } } = {};
+    
+    // Calculate node dimensions
+    const getNodeDimensions = (node: MindMapNode, level: number) => {
+      const maxCharsPerLine = Math.max(12, 20 - level * 2);
+      const lines = wrapText(node.name, maxCharsPerLine);
+      const fontSize = Math.max(14 - level * 1, 10);
+      const charWidth = fontSize * 0.6;
+      const lineHeight = fontSize * 1.3;
+      
+      const width = Math.max(
+        Math.max(...lines.map(line => line.length)) * charWidth + 30,
+        100
+      );
+      const height = Math.max(lines.length * lineHeight + 16, 40);
+      
+      return { width, height, lines };
+    };
+    
+    // Calculate subtree dimensions to properly space nodes
+    const calculateSubtreeHeight = (nodes: MindMapNode[], level: number): number => {
+      if (!nodes || nodes.length === 0) return 0;
+      
+      let totalHeight = 0;
+      nodes.forEach(node => {
+        const { height } = getNodeDimensions(node, level);
+        totalHeight += height + 30; // Add spacing between nodes
+        
+        if (node.children && node.children.length > 0) {
+          const childHeight = calculateSubtreeHeight(node.children, level + 1);
+          totalHeight = Math.max(totalHeight, height + childHeight);
+        }
+      });
+      
+      return totalHeight;
+    };
+    
+    // Position nodes in a balanced tree layout
+    const positionNodes = (
+      nodes: MindMapNode[], 
+      level: number = 0, 
+      parentX: number = 300, 
+      parentY: number = 400, 
+      availableHeight: number = 1000,
+      startY: number = 50
+    ) => {
+      if (!nodes || nodes.length === 0) return;
+      
+      // Increase horizontal spacing significantly for better distribution
+      const levelSpacing = level === 0 ? 0 : Math.max(350, 250 + level * 50);
+      const currentX = parentX + levelSpacing;
+      
+      // Calculate total height needed for all nodes at this level
+      let totalRequiredHeight = 0;
+      const nodeData: Array<{ node: MindMapNode; width: number; height: number; lines: string[] }> = [];
+      
+      nodes.forEach(node => {
+        const dimensions = getNodeDimensions(node, level);
+        nodeData.push({ node, ...dimensions });
+        totalRequiredHeight += dimensions.height + 60; // Increase vertical spacing
+      });
+      
+      // Ensure minimum spacing between nodes
+      const minNodeSpacing = 80;
+      const nodeSpacing = Math.max(minNodeSpacing, (availableHeight - totalRequiredHeight) / Math.max(nodes.length - 1, 1));
+      
+      // Center the group of nodes vertically
+      let currentY = startY;
+      if (level === 0) {
+        currentY = parentY; // Root node stays centered
+      } else {
+        // For child nodes, distribute them evenly around parent
+        const totalHeight = (nodes.length - 1) * nodeSpacing + totalRequiredHeight;
+        currentY = parentY - totalHeight / 2;
+      }
+      
+      nodes.forEach((node, index) => {
+        const { width, height } = nodeData[index];
+        const nodeId = `${level}-${index}`;
+        
+        // Position current node
+        const x = currentX;
+        const y = currentY + height / 2;
+        
+        positions[nodeId] = { x, y, level, node, width, height };
+        
+        // Position children if they exist
+        if (node.children && node.children.length > 0) {
+          const childrenHeight = calculateSubtreeHeight(node.children, level + 1);
+          
+          positionNodes(
+            node.children, 
+            level + 1, 
+            x, 
+            y, 
+            Math.max(childrenHeight + 200, 400), // Increase available height for children
+            y - childrenHeight / 2
+          );
+        }
+        
+        currentY += height + nodeSpacing;
+      });
+    };
+    
+    // Start positioning from root with better spacing
+    positionNodes(data, 0, 100, 400, 1200, 50);
+    return positions;
+  };
+
+  // Helper function to wrap text
+  const wrapText = (text: string, maxCharsPerLine: number): string[] => {
+    if (text.length <= maxCharsPerLine) return [text];
+    
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+    
+    words.forEach(word => {
+      if ((currentLine + word).length <= maxCharsPerLine) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+
+  // Generate SVG-based graph for PDF
+  const generateGraphSVG = (
+    data: MindMapNode[], 
+    width: number = 1200, 
+    height: number = 800, 
+    scale: number = 1, 
+    offsetX: number = 0, 
+    offsetY: number = 0
+  ): string => {
+    const positions = calculateNodePositions(data);
+    const connections: string[] = [];
+    const nodes: string[] = [];
+    
+    // Generate connections first
+    const generateConnections = (nodeData: MindMapNode[], parentPos?: { x: number; y: number }, level: number = 0) => {
+      nodeData.forEach((node, index) => {
+        const nodeId = `${level}-${index}`;
+        const currentPos = positions[nodeId];
+        
+        if (parentPos && currentPos) {
+          connections.push(`
+            <line x1="${parentPos.x}" y1="${parentPos.y}" 
+                  x2="${currentPos.x}" y2="${currentPos.y}" 
+                  stroke="#94a3b8" stroke-width="2" opacity="0.7"/>
+          `);
+        }
+        
+        if (node.children && node.children.length > 0 && currentPos) {
+          generateConnections(node.children, currentPos, level + 1);
+        }
+      });
+    };
+    
+    generateConnections(data);
+    
+    // Generate nodes with proper text wrapping
+    Object.values(positions).forEach(({ x, y, level, node, width, height }) => {
+      const fontSize = Math.max(16 - level * 2, 12);
+      const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444'];
+      const color = colors[level % colors.length];
+      
+      // Wrap text for this node with increased character limits
+      const maxCharsPerLine = Math.max(20, 40 - level * 5);
+      const lines = wrapText(node.name, maxCharsPerLine);
+      const lineHeight = fontSize * 1.4;
+      
+      // Generate text elements for each line
+      const textElements = lines.map((line, lineIndex) => {
+        const textY = y - (lines.length - 1) * lineHeight / 2 + lineIndex * lineHeight;
+        return `
+          <text x="${x}" y="${textY}" 
+                text-anchor="middle" 
+                font-family="Arial, sans-serif" 
+                font-size="${fontSize}" 
+                font-weight="${level < 2 ? 'bold' : 'normal'}" 
+                fill="white"
+                dominant-baseline="middle">
+            ${line}
+          </text>
+        `;
+      }).join('');
+      
+      nodes.push(`
+        <g>
+          <rect x="${x - width/2}" y="${y - height/2}" 
+                width="${width}" height="${height}" 
+                fill="${color}" rx="8" opacity="0.9"
+                stroke="${color}" stroke-width="1"/>
+          ${textElements}
+        </g>
+      `);
+    });
+    
+    // Calculate transform for centering and scaling
+    const padding = 80;
+    const translateX = padding - offsetX * scale;
+    const translateY = padding + 80 - offsetY * scale; // 80px for header space
+    
+    return `
+      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <style>
+            .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #1f2937; }
+            .date { font-family: Arial, sans-serif; font-size: 14px; fill: #6b7280; }
+          </style>
+        </defs>
+        <rect width="100%" height="100%" fill="white"/>
+        
+        <!-- Header -->
+        <text x="${width/2}" y="30" text-anchor="middle" class="title">Mind Map Visualization</text>
+        <text x="${width/2}" y="50" text-anchor="middle" class="date">Generated on: ${new Date().toLocaleDateString()}</text>
+        
+        <!-- Graph content with scaling and positioning -->
+        <g transform="translate(${translateX}, ${translateY}) scale(${scale})">
+          ${connections.join('')}
+          ${nodes.join('')}
+        </g>
+      </svg>
+    `;
+  };
+
+  // Generate HTML with SVG graph for PDF
+  const generateGraphHTML = (data: MindMapNode[]): string => {
+    // Calculate required dimensions based on actual node positions
+    const positions = calculateNodePositions(data);
+    const positionValues = Object.values(positions);
+    
+    if (positionValues.length === 0) {
+      return generateGraphSVG(data, 1600, 1000);
+    }
+    
+    // Find the bounds of all nodes with extra margin
+    const margin = 50;
+    const minX = Math.min(...positionValues.map(p => p.x - p.width / 2)) - margin;
+    const maxX = Math.max(...positionValues.map(p => p.x + p.width / 2)) + margin;
+    const minY = Math.min(...positionValues.map(p => p.y - p.height / 2)) - margin;
+    const maxY = Math.max(...positionValues.map(p => p.y + p.height / 2)) + margin;
+    
+    // Calculate content dimensions
+    const contentWidth = maxX - minX;
+    const contentHeight = maxY - minY;
+    
+    // Set larger canvas size for better layout
+    const maxWidth = 1800;
+    const maxHeight = 1200;
+    const padding = 100;
+    
+    // Scale content to fit if necessary, but be more conservative
+    const scaleX = contentWidth > 0 ? (maxWidth - padding * 2) / contentWidth : 1;
+    const scaleY = contentHeight > 0 ? (maxHeight - padding * 2) / contentHeight : 1;
+    const scale = Math.min(scaleX, scaleY, 0.9); // Slightly reduce max scale for better spacing
+    
+    const finalWidth = Math.max(maxWidth, contentWidth * scale + padding * 2);
+    const finalHeight = Math.max(maxHeight, contentHeight * scale + padding * 2);
+    
+    const svgContent = generateGraphSVG(data, finalWidth, finalHeight, scale, minX, minY);
+    
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Mind Map Graph</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 20px;
+            background: white;
+            font-family: Arial, sans-serif;
+          }
+          .graph-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+          }
+          svg {
+            max-width: 100%;
+            height: auto;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="graph-container">
+          ${svgContent}
+        </div>
+      </body>
+      </html>
+    `;
+  };
+
   const downloadPDF = async () => {
     if (!graphData) {
       alert('No mind map data available. Please generate a mind map first.');
@@ -640,42 +1015,9 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     }
     
     setIsDownloading(true);
-    console.log('Starting visual PDF download process...');
+    console.log('Starting text-based PDF download process...');
     
     try {
-      
-      // Get the iframe and access the chart
-      const iframe = webViewRef.current;
-      if (!iframe || !iframe.contentWindow) {
-        throw new Error('Chart iframe not accessible');
-      }
-      
-      // Wait a moment for iframe to be ready
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Execute chart capture in iframe context
-      const chartDataUrl = await new Promise<string>((resolve, reject) => {
-        try {
-          iframe.contentWindow!.postMessage({ action: 'getChartImage' }, '*');
-          
-          const messageHandler = (event: MessageEvent) => {
-            if (event.data && event.data.type === 'chartImage') {
-              window.removeEventListener('message', messageHandler);
-              resolve(event.data.dataUrl);
-            } else if (event.data && event.data.type === 'chartError') {
-              window.removeEventListener('message', messageHandler);
-              reject(new Error(event.data.error));
-            }
-          };
-          
-          window.addEventListener('message', messageHandler);
-        } catch (error) {
-          reject(error);
-        }
-      });
-      
-      console.log('Chart captured, creating PDF...');
-      
       // Import jsPDF
       let jsPDF;
       try {
@@ -686,36 +1028,9 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
         console.error('Error importing jsPDF:', importError);
         throw new Error(`Failed to import jsPDF: ${importError?.message || 'Unknown error'}`);
       }
-      
-      // Create PDF document
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      // Add title
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Mind Map Visualization', 10, 15);
-      
-      // Add date
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 10, 25);
-      
-      // Add the chart image
-      const imgWidth = 277; // A4 landscape width minus margins
-      const imgHeight = 180; // Maintain aspect ratio
-      
-      pdf.addImage(chartDataUrl, 'PNG', 10, 35, imgWidth, imgHeight);
-      
-      console.log('PDF created, saving file...');
-      
-      // Save the PDF
-      pdf.save(`mindmap_${audioid || Date.now()}.pdf`);
-      
-      console.log('PDF downloaded successfully');
+
+      // Use text-based PDF generation as primary method
+      createTextBasedPDF(jsPDF);
       
     } catch (error: any) {
       console.error('Error downloading mind map PDF:', error);
@@ -723,6 +1038,142 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     } finally {
       setIsDownloading(false);
     }
+  };
+
+  // Text-based PDF creation with improved formatting
+  const createTextBasedPDF = (jsPDF: any) => {
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    // Add title with better positioning
+    pdf.setFontSize(18);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(40, 40, 40);
+    pdf.text('Mind Map Structure', 25, 25);
+
+    // Add date and subtitle
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 25, 35);
+    
+    // Add separator line with proper margins
+    pdf.setLineWidth(0.5);
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(25, 40, 185, 40);
+
+    // Add mind map content as hierarchical text
+    let yPosition = 50;
+    let pageNumber = 1;
+    
+    const addPageNumber = () => {
+      pdf.setFontSize(8);
+      pdf.setTextColor(150, 150, 150);
+      pdf.text(`Page ${pageNumber}`, 175, 280);
+      pageNumber++;
+    };
+    
+    addPageNumber();
+
+    const addNodeText = (node: MindMapNode, level: number = 0) => {
+      // Calculate indentation and styling based on level
+      const indentSize = level * 10; // 10mm per level for better readability
+      const xPosition = 25 + indentSize;
+      const maxWidth = 175 - indentSize; // Increased width for better text display
+      
+      // Set font size and style based on hierarchy level
+       let fontSize: number;
+       let fontStyle: string;
+       let textColor: number[];
+       
+       if (level === 0) {
+         fontSize = 14;
+         fontStyle = 'bold';
+         textColor = [20, 20, 20];
+       } else if (level === 1) {
+         fontSize = 12;
+         fontStyle = 'bold';
+         textColor = [40, 40, 40];
+       } else if (level === 2) {
+         fontSize = 11;
+         fontStyle = 'normal';
+         textColor = [60, 60, 60];
+       } else {
+         fontSize = 10;
+         fontStyle = 'normal';
+         textColor = [80, 80, 80];
+       }
+      
+      pdf.setFontSize(fontSize);
+      pdf.setFont('helvetica', fontStyle);
+      pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+      
+      // Create simple text bullet points based on level
+      let bullet: string;
+      if (level === 0) {
+        bullet = '-';
+      } else if (level === 1) {
+        bullet = '  -';
+      } else if (level === 2) {
+        bullet = '    *';
+      } else {
+        bullet = '      +';
+      }
+      
+      // Clean the node name more gently - only remove truly problematic characters
+      const cleanName = node.name
+        .replace(/[\u2022\u25A0\u25CF\u25E6\u25AA]/g, '') // Remove bullet symbols
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .trim();
+      
+      const text = `${bullet} ${cleanName}`;
+      
+      // Split text with proper width calculation and ensure complete words
+      const lines = pdf.splitTextToSize(text, maxWidth);
+      
+      // Check if we need a new page with better margin calculation
+      const lineHeight = fontSize * 0.5; // Better line height calculation
+      const requiredHeight = lines.length * lineHeight + 6;
+      if (yPosition + requiredHeight > 260) { // More conservative page height
+        pdf.addPage();
+        yPosition = 30; // Start lower on new page
+        addPageNumber();
+      }
+      
+      // Add the text lines with proper spacing
+      lines.forEach((line: string, index: number) => {
+        pdf.text(line, xPosition, yPosition);
+        yPosition += lineHeight;
+      });
+      
+      // Add spacing after the node based on level
+      yPosition += level === 0 ? 6 : (level === 1 ? 4 : 3);
+      
+      // Process children
+      if (node.children && node.children.length > 0) {
+        node.children.forEach(child => addNodeText(child, level + 1));
+        
+        // Add extra spacing after a section with children
+        if (level <= 1) {
+          yPosition += 4;
+        }
+      }
+    };
+
+    // Process all root nodes
+    graphData?.forEach((node, index) => {
+      if (index > 0) {
+        yPosition += 6; // Extra spacing between root sections
+      }
+      addNodeText(node);
+    });
+
+    // Save the PDF
+    pdf.save(`mindmap_text_${audioid || Date.now()}.pdf`);
+    console.log('Text-based PDF downloaded successfully');
   };
 
   return (

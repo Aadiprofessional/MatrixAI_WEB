@@ -157,12 +157,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     try {
       console.log('🔄 Handling OAuth callback for user:', session.user.email);
+      setLoading(true);
+      
+      // Get user data from Supabase session
+      const supabaseUser = session.user;
+      
+      console.log('👤 Supabase user data:', {
+        id: supabaseUser.id,
+        email: supabaseUser.email,
+        metadata: supabaseUser.user_metadata
+      });
       
       // Check if user exists in backend
-      const checkResponse = await fetch(`${process.env.REACT_APP_BACKEND_API_URL}/api/user/check-oauth-user`, {
+      const backendUrl = process.env.REACT_APP_BACKEND_API_URL;
+      if (!backendUrl) {
+        console.warn('⚠️ Backend API URL not configured, using session data only');
+        throw new Error('Backend API URL not configured');
+      }
+      
+      const checkResponse = await fetch(`${backendUrl}/api/user/check-oauth-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           uid: session.user.id,
@@ -174,21 +191,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Handle case where backend endpoints don't exist yet
       if (checkResponse.status === 404) {
         console.warn('⚠️ OAuth endpoints not implemented in backend yet. Creating temporary user data.');
-        // Create temporary user data from Supabase session
-        const tempUserData = {
-          uid: session.user.id,
-          email: session.user.email,
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
-          avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || '',
-          subscription_active: false,
-          credits: 0,
-          provider: 'google'
-        };
-        setUserData(tempUserData, session.access_token);
-        return;
+        throw new Error('OAuth endpoints not implemented');
       }
       
       if (!checkResponse.ok) {
+        console.warn(`⚠️ Backend check failed: ${checkResponse.status}, using session data`);
         throw new Error(`Backend check failed: ${checkResponse.status}`);
       }
       
@@ -201,10 +208,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         // User doesn't exist, create them in backend
         console.log('🆕 Creating new OAuth user in backend');
-        const createResponse = await fetch(`${process.env.REACT_APP_BACKEND_API_URL}/api/user/create-oauth-user`, {
+        const createResponse = await fetch(`${backendUrl}/api/user/create-oauth-user`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
             uid: session.user.id,
@@ -232,25 +240,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('❌ Error handling OAuth callback:', error);
       
-      // If it's a network error or backend is unavailable, create temporary user
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        console.warn('⚠️ Backend unavailable. Creating temporary user data from Supabase session.');
-        const tempUserData = {
-          uid: session.user.id,
-          email: session.user.email,
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
-          avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || '',
+      // Create minimal user data from session as fallback
+      const supabaseUser = session.user;
+      if (supabaseUser) {
+        const fallbackUserData = {
+          uid: supabaseUser.id,
+          email: supabaseUser.email || '',
+          name: supabaseUser.user_metadata?.full_name || 
+                supabaseUser.user_metadata?.name || 
+                supabaseUser.user_metadata?.display_name ||
+                supabaseUser.email?.split('@')[0] || 
+                'User',
+          avatar_url: supabaseUser.user_metadata?.avatar_url || 
+                     supabaseUser.user_metadata?.picture || '',
           subscription_active: false,
           credits: 0,
-          provider: 'google'
+          provider: 'google',
+          is_fallback: true
         };
-        setUserData(tempUserData, session.access_token);
+        
+        console.log('🔄 Using fallback user data:', fallbackUserData);
+        setUserData(fallbackUserData, session.access_token);
         return;
       }
       
       setError('Failed to complete authentication. Please try again.');
       // Clear the session if backend sync fails
       await supabase.auth.signOut();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -356,7 +374,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pageshow', handlePageShow);
     };
-  }, [session]);
+  }, []);
 
   // Sign up a new user
   const handleSignUp = async (email: string, password: string, metadata: any = {}) => {

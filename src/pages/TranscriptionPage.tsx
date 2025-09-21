@@ -1317,12 +1317,12 @@ const TranscriptionPage: React.FC = () => {
   const [isChatProcessing, setIsChatProcessing] = useState<{[key: string]: boolean}>({
     keypoints: false,
     summary: false,
-    translate: false
+    useAsContext: false
   });
   const [chatResponses, setChatResponses] = useState<{[key: string]: string}>({
     keypoints: '',
     summary: '',
-    translate: ''
+    useAsContext: ''
   });
   const [translationLanguage, setTranslationLanguage] = useState<string>('Spanish');
   
@@ -1447,7 +1447,7 @@ const TranscriptionPage: React.FC = () => {
   }, []);
 
   // Function to handle quick actions with formatted responses and language detection
-  const handleQuickAction = async (action: 'keypoints' | 'summary' | 'translate') => {
+  const handleQuickAction = async (action: 'keypoints' | 'summary' | 'useAsContext') => {
     if (!transcription || isChatProcessing[action]) return;
     
     // Check if user is authenticated
@@ -1474,9 +1474,9 @@ const TranscriptionPage: React.FC = () => {
           prompt = t('transcription.prompts.summary', { transcription });
           actionLabel = 'Summary';
           break;
-        case 'translate':
-          prompt = t('transcription.prompts.translate', { translationLanguage, transcription });
-          actionLabel = `Translation (${translationLanguage})`;
+        case 'useAsContext':
+          prompt = `Please analyze this transcription and prepare it as context for future questions. Transcription: ${transcription}`;
+          actionLabel = 'Use as Context';
           break;
       }
       
@@ -4761,7 +4761,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-200px)] max-h-[800px]"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-120px)] sm:h-[calc(100vh-200px)] max-h-[900px] sm:max-h-[800px]"
                 >
                   {/* Fixed Header */}
                   <div className="flex justify-between items-center p-2 sm:p-3 md:p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-20 sticky top-0">
@@ -4833,24 +4833,24 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                         </button>
                       </div>
                       
-                      {/* Second row - Translate and Audio controls */}
+                      {/* Second row - Use as Context and Audio controls */}
                       <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         <button
-                          onClick={() => handleQuickAction('translate')}
-                          disabled={isChatProcessing.translate || !transcription}
+                          onClick={() => handleQuickAction('useAsContext')}
+                          disabled={isChatProcessing.useAsContext || !transcription}
                           className={`flex-1 min-w-0 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg flex items-center justify-center transition-colors text-xs sm:text-sm ${
-                            isChatProcessing.translate
+                            isChatProcessing.useAsContext
                               ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                               : 'bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-800/40 text-green-700 dark:text-green-300'
                           }`}
                         >
-                          {isChatProcessing.translate ? (
+                          {isChatProcessing.useAsContext ? (
                             <FiLoader className="animate-spin mr-1 w-3 h-3 sm:w-4 sm:h-4" />
                           ) : (
-                            <FiBookmark className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
+                            <FiMessageSquare className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
                           )}
-                          <span className="hidden sm:inline">{t('transcription.actions.translate')}</span>
-                          <span className="sm:hidden">Trans</span>
+                          <span className="hidden sm:inline">Use as Context</span>
+                          <span className="sm:hidden">Context</span>
                           <span className="ml-1 text-xs bg-orange-500/20 px-1 py-0.5 rounded-full flex items-center">
                             -3 <img src={coinIcon} alt="coin" className="w-2.5 h-2.5 ml-0.5" />
                           </span>
@@ -4891,8 +4891,8 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                         )}
                       </div>
                       
-                      {/* Translation language selector */}
-                      <div className="flex items-center justify-center mt-2">
+                      {/* Translation language selector - Completely hidden, using context from quick actions */}
+                      <div className="hidden">
                         <select
                           value={translationLanguage}
                           onChange={(e) => setTranslationLanguage(e.target.value)}
@@ -4907,8 +4907,8 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                         </select>
                       </div>
                       
-                      {/* Use as Context button */}
-                      <div className="flex justify-center mt-2">
+                      {/* Use as Context button - hidden on mobile */}
+                      <div className="hidden sm:flex justify-center mt-2">
                         <button
                           onClick={setTranscriptionAsContext}
                           disabled={!transcription || chatMessages.length > 0}
@@ -5109,7 +5109,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                     ) : (
                       <div>
                         {/* Quick Action Results - Show when no chat messages */}
-                        {(chatResponses.keypoints || chatResponses.summary || chatResponses.translate) && (
+                        {(chatResponses.keypoints || chatResponses.summary || chatResponses.useAsContext) && (
                           <div className="space-y-4 mb-6">
                             <h3 className="text-md font-medium text-gray-600 dark:text-gray-400">Quick Action Results</h3>
                             
@@ -5135,20 +5135,20 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                               </div>
                             )}
                             
-                            {chatResponses.translate && (
+                            {chatResponses.useAsContext && (
                               <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                                 <h4 className="font-medium text-green-700 dark:text-green-400 mb-2 flex items-center">
-                                  <FiBookmark className="mr-2" /> Translation ({translationLanguage})
+                                  <FiMessageSquare className="mr-2" /> Use as Context
                                 </h4>
                                 <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                                  {renderTextWithHTML(chatResponses.translate, theme === 'dark', {color: theme === 'dark' ? '#d1d5db' : '#374151', fontSize: '14px', lineHeight: '1.6'})}
+                                  {renderTextWithHTML(chatResponses.useAsContext, theme === 'dark', {color: theme === 'dark' ? '#d1d5db' : '#374151', fontSize: '14px', lineHeight: '1.6'})}
                                 </div>
                               </div>
                             )}
                           </div>
                         )}
                         
-                        {!chatResponses.keypoints && !chatResponses.summary && !chatResponses.translate && (
+                        {!chatResponses.keypoints && !chatResponses.summary && !chatResponses.useAsContext && (
                           <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
                             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center mb-4">
                               <FiMessageSquare className="w-8 h-8 text-white" />
@@ -5188,34 +5188,36 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                       </div>
                     )}
 
-                    {/* Fixed generation buttons */}
-                    <div className="mb-3 flex flex-wrap gap-2">
+                    {/* Fixed generation buttons - smaller and in one row for mobile */}
+                    <div className="mb-3 flex gap-1.5 sm:gap-2">
                       <button
                         type="button"
                         onClick={() => handleGenerationTypeSelect('xlsx')}
-                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        className={`flex-1 flex items-center justify-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
                           selectedGenerationType === 'xlsx'
                             ? (theme === 'dark' ? 'bg-green-700 border-2 border-green-500 text-white' : 'bg-green-600 border-2 border-green-400 text-white')
                             : (theme === 'dark' ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white' : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white')
                         }`}
                       >
-                        <FiFileText className="w-4 h-4" />
-                        <span>Generate XLSX</span>
-                        {selectedGenerationType === 'xlsx' && <FiCheck className="w-4 h-4" />}
+                        <FiFileText className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="hidden sm:inline">Generate XLSX</span>
+                        <span className="sm:hidden">XLSX</span>
+                        {selectedGenerationType === 'xlsx' && <FiCheck className="w-3 h-3 sm:w-4 sm:h-4" />}
                       </button>
                       
                       <button
                         type="button"
                         onClick={() => handleGenerationTypeSelect('document')}
-                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        className={`flex-1 flex items-center justify-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
                           selectedGenerationType === 'document'
                             ? (theme === 'dark' ? 'bg-blue-700 border-2 border-blue-500 text-white' : 'bg-blue-600 border-2 border-blue-400 text-white')
                             : (theme === 'dark' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white' : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white')
                         }`}
                       >
-                        <FiFile className="w-4 h-4" />
-                        <span>Generate Document</span>
-                        {selectedGenerationType === 'document' && <FiCheck className="w-4 h-4" />}
+                        <FiFile className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="hidden sm:inline">Generate Document</span>
+                        <span className="sm:hidden">DOC</span>
+                        {selectedGenerationType === 'document' && <FiCheck className="w-3 h-3 sm:w-4 sm:h-4" />}
                       </button>
                     </div>
 
@@ -5282,7 +5284,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-200px)]"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-120px)] sm:h-[calc(100vh-200px)] max-h-[900px] sm:max-h-[800px]"
                 >
                   {wordsData && wordsData.length > 0 ? (
                     <>
@@ -5347,28 +5349,28 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                       {/* Content */}
                       <div className="flex-1 overflow-auto p-2 sm:p-3 md:p-4">
                         {/* Statistics */}
-                        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
-                          <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-gray-800 dark:text-gray-200">{t('transcription.wordsData.statistics')}</h3>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm">
-                            <div className="text-center">
-                              <div className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{wordsData.length}</div>
-                              <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{t('transcription.wordsData.totalWords')}</div>
+                        <div className="mb-3 sm:mb-6 p-2 sm:p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
+                          <h3 className="text-sm sm:text-lg font-semibold mb-2 sm:mb-3 text-gray-800 dark:text-gray-200">{t('transcription.wordsData.statistics')}</h3>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-4 text-xs sm:text-sm">
+                            <div className="text-center p-1 sm:p-0">
+                              <div className="text-sm sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{wordsData.length}</div>
+                              <div className="text-gray-600 dark:text-gray-400 text-xs leading-tight">{t('transcription.wordsData.totalWords')}</div>
                             </div>
-                            <div className="text-center">
-                              <div className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">{formatTime(duration)}</div>
-                              <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{t('transcription.wordsData.duration')}</div>
+                            <div className="text-center p-1 sm:p-0">
+                              <div className="text-sm sm:text-2xl font-bold text-green-600 dark:text-green-400">{formatTime(duration)}</div>
+                              <div className="text-gray-600 dark:text-gray-400 text-xs leading-tight">{t('transcription.wordsData.duration')}</div>
                             </div>
-                            <div className="text-center">
-                              <div className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
+                            <div className="text-center p-1 sm:p-0">
+                              <div className="text-sm sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
                                 {(wordsData.reduce((acc, word) => acc + word.word.length, 0) / wordsData.length).toFixed(1)}
                               </div>
-                              <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{t('transcription.wordsData.avgCharsPerWord')}</div>
+                              <div className="text-gray-600 dark:text-gray-400 text-xs leading-tight">{t('transcription.wordsData.avgCharsPerWord')}</div>
                             </div>
-                            <div className="text-center">
-                              <div className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400">
+                            <div className="text-center p-1 sm:p-0">
+                              <div className="text-sm sm:text-2xl font-bold text-orange-600 dark:text-orange-400">
                                 {duration > 0 ? Math.round((wordsData.length / duration) * 60) : 0}
                               </div>
-                              <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{t('transcription.wordsData.wordsPerMinute')}</div>
+                              <div className="text-gray-600 dark:text-gray-400 text-xs leading-tight">{t('transcription.wordsData.wordsPerMinute')}</div>
                             </div>
                           </div>
                         </div>
@@ -5464,7 +5466,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                               <button
                                 onClick={translateAllSrtSegments}
                                 disabled={isTranslatingSubtitle}
-                                className="relative flex items-center space-x-2 px-6 py-3 text-sm font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 text-white rounded-xl hover:from-purple-700 hover:via-blue-700 hover:to-cyan-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-2xl transform hover:scale-105 overflow-hidden group"
+                                className="relative flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 text-white rounded-lg sm:rounded-xl hover:from-purple-700 hover:via-blue-700 hover:to-cyan-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-2xl transform hover:scale-105 overflow-hidden group"
                                 style={{
                                   background: isTranslatingSubtitle 
                                     ? 'linear-gradient(45deg, #8b5cf6, #3b82f6, #06b6d4)' 
@@ -5483,25 +5485,25 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                                 </div>
                                 
                                 {/* Content */}
-                                <div className="relative z-10 flex items-center space-x-2">
+                                <div className="relative z-10 flex items-center space-x-1 sm:space-x-2">
                                   {/* Show coin indicator only for unsaved languages */}
                                   {!translatedData || !translatedData[srtSelectedLanguage] ? (
                                     <>
-                                      <span className="font-bold text-yellow-300">-3</span>
-                                      <img src={coinIcon} alt="Cost" className="w-4 h-4" />
+                                      <span className="font-bold text-yellow-300 text-xs sm:text-sm">-3</span>
+                                      <img src={coinIcon} alt="Cost" className="w-3 h-3 sm:w-4 sm:h-4" />
                                     </>
                                   ) : null}
                                   {isTranslatingSubtitle ? (
                                     <div className="flex items-center space-x-1">
-                                      <FiLoader className="w-4 h-4 animate-spin" />
-                                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.3s'}}></div>
+                                      <FiLoader className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.3s'}}></div>
                                     </div>
                                   ) : (
-                                    <FiGlobe className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
+                                    <FiGlobe className="w-3 h-3 sm:w-4 sm:h-4 group-hover:rotate-12 transition-transform duration-300" />
                                   )}
-                                  <span className="font-semibold">{isTranslatingSubtitle ? t('transcription.srt.translating') : t('transcription.srt.translateAll')}</span>
+                                  <span className="font-semibold text-xs sm:text-sm">{isTranslatingSubtitle ? t('transcription.srt.translating') : t('transcription.srt.translateAll')}</span>
                                 </div>
                               </button>
                               

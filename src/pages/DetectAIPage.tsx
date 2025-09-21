@@ -1083,7 +1083,7 @@ ${sentenceAnalysis}
                 <div className="w-full bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-xs text-gray-700 dark:text-gray-300 border border-blue-100 dark:border-blue-800/50 mb-3">
                   <div className="flex items-start">
                     <FiInfo className="text-blue-500 dark:text-blue-400 mt-0.5 mr-2 flex-shrink-0" />
-                    <span><strong>Note:</strong> Our AI detection system uses ZeroGPT detector by default for accurate results. The analysis provides comprehensive insights into AI-generated content patterns.</span>
+                    <span><strong>Remind:</strong> Only have ZeroGPT detector option and results for reference only.</span>
                   </div>
                 </div>
                 

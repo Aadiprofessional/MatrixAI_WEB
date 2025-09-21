@@ -86,12 +86,12 @@ const FileUploadPopup: React.FC<FileUploadPopupProps> = ({ isOpen, onClose, onFi
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className={`relative w-full max-w-md mx-auto transform transition-all duration-300 scale-100 ${
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className={`relative w-full max-w-sm sm:max-w-md mx-auto transform transition-all duration-300 scale-100 ${
         darkMode 
           ? 'bg-gray-900/90 border border-gray-700/50' 
           : 'bg-white/90 border border-gray-200/50'
-      } backdrop-blur-xl rounded-2xl shadow-2xl`}>
+      } backdrop-blur-xl rounded-xl sm:rounded-2xl shadow-2xl`}>
         {/* AI-style animated background */}
         <div className="absolute inset-0 rounded-2xl overflow-hidden">
           <div className={`absolute inset-0 ${
@@ -113,55 +113,55 @@ const FileUploadPopup: React.FC<FileUploadPopupProps> = ({ isOpen, onClose, onFi
         </div>
         
         {/* Content */}
-        <div className="relative p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${
+        <div className="relative p-4 sm:p-6">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className={`p-1.5 sm:p-2 rounded-lg ${
                 darkMode 
                   ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-400/30' 
                   : 'bg-gradient-to-br from-blue-100 to-purple-100 border border-blue-200'
               }`}>
-                <Sparkles className={`w-5 h-5 ${
+                <Sparkles className={`w-4 h-4 sm:w-5 sm:h-5 ${
                   darkMode ? 'text-blue-400' : 'text-blue-600'
                 }`} />
               </div>
-              <h3 className={`text-xl font-bold ${
+              <h3 className={`text-lg sm:text-xl font-bold ${
                 darkMode ? 'text-white' : 'text-gray-900'
               }`}>Attach File</h3>
             </div>
             <button
               onClick={onClose}
-              className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${
+              className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 hover:scale-110 ${
                 darkMode 
                   ? 'text-gray-400 hover:text-white hover:bg-gray-800/50' 
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
               }`}
             >
-              <X size={20} />
+              <X size={18} className="sm:w-5 sm:h-5" />
             </button>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Upload Options */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <button
                 onClick={() => openFileDialog('image')}
-                className={`group relative flex flex-col items-center p-6 rounded-xl border-2 border-dashed transition-all duration-300 hover:scale-105 hover:shadow-lg ${
+                className={`group relative flex flex-col items-center p-3 sm:p-6 rounded-lg sm:rounded-xl border-2 border-dashed transition-all duration-300 hover:scale-105 hover:shadow-lg ${
                   darkMode 
                     ? 'border-blue-400/30 hover:border-blue-400/60 bg-blue-900/10 hover:bg-blue-900/20' 
                     : 'border-blue-300/50 hover:border-blue-400 bg-blue-50/30 hover:bg-blue-50/60'
                 }`}
               >
-                <div className={`p-3 rounded-full mb-3 transition-all duration-300 group-hover:scale-110 ${
+                <div className={`p-2 sm:p-3 rounded-full mb-2 sm:mb-3 transition-all duration-300 group-hover:scale-110 ${
                   darkMode 
                     ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-400/30' 
                     : 'bg-gradient-to-br from-blue-100 to-cyan-100 border border-blue-200'
                 }`}>
-                  <Image size={24} className={`${
+                  <Image size={18} className={`sm:w-6 sm:h-6 ${
                     darkMode ? 'text-blue-400' : 'text-blue-600'
                   }`} />
                 </div>
-                <span className={`text-sm font-semibold mb-1 ${
+                <span className={`text-xs sm:text-sm font-semibold mb-1 ${
                   darkMode ? 'text-white' : 'text-gray-800'
                 }`}>Upload Image</span>
                 <span className={`text-xs text-center leading-relaxed ${
@@ -176,22 +176,22 @@ const FileUploadPopup: React.FC<FileUploadPopupProps> = ({ isOpen, onClose, onFi
 
               <button
                 onClick={() => openFileDialog('document')}
-                className={`group relative flex flex-col items-center p-6 rounded-xl border-2 border-dashed transition-all duration-300 hover:scale-105 hover:shadow-lg ${
+                className={`group relative flex flex-col items-center p-3 sm:p-6 rounded-lg sm:rounded-xl border-2 border-dashed transition-all duration-300 hover:scale-105 hover:shadow-lg ${
                   darkMode 
                     ? 'border-emerald-400/30 hover:border-emerald-400/60 bg-emerald-900/10 hover:bg-emerald-900/20' 
                     : 'border-emerald-300/50 hover:border-emerald-400 bg-emerald-50/30 hover:bg-emerald-50/60'
                 }`}
               >
-                <div className={`p-3 rounded-full mb-3 transition-all duration-300 group-hover:scale-110 ${
+                <div className={`p-2 sm:p-3 rounded-full mb-2 sm:mb-3 transition-all duration-300 group-hover:scale-110 ${
                   darkMode 
                     ? 'bg-gradient-to-br from-emerald-500/20 to-green-500/20 border border-emerald-400/30' 
                     : 'bg-gradient-to-br from-emerald-100 to-green-100 border border-emerald-200'
                 }`}>
-                  <FileText size={24} className={`${
+                  <FileText size={18} className={`sm:w-6 sm:h-6 ${
                     darkMode ? 'text-emerald-400' : 'text-emerald-600'
                   }`} />
                 </div>
-                <span className={`text-sm font-semibold mb-1 ${
+                <span className={`text-xs sm:text-sm font-semibold mb-1 ${
                   darkMode ? 'text-white' : 'text-gray-800'
                 }`}>Upload Document</span>
                 <span className={`text-xs text-center leading-relaxed ${
@@ -207,7 +207,7 @@ const FileUploadPopup: React.FC<FileUploadPopupProps> = ({ isOpen, onClose, onFi
 
             {/* Drag and Drop Area */}
             <div
-              className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
+              className={`relative border-2 border-dashed rounded-lg sm:rounded-xl p-4 sm:p-8 text-center transition-all duration-300 ${
                 dragActive
                   ? (darkMode 
                       ? 'border-purple-400/60 bg-purple-900/20 scale-105' 
@@ -221,7 +221,7 @@ const FileUploadPopup: React.FC<FileUploadPopupProps> = ({ isOpen, onClose, onFi
               onDragOver={handleDrag}
               onDrop={handleDrop}
             >
-              <div className={`inline-flex p-4 rounded-full mb-4 transition-all duration-300 ${
+              <div className={`inline-flex p-3 sm:p-4 rounded-full mb-3 sm:mb-4 transition-all duration-300 ${
                 dragActive 
                   ? (darkMode 
                       ? 'bg-gradient-to-br from-purple-500/30 to-pink-500/30 border border-purple-400/50 scale-110' 
@@ -230,16 +230,16 @@ const FileUploadPopup: React.FC<FileUploadPopupProps> = ({ isOpen, onClose, onFi
                       ? 'bg-gradient-to-br from-gray-700/50 to-gray-600/50 border border-gray-600/30' 
                       : 'bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200')
               }`}>
-                <Upload size={28} className={`transition-colors duration-300 ${
+                <Upload size={22} className={`sm:w-7 sm:h-7 transition-colors duration-300 ${
                   dragActive 
                     ? (darkMode ? 'text-purple-400' : 'text-purple-600')
                     : (darkMode ? 'text-gray-400' : 'text-gray-500')
                 }`} />
               </div>
-              <p className={`text-base font-medium mb-2 ${
+              <p className={`text-sm sm:text-base font-medium mb-2 ${
                 darkMode ? 'text-white' : 'text-gray-800'
               }`}>Drag and drop files here</p>
-              <p className={`text-sm ${
+              <p className={`text-xs sm:text-sm ${
                 darkMode ? 'text-gray-400' : 'text-gray-600'
               }`}>or click the buttons above</p>
               
@@ -260,10 +260,10 @@ const FileUploadPopup: React.FC<FileUploadPopupProps> = ({ isOpen, onClose, onFi
             </div>
 
             {/* File Size Info */}
-            <div className={`flex items-center justify-center gap-2 text-sm ${
+            <div className={`flex items-center justify-center gap-2 text-xs sm:text-sm ${
               darkMode ? 'text-gray-400' : 'text-gray-600'
             }`}>
-              <AlertCircle size={16} className={`${
+              <AlertCircle size={14} className={`sm:w-4 sm:h-4 ${
                 darkMode ? 'text-amber-400' : 'text-amber-500'
               }`} />
               <span>Maximum file size: 10MB</span>

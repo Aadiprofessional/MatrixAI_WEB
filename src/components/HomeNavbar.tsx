@@ -4,7 +4,7 @@ import { FiArrowRight, FiChevronDown, FiImage, FiVideo, FiMaximize, FiCrop, FiLa
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import SimpleLanguageSelector from './SimpleLanguageSelector';
-import matrixLogo from '../assets/matrix.svg';
+import matrixLogo from '../assets/matrix.png';
 
 interface HomeNavbarProps {}
 
@@ -31,7 +31,7 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2">
-                <img src={matrixLogo} alt="Matrix AI" className="w-8 h-8 object-contain rounded-lg -my-2" />
+                <img src={matrixLogo} alt="Matrix AI" className="w-16 h-16 object-contain rounded-lg -my-2" />
                 <span className={`font-bold text-xl hidden sm:block ${
                   darkMode ? 'text-white' : 'text-gray-900'
                 }`}>matrixai<span className="text-red-500">.</span>asia</span>
@@ -340,11 +340,11 @@ const HomeNavbar: React.FC<HomeNavbarProps> = () => {
                   : 'text-gray-700 hover:text-gray-900'
               }`}>{t('navbar.login', 'Log in')}</Link>
               <Link 
-                to="/signup" 
+                to="/login" 
                 className="inline-flex items-center px-2 py-1.5 md:px-4 md:py-2 rounded-lg font-medium text-xs md:text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-300"
               >
-                <span className="hidden sm:inline">{t('navbar.getStarted', 'Get started now')}</span>
-                <span className="sm:hidden">{t('navbar.signUp', 'Sign up')}</span>
+                <span className="hidden sm:inline">{t('navbar.login', 'Login')}</span>
+                <span className="sm:hidden">{t('navbar.login', 'Login')}</span>
                 <FiArrowRight className="ml-1 md:ml-2 w-3 h-3 md:w-4 md:h-4" />
               </Link>
             </div>
