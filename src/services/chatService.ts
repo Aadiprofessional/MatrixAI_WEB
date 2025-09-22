@@ -75,6 +75,9 @@ export interface FrontendMessage {
   file_name?: string;
   file_type?: string;
   file_size?: number;
+  chartConfig?: any;
+  chartId?: string;
+  equation?: string;
 }
 
 // Convert frontend message format to database format
@@ -836,6 +839,17 @@ export const supabaseMessageToFrontend = (supabaseMessage: SupabaseMessage): Fro
       size: supabaseMessage.file_size
     }];
   }
+
+  // Extract chart configuration from metadata if present
+  let chartConfig: any = undefined;
+  let chartId: string | undefined;
+  let equation: string | undefined;
+  
+  if (supabaseMessage.metadata && supabaseMessage.metadata.chart) {
+    chartConfig = supabaseMessage.metadata.chart.chartConfig;
+    chartId = supabaseMessage.metadata.chart.chartId;
+    equation = supabaseMessage.metadata.chart.equation;
+  }
   
   return {
     message_id: supabaseMessage.id,
@@ -852,6 +866,9 @@ export const supabaseMessageToFrontend = (supabaseMessage: SupabaseMessage): Fro
     file_url: supabaseMessage.file_url,
     file_name: supabaseMessage.file_name,
     file_type: supabaseMessage.file_type,
-    file_size: supabaseMessage.file_size
+    file_size: supabaseMessage.file_size,
+    chartConfig: chartConfig,
+    chartId: chartId,
+    equation: equation
   };
 };

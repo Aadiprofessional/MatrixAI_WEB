@@ -24,7 +24,7 @@ import { getNewUserChats, getNewChatMessages, getChatMessagesLazy, getLatestChat
 import { ProFeatureAlert, ImageSkeleton, IntelligentImageGeneration, IntelligentImageThinking } from '../components';
 import AuthRequiredButton from '../components/AuthRequiredButton';
 import ThinkingIndicator from '../components/ThinkingIndicator';
-import { intelligentImageService, shouldConsiderVisualContent } from '../services/intelligentImageService';
+
 import { intelligentImageStorage } from '../services/intelligentImageStorage';
 import { streamingImageService, StreamChunk } from '../services/streamingImageService';
 import { dualAgentService } from '../services/dualAgentService';
@@ -35,6 +35,7 @@ import FileUploadPopup from '../components/FileUploadPopup';
 import { uploadFileToStorage, FileUploadResult, validateFile, formatFileSize, getFileIcon } from '../utils/fileUpload';
 import { UserMessageAttachments } from '../components/UserMessageAttachments';
 import { BotMessageAttachments } from '../components/BotMessageAttachments';
+import { chartService, ChartConfig } from '../services/chartService';
 import coinIcon from '../assets/coin.png';
 import './ChatPage.css';
 
@@ -76,6 +77,9 @@ interface Message {
     generationId?: string;
     coinCost?: number;
   };
+  // Graph generation properties
+  chartConfig?: any;
+  chartId?: string;
 }
 
 // Define interface for chat type
@@ -1266,18 +1270,27 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
         isStructuredMessage,
         messageType: typeof messageContent,
         hasAttachment: isStructuredMessage && messageContent.attachment,
+        hasChart: isStructuredMessage && messageContent.chartConfig,
         preview: isStructuredMessage ? messageContent.text?.substring(0, 100) : messageContent?.substring(0, 100)
       });
       
-      // Parse message content to separate text and image data
+      // Parse message content to separate text, image data, and chart data
       let textContent;
       let imageData = null;
+      let chartData = null;
       
       if (isStructuredMessage) {
         // Handle new structured format
         textContent = messageContent.text || '';
         if (messageContent.attachment) {
           imageData = messageContent.attachment;
+        }
+        if (messageContent.chartConfig) {
+          chartData = {
+            chartConfig: messageContent.chartConfig,
+            chartId: messageContent.chartId,
+            equation: messageContent.equation
+          };
         }
       } else {
         // Handle legacy string format
@@ -1363,7 +1376,11 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
         content: textContent || '',
         status: 'done',
         position: nextPosition,
-        metadata: { test: false, message_type: role === 'user' ? 'user_message' : 'assistant_reply' }
+        metadata: { 
+          test: false, 
+          message_type: role === 'user' ? 'user_message' : 'assistant_reply',
+          ...(chartData && { chart: chartData })
+        }
       };
       
       // Use the new addUserMessageWithAttachment function if there's attachment data
@@ -1625,10 +1642,64 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
     stopSpeech();
   }, [location.pathname]);
 
+  // Handle chart rendering when messages change
+  useEffect(() => {
+    const renderCharts = async () => {
+      for (const message of messages) {
+        if (message.chartConfig && message.chartId) {
+          try {
+            // Wait a bit for the DOM to be ready
+            setTimeout(() => {
+              chartService.renderChart(message.chartId!, message.chartConfig!);
+            }, 100);
+          } catch (error) {
+            console.error('Error rendering chart:', error);
+          }
+        }
+      }
+    };
+
+    renderCharts();
+  }, [messages]);
+
   // Function to detect if the text contains a URL
   const containsUrl = (text?: string): boolean => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     return !!text && urlRegex.test(text);
+  };
+
+  // Function to detect if a chart should be generated based on AI response
+  const shouldGenerateChart = (content: string): boolean => {
+    return content.includes('```chartjs') || 
+           (content.includes('```json') && content.toLowerCase().includes('chart'));
+  };
+
+  // Function to extract chart configuration from chartjs code block
+  const extractChartConfig = (content: string): ChartConfig | null => {
+    try {
+      // Look for chartjs code block
+      const chartjsMatch = content.match(/```chartjs\s*\n([\s\S]*?)\n```/);
+      if (chartjsMatch) {
+        const configText = chartjsMatch[1].trim();
+        const config = JSON.parse(configText);
+        return config as ChartConfig;
+      }
+      
+      // Fallback: look for json code block that might contain chart config
+      const jsonMatch = content.match(/```json\s*\n([\s\S]*?)\n```/);
+      if (jsonMatch && content.toLowerCase().includes('chart')) {
+        const configText = jsonMatch[1].trim();
+        const config = JSON.parse(configText);
+        if (config.type && config.data) {
+          return config as ChartConfig;
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error parsing chart config:', error);
+      return null;
+    }
   };
 
   // Helper function to convert blob URL to base64
@@ -1704,18 +1775,23 @@ HTML FORMATTING RULES:
 - Use <br> for line breaks when needed
 - Use <div> with appropriate classes for styling when needed
 
+CHART GENERATION RULES:
+When your response involves data visualization, mathematical functions, or charts/graphs, use chartjs code blocks instead of images:
+- Use this format for charts: \`\`\`chartjs followed by JSON configuration and closing \`\`\`
+- Include complete Chart.js configuration with type, data, and options
+- Supported chart types: line, bar, pie, doughnut, scatter, bubble, polarArea, radar
+- Example for mathematical functions: Use chartjs code block with complete JSON configuration including type, data with labels and datasets, and options for styling
+
 IMAGE GENERATION RULES:
-When your response would benefit from visual content (charts, graphs, diagrams, illustrations), include image tags with placeholder URLs:
+For non-chart visual content (diagrams, illustrations, photos), include image tags with placeholder URLs:
 - Use this format: <img src="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/placeholder/ai-generated-images/ai_generated_IMAGE_INDEX.png" alt="Description of image" data-image-index="IMAGE_INDEX" data-image-description="Detailed description for AI generation" />
 - Replace IMAGE_INDEX with sequential numbers starting from 1 (1, 2, 3, etc.)
 - Include detailed descriptions in data-image-description for AI image generation
-- Use images for: mathematical graphs, charts, diagrams, illustrations, visual explanations
-- Example: <img src="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/ai-generated-images/ai_generated_185f3aed-92df-4bb9-b54a-24eccfc6d48c.png" alt="Parabola graph" data-image-index="1" data-image-description="A mathematical graph showing a parabola y=x^2 with axis labels and grid lines" />
+- Use images for: diagrams, illustrations, visual explanations (NOT for charts/graphs)
 
 EXAMPLE HTML RESPONSE FORMAT:
 <h2>Response Title</h2>
 <p>This is a paragraph with <strong>bold text</strong> and <em>italic text</em>.</p>
-<img src="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/ai-generated-images/ai_generated_185f3aed-92df-4bb9-b54a-24eccfc6d48c.png" alt="Example chart" data-image-index="1" data-image-description="A bar chart showing data comparison with labeled axes" />
 <ul>
 <li>First bullet point</li>
 <li>Second bullet point</li>
@@ -2333,149 +2409,15 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
     });
   };
 
-  // Dual-agent image generation function
-  const handleDualAgentImageGeneration = async (
-    userMessage: string, 
-    messageId: number,
-    onChunk?: (chunk: string) => void
-  ): Promise<string> => {
-    try {
-      // Check if visual content is needed
-      const shouldGenerate = shouldConsiderVisualContent(userMessage);
-      
-      if (!shouldGenerate) {
-        // No image generation needed, proceed with normal AI response
-        return await sendMessageToAI(userMessage, null, onChunk);
-      }
 
-      // Initialize dual-agent session
-      const sessionId = `session_${messageId}_${Date.now()}`;
-      await dualAgentService.initializeDualAgentSession(
-        sessionId, 
-        userMessage, 
-        user?.uid || 'anonymous'
-      );
-
-      // Update message with streaming state (no analysis text shown)
-      setIntelligentImageGenerations(prev => new Map(prev.set(messageId, {
-        isGenerating: true,
-        stage: 'calling_api'
-      })));
-
-      setMessages(prev => prev.map(msg => 
-        msg.id === messageId 
-          ? { 
-              ...msg, 
-              intelligentImage: {
-                isGenerating: true,
-                stage: 'calling_api'
-              }
-            }
-          : msg
-      ));
-
-      // Create enhanced chunk handler for dual-agent coordination
-      let accumulatedText = '';
-      
-      const dualAgentChunkHandler = (chunk: StreamChunk) => {
-        if (chunk.type === 'text') {
-          accumulatedText += chunk.content;
-          onChunk?.(chunk.content);
-        } else if (chunk.type === 'image_placeholder') {
-          // Insert image placeholder container during text streaming
-          accumulatedText += chunk.content;
-          onChunk?.(chunk.content);
-        } else if (chunk.type === 'image_ready') {
-          // Replace placeholder with actual image
-          const imageMarkdown = `\n\n![${chunk.description || 'Generated Image'}](${chunk.content})\n\n`;
-          accumulatedText += imageMarkdown;
-          onChunk?.(imageMarkdown);
-        }
-      };
-
-      // Start main text agent (this will show the actual response to user)
-      let mainAgentResponse = '';
-      mainAgentResponse = await dualAgentService.startMainTextAgent(
-        sessionId,
-        userMessage,
-        dualAgentChunkHandler,
-        () => {
-          console.log('Main text agent completed');
-        },
-        sendMessageToAI
-      );
-
-      // Update final state
-      const sessionState = dualAgentService.getSessionState(sessionId);
-      const completedImages = dualAgentService.getCompletedImages(sessionId);
-      
-      if (completedImages.size > 0) {
-        const firstImage = Array.from(completedImages.values())[0];
-        
-        setIntelligentImageGenerations(prev => new Map(prev.set(messageId, {
-          isGenerating: false,
-          stage: 'completed',
-          imageUrl: firstImage || '',
-          description: 'Generated Image',
-          generationId: sessionId,
-          coinCost: 0
-        })));
-
-        setMessages(prev => prev.map(msg => 
-          msg.id === messageId 
-            ? { 
-                ...msg, 
-                intelligentImage: {
-                  isGenerating: false,
-                  stage: 'completed',
-                  imageUrl: firstImage || '',
-                  description: 'Generated Image',
-                  generationId: sessionId,
-                  coinCost: 0
-                }
-              }
-            : msg
-        ));
-      }
-
-      // Clean up session
-      dualAgentService.cleanupSession(sessionId);
-
-      return mainAgentResponse || accumulatedText;
-
-    } catch (error) {
-      console.error('Error in streaming image generation:', error);
-      
-      // Update error state
-      setIntelligentImageGenerations(prev => new Map(prev.set(messageId, {
-        isGenerating: false,
-        stage: 'error',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      })));
-
-      setMessages(prev => prev.map(msg => 
-        msg.id === messageId 
-          ? { 
-              ...msg, 
-              intelligentImage: {
-                isGenerating: false,
-                stage: 'error',
-                error: error instanceof Error ? error.message : 'Unknown error'
-              }
-            }
-          : msg
-      ));
-
-      // Fall back to normal AI response
-      return await sendMessageToAI(userMessage, null, onChunk);
-    }
-  };
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() && !selectedFile && uploadedFiles.length === 0 && !currentUploadedFile) return;
     
     // Prevent multiple simultaneous sends
     if (isSending || isLoading) return;
+
+
     
     // Check if a chat exists - prevent sending messages without a chat
     if (!chatId) {
@@ -3102,24 +3044,12 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
             );
           }
         } else {
-          // Check if intelligent image generation should be used for regular text messages
-          const shouldUseIntelligentGeneration = shouldConsiderVisualContent(userMessageContent);
-          
-          if (shouldUseIntelligentGeneration) {
-            // Use intelligent image generation
-            fullResponse = await handleDualAgentImageGeneration(
-              userMessageContent,
-              streamingMessageId,
-              handleChunk
-            );
-          } else {
-            // Use original API for regular text messages
-            fullResponse = await sendMessageToAI(
-              userMessageContent, 
-              imageUrl, 
-              handleChunk
-            );
-          }
+          // Use AI text streaming for regular text messages
+          fullResponse = await sendMessageToAI(
+            userMessageContent, 
+            imageUrl, 
+            handleChunk
+          );
         }
         
         // Finalize the streaming message with the accumulated streaming content only
@@ -3146,9 +3076,64 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
           }
         );
         
+        // Check if we should generate a chart based on the AI response
+        let chartConfig: ChartConfig | null = null;
+        let chartId: string | null = null;
+        
+        if (shouldGenerateChart(finalMessageContent)) {
+          try {
+            chartId = chartService.generateChartId();
+            chartConfig = extractChartConfig(finalMessageContent);
+            
+            // Apply theme-appropriate colors if chart config was found
+            if (chartConfig && chartConfig.data && chartConfig.data.datasets) {
+              chartConfig.data.datasets.forEach(dataset => {
+                if (!dataset.borderColor) {
+                  dataset.borderColor = darkMode ? '#60a5fa' : '#3b82f6';
+                }
+                if (!dataset.backgroundColor && dataset.fill !== false) {
+                  dataset.backgroundColor = darkMode ? 'rgba(96, 165, 250, 0.1)' : 'rgba(59, 130, 246, 0.1)';
+                }
+              });
+              
+              // Apply theme to chart options
+              if (!chartConfig.options) {
+                chartConfig.options = {};
+              }
+              if (!chartConfig.options.plugins) {
+                chartConfig.options.plugins = {};
+              }
+              if (!chartConfig.options.scales) {
+                chartConfig.options.scales = {};
+              }
+              
+              // Set text colors based on theme
+              const textColor = darkMode ? '#e5e7eb' : '#374151';
+              const gridColor = darkMode ? '#374151' : '#e5e7eb';
+              
+              if (chartConfig.options.scales.x) {
+                chartConfig.options.scales.x.ticks = { color: textColor };
+                chartConfig.options.scales.x.grid = { color: gridColor };
+              }
+              if (chartConfig.options.scales.y) {
+                chartConfig.options.scales.y.ticks = { color: textColor };
+                chartConfig.options.scales.y.grid = { color: gridColor };
+              }
+            }
+          } catch (error) {
+            console.error('Error generating chart:', error);
+          }
+        }
+
         setMessages(prev => prev.map(msg => 
           msg.id === streamingMessageId 
-            ? { ...msg, content: finalMessageContent, isStreaming: false }
+            ? { 
+                ...msg, 
+                content: finalMessageContent, 
+                isStreaming: false,
+                chartConfig: chartConfig || undefined,
+                chartId: chartId || undefined
+              }
             : msg
         ));
         
@@ -3159,6 +3144,8 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
         
         // Save the complete assistant response to database (use clean streaming content, not raw JSON)
         await saveChatToDatabase(streamingContent, 'assistant');
+        
+
         
         // Cleanup image replacement session
         imageReplacementService.cleanupSession(imageSessionId);
@@ -3301,6 +3288,10 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+
+
+
 
   // Handle edit message functionality
   const handleEditMessage = (messageId: number, content: string) => {
@@ -5388,6 +5379,26 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                         }
                         return <div className="text-xs opacity-75">Attachment</div>; // Show placeholder text when only attachment without text
                       }
+                      // Check if this is a chart message
+                      if (processedMessage.chartConfig && processedMessage.chartId) {
+                        return (
+                          <div>
+                            {renderTextWithHTML(processedMessage.content, darkMode, {
+                              color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
+                            })}
+                            <div className="chart-container">
+                              <div className="chart-title">
+                                {processedMessage.content.replace('Here\'s the graph for ', '').replace(':', '')}
+                              </div>
+                              <canvas 
+                                id={processedMessage.chartId} 
+                                className="chart-canvas"
+                              ></canvas>
+                            </div>
+                          </div>
+                        );
+                      }
+                      
                       // Default rendering for other messages
                       return renderTextWithHTML(processedMessage.content, darkMode, {
                         color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
