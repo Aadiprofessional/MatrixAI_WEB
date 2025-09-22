@@ -4,7 +4,7 @@ import axios from '../utils/axiosInterceptor';
 import { XMLParser } from 'fast-xml-parser';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
-import { FiLoader, FiDownload, FiSave, FiRefreshCw } from 'react-icons/fi';
+import { FiLoader, FiDownload, FiSave, FiRefreshCw, FiImage } from 'react-icons/fi';
 import { userService } from '../services/userService';
 import coinIcon from '../assets/coin.png';
 
@@ -35,6 +35,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
   const [graphData, setGraphData] = useState<MindMapNode[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingImage, setIsDownloadingImage] = useState(false);
   const [currentXmlData, setCurrentXmlData] = useState<string | null>(xmlData || null);
   const webViewRef = useRef<HTMLIFrameElement>(null);
 
@@ -348,6 +349,70 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
 
   // saveMindMap function removed - functionality merged with sendXmlGraphData
 
+  // New function to download mind map as image
+  const downloadAsImage = async () => {
+    if (!graphData || !webViewRef.current) {
+      alert('No mind map data available. Please generate a mind map first.');
+      return;
+    }
+
+    setIsDownloadingImage(true);
+    
+    try {
+      // Send message to iframe to get high-quality image with dynamic sizing
+      const iframe = webViewRef.current;
+      
+      // Set up message listener for the response
+      const messageHandler = (event: MessageEvent) => {
+        if (event.data && event.data.type === 'chartImageHighRes') {
+          try {
+            // Create download link
+            const link = document.createElement('a');
+            link.download = `mindmap_${audioid || Date.now()}.png`;
+            link.href = event.data.dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log('High-resolution mind map image downloaded successfully');
+          } catch (error) {
+            console.error('Error downloading image:', error);
+            alert('Failed to download image. Please try again.');
+          } finally {
+            setIsDownloadingImage(false);
+            window.removeEventListener('message', messageHandler);
+          }
+        } else if (event.data && event.data.type === 'chartError') {
+          console.error('Chart image generation error:', event.data.error);
+          alert('Failed to generate image. Please try again.');
+          setIsDownloadingImage(false);
+          window.removeEventListener('message', messageHandler);
+        }
+      };
+
+      window.addEventListener('message', messageHandler);
+
+      // Send message to iframe to generate high-resolution image
+      iframe.contentWindow?.postMessage({
+        action: 'getChartImageHighRes'
+      }, '*');
+
+      // Set timeout to prevent hanging (longer for high-res processing)
+      setTimeout(() => {
+        window.removeEventListener('message', messageHandler);
+        if (isDownloadingImage) {
+          setIsDownloadingImage(false);
+          alert('Image generation timed out. Please try again.');
+        }
+      }, 15000);
+
+    } catch (error) {
+      console.error('Error initiating image download:', error);
+      alert('Failed to download image. Please try again.');
+      setIsDownloadingImage(false);
+    }
+  };
+
   const regenerateMindMap = () => {
     if (transcription) {
       fetchGraphData(transcription, true); // Deduct coins when manually generating
@@ -448,33 +513,34 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
         <button class="control-btn" id="reset">Reset</button>
       </div>
       <script>
+        // Global helper functions for node counting and depth calculation
+        function countNodes(nodes) {
+          let count = 0;
+          if (!nodes) return count;
+          count += nodes.length;
+          nodes.forEach(node => {
+            if (node.children && node.children.length) {
+              count += countNodes(node.children);
+            }
+          });
+          return count;
+        }
+        
+        function depth(nodes, level = 0) {
+          if (!nodes || !nodes.length) return level;
+          let maxDepth = level;
+          nodes.forEach(node => {
+            if (node.children && node.children.length) {
+              const childDepth = depth(node.children, level + 1);
+              maxDepth = Math.max(maxDepth, childDepth);
+            }
+          });
+          return maxDepth;
+        }
+        
         // Function to detect optimal chart size based on complexity
         function detectOptimalChartSize(data) {
-          const countNodes = (nodes) => {
-            let count = 0;
-            if (!nodes) return count;
-            count += nodes.length;
-            nodes.forEach(node => {
-              if (node.children && node.children.length) {
-                count += countNodes(node.children);
-              }
-            });
-            return count;
-          };
-          
           const nodeCount = countNodes(data);
-          const depth = (nodes, level = 0) => {
-            if (!nodes || !nodes.length) return level;
-            let maxDepth = level;
-            nodes.forEach(node => {
-              if (node.children && node.children.length) {
-                const childDepth = depth(node.children, level + 1);
-                maxDepth = Math.max(maxDepth, childDepth);
-              }
-            });
-            return maxDepth;
-          };
-          
           const maxDepth = depth(data);
           
           return {
@@ -691,6 +757,176 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
                 type: 'chartImage',
                 dataUrl: canvas
               }, '*');
+            } catch (error) {
+              window.parent.postMessage({
+                type: 'chartError',
+                error: error.message
+              }, '*');
+            }
+          } else if (event.data && event.data.action === 'getChartImageHighRes') {
+            try {
+               // Calculate optimal dimensions based on actual content structure
+               const nodeCount = countNodes(coloredGraphData);
+               const maxDepth = depth(coloredGraphData);
+               
+               // Calculate actual tree dimensions based on real text measurements
+               function calculateTreeDimensions(data) {
+                 if (!data || !data.length) return { width: 2000, height: 1000 };
+                 
+                 // Create temporary canvas for accurate text measurement
+                 const canvas = document.createElement('canvas');
+                 const ctx = canvas.getContext('2d');
+                 ctx.font = '14px Arial'; // Match ECharts font
+                 
+                 let bounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+                 
+                 // Simulate tree layout and measure actual bounds
+                 function measureTreeBounds(nodes, level = 0, parentY = 0, parentX = 0) {
+                   if (!nodes || !nodes.length) return;
+                   
+                   const levelX = level * 350; // Horizontal spacing between levels
+                   let currentY = parentY - ((nodes.length - 1) * 100) / 2; // Center children around parent
+                   
+                   nodes.forEach((node, index) => {
+                     // Measure actual text dimensions
+                     const lines = wrapText(node.name, level === 0 ? 25 : (level === 1 ? 25 : 100));
+                     let maxLineWidth = 0;
+                     
+                     lines.forEach(line => {
+                       const lineWidth = ctx.measureText(line).width;
+                       maxLineWidth = Math.max(maxLineWidth, lineWidth);
+                     });
+                     
+                     const textHeight = lines.length * 18; // Line height
+                     const nodeWidth = Math.max(maxLineWidth + 40, 100); // Padding + minimum width
+                     const nodeHeight = Math.max(textHeight + 20, 40); // Padding + minimum height
+                     
+                     // Calculate node bounds
+                     const nodeLeft = levelX - nodeWidth / 2;
+                     const nodeRight = levelX + nodeWidth / 2;
+                     const nodeTop = currentY - nodeHeight / 2;
+                     const nodeBottom = currentY + nodeHeight / 2;
+                     
+                     // Update overall bounds
+                     bounds.minX = Math.min(bounds.minX, nodeLeft);
+                     bounds.maxX = Math.max(bounds.maxX, nodeRight);
+                     bounds.minY = Math.min(bounds.minY, nodeTop);
+                     bounds.maxY = Math.max(bounds.maxY, nodeBottom);
+                     
+                     // Process children recursively
+                     if (node.children && node.children.length > 0) {
+                       measureTreeBounds(node.children, level + 1, currentY, levelX);
+                     }
+                     
+                     currentY += 100; // Vertical spacing between siblings
+                   });
+                 }
+                 
+                 // Start measurement from root
+                 measureTreeBounds(data, 0, 0, 0);
+                 
+                 // Calculate final dimensions with generous padding
+                 const contentWidth = bounds.maxX - bounds.minX;
+                 const contentHeight = bounds.maxY - bounds.minY;
+                 
+                 // Add substantial padding to ensure no content is cut off
+                 const horizontalPadding = Math.max(300, contentWidth * 0.2);
+                 const verticalPadding = Math.max(200, contentHeight * 0.2);
+                 
+                 const finalWidth = Math.max(contentWidth + horizontalPadding * 2, 1500);
+                 const finalHeight = Math.max(contentHeight + verticalPadding * 2, 800);
+                 
+                 return { width: Math.ceil(finalWidth), height: Math.ceil(finalHeight) };
+               }
+               
+               const dimensions = calculateTreeDimensions(coloredGraphData);
+               const baseWidth = dimensions.width;
+               const baseHeight = dimensions.height;
+              
+              // Create a temporary larger chart for high-resolution export
+              const tempDiv = document.createElement('div');
+              tempDiv.style.width = baseWidth + 'px';
+              tempDiv.style.height = baseHeight + 'px';
+              tempDiv.style.position = 'absolute';
+              tempDiv.style.top = '-9999px';
+              tempDiv.style.left = '-9999px';
+              document.body.appendChild(tempDiv);
+              
+              const tempChart = echarts.init(tempDiv);
+              
+              // Use the same option but with optimized settings for export
+               const exportOption = {
+                 ...option,
+                 animation: false,
+                 series: [{
+                   ...option.series[0],
+                   // Use percentage-based positioning for dynamic centering
+                   top: '10%',      // Dynamic top margin
+                   left: '10%',     // Dynamic left margin  
+                   bottom: '10%',   // Dynamic bottom margin
+                   right: '10%',    // Dynamic right margin
+                   zoom: 1,
+                   roam: false,     // Disable roaming for export
+                   layout: 'none',  // Use absolute positioning
+                   symbolSize: [140, 70], // Larger symbol size for better text fit
+                   label: {
+                     ...option.series[0].label,
+                     fontSize: Math.max(12, Math.min(18, 1000 / nodeCount)),
+                     width: 250,    // Increased width for text wrapping
+                     overflow: 'break', // Break long words
+                     lineHeight: 20,
+                     padding: [5, 10, 5, 10] // Add padding around text
+                   },
+                   leaves: {
+                     ...option.series[0].leaves,
+                     label: {
+                       ...option.series[0].leaves.label,
+                       fontSize: Math.max(10, Math.min(16, 800 / nodeCount)),
+                       width: 220,  // Increased width for leaf text
+                       overflow: 'break',
+                       lineHeight: 18,
+                       padding: [5, 10, 5, 10] // Add padding around text
+                     }
+                   },
+                   lineStyle: {
+                     width: 2,
+                     curveness: 0.3
+                   }
+                 }]
+               };
+              
+              tempChart.setOption(exportOption);
+              
+              // Wait for chart to render then capture
+              setTimeout(() => {
+                try {
+                  const canvas = tempChart.getDataURL({
+                    type: 'png',
+                    pixelRatio: 3,
+                    backgroundColor: themeBackground,
+                    excludeComponents: ['toolbox', 'dataZoom']
+                  });
+                  
+                  // Clean up
+                  tempChart.dispose();
+                  document.body.removeChild(tempDiv);
+                  
+                  window.parent.postMessage({
+                    type: 'chartImageHighRes',
+                    dataUrl: canvas
+                  }, '*');
+                } catch (error) {
+                  // Clean up on error
+                  tempChart.dispose();
+                  document.body.removeChild(tempDiv);
+                  
+                  window.parent.postMessage({
+                    type: 'chartError',
+                    error: error.message
+                  }, '*');
+                }
+              }, 500);
+              
             } catch (error) {
               window.parent.postMessage({
                 type: 'chartError',
@@ -1205,6 +1441,18 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
             title="Download as PDF"
           >
             {isDownloading ? <FiLoader className="animate-spin" /> : <FiDownload />}
+          </button>
+          <button 
+            onClick={downloadAsImage}
+            disabled={isDownloadingImage}
+            className={`p-2 ${
+              isDownloadingImage
+                ? 'text-gray-400 dark:text-gray-600'
+                : 'text-gray-500 hover:text-green-500 dark:text-gray-400 dark:hover:text-green-400'
+            } transition-colors`}
+            title="Download as Image"
+          >
+            {isDownloadingImage ? <FiLoader className="animate-spin" /> : <FiImage />}
           </button>
         </div>
       </div>

@@ -1283,3 +1283,57 @@
 .dark .ai-response-content ::selection {
   background-color: rgba(59, 130, 246, 0.3);
 }
+
+/* Image loading placeholder styles */
+.image-container {
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.dark .image-container {
+  background: #1a1a1a;
+  border-color: #333;
+}
+
+.image-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e9ecef;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+.dark .loading-spinner {
+  border-color: #333;
+  border-top-color: #3b82f6;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.image-loading p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dark .image-loading p {
+  color: #9ca3af;
+}

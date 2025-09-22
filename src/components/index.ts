@@ -25,3 +25,5 @@ export { default as AnimatedGridBanner } from './AnimatedGridBanner';
 export { default as AuthRequiredButton } from './AuthRequiredButton';
 export { default as CubeComponent } from './CubeComponent';
 export { default as ImageSkeleton } from './ImageSkeleton';
+export { default as IntelligentImageGeneration } from './IntelligentImageGeneration';
+export { default as IntelligentImageThinking } from './IntelligentImageThinking';

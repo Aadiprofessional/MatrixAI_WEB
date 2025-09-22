@@ -13,7 +13,7 @@ import {
   FiMaximize, FiMinimize, FiSettings, FiChevronLeft, FiChevronRight, FiMoon, FiSun,
   FiCreditCard, FiBookmark, FiStar, FiEdit, FiTrash2, FiCheck, FiRotateCcw, FiVolumeX,
   FiMenu, FiHome, FiMic, FiFileText, FiVideo, FiZap, FiTrendingUp, FiTarget, FiSquare,
-  FiVolume, FiFile, FiPaperclip, FiSidebar
+  FiVolume, FiFile, FiPaperclip, FiSidebar, FiAlertCircle
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth, User } from '../context/AuthContext';
@@ -21,9 +21,14 @@ import { useUser } from '../context/UserContext';
 import { supabase } from '../supabaseClient';
 import { userService } from '../services/userService';
 import { getNewUserChats, getNewChatMessages, getChatMessagesLazy, getLatestChatMessages, supabaseMessageToFrontend, SupabaseChat, createNewChat, addUserMessage, addUserMessageWithAttachment, deleteNewChat, FrontendMessage } from '../services/chatService';
-import { ProFeatureAlert, ImageSkeleton } from '../components';
+import { ProFeatureAlert, ImageSkeleton, IntelligentImageGeneration, IntelligentImageThinking } from '../components';
 import AuthRequiredButton from '../components/AuthRequiredButton';
 import ThinkingIndicator from '../components/ThinkingIndicator';
+import { intelligentImageService, shouldConsiderVisualContent } from '../services/intelligentImageService';
+import { intelligentImageStorage } from '../services/intelligentImageStorage';
+import { streamingImageService, StreamChunk } from '../services/streamingImageService';
+import { dualAgentService } from '../services/dualAgentService';
+import { imageReplacementService } from '../services/imageReplacementService';
 import { useAlert } from '../context/AlertContext';
 import FilePreviewModal from '../components/FilePreviewModal';
 import FileUploadPopup from '../components/FileUploadPopup';
@@ -61,6 +66,16 @@ interface Message {
     originalName?: string;
     size?: number;
   }[];
+  // Intelligent image generation properties
+  intelligentImage?: {
+    isGenerating: boolean;
+    stage: 'analyzing' | 'generating_description' | 'calling_api' | 'completed' | 'error';
+    imageUrl?: string;
+    description?: string;
+    error?: string;
+    generationId?: string;
+    coinCost?: number;
+  };
 }
 
 // Define interface for chat type
@@ -599,6 +614,17 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
   const [rightPanelWidth, setRightPanelWidth] = useState(320);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Intelligent image generation state
+  const [intelligentImageGenerations, setIntelligentImageGenerations] = useState<Map<number, {
+    isGenerating: boolean;
+    stage: 'analyzing' | 'generating_description' | 'calling_api' | 'completed' | 'error';
+    imageUrl?: string;
+    description?: string;
+    error?: string;
+    generationId?: string;
+    coinCost?: number;
+  }>>(new Map());
 
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -1678,9 +1704,18 @@ HTML FORMATTING RULES:
 - Use <br> for line breaks when needed
 - Use <div> with appropriate classes for styling when needed
 
+IMAGE GENERATION RULES:
+When your response would benefit from visual content (charts, graphs, diagrams, illustrations), include image tags with placeholder URLs:
+- Use this format: <img src="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/placeholder/ai-generated-images/ai_generated_IMAGE_INDEX.png" alt="Description of image" data-image-index="IMAGE_INDEX" data-image-description="Detailed description for AI generation" />
+- Replace IMAGE_INDEX with sequential numbers starting from 1 (1, 2, 3, etc.)
+- Include detailed descriptions in data-image-description for AI image generation
+- Use images for: mathematical graphs, charts, diagrams, illustrations, visual explanations
+- Example: <img src="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/ai-generated-images/ai_generated_185f3aed-92df-4bb9-b54a-24eccfc6d48c.png" alt="Parabola graph" data-image-index="1" data-image-description="A mathematical graph showing a parabola y=x^2 with axis labels and grid lines" />
+
 EXAMPLE HTML RESPONSE FORMAT:
 <h2>Response Title</h2>
 <p>This is a paragraph with <strong>bold text</strong> and <em>italic text</em>.</p>
+<img src="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/0a147ebe-af99-481b-bcaf-ae70c9aeb8d8/ai-generated-images/ai_generated_185f3aed-92df-4bb9-b54a-24eccfc6d48c.png" alt="Example chart" data-image-index="1" data-image-description="A bar chart showing data comparison with labeled axes" />
 <ul>
 <li>First bullet point</li>
 <li>Second bullet point</li>
@@ -2298,6 +2333,144 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
     });
   };
 
+  // Dual-agent image generation function
+  const handleDualAgentImageGeneration = async (
+    userMessage: string, 
+    messageId: number,
+    onChunk?: (chunk: string) => void
+  ): Promise<string> => {
+    try {
+      // Check if visual content is needed
+      const shouldGenerate = shouldConsiderVisualContent(userMessage);
+      
+      if (!shouldGenerate) {
+        // No image generation needed, proceed with normal AI response
+        return await sendMessageToAI(userMessage, null, onChunk);
+      }
+
+      // Initialize dual-agent session
+      const sessionId = `session_${messageId}_${Date.now()}`;
+      await dualAgentService.initializeDualAgentSession(
+        sessionId, 
+        userMessage, 
+        user?.uid || 'anonymous'
+      );
+
+      // Update message with streaming state (no analysis text shown)
+      setIntelligentImageGenerations(prev => new Map(prev.set(messageId, {
+        isGenerating: true,
+        stage: 'calling_api'
+      })));
+
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { 
+              ...msg, 
+              intelligentImage: {
+                isGenerating: true,
+                stage: 'calling_api'
+              }
+            }
+          : msg
+      ));
+
+      // Create enhanced chunk handler for dual-agent coordination
+      let accumulatedText = '';
+      
+      const dualAgentChunkHandler = (chunk: StreamChunk) => {
+        if (chunk.type === 'text') {
+          accumulatedText += chunk.content;
+          onChunk?.(chunk.content);
+        } else if (chunk.type === 'image_placeholder') {
+          // Insert image placeholder container during text streaming
+          accumulatedText += chunk.content;
+          onChunk?.(chunk.content);
+        } else if (chunk.type === 'image_ready') {
+          // Replace placeholder with actual image
+          const imageMarkdown = `\n\n![${chunk.description || 'Generated Image'}](${chunk.content})\n\n`;
+          accumulatedText += imageMarkdown;
+          onChunk?.(imageMarkdown);
+        }
+      };
+
+      // Start main text agent (this will show the actual response to user)
+      let mainAgentResponse = '';
+      mainAgentResponse = await dualAgentService.startMainTextAgent(
+        sessionId,
+        userMessage,
+        dualAgentChunkHandler,
+        () => {
+          console.log('Main text agent completed');
+        },
+        sendMessageToAI
+      );
+
+      // Update final state
+      const sessionState = dualAgentService.getSessionState(sessionId);
+      const completedImages = dualAgentService.getCompletedImages(sessionId);
+      
+      if (completedImages.size > 0) {
+        const firstImage = Array.from(completedImages.values())[0];
+        
+        setIntelligentImageGenerations(prev => new Map(prev.set(messageId, {
+          isGenerating: false,
+          stage: 'completed',
+          imageUrl: firstImage || '',
+          description: 'Generated Image',
+          generationId: sessionId,
+          coinCost: 0
+        })));
+
+        setMessages(prev => prev.map(msg => 
+          msg.id === messageId 
+            ? { 
+                ...msg, 
+                intelligentImage: {
+                  isGenerating: false,
+                  stage: 'completed',
+                  imageUrl: firstImage || '',
+                  description: 'Generated Image',
+                  generationId: sessionId,
+                  coinCost: 0
+                }
+              }
+            : msg
+        ));
+      }
+
+      // Clean up session
+      dualAgentService.cleanupSession(sessionId);
+
+      return mainAgentResponse || accumulatedText;
+
+    } catch (error) {
+      console.error('Error in streaming image generation:', error);
+      
+      // Update error state
+      setIntelligentImageGenerations(prev => new Map(prev.set(messageId, {
+        isGenerating: false,
+        stage: 'error',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })));
+
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { 
+              ...msg, 
+              intelligentImage: {
+                isGenerating: false,
+                stage: 'error',
+                error: error instanceof Error ? error.message : 'Unknown error'
+              }
+            }
+          : msg
+      ));
+
+      // Fall back to normal AI response
+      return await sendMessageToAI(userMessage, null, onChunk);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!inputMessage.trim() && !selectedFile && uploadedFiles.length === 0 && !currentUploadedFile) return;
     
@@ -2795,6 +2968,10 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
           };
           return [...prev, initialStreamingMessage];
         });
+
+        // Initialize image replacement session
+        const imageSessionId = `chat_${chatId}_msg_${streamingMessageId}`;
+        imageReplacementService.initializeSession(imageSessionId, user?.id || 'anonymous');
       
       // Define chunk handler for real-time updates
       const handleChunk = (chunk: string) => {
@@ -2925,17 +3102,50 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
             );
           }
         } else {
-          // Use original API for regular text messages
-          fullResponse = await sendMessageToAI(
-            userMessageContent, 
-            imageUrl, 
-            handleChunk
-          );
+          // Check if intelligent image generation should be used for regular text messages
+          const shouldUseIntelligentGeneration = shouldConsiderVisualContent(userMessageContent);
+          
+          if (shouldUseIntelligentGeneration) {
+            // Use intelligent image generation
+            fullResponse = await handleDualAgentImageGeneration(
+              userMessageContent,
+              streamingMessageId,
+              handleChunk
+            );
+          } else {
+            // Use original API for regular text messages
+            fullResponse = await sendMessageToAI(
+              userMessageContent, 
+              imageUrl, 
+              handleChunk
+            );
+          }
         }
         
         // Finalize the streaming message with the accumulated streaming content only
         // Never use fullResponse as it contains raw JSON - only use streamingContent
         const finalMessageContent = streamingContent;
+        
+        // Process image placeholders after streaming completes
+        await imageReplacementService.processHtmlContent(
+          streamingMessageId.toString(),
+          finalMessageContent,
+          (index: number, actualUrl: string) => {
+            // Update the message content when images are generated
+            setMessages(prev => prev.map(msg => 
+              msg.id === streamingMessageId 
+                ? { ...msg, content: imageReplacementService.replaceImageUrl(msg.content, index, actualUrl) }
+                : msg
+            ));
+            
+            // Also update displayed text
+            setDisplayedText(prev => ({
+              ...prev,
+              [streamingMessageId]: imageReplacementService.replaceImageUrl(prev[streamingMessageId] || finalMessageContent, index, actualUrl)
+            }));
+          }
+        );
+        
         setMessages(prev => prev.map(msg => 
           msg.id === streamingMessageId 
             ? { ...msg, content: finalMessageContent, isStreaming: false }
@@ -2949,6 +3159,9 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
         
         // Save the complete assistant response to database (use clean streaming content, not raw JSON)
         await saveChatToDatabase(streamingContent, 'assistant');
+        
+        // Cleanup image replacement session
+        imageReplacementService.cleanupSession(imageSessionId);
         
         // Clear uploaded file and selected file after successful sending
         if (currentUploadedFile) {
@@ -2977,6 +3190,9 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
         
         // Save error message to database
          await saveChatToDatabase('Sorry, I encountered an error. Please try again.', 'assistant');
+         
+         // Cleanup image replacement session on error
+         imageReplacementService.cleanupSession(imageSessionId);
       }
     } catch (error) {
       console.error('Error in message handling:', error);
@@ -4945,15 +5161,13 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                               )}
 
                               
-                              {/* Generated Image Display */}
-                              {(processedMessage.image_url || (processedMessage.isGenerating && processedMessage.generationType === 'image')) && (
+                              {/* Generated Image Display - AI handles images directly with img tags */}
+                              {processedMessage.image_url && (
                                 <div className="mb-3">
                                   <div className={`relative rounded-lg overflow-hidden border ${
                                     darkMode ? 'border-gray-600 bg-gray-800' : 'border-gray-200 bg-white'
                                   } shadow-lg w-full max-w-lg mx-auto`}>
-                                    {processedMessage.isGenerating && processedMessage.generationType === 'image' && !processedMessage.image_url ? (
-                                      <ImageSkeleton className="w-full h-full" />
-                                    ) : processedMessage.image_url ? (
+                                    {processedMessage.image_url && (
                                       <>
                                         <img 
                                           src={processedMessage.image_url} 
@@ -4993,7 +5207,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                                           </a>
                                         </div>
                                       </>
-                                    ) : null}
+                                    )}
                                   </div>
                                   
                                   {/* Image info */}
@@ -5008,30 +5222,97 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                                 </div>
                               )}
                               
-
-
-                              {/* Loading indicator for generation requests */}
-                              {message.isGenerating && (
+                              {/* Intelligent Image Generation Display - AI handles images directly */}
+                              {(processedMessage.intelligentImage || intelligentImageGenerations.get(processedMessage.id)) && (
                                 <div className="mb-3">
-                                  <div className={`p-4 rounded-lg border-2 border-dashed ${darkMode ? 'border-blue-500 bg-blue-900/20' : 'border-blue-300 bg-blue-50'}`}>
-                                    <div className="flex items-center space-x-3">
-                                      <div className="relative">
-                                        <div className={`w-6 h-6 rounded-full border-2 border-transparent ${darkMode ? 'border-t-blue-400' : 'border-t-blue-500'} animate-spin`}></div>
+                                  {(() => {
+                                    const intelligentImage = processedMessage.intelligentImage || intelligentImageGenerations.get(processedMessage.id);
+                                    
+                                    return (
+                                      <div className={`relative rounded-lg overflow-hidden border ${
+                                        darkMode ? 'border-gray-600 bg-gray-800' : 'border-gray-200 bg-white'
+                                      } shadow-lg w-full max-w-lg mx-auto`}>
+                                        {intelligentImage?.imageUrl && (
+                                          <>
+                                            <img 
+                                              src={intelligentImage.imageUrl} 
+                                              alt="Intelligent generated content" 
+                                              className="w-full h-auto block rounded-lg transition-opacity duration-300 opacity-0"
+                                              onError={(e) => {
+                                                console.error('Failed to load intelligent image:', intelligentImage.imageUrl);
+                                                e.currentTarget.style.display = 'none';
+                                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                              }}
+                                              onLoad={(e) => {
+                                                e.currentTarget.style.opacity = '1';
+                                              }}
+                                            />
+                                            <div className={`hidden p-4 text-center ${
+                                              darkMode ? 'text-gray-300' : 'text-gray-600'
+                                            }`}>
+                                              <div className="flex items-center justify-center space-x-2 mb-2">
+                                                <FiImage className="text-2xl" />
+                                                <span className="text-sm font-medium">Failed to load image</span>
+                                              </div>
+                                              <p className="text-xs opacity-75">The intelligent generated content could not be displayed</p>
+                                            </div>
+                                            
+                                            {/* Image overlay with download button */}
+                                            <div className="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                              <a
+                                                href={intelligentImage.imageUrl}
+                                                download="intelligent-generated-content.png"
+                                                className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
+                                                  darkMode 
+                                                    ? 'bg-black/50 hover:bg-black/70 text-white' 
+                                                    : 'bg-white/50 hover:bg-white/70 text-gray-800'
+                                                }`}
+                                                title="Download intelligent content"
+                                              >
+                                                <FiDownload size={16} />
+                                              </a>
+                                            </div>
+                                            
+                                            {/* Image description display */}
+                                            {intelligentImage.description && (
+                                              <div className={`absolute bottom-2 left-2 right-2 ${darkMode ? 'bg-black/70' : 'bg-white/70'} backdrop-blur-sm rounded p-2`}>
+                                                <details className={`${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                                  <summary className="text-xs cursor-pointer hover:underline">View Description</summary>
+                                                  <p className={`mt-1 text-xs ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                                                    {intelligentImage.description}
+                                                  </p>
+                                                </details>
+                                              </div>
+                                            )}
+                                          </>
+                                        )}
+                                        {intelligentImage?.error && (
+                                          <div className={`p-4 text-center ${darkMode ? 'text-red-300 bg-red-900/20' : 'text-red-600 bg-red-50'}`}>
+                                            <div className="flex items-center justify-center space-x-2 mb-2">
+                                              <FiAlertCircle className="text-2xl" />
+                                              <span className="text-sm font-medium">Generation Failed</span>
+                                            </div>
+                                            <p className="text-xs opacity-75">{intelligentImage.error}</p>
+                                          </div>
+                                        )}
                                       </div>
-                                      <div>
-                                        <p className={`font-medium text-sm ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-                                          {message.generationType === 'image' && 'Generating image...'}
-                                          {message.generationType === 'spreadsheet' && 'Creating spreadsheet...'}
-                                          {message.generationType === 'document' && 'Writing document...'}
-                                        </p>
-                                        <p className={`text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                                          This may take a few moments
-                                        </p>
-                                      </div>
+                                    );
+                                  })()}
+                                  
+                                  {/* Intelligent content info */}
+                                  <div className={`mt-2 text-xs ${
+                                    darkMode ? 'text-gray-400' : 'text-gray-500'
+                                  }`}>
+                                    <div className="flex items-center justify-between">
+                                      <span>🧠 Intelligent Visual Content</span>
+                                      <span>AI-generated visualization</span>
                                     </div>
                                   </div>
                                 </div>
                               )}
+
+
+                              {/* AI handles images directly with img tags - no loading indicators needed */}
 
                               {/* Bot Message Attachments */}
                               {processedMessage.role === 'assistant' && processedMessage.attachments && processedMessage.attachments.length > 0 && (
