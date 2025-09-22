@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext, useMemo } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from '../utils/axiosInterceptor';
@@ -117,6 +117,112 @@ const ChatPage: React.FC = () => {
 
 
 
+
+// Enhanced text processing with real-time chart rendering and text clipping
+const processTextWithCharts = (text: string, darkMode: boolean, messageId: string, isStreaming: boolean = false) => {
+  if (!text) return { processedText: '', chartConfigs: [] };
+  
+  const chartConfigs: Array<{id: string, config: ChartConfig, position: number}> = [];
+  let processedText = text;
+  
+  // Detect chartjs code blocks and extract them
+  const chartRegex = /```chartjs\s*([\s\S]*?)```/g;
+  let match;
+  let offset = 0;
+  
+  while ((match = chartRegex.exec(text)) !== null) {
+    try {
+      const chartCode = match[1].trim();
+      const chartConfig = JSON.parse(chartCode) as ChartConfig;
+      const chartId = `chart-${messageId}-${chartConfigs.length}`;
+      
+      // Apply theme-appropriate colors
+      if (chartConfig.data && chartConfig.data.datasets) {
+        chartConfig.data.datasets.forEach(dataset => {
+          if (!dataset.borderColor) {
+            dataset.borderColor = darkMode ? '#60a5fa' : '#3b82f6';
+          }
+          if (!dataset.backgroundColor && dataset.fill !== false) {
+            dataset.backgroundColor = darkMode ? 'rgba(96, 165, 250, 0.1)' : 'rgba(59, 130, 246, 0.1)';
+          }
+        });
+        
+        // Apply theme to chart options
+        if (!chartConfig.options) {
+          chartConfig.options = {};
+        }
+        if (!chartConfig.options.plugins) {
+          chartConfig.options.plugins = {};
+        }
+        if (!chartConfig.options.scales) {
+          chartConfig.options.scales = {};
+        }
+        
+        // Handle Chart.js v2 to v3+ migration - convert old syntax to new
+        if (chartConfig.options.scales.yAxes) {
+          chartConfig.options.scales.y = chartConfig.options.scales.yAxes[0];
+          delete chartConfig.options.scales.yAxes;
+        }
+        if (chartConfig.options.scales.xAxes) {
+          chartConfig.options.scales.x = chartConfig.options.scales.xAxes[0];
+          delete chartConfig.options.scales.xAxes;
+        }
+        
+        // Handle old legend and title syntax
+        if (chartConfig.options.legend) {
+          if (!chartConfig.options.plugins.legend) {
+            chartConfig.options.plugins.legend = chartConfig.options.legend;
+          }
+          delete chartConfig.options.legend;
+        }
+        if (chartConfig.options.title) {
+          if (!chartConfig.options.plugins.title) {
+            chartConfig.options.plugins.title = chartConfig.options.title;
+          }
+          delete chartConfig.options.title;
+        }
+        
+        // Set text colors based on theme
+        const textColor = darkMode ? '#e5e7eb' : '#374151';
+        const gridColor = darkMode ? '#374151' : '#e5e7eb';
+        
+        if (chartConfig.options.scales?.x) {
+          if (!chartConfig.options.scales.x.ticks) chartConfig.options.scales.x.ticks = {};
+          if (!chartConfig.options.scales.x.grid) chartConfig.options.scales.x.grid = {};
+          chartConfig.options.scales.x.ticks.color = textColor;
+          chartConfig.options.scales.x.grid.color = gridColor;
+        }
+        if (chartConfig.options.scales?.y) {
+          if (!chartConfig.options.scales.y.ticks) chartConfig.options.scales.y.ticks = {};
+          if (!chartConfig.options.scales.y.grid) chartConfig.options.scales.y.grid = {};
+          chartConfig.options.scales.y.ticks.color = textColor;
+          chartConfig.options.scales.y.grid.color = gridColor;
+        }
+      }
+      
+      chartConfigs.push({
+        id: chartId,
+        config: chartConfig,
+        position: match.index - offset
+      });
+      
+      // Replace the chartjs code block with a placeholder that will be replaced with the chart
+      const placeholder = `<div class="chart-placeholder" data-chart-id="${chartId}"></div>`;
+      processedText = processedText.substring(0, match.index - offset) + 
+                    placeholder + 
+                    processedText.substring(match.index - offset + match[0].length);
+      
+      // Update offset for next replacements
+      offset += match[0].length - placeholder.length;
+      
+    } catch (error) {
+      console.error('Error parsing chart config:', error);
+      // Keep the original code block if parsing fails
+    }
+  }
+  
+  return { processedText, chartConfigs };
+};
 
 // Enhanced HTML text formatting function with math support
 const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) => {
@@ -278,6 +384,210 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
       </div>
     );
   }
+};
+
+// Component for rendering text with embedded charts
+const TextWithCharts: React.FC<{
+  text: string;
+  darkMode: boolean;
+  messageId: string;
+  isStreaming?: boolean;
+  textStyle?: any;
+}> = ({ text, darkMode, messageId, isStreaming = false, textStyle }) => {
+  const [renderedCharts, setRenderedCharts] = useState<Set<string>>(new Set());
+  
+  const { processedText, chartConfigs } = useMemo(() => 
+    processTextWithCharts(text, darkMode, messageId, isStreaming), 
+    [text, darkMode, messageId, isStreaming]
+  );
+  
+  // Render charts when they become available
+  useEffect(() => {
+    chartConfigs.forEach(({ id, config }: {id: string, config: ChartConfig}) => {
+      if (!renderedCharts.has(id)) {
+        // Use setTimeout to ensure the DOM element exists
+        setTimeout(() => {
+          const element = document.getElementById(id);
+          if (element) {
+            try {
+              chartService.renderChart(id, config);
+              setRenderedCharts(prev => new Set([...Array.from(prev), id]));
+            } catch (error) {
+              console.error('Error rendering chart:', error);
+            }
+          }
+        }, 100);
+      }
+    });
+  }, [chartConfigs, renderedCharts]);
+  
+  // Create the final HTML with chart placeholders replaced by canvas elements
+  const finalHTML = useMemo(() => {
+    let html = processedText;
+    
+    chartConfigs.forEach(({ id }: {id: string}) => {
+      const placeholder = `<div class="chart-placeholder" data-chart-id="${id}"></div>`;
+      const chartElement = `
+        <div class="chart-container my-4">
+          <canvas id="${id}" class="chart-canvas max-w-full h-auto"></canvas>
+        </div>
+      `;
+      html = html.replace(placeholder, chartElement);
+    });
+    
+    return html;
+  }, [processedText, chartConfigs]);
+  
+  // Apply the same HTML processing as renderTextWithHTML
+  const processedHTML = useMemo(() => {
+    try {
+      // Check if the text is already HTML (contains HTML tags)
+      const isHTML = /<[^>]*>/g.test(finalHTML);
+      
+      let result = finalHTML;
+      
+      if (!isHTML) {
+        // If it's plain text, convert markdown-like syntax to HTML
+        const escapeHtml = (unsafe: string) => {
+          return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        };
+
+        result = escapeHtml(result);
+        
+        // Convert line breaks to <br> tags
+        result = result.replace(/\n/g, '<br>');
+        
+        // Convert **bold** to <strong>
+        result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+        // Convert *italic* to <em>
+        result = result.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        // Convert `code` to <code>
+        result = result.replace(/`(.*?)`/g, '<code>$1</code>');
+        
+        // Convert URLs to links
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        result = result.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+        
+        // Convert code blocks ```code``` to <pre><code> (but skip chartjs blocks as they're already processed)
+        result = result.replace(/```(?!chartjs)([\s\S]*?)```/g, (match: string, code: string) => {
+          const cleanCode = code.trim();
+          return `<pre><code>${cleanCode}</code></pre>`;
+        });
+        
+        // Convert headers # Header to <h1>
+        result = result.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+        result = result.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+        result = result.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+        
+        // Convert blockquotes > text to <blockquote>
+        result = result.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
+      }
+      
+      // Process math expressions using KaTeX
+      const renderMathWithKaTeX = (text: string) => {
+        let mathResult = text;
+        
+        // Handle block math expressions (display mode)
+        mathResult = mathResult.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
+          try {
+            const rendered = katex.renderToString(math.trim(), {
+              displayMode: true,
+              throwOnError: false,
+              strict: false,
+              trust: true
+            });
+            return `<div class="katex-block-container">${rendered}</div>`;
+          } catch (error) {
+            console.warn('KaTeX block render error:', error);
+            return `<div class="math-error">\\[${math}\\]</div>`;
+          }
+        });
+        
+        // Dollar sign block math $$...$$
+        mathResult = mathResult.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
+          try {
+            const rendered = katex.renderToString(math.trim(), {
+              displayMode: true,
+              throwOnError: false,
+              strict: false,
+              trust: true
+            });
+            return `<div class="katex-block-container">${rendered}</div>`;
+          } catch (error) {
+            console.warn('KaTeX block render error:', error);
+            return `<div class="math-error">$$${math}$$</div>`;
+          }
+        });
+        
+        // Handle inline math expressions
+        mathResult = mathResult.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
+          try {
+            const rendered = katex.renderToString(math.trim(), {
+              displayMode: false,
+              throwOnError: false,
+              strict: false,
+              trust: true
+            });
+            return `<span class="katex-inline-container">${rendered}</span>`;
+          } catch (error) {
+            console.warn('KaTeX inline render error:', error);
+            return `<span class="math-error">\\(${math}\\)</span>`;
+          }
+        });
+        
+        // Dollar sign inline math $...$
+        mathResult = mathResult.replace(/\$([^$\n]+)\$/g, (match, math) => {
+          try {
+            const rendered = katex.renderToString(math.trim(), {
+              displayMode: false,
+              throwOnError: false,
+              strict: false,
+              trust: true
+            });
+            return `<span class="katex-inline-container">${rendered}</span>`;
+          } catch (error) {
+            console.warn('KaTeX inline render error:', error);
+            return `<span class="math-error">$${math}$</span>`;
+          }
+        });
+        
+        return mathResult;
+      };
+
+      // Apply KaTeX rendering
+      result = renderMathWithKaTeX(result);
+      
+      // Sanitize the final HTML
+      return DOMPurify.sanitize(result, {
+        ALLOWED_TAGS: [
+          'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
+          'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'a', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+          'div', 'span', 'img', 'hr', 'sub', 'sup', 'canvas'
+        ],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id', 'src', 'alt', 'title', 'border', 'cellpadding', 'cellspacing']
+      });
+      
+    } catch (error) {
+      console.error('Error processing HTML:', error);
+      return finalHTML;
+    }
+  }, [finalHTML]);
+  
+  return (
+    <div 
+      className={`ai-response-content ${darkMode ? 'dark' : ''}`} 
+      style={textStyle}
+    >
+      <div dangerouslySetInnerHTML={{ __html: processedHTML }} />
+    </div>
+  );
 };
 
   // Role options with translations
@@ -1782,12 +2092,6 @@ When your response involves data visualization, mathematical functions, or chart
 - Supported chart types: line, bar, pie, doughnut, scatter, bubble, polarArea, radar
 - Example for mathematical functions: Use chartjs code block with complete JSON configuration including type, data with labels and datasets, and options for styling
 
-IMAGE GENERATION RULES:
-For non-chart visual content (diagrams, illustrations, photos), include image tags with placeholder URLs:
-- Use this format: <img src="https://ddtgdhehxhgarkonvpfq.supabase.co/storage/v1/object/public/user-uploads/users/placeholder/ai-generated-images/ai_generated_IMAGE_INDEX.png" alt="Description of image" data-image-index="IMAGE_INDEX" data-image-description="Detailed description for AI generation" />
-- Replace IMAGE_INDEX with sequential numbers starting from 1 (1, 2, 3, etc.)
-- Include detailed descriptions in data-image-description for AI image generation
-- Use images for: diagrams, illustrations, visual explanations (NOT for charts/graphs)
 
 EXAMPLE HTML RESPONSE FORMAT:
 <h2>Response Title</h2>
@@ -5355,9 +5659,15 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                   <div className="prose prose-sm max-w-none">
                     <div className="inline-block">
                       <span className="inline">
-                        {renderTextWithHTML(displayedText[processedMessage.id] || '', darkMode, {
-                          color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
-                        })}
+                        <TextWithCharts
+                          text={displayedText[processedMessage.id] || ''}
+                          darkMode={darkMode}
+                          messageId={processedMessage.id.toString()}
+                          isStreaming={true}
+                          textStyle={{
+                            color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
+                          }}
+                        />
                       </span>
                       <span className="inline-flex items-center space-x-1 ml-1 align-baseline">
                         <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -5373,36 +5683,31 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                       if (processedMessage.role === 'user' && processedMessage.content.includes(';;%%;;')) {
                         const textContent = processedMessage.content.replace(/;;%%;;.*?;;%%;;/g, '').trim();
                         if (textContent) {
-                          return renderTextWithHTML(textContent, darkMode, {
-                            color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
-                          });
+                          return (
+                            <TextWithCharts
+                              text={textContent}
+                              darkMode={darkMode}
+                              messageId={processedMessage.id.toString()}
+                              textStyle={{
+                                color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
+                              }}
+                            />
+                          );
                         }
                         return <div className="text-xs opacity-75">Attachment</div>; // Show placeholder text when only attachment without text
                       }
-                      // Check if this is a chart message
-                      if (processedMessage.chartConfig && processedMessage.chartId) {
-                        return (
-                          <div>
-                            {renderTextWithHTML(processedMessage.content, darkMode, {
-                              color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
-                            })}
-                            <div className="chart-container">
-                              <div className="chart-title">
-                                {processedMessage.content.replace('Here\'s the graph for ', '').replace(':', '')}
-                              </div>
-                              <canvas 
-                                id={processedMessage.chartId} 
-                                className="chart-canvas"
-                              ></canvas>
-                            </div>
-                          </div>
-                        );
-                      }
                       
-                      // Default rendering for other messages
-                      return renderTextWithHTML(processedMessage.content, darkMode, {
-                        color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
-                      });
+                      // Use TextWithCharts for all assistant messages to handle embedded charts
+                      return (
+                        <TextWithCharts
+                          text={processedMessage.content}
+                          darkMode={darkMode}
+                          messageId={processedMessage.id.toString()}
+                          textStyle={{
+                            color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
+                          }}
+                        />
+                      );
                     })()} 
                   </div>
                 )}
