@@ -167,6 +167,11 @@ export class ChartService {
     });
   }
 
+  // Check if a chart already exists
+  chartExists(chartId: string): boolean {
+    return this.chartInstances.has(chartId);
+  }
+
   // Destroy a specific chart
   destroyChart(chartId: string): void {
     if (this.chartInstances.has(chartId)) {

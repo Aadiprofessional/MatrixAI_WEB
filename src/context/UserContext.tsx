@@ -42,6 +42,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { user } = useAuth();
   const previousUserId = useRef<string | null>(null);
   const fetchInProgress = useRef(false);
+  const previousUserDataRef = useRef<UserData | null>(null);
   
   const [userData, setUserData] = useState<UserData | null>(() => {
     // Try to get userData from localStorage when component mounts
@@ -116,8 +117,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Updated user data:', combinedData);
         
         // Always update if forced, otherwise only if data changed
-        if (force || !userData || JSON.stringify(combinedData) !== JSON.stringify(userData)) {
+        if (force || !previousUserDataRef.current || JSON.stringify(combinedData) !== JSON.stringify(previousUserDataRef.current)) {
           setUserData(combinedData);
+          previousUserDataRef.current = combinedData;
           
           // Cache the user data and timestamp in localStorage
           localStorage.setItem('matrixai_userData', JSON.stringify(combinedData));
@@ -152,7 +154,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
       fetchInProgress.current = false;
     }
-  }, [user, userData, lastFetch]);
+  }, [user, lastFetch]);
 
   // Fetch user data when auth user changes
   useEffect(() => {
@@ -252,9 +254,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user, lastFetch, fetchUserData]);
 
   // Expose method to manually refresh user data
-  const refreshUserData = async () => {
+  const refreshUserData = useCallback(async () => {
     await fetchUserData(true);
-  };
+  }, [fetchUserData]);
 
   const value = {
     userData,

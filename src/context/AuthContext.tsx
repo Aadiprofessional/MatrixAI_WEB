@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, useRef, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useContext, useRef, ReactNode, useCallback } from 'react';
 import { signInWithGoogle as supabaseSignInWithGoogle, signInWithApple as supabaseSignInWithApple, signOut as supabaseSignOut, supabase } from '../supabaseClient';
 
 // Define the User interface
@@ -74,8 +74,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(!authCheckedFromLocalStorage.current);
   const [error, setError] = useState<string | null>(null);
 
-  // Function to set user data and token
-  const setUserData = (userData: User, token: string) => {
+  // Function to set user data and store in localStorage
+  const setUserData = useCallback((userData: User, token: string) => {
     console.log('Setting user data in AuthContext:', userData);
     console.log('Setting token in AuthContext:', token);
     
@@ -97,10 +97,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Update state
     setUser(userData);
     setSession({ access_token: token });
-  };
+  }, []);
 
   // Function to verify session from localStorage
-  const verifySession = async (forceRefresh = false) => {
+  const verifySession = useCallback(async (forceRefresh = false) => {
     try {
       console.log('Verifying session from localStorage...');
       
@@ -149,7 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(null);
       setUser(null);
     }
-  };
+  }, [user, session]);
 
   // OAuth callback handler to sync Supabase users with backend
   const handleOAuthCallback = async (session: any) => {
@@ -374,7 +374,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pageshow', handlePageShow);
     };
-  }, []);
+  }, [verifySession]);
 
   // Sign up a new user
   const handleSignUp = async (email: string, password: string, metadata: any = {}) => {

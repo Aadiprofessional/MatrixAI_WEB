@@ -82,9 +82,6 @@ const Navbar: React.FC<NavbarProps> = ({ onMobileSidebarToggle, isMobileSidebarO
     };
   }, [user?.uid, refreshUserData]);
 
-  // Debug logging
-  console.log('Navbar render:', { showChargeModal, userData: !!userData, isPro, localCoins, userDataCoins: userData?.coins });
-
   const handleLogout = async () => {
     try {
       await signOut();

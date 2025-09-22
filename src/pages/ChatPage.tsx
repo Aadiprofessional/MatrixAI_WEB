@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useContext, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from '../utils/axiosInterceptor';
@@ -105,7 +105,6 @@ const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const { userData, isPro, refreshUserData } = useUser();
   const { user } = useAuth();
-  console.log('🔍 ChatPage - useAuth result:', { user, hasUser: !!user, userUid: user?.uid, userEmail: user?.email });
   const { showSuccess, showError, showWarning, showConfirmation } = useAlert();
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
@@ -395,6 +394,7 @@ const TextWithCharts: React.FC<{
   textStyle?: any;
 }> = ({ text, darkMode, messageId, isStreaming = false, textStyle }) => {
   const [renderedCharts, setRenderedCharts] = useState<Set<string>>(new Set());
+  const [initialRenderComplete, setInitialRenderComplete] = useState<boolean>(false);
   
   const { processedText, chartConfigs } = useMemo(() => 
     processTextWithCharts(text, darkMode, messageId, isStreaming), 
@@ -404,7 +404,15 @@ const TextWithCharts: React.FC<{
   // Render charts when they become available
   useEffect(() => {
     chartConfigs.forEach(({ id, config }: {id: string, config: ChartConfig}) => {
+      // Only render if not already rendered in this component instance
       if (!renderedCharts.has(id)) {
+        // If streaming and initial render is complete, don't re-render existing charts
+        if (isStreaming && initialRenderComplete && chartService.chartExists(id)) {
+          // Just mark as rendered to prevent future attempts
+          setRenderedCharts(prev => new Set([...Array.from(prev), id]));
+          return;
+        }
+        
         // Use setTimeout to ensure the DOM element exists
         setTimeout(() => {
           const element = document.getElementById(id);
@@ -412,6 +420,9 @@ const TextWithCharts: React.FC<{
             try {
               chartService.renderChart(id, config);
               setRenderedCharts(prev => new Set([...Array.from(prev), id]));
+              if (!initialRenderComplete) {
+                setInitialRenderComplete(true);
+              }
             } catch (error) {
               console.error('Error rendering chart:', error);
             }
@@ -419,7 +430,7 @@ const TextWithCharts: React.FC<{
         }, 100);
       }
     });
-  }, [chartConfigs, renderedCharts]);
+  }, [chartConfigs, renderedCharts, isStreaming, initialRenderComplete]);
   
   // Create the final HTML with chart placeholders replaced by canvas elements
   const finalHTML = useMemo(() => {
@@ -1054,7 +1065,7 @@ const TextWithCharts: React.FC<{
   };
 
   // Fetch user chats from database without updating current messages
-  const fetchUserChatsWithoutMessageUpdate = async () => {
+  const fetchUserChatsWithoutMessageUpdate = useCallback(async () => {
     try {
       console.log('🔄 fetchUserChatsWithoutMessageUpdate - Starting chat fetch without message update');
       
@@ -1106,10 +1117,10 @@ const TextWithCharts: React.FC<{
       console.error('Error fetching chats for real-time update:', error);
       return [];
     }
-  };
+  }, []);
 
   // Fetch user chats from database
-  const fetchUserChats = async () => {
+  const fetchUserChats = useCallback(async () => {
     try {
       console.log('=== FETCH USER CHATS START ===');
       console.log('AuthContext user:', user);
@@ -1262,17 +1273,28 @@ const TextWithCharts: React.FC<{
                setSelectedRole(roleOptions.find(r => r.id === (targetChat.role || 'general')) || roleOptions[0]);
                console.log('📱 Loaded chat messages:', targetChat.messages?.length || 0);
             } else {
-              console.log('❌ Target chat not found, loading most recent chat');
-              // If the requested chat doesn't exist, load the most recent one
-              if (convertedChats.length > 0) {
-                const mostRecentChat = convertedChats[0];
-                console.log('📅 Loading most recent chat:', mostRecentChat.id);
-                 setChatId(mostRecentChat.id);
-                 setMessages(mostRecentChat.messages || []);
-                 setSelectedRole(roleOptions.find(r => r.id === (mostRecentChat.role || 'general')) || roleOptions[0]);
-                 // Update URL to match the loaded chat
-                 navigate(`/chat/${mostRecentChat.id}`);
-                 console.log('📱 Loaded recent chat messages:', mostRecentChat.messages?.length || 0);
+              console.log('❌ Target chat not found in database');
+              // Check if this might be a newly created chat that exists in local state
+              const localChat = chats.find(c => c.id === routeChatId);
+              if (localChat) {
+                console.log('✅ Found target chat in local state:', localChat.id);
+                setChatId(routeChatId);
+                setMessages(localChat.messages || []);
+                setSelectedRole(roleOptions.find(r => r.id === (localChat.role || 'general')) || roleOptions[0]);
+                console.log('📱 Loaded local chat messages:', localChat.messages?.length || 0);
+              } else {
+                console.log('❌ Target chat not found anywhere, loading most recent chat');
+                // If the requested chat doesn't exist anywhere, load the most recent one
+                if (convertedChats.length > 0) {
+                  const mostRecentChat = convertedChats[0];
+                  console.log('📅 Loading most recent chat:', mostRecentChat.id);
+                   setChatId(mostRecentChat.id);
+                   setMessages(mostRecentChat.messages || []);
+                   setSelectedRole(roleOptions.find(r => r.id === (mostRecentChat.role || 'general')) || roleOptions[0]);
+                   // Update URL to match the loaded chat
+                   navigate(`/chat/${mostRecentChat.id}`);
+                   console.log('📱 Loaded recent chat messages:', mostRecentChat.messages?.length || 0);
+                }
               }
             }
           } else if (convertedChats.length > 0) {
@@ -1512,7 +1534,7 @@ const TextWithCharts: React.FC<{
           description: 'Error mode - working offline'
         }]);
     }
-  };
+  }, [routeChatId, navigate, user?.uid]);
 
   // Save chat message to database using new chat service
   // Function to update chat title with first 2-3 words of user's first message
@@ -1930,7 +1952,7 @@ const TextWithCharts: React.FC<{
       chatSubscription.unsubscribe();
       stopSpeech();
     };
-  }, [routeChatId, navigate, user]);
+  }, [routeChatId, navigate, user?.uid]);
 
   // Auto-stop speaking when navigating away
   useEffect(() => {
@@ -4199,17 +4221,27 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
       
       console.log('✅ Successfully created new chat with ID:', newChatId);
       
-      // Small delay to ensure database consistency
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Immediately add the new chat to local state to ensure it's available
+      const newChatData = {
+        id: newChatId,
+        title: 'New Chat',
+        messages: [],
+        role: selectedRole.id,
+        roleDescription: selectedRole.description,
+        description: 'New conversation'
+      };
+      
+      // Update chats list with the new chat at the beginning
+      setChats(prev => [newChatData, ...prev]);
       
       // Force navigation after successful creation
       console.log('✅ Navigating to new chat:', newChatId);
       navigate(`/chat/${newChatId}`, { replace: true });
       
-      // Refresh chat list to show the new chat after a small delay
+      // Refresh chat list from database after a small delay to sync with server
       setTimeout(async () => {
         await fetchUserChatsWithoutMessageUpdate();
-      }, 200);
+      }, 500);
       
     } catch (error) {
       console.error('❌ Error starting new chat:', error);
