@@ -36,6 +36,7 @@ import { uploadFileToStorage, FileUploadResult, validateFile, formatFileSize, ge
 import { UserMessageAttachments } from '../components/UserMessageAttachments';
 import { BotMessageAttachments } from '../components/BotMessageAttachments';
 import { chartService, ChartConfig } from '../services/chartService';
+import { useChatChartRecovery } from '../hooks/useChartRecovery';
 import coinIcon from '../assets/coin.png';
 import './ChatPage.css';
 
@@ -109,13 +110,26 @@ const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   
-  // All formatting components removed - HTML formatting will be implemented from scratch
+  // Initialize chart recovery system to handle context changes
+  const chartRecovery = useChatChartRecovery();
+  
+  // Function to normalize custom math tags to standard LaTeX format
+  const normalizeCustomMathTags = (input: string): string => {
+    return (
+      input
+        // Convert [/math]...[/math] to $$...$$
+        .replace(/\[\/math\]([\s\S]*?)\[\/math\]/g, (_, content) => `$$${content.trim()}$$`)
 
+        // Convert [/inline]...[/inline] to $...$
+        .replace(/\[\/inline\]([\s\S]*?)\[\/inline\]/g, (_, content) => `$${content.trim()}$`)
 
+        // Convert \( ... \) to $...$ (inline math) - handles both single and double backslashes
+        .replace(/\\{1,2}\(([\s\S]*?)\\{1,2}\)/g, (_, content) => `$${content.trim()}$`)
 
-
-
-
+        // Convert \[ ... \] to $$...$$ (block math) - handles both single and double backslashes
+        .replace(/\\{1,2}\[([\s\S]*?)\\{1,2}\]/g, (_, content) => `$$${content.trim()}$$`)
+    );
+  };
 
 // Enhanced text processing with real-time chart rendering and text clipping
 const processTextWithCharts = (text: string, darkMode: boolean, messageId: string, isStreaming: boolean = false) => {
@@ -135,9 +149,9 @@ const processTextWithCharts = (text: string, darkMode: boolean, messageId: strin
       const chartConfig = JSON.parse(chartCode) as ChartConfig;
       const chartId = `chart-${messageId}-${chartConfigs.length}`;
       
-      // Apply theme-appropriate colors
-      if (chartConfig.data && chartConfig.data.datasets) {
-        chartConfig.data.datasets.forEach(dataset => {
+      // Apply theme-appropriate colors (only for Chart.js charts, not Gantt)
+      if (chartConfig.data && 'datasets' in chartConfig.data && chartConfig.data.datasets) {
+        chartConfig.data.datasets.forEach((dataset: any) => {
           if (!dataset.borderColor) {
             dataset.borderColor = darkMode ? '#60a5fa' : '#3b82f6';
           }
@@ -254,7 +268,40 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
           .replace(/'/g, "&#039;");
       };
 
-      processedText = escapeHtml(text);
+      // First, detect and protect mathematical expressions before HTML escaping
+      const mathExpressions: { placeholder: string; original: string; latex: string }[] = [];
+      let mathCounter = 0;
+      
+      // Detect mathematical expressions with superscripts (like 3^2+4^2 = 5^2)
+      // More specific regex that only matches actual mathematical expressions, not technical text
+      const mathRegex = /(?:^|(?<=\s))([0-9]+(?:[+\-*/=\s]*[0-9]*\^[0-9]+[+\-*/=\s]*[0-9]*)+)(?=\s|$|[.,:;!?])/g;
+      
+      let tempText = text;
+      let match;
+      
+      while ((match = mathRegex.exec(text)) !== null) {
+        const mathExpression = match[1].trim();
+        
+        // Additional validation: ensure it's actually a mathematical expression
+        // Must contain at least one superscript and be primarily numbers/operators
+        if (mathExpression.includes('^') && /^[0-9+\-*/=\s\^]+$/.test(mathExpression)) {
+          // Convert to LaTeX format: replace ^ with proper superscript notation
+          const latexExpression = mathExpression.replace(/([0-9]+)\^([0-9]+)/g, '$1^{$2}');
+          
+          const placeholder = `__MATH_PLACEHOLDER_${mathCounter}__`;
+          mathExpressions.push({
+            placeholder,
+            original: mathExpression,
+            latex: latexExpression
+          });
+          
+          // Replace the math expression with placeholder
+          tempText = tempText.replace(mathExpression, placeholder);
+          mathCounter++;
+        }
+      }
+
+      processedText = escapeHtml(tempText);
       
       // Convert line breaks to <br> tags
       processedText = processedText.replace(/\n/g, '<br>');
@@ -285,15 +332,21 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
       
       // Convert blockquotes > text to <blockquote>
       processedText = processedText.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
+      
+      // Restore mathematical expressions as inline LaTeX with debug marker
+      mathExpressions.forEach(({ placeholder, latex }) => {
+        processedText = processedText.replace(placeholder, `<span data-math-converted="true">$${latex}$</span>`);
+      });
     }
-    
+
     // Process math expressions using KaTeX for better rendering
     const renderMathWithKaTeX = (text: string) => {
-      let result = text;
+      // First normalize custom math tags to standard LaTeX format
+      let result = normalizeCustomMathTags(text);
       
       // Handle block math expressions (display mode)
       // LaTeX-style block math \[...\]
-      result = result.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
+      result = result.replace(/\\\[([\s\S]*?)\\\]/g, (match: string, math: string) => {
         try {
           const rendered = katex.renderToString(math.trim(), {
             displayMode: true,
@@ -309,7 +362,7 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
       });
       
       // Dollar sign block math $$...$$
-      result = result.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
+      result = result.replace(/\$\$([\s\S]*?)\$\$/g, (match: string, math: string) => {
         try {
           const rendered = katex.renderToString(math.trim(), {
             displayMode: true,
@@ -326,7 +379,7 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
       
       // Handle inline math expressions
       // LaTeX-style inline math \(...\)
-      result = result.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
+      result = result.replace(/\\\(([\s\S]*?)\\\)/g, (match: string, math: string) => {
         try {
           const rendered = katex.renderToString(math.trim(), {
             displayMode: false,
@@ -342,7 +395,25 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
       });
       
       // Dollar sign inline math $...$
-      result = result.replace(/\$([^$\n]+)\$/g, (match, math) => {
+      result = result.replace(/<span data-math-converted="true">\$([^$\n]+)\$<\/span>/g, (match: string, math: string) => {
+        try {
+          const rendered = katex.renderToString(math.trim(), {
+            displayMode: false,
+            throwOnError: false,
+            strict: false,
+            trust: true
+          });
+          // Add data-converted attribute to the KaTeX element
+          const modifiedRendered = rendered.replace('<span class="katex">', '<span class="katex" data-converted="true">');
+          return `<span class="katex-inline-container">${modifiedRendered}</span>`;
+        } catch (error) {
+          console.warn('KaTeX inline render error:', error);
+          return `<span class="math-error">$${math}$</span>`;
+        }
+      });
+      
+      // Regular dollar sign inline math $...$
+      result = result.replace(/\$([^$\n]+)\$/g, (match: string, math: string) => {
         try {
           const rendered = katex.renderToString(math.trim(), {
             displayMode: false,
@@ -386,51 +457,148 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
 };
 
 // Component for rendering text with embedded charts
+// Global chart tracking to prevent duplicate creation across all components
+const globalRenderedCharts = new Set<string>();
+const globalChartConfigs = new Map<string, any>();
+const globalChartRenderingInProgress = new Set<string>(); // Prevent concurrent rendering
+
+// Global chart protection against re-renders
+const chartProtectionTimer = new Map<string, NodeJS.Timeout>();
+const chartGuardianActive = new Set<string>(); // Track which charts have active guardians
+
+const protectChart = (chartId: string) => {
+  // Clear any existing protection timer
+  if (chartProtectionTimer.has(chartId)) {
+    clearTimeout(chartProtectionTimer.get(chartId)!);
+  }
+  
+  // Set a protection timer that prevents chart interference for 10 seconds (increased)
+  const timer = setTimeout(() => {
+    chartProtectionTimer.delete(chartId);
+    chartGuardianActive.delete(chartId);
+  }, 10000);
+  
+  chartProtectionTimer.set(chartId, timer);
+  chartGuardianActive.add(chartId);
+};
+
+// Global chart guardian - actively monitors and protects charts
+const startChartGuardian = () => {
+  setInterval(() => {
+    globalRenderedCharts.forEach(chartId => {
+      const element = document.getElementById(chartId);
+      if (element && chartService.chartExistsAndValid(chartId)) {
+        // Chart is healthy, ensure it stays protected
+        if (!chartGuardianActive.has(chartId)) {
+          protectChart(chartId);
+          console.log(`Chart guardian: Re-protecting healthy chart ${chartId}`);
+        }
+      } else if (element && !chartService.chartExistsAndValid(chartId)) {
+        // Chart element exists but chart is missing - this shouldn't happen!
+        console.warn(`Chart guardian: Chart ${chartId} element exists but chart is missing - attempting recovery`);
+        const config = globalChartConfigs.get(chartId);
+        if (config && !globalChartRenderingInProgress.has(chartId)) {
+          globalChartRenderingInProgress.add(chartId);
+          chartService.renderChart(chartId, config).then(() => {
+            protectChart(chartId);
+            globalChartRenderingInProgress.delete(chartId);
+            console.log(`Chart guardian: Successfully recovered chart ${chartId}`);
+          });
+        }
+      }
+    });
+  }, 1000); // Check every second
+};
+
 const TextWithCharts: React.FC<{
   text: string;
   darkMode: boolean;
   messageId: string;
   isStreaming?: boolean;
   textStyle?: any;
-}> = ({ text, darkMode, messageId, isStreaming = false, textStyle }) => {
+}> = React.memo(({ text, darkMode, messageId, isStreaming = false, textStyle }) => {
   const [renderedCharts, setRenderedCharts] = useState<Set<string>>(new Set());
   const [initialRenderComplete, setInitialRenderComplete] = useState<boolean>(false);
   
-  const { processedText, chartConfigs } = useMemo(() => 
-    processTextWithCharts(text, darkMode, messageId, isStreaming), 
-    [text, darkMode, messageId, isStreaming]
-  );
+  // Cache the last processed result to avoid reprocessing during streaming
+  const lastProcessedResult = useRef<{text: string, processedText: string, chartConfigs: any[], chartIds: string, lastConfigsKey?: string}>({
+    text: '',
+    processedText: '',
+    chartConfigs: [],
+    chartIds: '',
+    lastConfigsKey: ''
+  });
   
-  // Render charts when they become available
-  useEffect(() => {
-    chartConfigs.forEach(({ id, config }: {id: string, config: ChartConfig}) => {
-      // Only render if not already rendered in this component instance
-      if (!renderedCharts.has(id)) {
-        // If streaming and initial render is complete, don't re-render existing charts
-        if (isStreaming && initialRenderComplete && chartService.chartExists(id)) {
-          // Just mark as rendered to prevent future attempts
-          setRenderedCharts(prev => new Set([...Array.from(prev), id]));
-          return;
-        }
-        
-        // Use setTimeout to ensure the DOM element exists
-        setTimeout(() => {
-          const element = document.getElementById(id);
-          if (element) {
-            try {
-              chartService.renderChart(id, config);
-              setRenderedCharts(prev => new Set([...Array.from(prev), id]));
-              if (!initialRenderComplete) {
-                setInitialRenderComplete(true);
-              }
-            } catch (error) {
-              console.error('Error rendering chart:', error);
-            }
-          }
-        }, 100);
-      }
+  // Only reprocess text when chart content actually changes, not on every character
+  const { processedText, chartConfigs } = useMemo(() => {
+    // Create a stable identifier for this text content (Unicode-safe)
+    const textHash = encodeURIComponent(text).slice(0, 20).replace(/%/g, ''); // Simple hash for comparison
+    const currentChartIds = `${messageId}-${textHash}`;
+    
+    // AGGRESSIVE CACHING: If we've already processed this exact content, return cached result
+    if (lastProcessedResult.current.chartIds === currentChartIds && 
+        lastProcessedResult.current.text === text &&
+        lastProcessedResult.current.processedText) {
+      return { 
+        processedText: lastProcessedResult.current.processedText, 
+        chartConfigs: lastProcessedResult.current.chartConfigs 
+      };
+    }
+    
+    // Extract chart blocks to check if they've changed
+    const chartRegex = /```chartjs\s*([\s\S]*?)```/g;
+    const currentChartBlocks: string[] = [];
+    
+    let match;
+    while ((match = chartRegex.exec(text)) !== null) {
+      currentChartBlocks.push(match[0]);
+    }
+    
+    // If no charts in current text, return simple processed text
+    if (currentChartBlocks.length === 0) {
+      const result = processTextWithCharts(text, darkMode, messageId, isStreaming);
+      lastProcessedResult.current = {
+        text: text,
+        processedText: result.processedText,
+        chartConfigs: result.chartConfigs,
+        chartIds: currentChartIds
+      };
+      return result;
+    }
+    
+    // Check if charts already exist globally
+    const result = processTextWithCharts(text, darkMode, messageId, isStreaming);
+    const allChartsExist = result.chartConfigs.every(({ id }) => globalRenderedCharts.has(id));
+    
+    if (allChartsExist) {
+      // All charts already exist, just return the processed text
+      lastProcessedResult.current = {
+        text: text,
+        processedText: result.processedText,
+        chartConfigs: result.chartConfigs,
+        chartIds: currentChartIds
+      };
+      return result;
+    }
+    
+    // Store chart configs globally
+    result.chartConfigs.forEach(({ id, config }) => {
+      globalChartConfigs.set(id, config);
     });
-  }, [chartConfigs, renderedCharts, isStreaming, initialRenderComplete]);
+    
+    // Update cache
+    lastProcessedResult.current = {
+      text: text,
+      processedText: result.processedText,
+      chartConfigs: result.chartConfigs,
+      chartIds: currentChartIds
+    };
+    
+    return result;
+  }, [text, `${messageId}-${darkMode}`]); // More stable dependencies
+  
+  // NOTE: Chart rendering is now handled by the main component's useEffect
+  // This component only processes text and creates chart placeholders
   
   // Create the final HTML with chart placeholders replaced by canvas elements
   const finalHTML = useMemo(() => {
@@ -439,8 +607,37 @@ const TextWithCharts: React.FC<{
     chartConfigs.forEach(({ id }: {id: string}) => {
       const placeholder = `<div class="chart-placeholder" data-chart-id="${id}"></div>`;
       const chartElement = `
-        <div class="chart-container my-4">
-          <canvas id="${id}" class="chart-canvas max-w-full h-auto"></canvas>
+        <div class="chart-container my-4" data-chart-container="${id}">
+          <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div class="chart-title" style="font-size: 16px; font-weight: 600; color: inherit;"></div>
+            <div class="chart-controls" style="display: flex; gap: 8px;">
+              <button 
+                class="chart-control-btn chart-fullscreen-btn" 
+                data-chart-id="${id}"
+                style="padding: 6px; border: 1px solid #d1d5db; border-radius: 6px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;"
+                title="Fullscreen"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+              </button>
+              <button 
+                class="chart-control-btn chart-download-btn" 
+                data-chart-id="${id}"
+                style="padding: 6px; border: 1px solid #d1d5db; border-radius: 6px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;"
+                title="Download as Image"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7,10 12,15 17,10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="chart-wrapper" style="position: relative; width: 100%; height: 400px;">
+            <canvas id="${id}" class="chart-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+          </div>
         </div>
       `;
       html = html.replace(placeholder, chartElement);
@@ -503,10 +700,11 @@ const TextWithCharts: React.FC<{
       
       // Process math expressions using KaTeX
       const renderMathWithKaTeX = (text: string) => {
-        let mathResult = text;
+        // First normalize custom math tags to standard LaTeX format
+        let mathResult = normalizeCustomMathTags(text);
         
         // Handle block math expressions (display mode)
-        mathResult = mathResult.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
+        mathResult = mathResult.replace(/\\\[([\s\S]*?)\\\]/g, (match: string, math: string) => {
           try {
             const rendered = katex.renderToString(math.trim(), {
               displayMode: true,
@@ -522,7 +720,7 @@ const TextWithCharts: React.FC<{
         });
         
         // Dollar sign block math $$...$$
-        mathResult = mathResult.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
+        mathResult = mathResult.replace(/\$\$([\s\S]*?)\$\$/g, (match: string, math: string) => {
           try {
             const rendered = katex.renderToString(math.trim(), {
               displayMode: true,
@@ -538,7 +736,7 @@ const TextWithCharts: React.FC<{
         });
         
         // Handle inline math expressions
-        mathResult = mathResult.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
+        mathResult = mathResult.replace(/\\\(([\s\S]*?)\\\)/g, (match: string, math: string) => {
           try {
             const rendered = katex.renderToString(math.trim(), {
               displayMode: false,
@@ -554,7 +752,7 @@ const TextWithCharts: React.FC<{
         });
         
         // Dollar sign inline math $...$
-        mathResult = mathResult.replace(/\$([^$\n]+)\$/g, (match, math) => {
+        mathResult = mathResult.replace(/\$([^$\n]+)\$/g, (match: string, math: string) => {
           try {
             const rendered = katex.renderToString(math.trim(), {
               displayMode: false,
@@ -599,7 +797,16 @@ const TextWithCharts: React.FC<{
       <div dangerouslySetInnerHTML={{ __html: processedHTML }} />
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison function to prevent unnecessary re-renders
+  // Only re-render if text content or messageId actually changes
+  return (
+    prevProps.text === nextProps.text &&
+    prevProps.messageId === nextProps.messageId &&
+    prevProps.darkMode === nextProps.darkMode &&
+    prevProps.isStreaming === nextProps.isStreaming
+  );
+});
 
   // Role options with translations
   const roleOptions = [
@@ -1994,6 +2201,198 @@ const TextWithCharts: React.FC<{
     renderCharts();
   }, [messages]);
 
+  // Independent chart rendering system that doesn't depend on React re-renders
+  // This runs only once and sets up a global chart manager
+  useEffect(() => {
+    let chartRenderingInterval: NodeJS.Timeout;
+    
+    const renderPendingCharts = () => {
+      // Get all chart configurations from global storage (already processed by TextWithCharts)
+      const allChartConfigs: Array<{id: string, config: ChartConfig}> = [];
+      
+      // Collect from global chart configs instead of re-processing
+      globalChartConfigs.forEach((config, id) => {
+        allChartConfigs.push({ id, config });
+      });
+
+      // Only render charts that haven't been rendered yet and exist in DOM
+      allChartConfigs.forEach(({ id, config }) => {
+        if (!globalRenderedCharts.has(id) && !globalChartRenderingInProgress.has(id)) {
+          // Check if chart element exists in DOM
+          const chartElement = document.getElementById(id);
+          if (chartElement && chartService.chartExistsAndValid(id)) {
+            // Chart already exists and is valid, add to tracking and protect it
+            globalRenderedCharts.add(id);
+            protectChart(id);
+            console.log(`Chart ${id} already exists and is valid, added to tracking and protected`);
+          } else if (chartElement) {
+            // Chart element exists but chart not rendered, render it
+            globalChartRenderingInProgress.add(id);
+            console.log(`Rendering chart ${id}`);
+            
+            setTimeout(() => {
+              try {
+                // Double-check the element still exists before rendering
+                const elementCheck = document.getElementById(id);
+                if (elementCheck && !chartService.chartExistsAndValid(id)) {
+                  chartService.renderChart(id, config);
+                  globalRenderedCharts.add(id);
+                  protectChart(id); // Protect newly rendered chart
+                  console.log(`Chart ${id} rendered successfully and protected`);
+                } else if (chartService.chartExistsAndValid(id)) {
+                  // Chart was already rendered by another process
+                  globalRenderedCharts.add(id);
+                  protectChart(id); // Protect existing chart
+                  console.log(`Chart ${id} was already rendered by another process and protected`);
+                }
+              } catch (error) {
+                console.error('Error rendering chart:', error);
+              } finally {
+                globalChartRenderingInProgress.delete(id);
+              }
+            }, 100);
+          }
+        } else if (globalRenderedCharts.has(id) && chartService.chartExistsAndValid(id)) {
+          // Chart exists but might need protection renewal
+          if (!chartProtectionTimer.has(id)) {
+            protectChart(id);
+            console.log(`Renewed protection for existing chart ${id}`);
+          }
+        }
+      });
+    };
+
+    // Set up a periodic check for new charts (every 200ms)
+    // This is independent of React re-renders and will catch new charts as they appear
+    chartRenderingInterval = setInterval(renderPendingCharts, 200);
+    
+    // Start the chart guardian system
+    startChartGuardian();
+    console.log('Chart guardian system started - charts are now actively protected');
+    
+    // Also run immediately
+    renderPendingCharts();
+    
+    return () => {
+      if (chartRenderingInterval) {
+        clearInterval(chartRenderingInterval);
+      }
+    };
+  }, []); // Empty dependency array - runs only once!
+
+  // Chart control functionality - fullscreen and download
+  useEffect(() => {
+    const handleChartControls = (event: Event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest('.chart-control-btn') as HTMLButtonElement;
+      
+      if (!button) return;
+      
+      const chartId = button.getAttribute('data-chart-id');
+      if (!chartId) return;
+      
+      if (button.classList.contains('chart-fullscreen-btn')) {
+        openChartFullscreen(chartId);
+      } else if (button.classList.contains('chart-download-btn')) {
+        downloadChart(chartId);
+      }
+    };
+    
+    // Add event listener for chart controls
+    document.addEventListener('click', handleChartControls);
+    
+    return () => {
+      document.removeEventListener('click', handleChartControls);
+    };
+  }, []);
+
+  // Function to open chart in fullscreen
+  const openChartFullscreen = (chartId: string) => {
+    const chartCanvas = document.getElementById(chartId) as HTMLCanvasElement;
+    if (!chartCanvas) return;
+    
+    // Create fullscreen modal
+    const modal = document.createElement('div');
+    modal.className = 'chart-fullscreen-modal';
+    modal.innerHTML = `
+      <div class="chart-fullscreen-content">
+        <button class="chart-fullscreen-close" title="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        <canvas id="${chartId}-fullscreen" class="chart-fullscreen-canvas"></canvas>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Clone the chart to fullscreen canvas
+    const fullscreenCanvas = document.getElementById(`${chartId}-fullscreen`) as HTMLCanvasElement;
+    const originalChart = chartService.getChart(chartId);
+    
+    if (originalChart && fullscreenCanvas) {
+      // Get the chart configuration
+      const config = globalChartConfigs.get(chartId);
+      if (config) {
+        // Render chart in fullscreen with larger size
+        chartService.renderChart(`${chartId}-fullscreen`, config);
+      }
+    }
+    
+    // Close modal functionality
+    const closeBtn = modal.querySelector('.chart-fullscreen-close');
+    const closeModal = () => {
+      // Destroy fullscreen chart
+      chartService.destroyChart(`${chartId}-fullscreen`);
+      document.body.removeChild(modal);
+    };
+    
+    closeBtn?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    
+    // ESC key to close
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        document.removeEventListener('keydown', handleEsc);
+      }
+    };
+    document.addEventListener('keydown', handleEsc);
+  };
+
+  // Function to download chart as image
+  const downloadChart = (chartId: string) => {
+    const chartCanvas = document.getElementById(chartId) as HTMLCanvasElement;
+    if (!chartCanvas) return;
+    
+    try {
+      // Convert canvas to blob
+      chartCanvas.toBlob((blob) => {
+        if (!blob) return;
+        
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `chart-${chartId}-${new Date().toISOString().slice(0, 10)}.png`;
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up
+        URL.revokeObjectURL(url);
+      }, 'image/png', 1.0);
+    } catch (error) {
+      console.error('Error downloading chart:', error);
+    }
+  };
+
   // Function to detect if the text contains a URL
   const containsUrl = (text?: string): boolean => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -2014,6 +2413,34 @@ const TextWithCharts: React.FC<{
       if (chartjsMatch) {
         const configText = chartjsMatch[1].trim();
         const config = JSON.parse(configText);
+        
+        // Validate chart configuration
+        const validation = chartService.validateChartConfig(config);
+        if (!validation.isValid) {
+          console.error('Invalid chart configuration:', validation.error);
+          return null;
+        }
+        
+        return config as ChartConfig;
+      }
+      
+      // Look for gantt code block (AnyChart Gantt charts)
+      const ganttMatch = content.match(/```gantt\s*\n([\s\S]*?)\n```/);
+      if (ganttMatch) {
+        const configText = ganttMatch[1].trim();
+        const config = JSON.parse(configText);
+        
+        // Ensure it's marked as a Gantt chart with AnyChart library
+        config.type = 'gantt';
+        config.library = 'anychart';
+        
+        // Validate chart configuration
+        const validation = chartService.validateChartConfig(config);
+        if (!validation.isValid) {
+          console.error('Invalid Gantt chart configuration:', validation.error);
+          return null;
+        }
+        
         return config as ChartConfig;
       }
       
@@ -2023,6 +2450,13 @@ const TextWithCharts: React.FC<{
         const configText = jsonMatch[1].trim();
         const config = JSON.parse(configText);
         if (config.type && config.data) {
+          // Validate chart configuration
+          const validation = chartService.validateChartConfig(config);
+          if (!validation.isValid) {
+            console.error('Invalid chart configuration:', validation.error);
+            return null;
+          }
+          
           return config as ChartConfig;
         }
       }
@@ -2107,12 +2541,41 @@ HTML FORMATTING RULES:
 - Use <br> for line breaks when needed
 - Use <div> with appropriate classes for styling when needed
 
-CHART GENERATION RULES:
-When your response involves data visualization, mathematical functions, or charts/graphs, use chartjs code blocks instead of images:
-- Use this format for charts: \`\`\`chartjs followed by JSON configuration and closing \`\`\`
+CHART GENERATION RULES - STRICT COMPLIANCE REQUIRED:
+
+SUPPORTED CHART.JS TYPES ONLY:
+You may ONLY generate charts using these specific Chart.js supported types:
+1. Line Chart – for continuous data, trends over time (type: "line")
+2. Bar Chart – vertical or horizontal bars for categorical data (type: "bar")
+3. Radar Chart – for comparing values on multiple axes (type: "radar")
+4. Doughnut Chart – like a pie chart, but with a hole in the middle (type: "doughnut")
+5. Pie Chart – circular chart divided into slices (type: "pie")
+6. Polar Area Chart – similar to pie but segments have different radii (type: "polarArea")
+7. Bubble Chart – scatter plot with variable-sized points (type: "bubble")
+8. Scatter Chart – individual data points on x/y coordinates (type: "scatter")
+9. Area Chart – variation of line chart with fill (type: "line" with fill: true)
+10. Stacked Bar/Line/Area Charts – combine datasets (use stacked: true in options)
+11. Mixed Charts – combine different chart types (use multiple datasets with different types)
+
+CHART FORMAT REQUIREMENTS:
+- Use this EXACT format: \`\`\`chartjs followed by JSON configuration and closing \`\`\`
 - Include complete Chart.js configuration with type, data, and options
-- Supported chart types: line, bar, pie, doughnut, scatter, bubble, polarArea, radar
-- Example for mathematical functions: Use chartjs code block with complete JSON configuration including type, data with labels and datasets, and options for styling
+- Always include proper labels array and datasets array
+- Ensure all JSON is valid and properly formatted
+- Include responsive: true and maintainAspectRatio: false in options
+
+GANTT CHART SPECIAL CASE:
+If user requests Gantt charts (which Chart.js does not support), use AnyChart instead:
+- Use this format: \`\`\`anychart followed by AnyChart Gantt configuration and closing \`\`\`
+- Include complete AnyChart Gantt configuration with proper data structure
+- Use AnyChart Gantt syntax with tasks, timeline, and dependencies
+
+CHART GENERATION RESTRICTIONS:
+- DO NOT generate any chart types not listed above
+- DO NOT create charts for unsupported visualizations
+- If requested chart type is not supported, explain limitations and suggest alternatives
+- Always validate that your chart configuration is syntactically correct JSON
+- Include meaningful labels and data that match the user's request
 
 
 EXAMPLE HTML RESPONSE FORMAT:
@@ -3411,9 +3874,9 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
             chartId = chartService.generateChartId();
             chartConfig = extractChartConfig(finalMessageContent);
             
-            // Apply theme-appropriate colors if chart config was found
-            if (chartConfig && chartConfig.data && chartConfig.data.datasets) {
-              chartConfig.data.datasets.forEach(dataset => {
+            // Apply theme-appropriate colors if chart config was found (only for Chart.js charts, not Gantt)
+            if (chartConfig && chartConfig.data && 'datasets' in chartConfig.data && chartConfig.data.datasets) {
+              chartConfig.data.datasets.forEach((dataset: any) => {
                 if (!dataset.borderColor) {
                   dataset.borderColor = darkMode ? '#60a5fa' : '#3b82f6';
                 }

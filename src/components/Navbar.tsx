@@ -43,44 +43,10 @@ const Navbar: React.FC<NavbarProps> = ({ onMobileSidebarToggle, isMobileSidebarO
   const { t } = useTranslation();
   const [localCoins, setLocalCoins] = useState<number | undefined>(userData?.coins);
 
-  // Set up real-time subscription to user coins
+  // Update local coins when userData changes (UserContext handles real-time updates)
   useEffect(() => {
-    if (!user?.uid) return;
-    
-    // Initialize local coins from userData
     setLocalCoins(userData?.coins);
-    
-    // Set up real-time subscription to the users table
-    const subscription = supabase
-      .channel('users-coins-channel')
-      .on('postgres_changes', 
-        { 
-          event: 'UPDATE', 
-          schema: 'public', 
-          table: 'users',
-          filter: `uid=eq.${user.uid}`
-        }, 
-        (payload) => {
-          console.log('Supabase real-time update received:', payload);
-          // Update local coins state when changes occur
-          if (payload.new && payload.new.user_coins !== undefined) {
-            console.log('Updating coins from:', localCoins, 'to:', payload.new.user_coins);
-            setLocalCoins(payload.new.user_coins);
-            // Also refresh the full user data in context
-            refreshUserData();
-          }
-        }
-      )
-      .subscribe();
-    
-    console.log('Supabase real-time subscription set up for user:', user.uid, 'with filter:', `uid=eq.${user.uid}`);
-    
-    // Clean up subscription on unmount
-    return () => {
-      console.log('Cleaning up Supabase real-time subscription');
-      subscription.unsubscribe();
-    };
-  }, [user?.uid, refreshUserData]);
+  }, [userData?.coins]);
 
   const handleLogout = async () => {
     try {

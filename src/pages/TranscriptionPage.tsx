@@ -1474,10 +1474,7 @@ const TranscriptionPage: React.FC = () => {
           prompt = t('transcription.prompts.summary', { transcription });
           actionLabel = 'Summary';
           break;
-        case 'useAsContext':
-          prompt = `Please analyze this transcription and prepare it as context for future questions. Transcription: ${transcription}`;
-          actionLabel = 'Use as Context';
-          break;
+       
       }
       
       // Add user message to chat showing the action request
@@ -4761,7 +4758,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-120px)] sm:h-[calc(100vh-200px)] max-h-[900px] sm:max-h-[800px]"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-120px)] sm:h-[calc(200vh-300px)] max-h-[900px] sm:max-h-[800px]"
                 >
                   {/* Fixed Header */}
                   <div className="flex justify-between items-center p-2 sm:p-3 md:p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-20 sticky top-0">
@@ -4773,6 +4770,17 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                         title={t('transcription.chat.clearChat')}
                       >
                         <FiRefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </button>
+                      <button
+                        onClick={toggleAutoSpeak}
+                        className={`p-1.5 sm:p-2 transition-colors ${
+                          autoSpeak
+                            ? 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300'
+                            : 'text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400'
+                        }`}
+                        title={autoSpeak ? "Disable auto-speak" : "Enable auto-speak"}
+                      >
+                        <FiVolume2 className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                       <button 
                         onClick={() => setShowSidebar(!showSidebar)}
@@ -4788,7 +4796,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                   <div className="p-2 sm:p-3 md:p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800 z-10 sticky top-[55px] sm:top-[67px]">
                     <h3 className="text-sm sm:text-base md:text-lg font-medium mb-2 sm:mb-3 dark:text-gray-300">{t('transcription.chat.quickActions')}</h3>
                     <div className="space-y-2">
-                      {/* First row - Main quick actions */}
+                      {/* Quick action buttons in single row */}
                       <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         <button
                           onClick={() => handleQuickAction('keypoints')}
@@ -4831,50 +4839,6 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                             -3 <img src={coinIcon} alt="coin" className="w-2.5 h-2.5 ml-0.5" />
                           </span>
                         </button>
-                      </div>
-                      
-                      {/* Second row - Use as Context and Audio controls */}
-                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                        <button
-                          onClick={() => handleQuickAction('useAsContext')}
-                          disabled={isChatProcessing.useAsContext || !transcription}
-                          className={`flex-1 min-w-0 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg flex items-center justify-center transition-colors text-xs sm:text-sm ${
-                            isChatProcessing.useAsContext
-                              ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                              : 'bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-800/40 text-green-700 dark:text-green-300'
-                          }`}
-                        >
-                          {isChatProcessing.useAsContext ? (
-                            <FiLoader className="animate-spin mr-1 w-3 h-3 sm:w-4 sm:h-4" />
-                          ) : (
-                            <FiMessageSquare className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
-                          )}
-                          <span className="hidden sm:inline">Use as Context</span>
-                          <span className="sm:hidden">Context</span>
-                          <span className="ml-1 text-xs bg-orange-500/20 px-1 py-0.5 rounded-full flex items-center">
-                            -3 <img src={coinIcon} alt="coin" className="w-2.5 h-2.5 ml-0.5" />
-                          </span>
-                        </button>
-                        
-                        {/* Auto-speak toggle */}
-                        <button
-                          onClick={toggleAutoSpeak}
-                          className={`flex-1 min-w-0 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg flex items-center justify-center transition-colors text-xs sm:text-sm ${
-                            autoSpeak
-                              ? (theme === 'dark' ? 'bg-green-700 text-white' : 'bg-green-600 text-white')
-                              : (theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
-                          }`}
-                          title={autoSpeak ? "Disable auto-speak" : "Enable auto-speak"}
-                        >
-                          <FiVolume2 className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
-                          <span className="hidden sm:inline">Auto-speak</span>
-                          <span className="sm:hidden">Auto</span>
-                          {autoSpeak ? (
-                            <FiToggleRight className="ml-1 w-4 h-4" />
-                          ) : (
-                            <FiToggleLeft className="ml-1 w-4 h-4" />
-                          )}
-                        </button>
                         
                         {/* Stop speaking button (when speaking) */}
                         {isSpeaking && (
@@ -4908,20 +4872,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                       </div>
                       
                       {/* Use as Context button - hidden on mobile */}
-                      <div className="hidden sm:flex justify-center mt-2">
-                        <button
-                          onClick={setTranscriptionAsContext}
-                          disabled={!transcription || chatMessages.length > 0}
-                          className={`px-3 py-2 rounded-lg flex items-center transition-colors text-sm ${
-                            !transcription || chatMessages.length > 0
-                              ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                              : 'bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-800/40 text-amber-700 dark:text-amber-300'
-                          }`}
-                        >
-                          <FiFileText className="mr-2" />
-                          {t('transcription.chat.useAsContext')}
-                        </button>
-                      </div>
+                   
                     </div>
                   </div>
 
@@ -5135,16 +5086,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                               </div>
                             )}
                             
-                            {chatResponses.useAsContext && (
-                              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                                <h4 className="font-medium text-green-700 dark:text-green-400 mb-2 flex items-center">
-                                  <FiMessageSquare className="mr-2" /> Use as Context
-                                </h4>
-                                <div className={`text-gray-700 dark:text-gray-300 prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''} markdown-content`}>
-                                  {renderTextWithHTML(chatResponses.useAsContext, theme === 'dark', {color: theme === 'dark' ? '#d1d5db' : '#374151', fontSize: '14px', lineHeight: '1.6'})}
-                                </div>
-                              </div>
-                            )}
+                           
                           </div>
                         )}
                         
@@ -5284,7 +5226,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(100vh-120px)] sm:h-[calc(100vh-200px)] max-h-[900px] sm:max-h-[800px]"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-[calc(200vh-240px)] sm:h-[calc(200vh-400px)] max-h-[1800px] sm:max-h-[1600px]"
                 >
                   {wordsData && wordsData.length > 0 ? (
                     <>

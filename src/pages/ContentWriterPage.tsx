@@ -28,7 +28,6 @@ import coinImage from '../assets/coin.png';
 
 // Import the other page components
 import HumaniseTextPage from './HumaniseTextPage';
-import DetectAIPage from './DetectAIPage';
 
 // Add gradient animation style
 const gradientAnimationStyle = document.createElement('style');
@@ -95,9 +94,6 @@ const ContentWriterPage: React.FC = () => {
     } else if (activeTab === 'humanizer') {
       setPageTitle(t('humanizeText.title'));
       setPageSubtitle(t('humanizeText.subtitle'));
-    } else if (activeTab === 'ai-detector') {
-      setPageTitle(t('detectAI.title'));
-      setPageSubtitle(t('detectAI.subtitle'));
     }
   }, [activeTab, t]);
   
@@ -1240,18 +1236,6 @@ Create content that is original, well-researched, and engaging for the target au
               <span className="sm:hidden">Humanizer</span>
             </div>
           </button>
-          <button
-            onClick={() => setActiveTab('ai-detector')}
-            className={`px-3 sm:px-4 py-2 font-medium text-xs sm:text-sm rounded-t-lg transition-colors whitespace-nowrap ${activeTab === 'ai-detector' 
-              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-b-2 border-purple-500' 
-              : 'text-gray-600 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-400'}`}
-          >
-            <div className="flex items-center">
-              <FiShield className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">{t('detectAI.title')}</span>
-              <span className="sm:hidden">Detector</span>
-            </div>
-          </button>
         </div>
       </div>
 
@@ -1846,12 +1830,7 @@ Create content that is original, well-researched, and engaging for the target au
         </div>
       )}
 
-      {/* AI Detector Tab */}
-      {activeTab === 'ai-detector' && (
-        <div className="px-4 py-4">
-          <DetectAIPage />
-        </div>
-      )}
+
 
       {/* Share Modal */}
       {showShareModal && (

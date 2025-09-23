@@ -569,13 +569,21 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
         const { repulsion, edgeLength, layerSpacing, nodeSpacing } = detectOptimalChartSize(coloredGraphData);
 
         // Function to wrap text into multiple lines
-        function wrapText(text, nodeType) {
+        function wrapText(text, nodeTypeOrMaxLength) {
           // Keep the full text without truncation
           let displayText = text;
           
-          let maxLineLength = 25; // Increased for topic and subtopic nodes
-          if (nodeType === 'description') {
-            maxLineLength = 100; // Increased for description nodes to show more complete text
+          let maxLineLength = 25; // Default for topic and subtopic nodes
+          
+          // Handle both nodeType (string) and maxCharsPerLine (number) parameters
+          if (typeof nodeTypeOrMaxLength === 'string') {
+            // Original nodeType parameter
+            if (nodeTypeOrMaxLength === 'description') {
+              maxLineLength = 100; // Increased for description nodes to show more complete text
+            }
+          } else if (typeof nodeTypeOrMaxLength === 'number') {
+            // maxCharsPerLine parameter
+            maxLineLength = nodeTypeOrMaxLength;
           }
 
           const words = displayText.split(' ');
@@ -595,7 +603,10 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
             lines.push(currentLine.trim());
           }
 
-          return lines.join('\\n');
+          // Return array for measurement, string for display
+          // If called with a number (maxCharsPerLine), return array for forEach
+          // If called with string (nodeType), return string for display
+          return typeof nodeTypeOrMaxLength === 'number' ? lines : lines.join('\\n');
         }
 
         const option = {
@@ -788,18 +799,27 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
                    let currentY = parentY - ((nodes.length - 1) * 100) / 2; // Center children around parent
                    
                    nodes.forEach((node, index) => {
-                     // Measure actual text dimensions
-                     const lines = wrapText(node.name, level === 0 ? 25 : (level === 1 ? 25 : 100));
-                     let maxLineWidth = 0;
+                     // Use improved text measurement with dynamic sizing
+                     const isLeaf = level > 1;
+                     const maxCharsPerLine = isLeaf ? 30 : 20;
+                     const lines = wrapText(node.name, maxCharsPerLine);
                      
-                     lines.forEach(line => {
+                     // Calculate more accurate text dimensions
+                     let maxLineWidth = 0;
+                     const lineArray = Array.isArray(lines) ? lines : lines.split('\\n');
+                     
+                     lineArray.forEach(line => {
                        const lineWidth = ctx.measureText(line).width;
                        maxLineWidth = Math.max(maxLineWidth, lineWidth);
                      });
                      
-                     const textHeight = lines.length * 18; // Line height
-                     const nodeWidth = Math.max(maxLineWidth + 40, 100); // Padding + minimum width
-                     const nodeHeight = Math.max(textHeight + 20, 40); // Padding + minimum height
+                     // Use dynamic sizing logic consistent with export
+                     const charWidth = isLeaf ? 8 : 10;
+                     const lineHeight = isLeaf ? 16 : 18;
+                     const padding = isLeaf ? 20 : 25;
+                     
+                     const nodeWidth = Math.max(120, Math.min(400, Math.max(maxLineWidth + padding, maxCharsPerLine * charWidth + padding * 2)));
+                     const nodeHeight = Math.max(60, lineArray.length * lineHeight + padding);
                      
                      // Calculate node bounds
                      const nodeLeft = levelX - nodeWidth / 2;
@@ -854,6 +874,54 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
               
               const tempChart = echarts.init(tempDiv);
               
+              // Calculate dynamic symbol sizes based on text content
+              function calculateNodeSize(node, isLeaf = false) {
+                const text = node.name || '';
+                const maxCharsPerLine = isLeaf ? 30 : 20;
+                const lines = wrapText(text, maxCharsPerLine);
+                const lineCount = Array.isArray(lines) ? lines.length : lines.split('\\n').length;
+                
+                // Calculate width based on longest line
+                let maxLineLength = 0;
+                const lineArray = Array.isArray(lines) ? lines : lines.split('\\n');
+                lineArray.forEach(line => {
+                  maxLineLength = Math.max(maxLineLength, line.length);
+                });
+                
+                // Dynamic sizing with better proportions
+                const charWidth = isLeaf ? 8 : 10;
+                const lineHeight = isLeaf ? 16 : 18;
+                const padding = isLeaf ? 20 : 25;
+                
+                const width = Math.max(120, Math.min(400, maxLineLength * charWidth + padding * 2));
+                const height = Math.max(60, lineCount * lineHeight + padding);
+                
+                return [width, height];
+              }
+
+              // Calculate average node size for consistent spacing
+              function getAverageNodeSize(data) {
+                let totalWidth = 0, totalHeight = 0, count = 0;
+                
+                function traverse(nodes, isLeaf = false) {
+                  nodes.forEach(node => {
+                    const [width, height] = calculateNodeSize(node, isLeaf);
+                    totalWidth += width;
+                    totalHeight += height;
+                    count++;
+                    
+                    if (node.children && node.children.length > 0) {
+                      traverse(node.children, true);
+                    }
+                  });
+                }
+                
+                traverse(data);
+                return count > 0 ? [totalWidth / count, totalHeight / count] : [160, 80];
+              }
+
+              const [avgWidth, avgHeight] = getAverageNodeSize(coloredGraphData);
+
               // Use the same option but with optimized settings for export
                const exportOption = {
                  ...option,
@@ -861,31 +929,52 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
                  series: [{
                    ...option.series[0],
                    // Use percentage-based positioning for dynamic centering
-                   top: '10%',      // Dynamic top margin
-                   left: '10%',     // Dynamic left margin  
-                   bottom: '10%',   // Dynamic bottom margin
-                   right: '10%',    // Dynamic right margin
+                   top: '8%',      // Dynamic top margin
+                   left: '8%',     // Dynamic left margin  
+                   bottom: '8%',   // Dynamic bottom margin
+                   right: '8%',    // Dynamic right margin
                    zoom: 1,
                    roam: false,     // Disable roaming for export
                    layout: 'none',  // Use absolute positioning
-                   symbolSize: [140, 70], // Larger symbol size for better text fit
+                   symbolSize: function(value, params) {
+                     // Dynamic symbol size based on text content
+                     return calculateNodeSize(params.data, false);
+                   },
                    label: {
                      ...option.series[0].label,
-                     fontSize: Math.max(12, Math.min(18, 1000 / nodeCount)),
-                     width: 250,    // Increased width for text wrapping
-                     overflow: 'break', // Break long words
-                     lineHeight: 20,
-                     padding: [5, 10, 5, 10] // Add padding around text
+                     fontSize: Math.max(11, Math.min(16, 1200 / nodeCount)),
+                     width: function(params) {
+                       const [width] = calculateNodeSize(params.data, false);
+                       return width - 20; // Leave some padding
+                     },
+                     overflow: 'breakAll', // Break long words more aggressively
+                     lineHeight: 18,
+                     padding: [8, 12, 8, 12], // Increased padding around text
+                     backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                     borderColor: '#ddd',
+                     borderWidth: 1,
+                     borderRadius: 6
                    },
                    leaves: {
                      ...option.series[0].leaves,
+                     symbolSize: function(value, params) {
+                       // Dynamic symbol size for leaf nodes
+                       return calculateNodeSize(params.data, true);
+                     },
                      label: {
                        ...option.series[0].leaves.label,
-                       fontSize: Math.max(10, Math.min(16, 800 / nodeCount)),
-                       width: 220,  // Increased width for leaf text
-                       overflow: 'break',
-                       lineHeight: 18,
-                       padding: [5, 10, 5, 10] // Add padding around text
+                       fontSize: Math.max(9, Math.min(14, 1000 / nodeCount)),
+                       width: function(params) {
+                         const [width] = calculateNodeSize(params.data, true);
+                         return width - 16; // Leave some padding
+                       },
+                       overflow: 'breakAll',
+                       lineHeight: 16,
+                       padding: [6, 10, 6, 10], // Padding around leaf text
+                       backgroundColor: 'rgba(248, 250, 252, 0.95)',
+                       borderColor: '#e2e8f0',
+                       borderWidth: 1,
+                       borderRadius: 4
                      }
                    },
                    lineStyle: {

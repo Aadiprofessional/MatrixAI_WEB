@@ -1150,9 +1150,135 @@
   border-bottom-width: 0.06em;
 }
 
-/* Better superscript and subscript positioning */
+/* Complete KaTeX isolation and positioning fix */
+.ai-response-content .katex {
+  /* Reset any global styles that might interfere */
+  box-sizing: content-box !important;
+  line-height: 1 !important;
+  text-align: left !important;
+  text-indent: 0 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  overflow-wrap: normal !important;
+  white-space: nowrap !important;
+  direction: ltr !important;
+  max-width: none !important;
+  max-height: none !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  /* Ensure inline math aligns with text baseline with slight adjustment */
+  display: inline !important;
+  vertical-align: -0.1em !important;
+}
+
+/* Ensure inline math containers align properly */
+.ai-response-content .katex-inline-container {
+  display: inline !important;
+  vertical-align: -0.1em !important;
+}
+
+/* Reset all KaTeX internal elements */
+.ai-response-content .katex * {
+  box-sizing: content-box !important;
+  border: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  text-decoration: none !important;
+}
+
+/* Specific vertical alignment for different element types */
+.ai-response-content .katex .mord,
+.ai-response-content .katex .mop,
+.ai-response-content .katex .mbin,
+.ai-response-content .katex .mrel,
+.ai-response-content .katex .mopen,
+.ai-response-content .katex .mclose,
+.ai-response-content .katex .mpunct {
+  vertical-align: baseline !important;
+}
+
+/* Ensure superscript and subscript containers don't interfere with baseline */
 .ai-response-content .katex .msupsub {
-  text-align: left;
+  vertical-align: baseline !important;
+}
+
+/* Specific positioning for superscripts and subscripts */
+.ai-response-content .katex .msupsub {
+  text-align: left !important;
+  position: relative !important;
+}
+
+.ai-response-content .katex .vlist-t {
+  display: inline-table !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+}
+
+.ai-response-content .katex .vlist-r {
+  display: table-row !important;
+}
+
+.ai-response-content .katex .vlist {
+  display: table-cell !important;
+  vertical-align: bottom !important;
+  position: relative !important;
+}
+
+.ai-response-content .katex .vlist > span {
+  display: block !important;
+  height: auto !important;
+  position: relative !important;
+}
+
+.ai-response-content .katex .vlist > span > span {
+  display: inline-block !important;
+  position: relative !important;
+}
+
+/* Ensure proper baseline alignment for main elements */
+.ai-response-content .katex .base {
+  display: inline-block !important;
+  vertical-align: baseline !important;
+  position: relative !important;
+}
+
+/* Fix superscript positioning specifically */
+.ai-response-content .katex .msupsub .vlist-t .vlist-r .vlist > span:first-child {
+  position: relative !important;
+  top: auto !important;
+}
+
+.ai-response-content .katex .msupsub .vlist-t .vlist-r .vlist > span:last-child {
+  position: relative !important;
+  bottom: auto !important;
+}
+
+/* DEBUG: Color coding for different math types */
+/* Original KaTeX math (should be blue) */
+.ai-response-content .katex:not([data-converted]) {
+  background-color: rgba(0, 100, 255, 0.1) !important;
+  border: 1px solid rgba(0, 100, 255, 0.3) !important;
+  border-radius: 3px !important;
+}
+
+/* Converted math expressions (should be red) */
+.ai-response-content .katex[data-converted] {
+  background-color: rgba(255, 0, 0, 0.1) !important;
+  border: 1px solid rgba(255, 0, 0, 0.3) !important;
+  border-radius: 3px !important;
+}
+
+/* Block math (should be green) */
+.ai-response-content .katex-block-container .katex {
+  background-color: rgba(0, 255, 0, 0.1) !important;
+  border: 1px solid rgba(0, 255, 0, 0.3) !important;
+  border-radius: 3px !important;
 }
 
 /* Responsive math expressions */
@@ -1361,6 +1487,106 @@
 
 .dark .chart-container:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Chart Control Buttons */
+.chart-control-btn {
+  padding: 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: #6b7280;
+}
+
+.chart-control-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  color: #374151;
+  transform: translateY(-1px);
+}
+
+.dark .chart-control-btn {
+  border-color: #4b5563;
+  color: #9ca3af;
+}
+
+.dark .chart-control-btn:hover {
+  background: #374151;
+  border-color: #6b7280;
+  color: #e5e7eb;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.chart-container:hover .chart-controls {
+  opacity: 1;
+}
+
+/* Fullscreen Modal Styles */
+.chart-fullscreen-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.chart-fullscreen-content {
+  position: relative;
+  width: 90%;
+  height: 80%;
+  max-width: 1200px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.dark .chart-fullscreen-content {
+  background: #1f2937;
+}
+
+.chart-fullscreen-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chart-fullscreen-close:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.chart-fullscreen-canvas {
+  width: 100% !important;
+  height: calc(100% - 60px) !important;
 }
 
 .chart-canvas {
