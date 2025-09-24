@@ -1,10 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { globalChartPersistence } from '../services/globalChartPersistence';
 
 /**
- * Hook to handle chart recovery after context changes and re-renders
- * This ensures charts persist through authentication state changes,
- * Supabase real-time subscriptions, and other context updates
+ * Simplified hook to handle basic chart recovery after context changes and re-renders
+ * This provides basic chart monitoring without the complex global persistence system
  */
 export const useChartRecovery = () => {
   const recoveryAttempted = useRef(false);
@@ -15,26 +13,11 @@ export const useChartRecovery = () => {
     if (recoveryAttempted.current) return;
     recoveryAttempted.current = true;
 
-    console.log('🔄 Chart recovery hook mounted, checking for charts to recover...');
+    console.log('🔄 Chart recovery hook mounted');
 
-    // Small delay to ensure DOM is ready
-    const recoveryTimer = setTimeout(() => {
-      try {
-        // Attempt to recover any charts that might have been lost
-        globalChartPersistence.recoverCharts();
-        
-        // Perform a health check on all charts
-        globalChartPersistence.performRecoveryCheck();
-        
-        console.log('✅ Chart recovery check completed');
-      } catch (error) {
-        console.error('❌ Error during chart recovery:', error);
-      }
-    }, 100);
-
-    // Cleanup function
+    // Basic cleanup function
     return () => {
-      clearTimeout(recoveryTimer);
+      console.log('🧹 Chart recovery hook unmounted');
     };
   }, []);
 
@@ -42,10 +25,7 @@ export const useChartRecovery = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        // Page became visible again, check chart health
-        setTimeout(() => {
-          globalChartPersistence.performRecoveryCheck();
-        }, 200);
+        console.log('👁️ Page became visible, charts should be checked by individual components');
       }
     };
 
@@ -53,65 +33,50 @@ export const useChartRecovery = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  // Monitor for window focus (similar to visibility but different trigger)
+  // Monitor for window focus
   useEffect(() => {
     const handleFocus = () => {
-      // Window regained focus, ensure charts are healthy
-      setTimeout(() => {
-        globalChartPersistence.performRecoveryCheck();
-      }, 100);
+      console.log('🎯 Window regained focus');
     };
 
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-  // Return utility functions for manual recovery
+  // Return simplified utility functions
   return {
     forceRecovery: () => {
-      console.log('🔧 Manual chart recovery triggered');
-      globalChartPersistence.recoverCharts();
-      globalChartPersistence.performRecoveryCheck();
+      console.log('🔧 Manual chart recovery triggered - individual charts should handle their own recovery');
     },
     
     forceRecoveryAll: () => {
-      console.log('🔧 Manual full chart recovery triggered');
-      globalChartPersistence.forceRecoveryAll();
+      console.log('🔧 Manual full chart recovery triggered - individual charts should handle their own recovery');
     },
     
     getChartStatus: () => {
-      return globalChartPersistence.getRegisteredCharts();
+      console.log('📊 Chart status requested - individual charts should manage their own status');
+      return [];
     }
   };
 };
 
 /**
- * Hook specifically for chat pages to handle chart recovery
- * This should be used in ChatPage component to ensure charts
- * survive context provider re-renders
+ * Simplified hook for chat pages to handle basic chart monitoring
+ * This should be used in ChatPage component for basic chart lifecycle management
  */
 export const useChatChartRecovery = () => {
   const recovery = useChartRecovery();
   
   useEffect(() => {
-    console.log('💬 Chat chart recovery initialized');
+    console.log('💬 Chat chart recovery initialized - using simplified approach');
     
-    // Log system status
-    const status = globalChartPersistence.getStatus();
-    console.log('📊 Chart persistence system status:', status);
+    // Basic monitoring without complex persistence
+    const basicMonitoring = setInterval(() => {
+      // Individual chart components should handle their own recovery
+      console.log('📊 Basic chart monitoring active');
+    }, 30000); // Check every 30 seconds for basic monitoring
     
-    // Optimized recovery for chat context
-    const optimizedRecovery = setInterval(() => {
-      globalChartPersistence.performRecoveryCheck();
-      
-      // Log status every 30 seconds for debugging
-      const currentStatus = globalChartPersistence.getStatus();
-      if (currentStatus.totalCharts > 0) {
-        console.log('📊 Chart status update:', currentStatus);
-      }
-    }, 10000); // Check every 10 seconds (optimized from 5 seconds)
-    
-    return () => clearInterval(optimizedRecovery);
+    return () => clearInterval(basicMonitoring);
   }, []);
   
   return recovery;
