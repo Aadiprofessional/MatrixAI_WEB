@@ -269,7 +269,7 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
       processedText = processedText.replace(/`(.*?)`/g, '<code>$1</code>');
       
       // Convert URLs to links
-      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const urlRegex = /(https?:\/\/[^\s<>"'`]+)/g;
       processedText = processedText.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
       
       // Convert code blocks ```code``` to <pre><code>
@@ -431,6 +431,86 @@ const TextWithCharts: React.FC<{
       }
     });
   }, [chartConfigs, renderedCharts, isStreaming, initialRenderComplete]);
+
+  // Render download buttons after charts are created
+  useEffect(() => {
+    chartConfigs.forEach(({ id }: {id: string}) => {
+      if (renderedCharts.has(id)) {
+        setTimeout(() => {
+          const downloadContainer = document.querySelector(`[data-chart-id="${id}"]`);
+          if (downloadContainer && !downloadContainer.querySelector('.chart-controls')) {
+            const controlsContainer = document.createElement('div');
+            controlsContainer.className = 'chart-controls flex items-center justify-between mt-3';
+            
+            // Disclaimer text on the left
+            const disclaimerText = document.createElement('div');
+            disclaimerText.className = 'text-xs text-gray-500 flex-1';
+            disclaimerText.textContent = 'MatrixAI can make mistakes. Always check original sources.';
+            
+            // Buttons container on the right
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.className = 'flex gap-2 items-center';
+            
+            // Fullscreen button (icon only)
+            const fullscreenBtn = document.createElement('button');
+            fullscreenBtn.className = 'fullscreen-chart-btn flex items-center justify-center w-8 h-8 bg-gray-800 hover:bg-gray-700 text-white rounded transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-600 hover:border-gray-500';
+            fullscreenBtn.innerHTML = `
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+              </svg>
+            `;
+            fullscreenBtn.onclick = () => {
+              const chartElement = document.getElementById(id);
+              if (chartElement) {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                  <div class="relative max-w-[95vw] max-h-[95vh] bg-white dark:bg-gray-800 rounded-lg p-6">
+                    <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-3xl font-bold z-10" onclick="this.closest('.fixed').remove()">×</button>
+                    <div style="width: 80vw; height: 70vh; position: relative;">
+                      <canvas id="fullscreen-chart-${id}" style="width: 100%; height: 100%;"></canvas>
+                    </div>
+                  </div>
+                `;
+                document.body.appendChild(modal);
+                
+                // Re-render chart in fullscreen
+                setTimeout(() => {
+                  const fullscreenCanvas = document.getElementById(`fullscreen-chart-${id}`);
+                  const chartConfig = chartConfigs.find(chart => chart.id === id);
+                  if (fullscreenCanvas && chartConfig) {
+                    chartService.renderChart(`fullscreen-chart-${id}`, chartConfig.config);
+                  }
+                }, 100);
+              }
+            };
+            
+            // Download button (1/5th width, always visible, rounded rectangle)
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'download-chart-btn flex items-center gap-2 px-3 py-2 text-xs bg-gray-800 text-white rounded-full transition-all duration-200 shadow-lg border border-gray-600';
+            downloadBtn.style.width = '20%'; // 1/5th width
+            downloadBtn.style.minWidth = '120px'; // Increased minimum width to show full text
+            downloadBtn.innerHTML = `
+              <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+              </svg>
+              <span class="whitespace-nowrap">Download</span>
+            `;
+            downloadBtn.onclick = () => {
+              chartService.downloadChart(id, `chart-${id}.png`);
+            };
+            
+            buttonsContainer.appendChild(fullscreenBtn);
+            buttonsContainer.appendChild(downloadBtn);
+            
+            controlsContainer.appendChild(disclaimerText);
+            controlsContainer.appendChild(buttonsContainer);
+            downloadContainer.appendChild(controlsContainer);
+          }
+        }, 150);
+      }
+    });
+  }, [chartConfigs, renderedCharts]);
   
   // Create the final HTML with chart placeholders replaced by canvas elements
   const finalHTML = useMemo(() => {
@@ -439,8 +519,9 @@ const TextWithCharts: React.FC<{
     chartConfigs.forEach(({ id }: {id: string}) => {
       const placeholder = `<div class="chart-placeholder" data-chart-id="${id}"></div>`;
       const chartElement = `
-        <div class="chart-container my-4">
+        <div class="chart-container">
           <canvas id="${id}" class="chart-canvas max-w-full h-auto"></canvas>
+          <div class="chart-download-container" data-chart-id="${id}"></div>
         </div>
       `;
       html = html.replace(placeholder, chartElement);
@@ -483,7 +564,7 @@ const TextWithCharts: React.FC<{
         result = result.replace(/`(.*?)`/g, '<code>$1</code>');
         
         // Convert URLs to links
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urlRegex = /(https?:\/\/[^\s<>"'`]+)/g;
         result = result.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
         
         // Convert code blocks ```code``` to <pre><code> (but skip chartjs blocks as they're already processed)
@@ -1020,7 +1101,7 @@ const TextWithCharts: React.FC<{
     }
     
     // Also check for direct Supabase storage URLs
-    const supabaseUrlPattern = /(https:\/\/[^\/]+\.supabase\.co\/storage\/v1\/object\/public\/[^\s]+)/i;
+    const supabaseUrlPattern = /(https:\/\/[^\/]+\.supabase\.co\/storage\/v1\/object\/public\/[^\s<>"'`]+)/i;
     const supabaseMatch = content.match(supabaseUrlPattern);
     
     if (supabaseMatch) {
@@ -2384,7 +2465,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
     return new Promise(async (resolve, reject) => {
       try {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://matrixai21.app.n8n.cloud/webhook/910d8b7e-6462-463b-90ef-42056a296c73');
+        xhr.open('POST', 'https://matrixai212.app.n8n.cloud/webhook/aea0cafd-493a-4217-a29c-501a11cccbb8');
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.setRequestHeader('Accept', 'text/event-stream');
 
@@ -2479,7 +2560,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
     return new Promise(async (resolve, reject) => {
       try {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://matrixai21.app.n8n.cloud/webhook/910d8b7e-6462-463b-90ef-42056a296c73');
+        xhr.open('POST', 'https://matrixai212.app.n8n.cloud/webhook/aea0cafd-493a-4217-a29c-501a11cccbb8');
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.setRequestHeader('Accept', 'text/event-stream');
 
@@ -4925,7 +5006,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
     
     try {
       // Use fetch for streaming instead of axios
-      const response = await fetch('https://matrixai21.app.n8n.cloud/webhook/910d8b7e-6462-463b-90ef-42056a296c73', {
+      const response = await fetch('https://matrixai212.app.n8n.cloud/webhook/aea0cafd-493a-4217-a29c-501a11cccbb8', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -5337,7 +5418,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                   
                   {/* Messages container with improved markdown */}
                   <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-2 sm:px-4 py-2 sm:py-4">
-                    <div className="max-w-3xl mx-auto space-y-3 sm:space-y-6">
+                    <div className="space-y-3 sm:space-y-6">
                       {/* Loading indicator for lazy loading */}
                       {isLoadingMoreMessages && (
                         <div className="flex justify-center py-4">
@@ -5463,9 +5544,9 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3 }}
-                          className={`flex ${processedMessage.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                          className={processedMessage.role === 'user' ? 'flex justify-end' : 'w-full'}
                         >
-                          <div className={`max-w-[90%] sm:max-w-[85%] flex ${processedMessage.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                          <div className={processedMessage.role === 'user' ? 'max-w-[70%] sm:max-w-[60%] flex flex-row-reverse' : 'max-w-[95%] flex flex-row'}>
                             {/* Avatar */}
                             <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${processedMessage.role === 'user' ? 'ml-2 sm:ml-3' : 'mr-2 sm:mr-3'} ${
                               processedMessage.role === 'user'
@@ -5475,10 +5556,10 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                               {processedMessage.role === 'user' ? <FiUser /> : <FiCpu />}
                             </div>
                             
-                            <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4 ${
+                            <div className={`${processedMessage.role === 'user' ? 'rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4' : 'flex-1'} ${
                               processedMessage.role === 'user'
                                 ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
-                                : (darkMode ? 'bg-gray-800 border border-gray-700 text-gray-100' : 'bg-white border border-gray-200 shadow-sm text-gray-900')
+                                : (darkMode ? 'text-gray-100' : 'text-gray-900')
                             }`}>
                               {/* User Message Attachments */}
                               {processedMessage.role === 'user' && 'attachments' in processedMessage && processedMessage.attachments && processedMessage.attachments.length > 0 && (
@@ -5748,14 +5829,12 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
 
                               
                               {/* Message footer */}
-                              <div className={`mt-2 flex items-center justify-between text-xs ${
+                              <div className={`mt-2 flex items-center justify-start text-xs ${
                                 processedMessage.role === 'assistant' 
                                   ? (darkMode ? 'text-gray-500' : 'text-gray-500') 
                                   : 'text-blue-200'
                               }`}>
-                                <span className="text-xs">{formatTimestamp(processedMessage.timestamp)}</span>
-                                
-                                <div className="flex space-x-1 sm:space-x-2">
+                                <div className="flex space-x-1 sm:space-x-2 mr-3">
                                   {/* Add message actions here */}
                                   {/* Copy button for all messages (attachments are handled by UserMessageAttachments component) */}
                                   <button 
@@ -5800,6 +5879,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                                     </>
                                   )}
                                 </div>
+                                <span className="text-xs">{formatTimestamp(processedMessage.timestamp)}</span>
                               </div>
                             </div>
                           </div>

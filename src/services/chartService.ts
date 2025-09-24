@@ -186,6 +186,39 @@ export class ChartService {
     this.chartInstances.clear();
   }
 
+  // Download chart as PNG image
+  downloadChart(chartId: string, filename?: string): boolean {
+    try {
+      const chart = this.chartInstances.get(chartId);
+      if (!chart) {
+        console.error(`Chart with ID ${chartId} not found`);
+        return false;
+      }
+
+      // Get the canvas element
+      const canvas = chart.canvas;
+      if (!canvas) {
+        console.error('Canvas element not found for chart');
+        return false;
+      }
+
+      // Create download link
+      const link = document.createElement('a');
+      link.download = filename || `chart-${chartId}.png`;
+      link.href = canvas.toDataURL('image/png');
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      return true;
+    } catch (error) {
+      console.error('Error downloading chart:', error);
+      return false;
+    }
+  }
+
   // Parse mathematical expressions for line charts
   generateMathChart(
     equation: string,

@@ -469,7 +469,7 @@ const MarkdownComponents = {
 // Function to detect and extract file URLs from bot responses
 const extractFileUrlFromBotResponse = (content: string) => {
   // Look for file preparation prompt pattern
-  const filePreparationPattern = /The file is ready\. You can download it using the following link:\s*(https?:\/\/[^\s]+)/i;
+  const filePreparationPattern = /The file is ready\. You can download it using the following link:\s*(https?:\/\/[^\s<>"'`]+)/i;
   const match = content.match(filePreparationPattern);
   
   if (match) {
@@ -1736,7 +1736,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
     return new Promise((resolve, reject) => {
       try {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://matrixai21.app.n8n.cloud/webhook/910d8b7e-6462-463b-90ef-42056a296c73', true);
+        xhr.open('POST', 'https://matrixai212.app.n8n.cloud/webhook/aea0cafd-493a-4217-a29c-501a11cccbb8', true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.setRequestHeader('Accept', 'text/event-stream');
 

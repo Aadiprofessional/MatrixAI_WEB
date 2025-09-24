@@ -1466,27 +1466,20 @@
 
 /* Graph/Chart Display Styles */
 .chart-container {
-  margin: 16px 0;
-  padding: 20px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin: 0;
   transition: all 0.2s ease;
 }
 
 .dark .chart-container {
-  background: #1f2937;
-  border-color: #374151;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  /* No background styling for dark mode */
 }
 
 .chart-container:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  /* No hover effects */
 }
 
 .dark .chart-container:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  /* No hover effects for dark mode */
 }
 
 /* Chart Control Buttons */
@@ -1524,12 +1517,8 @@
 .chart-controls {
   display: flex;
   gap: 8px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.chart-container:hover .chart-controls {
   opacity: 1;
+  transition: opacity 0.2s ease;
 }
 
 /* Fullscreen Modal Styles */
@@ -1611,8 +1600,7 @@
 /* Responsive chart sizing */
 @media (max-width: 768px) {
   .chart-container {
-    margin: 12px 0;
-    padding: 16px;
+    margin: 0;
   }
   
   .chart-canvas {
@@ -1626,8 +1614,7 @@
 
 @media (max-width: 480px) {
   .chart-container {
-    margin: 8px 0;
-    padding: 12px;
+    margin: 0;
   }
   
   .chart-canvas {
