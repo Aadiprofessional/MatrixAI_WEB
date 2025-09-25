@@ -11,9 +11,9 @@ import {
   FiMessageSquare, FiSend, FiUser, FiCpu, FiChevronDown, FiPlus, FiClock, FiX,
   FiCopy, FiShare2, FiVolume2, FiPause, FiPlay, FiDownload, FiUpload, FiImage,
   FiMaximize, FiMinimize, FiSettings, FiChevronLeft, FiChevronRight, FiMoon, FiSun,
-  FiCreditCard, FiBookmark, FiStar, FiEdit, FiTrash2, FiCheck, FiRotateCcw, FiVolumeX,
+  FiCreditCard, FiBookmark, FiStar, FiEdit, FiEdit2, FiTrash2, FiCheck, FiRotateCcw, FiVolumeX,
   FiMenu, FiHome, FiMic, FiFileText, FiVideo, FiZap, FiTrendingUp, FiTarget, FiSquare,
-  FiVolume, FiFile, FiPaperclip, FiSidebar, FiAlertCircle
+  FiVolume, FiFile, FiPaperclip, FiSidebar, FiAlertCircle, FiRefreshCw
 } from 'react-icons/fi';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth, User } from '../context/AuthContext';
@@ -440,22 +440,31 @@ const TextWithCharts: React.FC<{
   messageId: string;
   isStreaming?: boolean;
   textStyle?: any;
-}> = ({ text, darkMode, messageId, isStreaming = false, textStyle }) => {
+}> = React.memo(({ text, darkMode, messageId, isStreaming = false, textStyle }) => {
+  console.log('🔍 DEBUG: TextWithCharts component re-rendered for messageId:', messageId, 'isStreaming:', isStreaming);
+  
   const [renderedCharts, setRenderedCharts] = useState<Set<string>>(new Set());
   const [initialRenderComplete, setInitialRenderComplete] = useState<boolean>(false);
   
-  const { processedText, chartConfigs } = useMemo(() => 
-    processTextWithCharts(text, darkMode, messageId, isStreaming), 
-    [text, darkMode, messageId, isStreaming]
-  );
+  const { processedText, chartConfigs } = useMemo(() => {
+    console.log('🔍 DEBUG: processTextWithCharts called for messageId:', messageId);
+    const result = processTextWithCharts(text, darkMode, messageId, isStreaming);
+    console.log('🔍 DEBUG: processTextWithCharts result - chartConfigs count:', result.chartConfigs?.length || 0);
+    return result;
+  }, [text, darkMode, messageId, isStreaming]);
   
   // Render charts when they become available
   useEffect(() => {
+    console.log('🔍 DEBUG: Chart rendering useEffect triggered for messageId:', messageId, 'chartConfigs:', chartConfigs.length, 'renderedCharts:', renderedCharts.size);
+    
     chartConfigs.forEach(({ id, config }: {id: string, config: ChartConfig}) => {
       // Only render if not already rendered in this component instance
       if (!renderedCharts.has(id)) {
+        console.log('🔍 DEBUG: Attempting to render chart:', id, 'for messageId:', messageId);
+        
         // If streaming and initial render is complete, don't re-render existing charts
         if (isStreaming && initialRenderComplete && chartService.chartExists(id)) {
+          console.log('🔍 DEBUG: Chart already exists, skipping re-render:', id);
           // Just mark as rendered to prevent future attempts
           setRenderedCharts(prev => new Set([...Array.from(prev), id]));
           return;
@@ -466,6 +475,7 @@ const TextWithCharts: React.FC<{
           const element = document.getElementById(id);
           if (element) {
             try {
+              console.log('🔍 DEBUG: Rendering chart:', id, 'for messageId:', messageId);
               chartService.renderChart(id, config);
               setRenderedCharts(prev => new Set([...Array.from(prev), id]));
               if (!initialRenderComplete) {
@@ -474,8 +484,12 @@ const TextWithCharts: React.FC<{
             } catch (error) {
               console.error('Error rendering chart:', error);
             }
+          } else {
+            console.log('🔍 DEBUG: Chart element not found:', id);
           }
         }, 100);
+      } else {
+        console.log('🔍 DEBUG: Chart already rendered, skipping:', id);
       }
     });
   }, [chartConfigs, renderedCharts, isStreaming, initialRenderComplete]);
@@ -776,7 +790,16 @@ const TextWithCharts: React.FC<{
       <div dangerouslySetInnerHTML={{ __html: processedHTML }} />
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison function for React.memo
+  // Only re-render if the actual props that matter have changed
+  return (
+    prevProps.text === nextProps.text &&
+    prevProps.darkMode === nextProps.darkMode &&
+    prevProps.messageId === nextProps.messageId &&
+    prevProps.isStreaming === nextProps.isStreaming
+  );
+});
 
   // Role options with translations
   const roleOptions = [
@@ -1300,6 +1323,7 @@ const TextWithCharts: React.FC<{
   const fetchUserChats = useCallback(async () => {
     try {
       console.log('=== FETCH USER CHATS START ===');
+      console.log('🔍 DEBUG: fetchUserChats called - this should NOT happen when typing!');
       console.log('AuthContext user:', user);
       console.log('Route chat ID:', routeChatId);
       setIsLoadingChats(true);
@@ -1711,7 +1735,7 @@ const TextWithCharts: React.FC<{
           description: 'Error mode - working offline'
         }]);
     }
-  }, [routeChatId, navigate, user?.uid]);
+  }, [routeChatId, user?.uid]);
 
   // Save chat message to database using new chat service
   // Function to update chat title with first 2-3 words of user's first message
@@ -2049,6 +2073,7 @@ const TextWithCharts: React.FC<{
 
   // Automatically scroll to bottom of messages
   useEffect(() => {
+    console.log('🔍 DEBUG: Auto-scroll useEffect triggered! Messages length:', messages.length);
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
@@ -2073,6 +2098,8 @@ const TextWithCharts: React.FC<{
 
   // Fetch chats on component mount and handle default navigation
   useEffect(() => {
+    console.log('🔍 DEBUG: useEffect for fetchUserChats triggered!');
+    console.log('🔍 DEBUG: Dependencies - routeChatId:', routeChatId, 'user?.uid:', user?.uid);
     // Always navigate to a valid chat on initial render
     const handleInitialNavigation = async () => {
       // Try to get last active chat from localStorage
@@ -2129,7 +2156,7 @@ const TextWithCharts: React.FC<{
       chatSubscription.unsubscribe();
       stopSpeech();
     };
-  }, [routeChatId, navigate, user?.uid]);
+  }, [routeChatId, user?.uid]);
 
   // Auto-stop speaking when navigating away
   useEffect(() => {
@@ -2153,6 +2180,7 @@ const TextWithCharts: React.FC<{
 
   // Handle chart rendering when messages change
   useEffect(() => {
+    console.log('🔍 DEBUG: Chart rendering useEffect triggered! Messages length:', messages.length);
     const renderCharts = async () => {
       for (const message of messages) {
         if (message.chartConfig && message.chartId) {
@@ -5273,6 +5301,222 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
     }
   };
 
+  // Memoize messages rendering to prevent unnecessary re-renders during typing
+  const memoizedMessages = useMemo(() => {
+    return messages.map((message) => {
+      
+      // Process message to handle delimiter format and create attachments array
+      let processedMessage = { ...message };
+      
+      // Create attachments array for UserMessageAttachments component
+      if (message.role === 'user') {
+        // Initialize attachments array
+        const attachments: {
+          url: string;
+          fileName: string;
+          fileType: string;
+          originalName?: string;
+          size?: number;
+        }[] = [];
+        
+        // Priority 1: Use existing attachments if they exist (from uploadedFiles)
+        if (message.attachments && message.attachments.length > 0) {
+          attachments.push(...message.attachments);
+        }
+        // Priority 2: Check for ;;%%;; delimited URLs in content (database format) ONLY if no attachments exist
+        else if (message.content && typeof message.content === 'string' && message.content.includes(';;%%;;')) {
+          const urlMatch = message.content.match(/;;%%;;(.*?);;%%;;/);
+          if (urlMatch) {
+            const fileUrl = urlMatch[1].trim();
+            attachments.push({
+              url: fileUrl,
+              fileName: message.fileName || 'Attachment',
+              fileType: 'application/octet-stream',
+              originalName: message.fileName || undefined,
+              size: undefined
+            });
+            processedMessage.fileContent = fileUrl;
+            processedMessage.fileName = message.fileName || 'Attachment';
+          }
+        }
+        // Priority 3: Check for file_url fields (database format)
+        else if (message.file_url) {
+          attachments.push({
+            url: message.file_url,
+            fileName: message.file_name || 'Attachment',
+            fileType: message.file_type || 'application/octet-stream',
+            originalName: message.file_name || undefined,
+            size: message.file_size || undefined
+          });
+        }
+        
+        // Only set attachments if we found any
+        if (attachments.length > 0) {
+          processedMessage.attachments = attachments;
+        }
+      }
+
+      return (
+        <div key={message.id} className={`mb-6 ${message.role === 'user' ? 'ml-auto max-w-[80%]' : 'mr-auto max-w-[95%]'}`}>
+          {message.role === 'user' ? (
+            <div className="flex justify-end">
+              <div className="flex flex-col items-end max-w-full">
+                {/* User message attachments */}
+                {processedMessage.attachments && processedMessage.attachments.length > 0 && (
+                  <UserMessageAttachments 
+                    attachments={processedMessage.attachments}
+                    darkMode={darkMode}
+                  />
+                )}
+                
+                {/* User message content */}
+                <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4 max-w-full break-words ${
+                  darkMode 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
+                    : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                }`}>
+                  {editingMessageId === message.id ? (
+                    <div className="space-y-3">
+                      <textarea
+                        value={editingContent}
+                        onChange={(e) => setEditingContent(e.target.value)}
+                        className={`w-full p-3 rounded-lg border resize-none ${
+                          darkMode 
+                            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                        }`}
+                        rows={3}
+                        placeholder={t('chat.editMessage.placeholder') || 'Edit your message...'}
+                      />
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleSaveEdit()}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                            darkMode 
+                              ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                              : 'bg-blue-500 hover:bg-blue-600 text-white'
+                          }`}
+                        >
+                          {t('chat.editMessage.save') || 'Save'}
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                            darkMode 
+                              ? 'bg-gray-600 hover:bg-gray-700 text-white' 
+                              : 'bg-gray-500 hover:bg-gray-600 text-white'
+                          }`}
+                        >
+                          {t('chat.editMessage.cancel') || 'Cancel'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">
+                      {processedMessage.content?.replace(/;;%%;;.*?;;%%;;/g, '').trim() || message.content}
+                    </div>
+                  )}
+                </div>
+                
+                {/* User message actions */}
+                {editingMessageId !== message.id && (
+                  <div className="flex items-center space-x-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => handleEditMessage(message.id, message.content)}
+                      className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                      aria-label={t('chat.editMessage.button')}
+                    >
+                      <FiEdit2 size={12} className="sm:w-3.5 sm:h-3.5" />
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteChat(message.id.toString(), {} as React.MouseEvent)}
+                      className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                      aria-label={t('chat.deleteMessage')}
+                    >
+                      <FiTrash2 size={12} className="sm:w-3.5 sm:h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start space-x-2 sm:space-x-3 group">
+              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+              }`}>
+                <FiCpu className="w-3 h-3 sm:w-4 sm:h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4 ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                  <div className="prose prose-sm sm:prose max-w-none">
+                    <TextWithCharts 
+                      text={processedMessage.content || message.content} 
+                      darkMode={darkMode}
+                      messageId={message.id.toString()}
+                      isStreaming={false}
+                      textStyle={{
+                        color: darkMode ? '#e5e7eb' : '#374151',
+                        fontSize: '14px',
+                        lineHeight: '1.6'
+                      }}
+                    />
+                  </div>
+                </div>
+                
+                {/* Assistant message actions */}
+                <div className="flex items-center justify-between mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center space-x-2">
+                    <button 
+                      onClick={() => copyToClipboard(processedMessage.content)}
+                      className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                      aria-label={t('chat.copyMessage')}
+                    >
+                      <FiCopy size={12} className="sm:w-3.5 sm:h-3.5" />
+                    </button>
+
+                    <button 
+                      onClick={() => handleDeleteChat(message.id.toString(), {} as React.MouseEvent)}
+                      className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                      aria-label={t('chat.deleteMessage')}
+                    >
+                      <FiTrash2 size={12} className="sm:w-3.5 sm:h-3.5" />
+                    </button>
+                    {processedMessage.content && (
+                      <>
+                        <button 
+                          onClick={() => handleTextToSpeech(processedMessage.content, processedMessage.id)}
+                          className={`p-1 rounded-full ${
+                            speakingMessageId === processedMessage.id 
+                              ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-600')
+                              : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')
+                          }`}
+                          aria-label={speakingMessageId === processedMessage.id ? t('chat.stopSpeaking') : t('chat.speakMessage')}
+                        >
+                          {speakingMessageId === processedMessage.id ? 
+                            <FiSquare size={12} className="sm:w-3.5 sm:h-3.5" /> : 
+                            <FiVolume2 size={12} className="sm:w-3.5 sm:h-3.5" />
+                          }
+                        </button>
+                        <button 
+                          onClick={() => handleShareMessage(processedMessage.content)}
+                          className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                          aria-label={t('chat.shareMessage')}
+                        >
+                          <FiShare2 size={12} className="sm:w-3.5 sm:h-3.5" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  <span className="text-xs">{formatTimestamp(processedMessage.timestamp)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    });
+  }, [messages, darkMode, editingMessageId, editingContent, speakingMessageId]);
+
   return (
       <div className="ChatPage flex h-screen overflow-hidden">
       {/* Full-screen drag and drop overlay */}
@@ -5568,435 +5812,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                         </div>
                       )}
                       
-                      {messages.map((message) => {
-                        // Process message to handle delimiter format and create attachments array
-                        let processedMessage = { ...message };
-                        
-                        // Create attachments array for UserMessageAttachments component
-                        if (message.role === 'user') {
-                          // Initialize attachments array
-                          const attachments: {
-                            url: string;
-                            fileName: string;
-                            fileType: string;
-                            originalName?: string;
-                            size?: number;
-                          }[] = [];
-                          
-                          // Priority 1: Use existing attachments if they exist (from uploadedFiles)
-                          if (message.attachments && message.attachments.length > 0) {
-                            attachments.push(...message.attachments);
-                          }
-                          // Priority 2: Check for ;;%%;; delimited URLs in content (database format) ONLY if no attachments exist
-                          else if (message.content && typeof message.content === 'string' && message.content.includes(';;%%;;')) {
-                            const urlMatch = message.content.match(/;;%%;;(.*?);;%%;;/);
-                            if (urlMatch) {
-                              const fileUrl = urlMatch[1].trim();
-                              attachments.push({
-                                url: fileUrl,
-                                fileName: message.fileName || 'Attachment',
-                                fileType: 'application/octet-stream',
-                                originalName: message.fileName || undefined,
-                                size: undefined
-                              });
-                              processedMessage.fileContent = fileUrl;
-                              processedMessage.fileName = message.fileName || 'Attachment';
-                            }
-                          }
-                          // Priority 3: Check for file_url fields (database format)
-                          else if (message.file_url) {
-                            attachments.push({
-                              url: message.file_url,
-                              fileName: message.file_name || 'Attachment',
-                              fileType: message.file_type || 'application/octet-stream',
-                              originalName: message.file_name || undefined,
-                              size: message.file_size || undefined
-                            });
-                          }
-                          
-                          // Only set attachments if we found any
-                          if (attachments.length > 0) {
-                            processedMessage.attachments = attachments;
-                          }
-                        }
-                        
-                        // Process bot messages for file URLs
-                        if (message.role === 'assistant') {
-                          const fileExtraction = extractFileUrlFromBotResponse(message.content);
-                          
-                          if (fileExtraction.fileUrl) {
-                            // Update the message content to remove the file URL text
-                            processedMessage.content = fileExtraction.cleanContent;
-                            
-                            // Create attachments array for bot message
-                            const botAttachments: {
-                              url: string;
-                              fileName: string;
-                              fileType: string;
-                              originalName?: string;
-                              size?: number;
-                            }[] = [{
-                              url: fileExtraction.fileUrl,
-                              fileName: fileExtraction.fileName || 'Generated File',
-                              fileType: fileExtraction.fileType || 'application/octet-stream',
-                              originalName: fileExtraction.fileName || undefined,
-                              size: undefined
-                            }];
-                            
-                            processedMessage.attachments = botAttachments;
-                            console.log('Created bot file attachment:', processedMessage.id, botAttachments);
-                          }
-                        }
-                        
-                        return (
-                        <motion.div
-                          key={processedMessage.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className={processedMessage.role === 'user' ? 'flex justify-end' : 'w-full'}
-                        >
-                          <div className={processedMessage.role === 'user' ? 'max-w-[70%] sm:max-w-[60%] flex flex-row-reverse' : 'max-w-[95%] flex flex-row'}>
-                            {/* Avatar */}
-                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${processedMessage.role === 'user' ? 'ml-2 sm:ml-3' : 'mr-2 sm:mr-3'} ${
-                              processedMessage.role === 'user'
-                                ? (darkMode ? 'bg-blue-600' : 'bg-blue-500 text-white')
-                                : (darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white')
-                            }`}>
-                              {processedMessage.role === 'user' ? <FiUser /> : <FiCpu />}
-                            </div>
-                            
-                            <div className={`${processedMessage.role === 'user' ? 'rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4' : 'flex-1'} ${
-                              processedMessage.role === 'user'
-                                ? (darkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
-                                : (darkMode ? 'text-gray-100' : 'text-gray-900')
-                            }`}>
-                              {/* User Message Attachments */}
-                              {processedMessage.role === 'user' && 'attachments' in processedMessage && processedMessage.attachments && processedMessage.attachments.length > 0 && (
-                                <UserMessageAttachments 
-                                  attachments={processedMessage.attachments}
-                                  darkMode={darkMode}
-                                />
-                              )}
-
-                              
-                              {/* Generated Image Display - AI handles images directly with img tags */}
-                              {processedMessage.image_url && (
-                                <div className="mb-3">
-                                  <div className={`relative rounded-lg overflow-hidden border ${
-                                    darkMode ? 'border-gray-600 bg-gray-800' : 'border-gray-200 bg-white'
-                                  } shadow-lg w-full max-w-lg mx-auto`}>
-                                    {processedMessage.image_url && (
-                                      <>
-                                        <img 
-                                          src={processedMessage.image_url} 
-                                          alt="Generated image" 
-                                          className="w-full h-auto block rounded-lg transition-opacity duration-300 opacity-0"
-                                          onError={(e) => {
-                                            e.currentTarget.style.display = 'none';
-                                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                          }}
-                                          onLoad={(e) => {
-                                            e.currentTarget.style.opacity = '1';
-                                          }}
-                                        />
-                                        <div className={`hidden p-4 text-center ${
-                                          darkMode ? 'text-gray-300' : 'text-gray-600'
-                                        }`}>
-                                          <div className="flex items-center justify-center space-x-2 mb-2">
-                                            <FiImage className="text-2xl" />
-                                            <span className="text-sm font-medium">Failed to load image</span>
-                                          </div>
-                                          <p className="text-xs opacity-75">The generated image could not be displayed</p>
-                                        </div>
-                                        
-                                        {/* Image overlay with download button */}
-                                        <div className="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity duration-200">
-                                          <a
-                                            href={processedMessage.image_url}
-                                            download="generated-image.png"
-                                            className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
-                                              darkMode 
-                                                ? 'bg-black/50 hover:bg-black/70 text-white' 
-                                                : 'bg-white/50 hover:bg-white/70 text-gray-800'
-                                            }`}
-                                            title="Download image"
-                                          >
-                                            <FiDownload size={16} />
-                                          </a>
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-                                  
-                                  {/* Image info */}
-                                  <div className={`mt-2 text-xs ${
-                                    darkMode ? 'text-gray-400' : 'text-gray-500'
-                                  }`}>
-                                    <div className="flex items-center justify-between">
-                                      <span>Generated Image</span>
-                                      <span>Click image to view full size</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {/* Intelligent Image Generation Display - AI handles images directly */}
-                              {(processedMessage.intelligentImage || intelligentImageGenerations.get(processedMessage.id)) && (
-                                <div className="mb-3">
-                                  {(() => {
-                                    const intelligentImage = processedMessage.intelligentImage || intelligentImageGenerations.get(processedMessage.id);
-                                    
-                                    return (
-                                      <div className={`relative rounded-lg overflow-hidden border ${
-                                        darkMode ? 'border-gray-600 bg-gray-800' : 'border-gray-200 bg-white'
-                                      } shadow-lg w-full max-w-lg mx-auto`}>
-                                        {intelligentImage?.imageUrl && (
-                                          <>
-                                            <img 
-                                              src={intelligentImage.imageUrl} 
-                                              alt="Intelligent generated content" 
-                                              className="w-full h-auto block rounded-lg transition-opacity duration-300 opacity-0"
-                                              onError={(e) => {
-                                                console.error('Failed to load intelligent image:', intelligentImage.imageUrl);
-                                                e.currentTarget.style.display = 'none';
-                                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                              }}
-                                              onLoad={(e) => {
-                                                e.currentTarget.style.opacity = '1';
-                                              }}
-                                            />
-                                            <div className={`hidden p-4 text-center ${
-                                              darkMode ? 'text-gray-300' : 'text-gray-600'
-                                            }`}>
-                                              <div className="flex items-center justify-center space-x-2 mb-2">
-                                                <FiImage className="text-2xl" />
-                                                <span className="text-sm font-medium">Failed to load image</span>
-                                              </div>
-                                              <p className="text-xs opacity-75">The intelligent generated content could not be displayed</p>
-                                            </div>
-                                            
-                                            {/* Image overlay with download button */}
-                                            <div className="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity duration-200">
-                                              <a
-                                                href={intelligentImage.imageUrl}
-                                                download="intelligent-generated-content.png"
-                                                className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
-                                                  darkMode 
-                                                    ? 'bg-black/50 hover:bg-black/70 text-white' 
-                                                    : 'bg-white/50 hover:bg-white/70 text-gray-800'
-                                                }`}
-                                                title="Download intelligent content"
-                                              >
-                                                <FiDownload size={16} />
-                                              </a>
-                                            </div>
-                                            
-                                            {/* Image description display */}
-                                            {intelligentImage.description && (
-                                              <div className={`absolute bottom-2 left-2 right-2 ${darkMode ? 'bg-black/70' : 'bg-white/70'} backdrop-blur-sm rounded p-2`}>
-                                                <details className={`${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                                                  <summary className="text-xs cursor-pointer hover:underline">View Description</summary>
-                                                  <p className={`mt-1 text-xs ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-                                                    {intelligentImage.description}
-                                                  </p>
-                                                </details>
-                                              </div>
-                                            )}
-                                          </>
-                                        )}
-                                        {intelligentImage?.error && (
-                                          <div className={`p-4 text-center ${darkMode ? 'text-red-300 bg-red-900/20' : 'text-red-600 bg-red-50'}`}>
-                                            <div className="flex items-center justify-center space-x-2 mb-2">
-                                              <FiAlertCircle className="text-2xl" />
-                                              <span className="text-sm font-medium">Generation Failed</span>
-                                            </div>
-                                            <p className="text-xs opacity-75">{intelligentImage.error}</p>
-                                          </div>
-                                        )}
-                                      </div>
-                                    );
-                                  })()}
-                                  
-                                  {/* Intelligent content info */}
-                                  <div className={`mt-2 text-xs ${
-                                    darkMode ? 'text-gray-400' : 'text-gray-500'
-                                  }`}>
-                                    <div className="flex items-center justify-between">
-                                      <span>🧠 Intelligent Visual Content</span>
-                                      <span>AI-generated visualization</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-
-                              {/* AI handles images directly with img tags - no loading indicators needed */}
-
-                              {/* Bot Message Attachments */}
-                              {processedMessage.role === 'assistant' && processedMessage.attachments && processedMessage.attachments.length > 0 && (
-                                <div className="mb-3">
-                                  <BotMessageAttachments 
-                                    attachments={processedMessage.attachments}
-                                    darkMode={darkMode}
-                                  />
-                                </div>
-                              )}
-
-                              {/* Text content with HTML formatting */}
-              <div className="markdown-content">
-                {editingMessageId === message.id ? (
-                  <div className="space-y-2">
-                    <textarea
-                      value={editingContent}
-                      onChange={(e) => setEditingContent(e.target.value)}
-                      className={`w-full p-3 border rounded-lg resize-none ${
-                        darkMode 
-                          ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500' 
-                          : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500'
-                      } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
-                      rows={3}
-                      autoFocus
-                    />
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={handleSaveEdit}
-                        className="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm flex items-center space-x-1"
-                      >
-                        <FiCheck size={14} />
-                        <span>Save</span>
-                      </button>
-                      <button
-                        onClick={handleCancelEdit}
-                        className={`px-3 py-1 rounded-lg transition-colors text-sm flex items-center space-x-1 ${
-                          darkMode 
-                            ? 'bg-gray-600 text-gray-300 hover:bg-gray-500' 
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
-                      >
-                        <FiX size={14} />
-                        <span>Cancel</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : processedMessage.isStreaming ? (
-                  <div className="prose prose-sm max-w-none">
-                    <div className="inline-block">
-                      <span className="inline">
-                        <TextWithCharts
-                          text={displayedText[processedMessage.id] || ''}
-                          darkMode={darkMode}
-                          messageId={processedMessage.id.toString()}
-                          isStreaming={true}
-                          textStyle={{
-                            color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
-                          }}
-                        />
-                      </span>
-                      <span className="inline-flex items-center space-x-1 ml-1 align-baseline">
-                        <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="prose prose-sm max-w-none">
-                    {(() => {
-                      // Process user messages with delimiters - only show text content, attachments are handled by UserMessageAttachments component
-                      if (processedMessage.role === 'user' && processedMessage.content.includes(';;%%;;')) {
-                        const textContent = processedMessage.content.replace(/;;%%;;.*?;;%%;;/g, '').trim();
-                        if (textContent) {
-                          return (
-                            <TextWithCharts
-                              text={textContent}
-                              darkMode={darkMode}
-                              messageId={processedMessage.id.toString()}
-                              textStyle={{
-                                color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
-                              }}
-                            />
-                          );
-                        }
-                        return <div className="text-xs opacity-75">Attachment</div>; // Show placeholder text when only attachment without text
-                      }
-                      
-                      // Use TextWithCharts for all assistant messages to handle embedded charts
-                      return (
-                        <TextWithCharts
-                          text={processedMessage.content}
-                          darkMode={darkMode}
-                          messageId={processedMessage.id.toString()}
-                          textStyle={{
-                            color: processedMessage.role === 'user' ? '#ffffff' : (darkMode ? '#f3f4f6' : '#1f2937')
-                          }}
-                        />
-                      );
-                    })()} 
-                  </div>
-                )}
-              </div>
-                              
-
-                              
-                              {/* Message footer */}
-                              <div className={`mt-2 flex items-center justify-start text-xs ${
-                                processedMessage.role === 'assistant' 
-                                  ? (darkMode ? 'text-gray-500' : 'text-gray-500') 
-                                  : 'text-blue-200'
-                              }`}>
-                                <div className="flex space-x-1 sm:space-x-2 mr-3">
-                                  {/* Add message actions here */}
-                                  {/* Copy button for all messages (attachments are handled by UserMessageAttachments component) */}
-                                  <button 
-                                    onClick={() => copyToClipboard(processedMessage.content)}
-                                    className={`p-1 rounded-full ${processedMessage.role === 'user' ? 'hover:bg-blue-700 text-blue-200' : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')}`}
-                                    aria-label={t('chat.copyToClipboard')}
-                                  >
-                                    <FiCopy size={12} className="sm:w-3.5 sm:h-3.5" />
-                                  </button>
-                                  {processedMessage.role === 'user' && !('fileContent' in processedMessage && processedMessage.fileContent) && (
-                                    <button 
-                                      onClick={() => handleEditMessage(processedMessage.id, processedMessage.content)}
-                                      className={`p-1 rounded-full ${processedMessage.role === 'user' ? 'hover:bg-blue-700 text-blue-200' : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')}`}
-                                      aria-label="Edit message"
-                                    >
-                                      <FiEdit size={12} className="sm:w-3.5 sm:h-3.5" />
-                                    </button>
-                                  )}
-                                  {processedMessage.role === 'assistant' && (
-                                    <>
-                                      <button 
-                                        onClick={() => handleTextToSpeech(processedMessage.content, processedMessage.id)}
-                                        className={`p-1 rounded-full ${
-                                          speakingMessageId === processedMessage.id 
-                                            ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-600')
-                                            : (darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500')
-                                        }`}
-                                        aria-label={speakingMessageId === processedMessage.id ? t('chat.stopSpeaking') : t('chat.speakMessage')}
-                                      >
-                                        {speakingMessageId === processedMessage.id ? 
-                                          <FiSquare size={12} className="sm:w-3.5 sm:h-3.5" /> : 
-                                          <FiVolume2 size={12} className="sm:w-3.5 sm:h-3.5" />
-                                        }
-                                      </button>
-                                      <button 
-                                        onClick={() => handleShareMessage(processedMessage.content)}
-                                        className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-                                        aria-label={t('chat.shareMessage')}
-                                      >
-                                        <FiShare2 size={12} className="sm:w-3.5 sm:h-3.5" />
-                                      </button>
-                                    </>
-                                  )}
-                                </div>
-                                <span className="text-xs">{formatTimestamp(processedMessage.timestamp)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                        );
-                      })}
+                      {memoizedMessages}
                       
                       {/* Loading indicator - only show when there are no messages */}
                       {isLoading && messages.length === 0 && (
@@ -6213,7 +6029,10 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                       <textarea
                         ref={textareaRef}
                         value={inputMessage}
-                        onChange={(e) => setInputMessage(e.target.value)}
+                        onChange={(e) => {
+                          console.log('🔍 DEBUG: Input changed to:', e.target.value);
+                          setInputMessage(e.target.value);
+                        }}
                         onKeyDown={handleKeyDown}
                         placeholder={isMessageLimitReached ? 'Message limit reached. Start a new chat to continue.' : 
                           selectedGenerationType === 'image_generate' ? 'Describe your image...' :
