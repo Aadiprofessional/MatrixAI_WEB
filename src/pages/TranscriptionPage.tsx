@@ -23,19 +23,18 @@ import { useTheme } from '../context/ThemeContext';
 import { useAlert } from '../context/AlertContext';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
+import katex from 'katex';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import 'katex/dist/katex.min.css';
-import katex from 'katex';
-import markdownItKatex from 'markdown-it-katex';
 import './TranscriptionPage.css';
 import MindMapComponent from '../components/MindMapComponent';
 import FileUploadPopup from '../components/FileUploadPopup';
 import BotMessageAttachments from '../components/BotMessageAttachments';
 import { uploadFileToStorage as uploadFile, FileUploadResult as UtilFileUploadResult, validateFile, formatFileSize, getFileIcon } from '../utils/fileUpload';
+
 import coinIcon from '../assets/coin.png';
 // FFmpeg imports removed - now using API endpoint for video processing
 
@@ -628,81 +627,7 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
       processedText = processedText.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
     }
     
-    // Process math expressions using KaTeX for better rendering
-    const renderMathWithKaTeX = (text: string) => {
-      let result = text;
-      
-      // Handle block math expressions (display mode)
-      // LaTeX-style block math \[...\]
-      result = result.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
-        try {
-          const rendered = katex.renderToString(math.trim(), {
-            displayMode: true,
-            throwOnError: false,
-            strict: false,
-            trust: true
-          });
-          return `<div class="katex-block-container">${rendered}</div>`;
-        } catch (error) {
-          console.warn('KaTeX block render error:', error);
-          return `<div class="math-error">\\[${math}\\]</div>`;
-        }
-      });
-      
-      // Dollar sign block math $$...$$
-      result = result.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
-        try {
-          const rendered = katex.renderToString(math.trim(), {
-            displayMode: true,
-            throwOnError: false,
-            strict: false,
-            trust: true
-          });
-          return `<div class="katex-block-container">${rendered}</div>`;
-        } catch (error) {
-          console.warn('KaTeX block render error:', error);
-          return `<div class="math-error">$$${math}$$</div>`;
-        }
-      });
-      
-      // Handle inline math expressions
-      // LaTeX-style inline math \(...\)
-      result = result.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
-        try {
-          const rendered = katex.renderToString(math.trim(), {
-            displayMode: false,
-            throwOnError: false,
-            strict: false,
-            trust: true
-          });
-          return `<span class="katex-inline-container">${rendered}</span>`;
-        } catch (error) {
-          console.warn('KaTeX inline render error:', error);
-          return `<span class="math-error">\\(${math}\\)</span>`;
-        }
-      });
-      
-      // Dollar sign inline math $...$
-      result = result.replace(/\$([^$\n]+)\$/g, (match, math) => {
-        try {
-          const rendered = katex.renderToString(math.trim(), {
-            displayMode: false,
-            throwOnError: false,
-            strict: false,
-            trust: true
-          });
-          return `<span class="katex-inline-container">${rendered}</span>`;
-        } catch (error) {
-          console.warn('KaTeX inline render error:', error);
-          return `<span class="math-error">$${math}$</span>`;
-        }
-      });
-      
-      return result;
-    };
 
-    // Apply KaTeX rendering to the processed text
-    processedText = renderMathWithKaTeX(processedText);
 
     return (
       <div 

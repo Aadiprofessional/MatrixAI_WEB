@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from '../utils/axiosInterceptor';
 import OpenAI from 'openai';
 import { useTranslation } from 'react-i18next';
+
+import DOMPurify from 'dompurify';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
-import DOMPurify from 'dompurify';
 import { 
   FiMessageSquare, FiSend, FiUser, FiCpu, FiChevronDown, FiPlus, FiClock, FiX,
   FiCopy, FiShare2, FiVolume2, FiPause, FiPlay, FiDownload, FiUpload, FiImage,
@@ -37,10 +38,82 @@ import { UserMessageAttachments } from '../components/UserMessageAttachments';
 import { BotMessageAttachments } from '../components/BotMessageAttachments';
 import { chartService, ChartConfig } from '../services/chartService';
 import coinIcon from '../assets/coin.png';
+import matrixLogo from '../assets/matrix.svg';
 import './ChatPage.css';
 
 // HTML text formatting will be implemented from scratch
 
+// Function to process LaTeX math expressions using KaTeX
+const processMathExpressions = (text: string): string => {
+  if (!text) return text;
+  
+  try {
+    // Process display math expressions \[ ... \]
+    text = text.replace(/\\\[([\s\S]*?)\\\]/g, (match, mathContent) => {
+      try {
+        const html = katex.renderToString(mathContent.trim(), {
+          displayMode: true,
+          throwOnError: false,
+          strict: false
+        });
+        return `<div class="katex-display">${html}</div>`;
+      } catch (error) {
+        console.warn('KaTeX display math error:', error);
+        return match; // Return original if rendering fails
+      }
+    });
+    
+    // Process inline math expressions \( ... \)
+    text = text.replace(/\\\(([\s\S]*?)\\\)/g, (match, mathContent) => {
+      try {
+        const html = katex.renderToString(mathContent.trim(), {
+          displayMode: false,
+          throwOnError: false,
+          strict: false
+        });
+        return `<span class="katex-inline">${html}</span>`;
+      } catch (error) {
+        console.warn('KaTeX inline math error:', error);
+        return match; // Return original if rendering fails
+      }
+    });
+    
+    // Process dollar sign math expressions $$ ... $$ (display)
+    text = text.replace(/\$\$([\s\S]*?)\$\$/g, (match, mathContent) => {
+      try {
+        const html = katex.renderToString(mathContent.trim(), {
+          displayMode: true,
+          throwOnError: false,
+          strict: false
+        });
+        return `<div class="katex-display">${html}</div>`;
+      } catch (error) {
+        console.warn('KaTeX display math error:', error);
+        return match; // Return original if rendering fails
+      }
+    });
+    
+    // Process single dollar sign math expressions $ ... $ (inline)
+    text = text.replace(/\$([^$\n]+?)\$/g, (match, mathContent) => {
+      try {
+        const html = katex.renderToString(mathContent.trim(), {
+          displayMode: false,
+          throwOnError: false,
+          strict: false
+        });
+        return `<span class="katex-inline">${html}</span>`;
+      } catch (error) {
+        console.warn('KaTeX inline math error:', error);
+        return match; // Return original if rendering fails
+      }
+    });
+    
+    return text;
+  } catch (error) {
+    console.error('Error processing math expressions:', error);
+    return text; // Return original text if processing fails
+  }
+};
 
 // Define interface for message types
 interface Message {
@@ -223,7 +296,7 @@ const processTextWithCharts = (text: string, darkMode: boolean, messageId: strin
   return { processedText, chartConfigs };
 };
 
-// Enhanced HTML text formatting function with math support
+// Enhanced HTML text formatting function
 const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) => {
   if (!text) return null;
   
@@ -233,15 +306,18 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
     
     let processedText = text;
     
+    // Process math expressions first, before any other processing
+    processedText = processMathExpressions(processedText);
+    
     if (isHTML) {
       // If it's already HTML, sanitize it and apply our styling
-      processedText = DOMPurify.sanitize(text, {
+      processedText = DOMPurify.sanitize(processedText, {
         ALLOWED_TAGS: [
           'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
           'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'a', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
-          'div', 'span', 'img', 'hr', 'sub', 'sup'
+          'div', 'span', 'img', 'hr', 'sub', 'sup', 'math', 'semantics', 'mrow', 'mi', 'mo', 'mn', 'mfrac', 'msup', 'msub', 'msubsup', 'munder', 'mover', 'munderover', 'mtext', 'mspace', 'mpadded', 'mphantom', 'mfenced', 'menclose', 'mstyle', 'mlabeledtr', 'mtable', 'mtr', 'mtd', 'maligngroup', 'malignmark', 'maction'
         ],
-        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id', 'src', 'alt', 'title', 'border', 'cellpadding', 'cellspacing']
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id', 'src', 'alt', 'title', 'border', 'cellpadding', 'cellspacing', 'style', 'aria-hidden', 'xmlns']
       });
     } else {
       // If it's plain text, convert markdown-like syntax to HTML
@@ -286,130 +362,6 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
       // Convert blockquotes > text to <blockquote>
       processedText = processedText.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
     }
-    
-    // Process math expressions using KaTeX for better rendering
-    const renderMathWithKaTeX = (text: string) => {
-      let result = text;
-      
-      // Preprocess common LaTeX commands to ensure proper rendering
-      const preprocessMath = (mathText: string) => {
-        return mathText
-          // Ensure proper spacing around operators
-          .replace(/([a-zA-Z])([=+\-*/])/g, '$1 $2')
-          .replace(/([=+\-*/])([a-zA-Z])/g, '$1 $2')
-          // Fix common symbol issues
-          .replace(/\\text\{([^}]+)\}/g, '\\mathrm{$1}')
-          // Ensure proper function formatting
-          .replace(/\\(sin|cos|tan|log|ln|exp|sec|csc|cot)([^a-zA-Z])/g, '\\$1 $2')
-          // Fix subscript/superscript spacing
-          .replace(/([a-zA-Z])_([a-zA-Z0-9]+)/g, '$1_{$2}')
-          .replace(/([a-zA-Z])\^([a-zA-Z0-9]+)/g, '$1^{$2}')
-          .trim();
-      };
-      
-      // Handle block math expressions (display mode)
-      // LaTeX-style block math \[...\]
-      result = result.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
-        try {
-          const processedMath = preprocessMath(math);
-          const rendered = katex.renderToString(processedMath, {
-            displayMode: true,
-            throwOnError: false,
-            strict: false,
-            trust: true,
-            macros: {
-              "\\RR": "\\mathbb{R}",
-              "\\NN": "\\mathbb{N}",
-              "\\ZZ": "\\mathbb{Z}",
-              "\\QQ": "\\mathbb{Q}",
-              "\\CC": "\\mathbb{C}"
-            }
-          });
-          return `<div class="katex-block-container" style="text-align: center; margin: 1em 0;">${rendered}</div>`;
-        } catch (error) {
-          console.warn('KaTeX block render error:', error, 'Math:', math);
-          return `<div class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 0.5em; margin: 0.5em 0; border-radius: 4px;">\\[${math}\\]</div>`;
-        }
-      });
-      
-      // Dollar sign block math $$...$$
-      result = result.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
-        try {
-          const processedMath = preprocessMath(math);
-          const rendered = katex.renderToString(processedMath, {
-            displayMode: true,
-            throwOnError: false,
-            strict: false,
-            trust: true,
-            macros: {
-              "\\RR": "\\mathbb{R}",
-              "\\NN": "\\mathbb{N}",
-              "\\ZZ": "\\mathbb{Z}",
-              "\\QQ": "\\mathbb{Q}",
-              "\\CC": "\\mathbb{C}"
-            }
-          });
-          return `<div class="katex-block-container" style="text-align: center; margin: 1em 0;">${rendered}</div>`;
-        } catch (error) {
-          console.warn('KaTeX block render error:', error, 'Math:', math);
-          return `<div class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 0.5em; margin: 0.5em 0; border-radius: 4px;">$$${math}$$</div>`;
-        }
-      });
-      
-      // Handle inline math expressions
-      // LaTeX-style inline math \(...\)
-      result = result.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
-        try {
-          const processedMath = preprocessMath(math);
-          const rendered = katex.renderToString(processedMath, {
-            displayMode: false,
-            throwOnError: false,
-            strict: false,
-            trust: true,
-            macros: {
-              "\\RR": "\\mathbb{R}",
-              "\\NN": "\\mathbb{N}",
-              "\\ZZ": "\\mathbb{Z}",
-              "\\QQ": "\\mathbb{Q}",
-              "\\CC": "\\mathbb{C}"
-            }
-          });
-          return `<span class="katex-inline-container" style="display: inline-block; margin: 0 2px;">${rendered}</span>`;
-        } catch (error) {
-          console.warn('KaTeX inline render error:', error, 'Math:', math);
-          return `<span class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 2px 4px; border-radius: 3px;">\\(${math}\\)</span>`;
-        }
-      });
-      
-      // Dollar sign inline math $...$
-      result = result.replace(/\$([^$\n]+)\$/g, (match, math) => {
-        try {
-          const processedMath = preprocessMath(math);
-          const rendered = katex.renderToString(processedMath, {
-            displayMode: false,
-            throwOnError: false,
-            strict: false,
-            trust: true,
-            macros: {
-              "\\RR": "\\mathbb{R}",
-              "\\NN": "\\mathbb{N}",
-              "\\ZZ": "\\mathbb{Z}",
-              "\\QQ": "\\mathbb{Q}",
-              "\\CC": "\\mathbb{C}"
-            }
-          });
-          return `<span class="katex-inline-container" style="display: inline-block; margin: 0 2px;">${rendered}</span>`;
-        } catch (error) {
-          console.warn('KaTeX inline render error:', error, 'Math:', math);
-          return `<span class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 2px 4px; border-radius: 3px;">$${math}$</span>`;
-        }
-      });
-      
-      return result;
-    };
-
-    // Apply KaTeX rendering to the processed text
-    processedText = renderMathWithKaTeX(processedText);
 
     return (
       <div 
@@ -600,18 +552,10 @@ const TextWithCharts: React.FC<{
       
       let result = finalHTML;
       
+      // Process math expressions first, before any other processing
+      result = processMathExpressions(result);
+      
       if (!isHTML) {
-        // If it's plain text, convert markdown-like syntax to HTML
-        const escapeHtml = (unsafe: string) => {
-          return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-        };
-
-        result = escapeHtml(result);
         
         // Convert line breaks to <br> tags
         result = result.replace(/\n/g, '<br>');
@@ -644,136 +588,14 @@ const TextWithCharts: React.FC<{
         result = result.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
       }
       
-      // Process math expressions using KaTeX
-      const renderMathWithKaTeX = (text: string) => {
-        let mathResult = text;
-        
-        // Preprocess common LaTeX commands to ensure proper rendering
-        const preprocessMath = (mathText: string) => {
-          return mathText
-            // Ensure proper spacing around operators
-            .replace(/([a-zA-Z])([=+\-*/])/g, '$1 $2')
-            .replace(/([=+\-*/])([a-zA-Z])/g, '$1 $2')
-            // Fix common symbol issues
-            .replace(/\\text\{([^}]+)\}/g, '\\mathrm{$1}')
-            // Ensure proper function formatting
-            .replace(/\\(sin|cos|tan|log|ln|exp|sec|csc|cot)([^a-zA-Z])/g, '\\$1 $2')
-            // Fix subscript/superscript spacing
-            .replace(/([a-zA-Z])_([a-zA-Z0-9]+)/g, '$1_{$2}')
-            .replace(/([a-zA-Z])\^([a-zA-Z0-9]+)/g, '$1^{$2}')
-            .trim();
-        };
-        
-        // Handle block math expressions (display mode)
-        mathResult = mathResult.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
-          try {
-            const processedMath = preprocessMath(math);
-            const rendered = katex.renderToString(processedMath, {
-              displayMode: true,
-              throwOnError: false,
-              strict: false,
-              trust: true,
-              macros: {
-                "\\RR": "\\mathbb{R}",
-                "\\NN": "\\mathbb{N}",
-                "\\ZZ": "\\mathbb{Z}",
-                "\\QQ": "\\mathbb{Q}",
-                "\\CC": "\\mathbb{C}"
-              }
-            });
-            return `<div class="katex-block-container" style="text-align: center; margin: 1em 0;">${rendered}</div>`;
-          } catch (error) {
-            console.warn('KaTeX block render error:', error, 'Math:', math);
-            return `<div class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 0.5em; margin: 0.5em 0; border-radius: 4px;">\\[${math}\\]</div>`;
-          }
-        });
-        
-        // Dollar sign block math $$...$$
-        mathResult = mathResult.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
-          try {
-            const processedMath = preprocessMath(math);
-            const rendered = katex.renderToString(processedMath, {
-              displayMode: true,
-              throwOnError: false,
-              strict: false,
-              trust: true,
-              macros: {
-                "\\RR": "\\mathbb{R}",
-                "\\NN": "\\mathbb{N}",
-                "\\ZZ": "\\mathbb{Z}",
-                "\\QQ": "\\mathbb{Q}",
-                "\\CC": "\\mathbb{C}"
-              }
-            });
-            return `<div class="katex-block-container" style="text-align: center; margin: 1em 0;">${rendered}</div>`;
-          } catch (error) {
-            console.warn('KaTeX block render error:', error, 'Math:', math);
-            return `<div class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 0.5em; margin: 0.5em 0; border-radius: 4px;">$$${math}$$</div>`;
-          }
-        });
-        
-        // Handle inline math expressions
-        mathResult = mathResult.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
-          try {
-            const processedMath = preprocessMath(math);
-            const rendered = katex.renderToString(processedMath, {
-              displayMode: false,
-              throwOnError: false,
-              strict: false,
-              trust: true,
-              macros: {
-                "\\RR": "\\mathbb{R}",
-                "\\NN": "\\mathbb{N}",
-                "\\ZZ": "\\mathbb{Z}",
-                "\\QQ": "\\mathbb{Q}",
-                "\\CC": "\\mathbb{C}"
-              }
-            });
-            return `<span class="katex-inline-container" style="display: inline-block; margin: 0 2px;">${rendered}</span>`;
-          } catch (error) {
-            console.warn('KaTeX inline render error:', error, 'Math:', math);
-            return `<span class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 2px 4px; border-radius: 3px;">\\(${math}\\)</span>`;
-          }
-        });
-        
-        // Dollar sign inline math $...$
-        mathResult = mathResult.replace(/\$([^$\n]+)\$/g, (match, math) => {
-          try {
-            const processedMath = preprocessMath(math);
-            const rendered = katex.renderToString(processedMath, {
-              displayMode: false,
-              throwOnError: false,
-              strict: false,
-              trust: true,
-              macros: {
-                "\\RR": "\\mathbb{R}",
-                "\\NN": "\\mathbb{N}",
-                "\\ZZ": "\\mathbb{Z}",
-                "\\QQ": "\\mathbb{Q}",
-                "\\CC": "\\mathbb{C}"
-              }
-            });
-            return `<span class="katex-inline-container" style="display: inline-block; margin: 0 2px;">${rendered}</span>`;
-          } catch (error) {
-            console.warn('KaTeX inline render error:', error, 'Math:', math);
-            return `<span class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 2px 4px; border-radius: 3px;">$${math}$</span>`;
-          }
-        });
-        
-        return mathResult;
-      };
-
-      // Apply KaTeX rendering
-      result = renderMathWithKaTeX(result);
-      
       // Sanitize the final HTML
       return DOMPurify.sanitize(result, {
         ALLOWED_TAGS: [
           'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
           'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'a', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
-          'div', 'span', 'img', 'hr', 'sub', 'sup', 'canvas'
+          'div', 'span', 'img', 'hr', 'sub', 'sup', 'canvas', 'math', 'semantics', 'mrow', 'mi', 'mo', 'mn', 'mfrac', 'msup', 'msub', 'msubsup', 'munder', 'mover', 'munderover', 'mtext', 'mspace', 'mpadded', 'mphantom', 'mfenced', 'menclose', 'mstyle', 'mlabeledtr', 'mtable', 'mtr', 'mtd', 'maligngroup', 'malignmark', 'maction'
         ],
-        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id', 'src', 'alt', 'title', 'border', 'cellpadding', 'cellspacing']
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id', 'src', 'alt', 'title', 'border', 'cellpadding', 'cellspacing', 'style', 'aria-hidden', 'xmlns']
       });
       
     } catch (error) {
@@ -830,6 +652,9 @@ const TextWithCharts: React.FC<{
   const [editingContent, setEditingContent] = useState('');
   const [userMessageCount, setUserMessageCount] = useState(0);
   const [isMessageLimitReached, setIsMessageLimitReached] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isIntentionallyAborted, setIsIntentionallyAborted] = useState(false);
   
   // Lazy loading state
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
@@ -1158,6 +983,7 @@ const TextWithCharts: React.FC<{
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const historyDropdownRef = useRef<HTMLDivElement>(null);
+  const streamingRequestRef = useRef<XMLHttpRequest | null>(null);
 
   // Function to detect and extract file URLs from bot responses
   const extractFileUrlFromBotResponse = (content: string): {
@@ -2282,6 +2108,19 @@ const TextWithCharts: React.FC<{
     }
   };
 
+  // Function to pause streaming
+  const pauseStreaming = () => {
+    if (streamingRequestRef.current) {
+      setIsIntentionallyAborted(true);
+      streamingRequestRef.current.abort();
+      streamingRequestRef.current = null;
+    }
+    setIsStreaming(false);
+    setIsPaused(true);
+    setIsSending(false);
+    setIsLoading(false);
+  };
+
   // Add streaming API function similar to BotScreen.js
   const sendMessageToAI = async (message: string, imageUrl: string | null = null, onChunk?: (chunk: string) => void, retryCount: number = 0): Promise<string> => {
     const MAX_RETRIES = 3;
@@ -2312,24 +2151,12 @@ HTML FORMATTING RULES:
 - Use <br> for line breaks when needed
 - Use <div> with appropriate classes for styling when needed
 
-MATHEMATICAL EXPRESSIONS FORMATTING:
-For mathematical expressions, use proper LaTeX syntax:
-- Inline math: Use \\( and \\) for inline expressions, e.g., \\(f = \\mu N\\)
-- Block math: Use \\[ and \\] for display equations, e.g., \\[F_{net} = \\sum F_i\\]
-- Common symbols: \\mu (mu), \\theta (theta), \\Delta (Delta), \\sum (sum), \\cos (cosine), \\sin (sine), \\int (integral)
-- Fractions: \\frac{numerator}{denominator}
-- Subscripts: Use _ for subscripts, e.g., F_{net}
-- Superscripts: Use ^ for superscripts, e.g., x^2
-- Greek letters: \\alpha, \\beta, \\gamma, \\delta, \\epsilon, \\theta, \\lambda, \\mu, \\pi, \\sigma, \\phi, \\omega
-- Functions: \\sin, \\cos, \\tan, \\log, \\ln, \\exp
-- Operators: \\sum, \\prod, \\int, \\partial, \\nabla
-
 CHART GENERATION RULES:
-When your response involves data visualization, mathematical functions, or charts/graphs, use chartjs code blocks instead of images:
+When your response involves data visualization or charts/graphs, use chartjs code blocks instead of images:
 - Use this format for charts: \`\`\`chartjs followed by JSON configuration and closing \`\`\`
 - Include complete Chart.js configuration with type, data, and options
 - Supported chart types: line, bar, pie, doughnut, scatter, bubble, polarArea, radar
-- Example for mathematical functions: Use chartjs code block with complete JSON configuration including type, data with labels and datasets, and options for styling
+- Example: Use chartjs code block with complete JSON configuration including type, data with labels and datasets, and options for styling
 
 EXAMPLE HTML RESPONSE FORMAT:
 <h2>Response Title</h2>
@@ -2339,9 +2166,7 @@ EXAMPLE HTML RESPONSE FORMAT:
 <li>Second bullet point</li>
 </ul>
 <p>Example with inline code: <code>console.log('Hello World')</code></p>
-<p>Example with math: The friction force is \\(f = \\mu N\\) where \\(\\mu\\) is the coefficient of friction.</p>
-<p>Block equation example:</p>
-\\[F_{net} = \\sum F_i = ma\\]
+
 
 Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax like # or ** or *. Always use proper HTML tags.`;
         
@@ -2473,6 +2298,11 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
         apiMessages.push(currentUserMessage);
 
         const xhr = new XMLHttpRequest();
+        streamingRequestRef.current = xhr; // Store reference for pause functionality
+        setIsStreaming(true); // Set streaming state
+        setIsPaused(false); // Reset pause state
+        setIsIntentionallyAborted(false); // Reset intentional abort flag
+        
         xhr.open('POST', 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', true);
         xhr.setRequestHeader('Authorization', `Bearer sk-9f7b91a0bb81406b9da7ff884ddd2592`);
         xhr.setRequestHeader('Content-Type', 'application/json');
@@ -2529,7 +2359,19 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
               if (xhr.status === 200) {
                 console.log('✅ AI API request completed successfully');
                 console.log('📊 Final content length:', fullContent.length);
+                // Clean up streaming state
+                setIsStreaming(false);
+                setIsPaused(false);
+                streamingRequestRef.current = null;
                 resolve(fullContent.trim() || 'I apologize, but I could not generate a response. Please try again.');
+              } else if (xhr.status === 0 && isIntentionallyAborted) {
+                // Handle intentional abort (pause)
+                console.log('🔸 Request was intentionally paused by user');
+                setIsIntentionallyAborted(false); // Reset flag
+                setIsStreaming(false);
+                setIsPaused(false);
+                streamingRequestRef.current = null;
+                resolve(fullContent.trim() || ''); // Resolve with current content
               } else {
                 console.error('❌ API request failed:', xhr.status, xhr.statusText);
                 console.error('❌ Response body:', xhr.responseText);
@@ -2570,12 +2412,27 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
         };
 
         xhr.onerror = function() {
+          // Check if this was an intentional abort (pause)
+          if (isIntentionallyAborted) {
+            console.log('🔸 Request paused by user');
+            setIsIntentionallyAborted(false); // Reset flag
+            resolve(''); // Resolve with empty string instead of rejecting
+            return;
+          }
           console.error('💥 XMLHttpRequest error');
+          // Clean up streaming state
+          setIsStreaming(false);
+          setIsPaused(false);
+          streamingRequestRef.current = null;
           reject(new Error('Failed to get response from AI. Please try again.'));
         };
 
         xhr.ontimeout = function() {
           console.error('💥 XMLHttpRequest timeout');
+          // Clean up streaming state
+          setIsStreaming(false);
+          setIsPaused(false);
+          streamingRequestRef.current = null;
           reject(new Error('Request timed out. Please try again.'));
         };
 
@@ -3709,21 +3566,39 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
       } catch (error) {
         console.error('Error calling streaming AI API:', error);
         
-        // Remove the streaming message and add error message
-        setMessages(prev => {
-          const messagesWithoutStreaming = prev.filter(msg => msg.id !== streamingMessageId);
-          return [...messagesWithoutStreaming, {
-            id: streamingMessageId,
-            role: 'assistant',
-            content: 'Sorry, I encountered an error. Please try again.',
-            timestamp: new Date().toISOString()
-          }];
-        });
-        
-        // Save error message to database
-         await saveChatToDatabase('Sorry, I encountered an error. Please try again.', 'assistant');
+        // Check if this was an intentional pause - if so, keep the partial content
+        if (isPaused || isIntentionallyAborted) {
+          console.log('🔸 Request was paused by user, keeping partial content');
+          // Finalize the message with whatever content was streamed before pause
+          setMessages(prev => prev.map(msg => 
+            msg.id === streamingMessageId 
+              ? { 
+                  ...msg, 
+                  content: streamingContent || 'Message paused by user.', 
+                  isStreaming: false
+                }
+              : msg
+          ));
+          
+          // Save the partial content to database
+          await saveChatToDatabase(streamingContent || 'Message paused by user.', 'assistant');
+        } else {
+          // Only show error message for actual errors, not pauses
+          setMessages(prev => {
+            const messagesWithoutStreaming = prev.filter(msg => msg.id !== streamingMessageId);
+            return [...messagesWithoutStreaming, {
+              id: streamingMessageId,
+              role: 'assistant',
+              content: 'Sorry, I encountered an error. Please try again.',
+              timestamp: new Date().toISOString()
+            }];
+          });
+          
+          // Save error message to database
+          await saveChatToDatabase('Sorry, I encountered an error. Please try again.', 'assistant');
+        }
          
-         // Cleanup image replacement session on error
+         // Cleanup image replacement session
          imageReplacementService.cleanupSession(imageSessionId);
       }
     } catch (error) {
@@ -5301,9 +5176,17 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
     }
   };
 
-  // Memoize messages rendering to prevent unnecessary re-renders during typing
-  const memoizedMessages = useMemo(() => {
-    return messages.map((message) => {
+  // Separate streaming and completed messages for better performance
+  const { completedMessages, streamingMessage } = useMemo(() => {
+    const completed = messages.filter(msg => !msg.isStreaming);
+    const streaming = messages.find(msg => msg.isStreaming);
+    return { completedMessages: completed, streamingMessage: streaming };
+  }, [messages]);
+
+  // Memoize completed messages rendering to prevent unnecessary re-renders during streaming
+  const memoizedCompletedMessages = useMemo(() => {
+    console.log('🔄 DEBUG: Completed messages re-rendered. Count:', completedMessages.length);
+    return completedMessages.map((message) => {
       
       // Process message to handle delimiter format and create attachments array
       let processedMessage = { ...message };
@@ -5357,7 +5240,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
       }
 
       return (
-        <div key={message.id} className={`mb-6 ${message.role === 'user' ? 'ml-auto max-w-[80%]' : 'mr-auto max-w-[95%]'}`}>
+        <div key={message.id} className={`mb-6 ${message.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
           {message.role === 'user' ? (
             <div className="flex justify-end">
               <div className="flex flex-col items-end max-w-full">
@@ -5370,11 +5253,15 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                 )}
                 
                 {/* User message content */}
-                <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4 max-w-full break-words ${
+                <div className={`relative rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4 max-w-full break-words ${
                   darkMode 
                     ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
                     : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                }`}>
+                }`} style={{
+                  borderTopRightRadius: '4px'
+                }}>
+                  {/* Chat bubble tail */}
+                  
                   {editingMessageId === message.id ? (
                     <div className="space-y-3">
                       <textarea
@@ -5441,13 +5328,15 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
             </div>
           ) : (
             <div className="flex items-start space-x-2 sm:space-x-3 group">
-              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-              }`}>
-                <FiCpu className="w-3 h-3 sm:w-4 sm:h-4" />
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0">
+                <img 
+                  src={matrixLogo} 
+                  alt="Matrix AI Logo" 
+                  className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover"
+                />
               </div>
               <div className="flex-1 min-w-0">
-                <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4 ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4`}>
                   <div className="prose prose-sm sm:prose max-w-none">
                     <TextWithCharts 
                       text={processedMessage.content || message.content} 
@@ -5515,7 +5404,135 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
         </div>
       );
     });
-  }, [messages, darkMode, editingMessageId, editingContent, speakingMessageId]);
+  }, [completedMessages, darkMode, editingMessageId, editingContent, speakingMessageId]);
+
+  // Render streaming message separately to avoid re-rendering completed messages
+  const renderStreamingMessage = useCallback(() => {
+    if (!streamingMessage) return null;
+    console.log('📡 DEBUG: Streaming message re-rendered. Content length:', streamingMessage.content?.length || 0);
+
+    const message = streamingMessage;
+    // Process message to handle delimiter format and create attachments array
+    let processedMessage = { ...message };
+    
+    // Create attachments array for UserMessageAttachments component
+    if (message.role === 'user') {
+      // Initialize attachments array
+      const attachments: {
+        url: string;
+        fileName: string;
+        fileType: string;
+        originalName?: string;
+        size?: number;
+      }[] = [];
+      
+      // Priority 1: Use existing attachments if they exist (from uploadedFiles)
+      if (message.attachments && message.attachments.length > 0) {
+        attachments.push(...message.attachments);
+      }
+      // Priority 2: Check for ;;%%;; delimited URLs in content (database format) ONLY if no attachments exist
+      else if (message.content && typeof message.content === 'string' && message.content.includes(';;%%;;')) {
+        const urlMatch = message.content.match(/;;%%;;(.*?);;%%;;/);
+        if (urlMatch) {
+          const fileUrl = urlMatch[1].trim();
+          attachments.push({
+            url: fileUrl,
+            fileName: message.fileName || 'Attachment',
+            fileType: 'application/octet-stream',
+            originalName: message.fileName || undefined,
+            size: undefined
+          });
+          processedMessage.fileContent = fileUrl;
+          processedMessage.fileName = message.fileName || 'Attachment';
+        }
+      }
+      // Priority 3: Check for file_url fields (database format)
+      else if (message.file_url) {
+        attachments.push({
+          url: message.file_url,
+          fileName: message.file_name || 'Attachment',
+          fileType: message.file_type || 'application/octet-stream',
+          originalName: message.file_name || undefined,
+          size: message.file_size || undefined
+        });
+      }
+      
+      // Only set attachments if we found any
+      if (attachments.length > 0) {
+        processedMessage.attachments = attachments;
+      }
+    }
+
+    return (
+      <div key={message.id} className={`mb-6 ${message.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
+        {message.role === 'user' ? (
+          <div className="flex justify-end">
+            <div className="flex flex-col items-end max-w-full">
+              {/* User message attachments */}
+              {processedMessage.attachments && processedMessage.attachments.length > 0 && (
+                <UserMessageAttachments 
+                  attachments={processedMessage.attachments}
+                  darkMode={darkMode}
+                />
+              )}
+              
+              {/* User message content */}
+              <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4 max-w-full break-words ${
+                darkMode 
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
+                  : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+              }`}>
+                <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">
+                  {processedMessage.content?.replace(/;;%%;;.*?;;%%;;/g, '').trim() || message.content}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start space-x-2 sm:space-x-3 group">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0">
+              <img 
+                src={matrixLogo} 
+                alt="Matrix AI Logo" 
+                className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-6 py-3 sm:py-4`}>
+                <div className="prose prose-sm sm:prose max-w-none">
+                  <TextWithCharts 
+                    text={(processedMessage.content || message.content) + 
+                      `<span class="inline-flex ml-1 space-x-1 items-center">
+                        <span class="w-1.5 h-1.5 rounded-full animate-pulse ${darkMode ? 'bg-blue-400' : 'bg-blue-500'}" style="animation-delay: 0ms; animation-duration: 1s;"></span>
+                        <span class="w-1.5 h-1.5 rounded-full animate-pulse ${darkMode ? 'bg-blue-400' : 'bg-blue-500'}" style="animation-delay: 200ms; animation-duration: 1s;"></span>
+                        <span class="w-1.5 h-1.5 rounded-full animate-pulse ${darkMode ? 'bg-blue-400' : 'bg-blue-500'}" style="animation-delay: 400ms; animation-duration: 1s;"></span>
+                      </span>`
+                    } 
+                    darkMode={darkMode}
+                    messageId={`streaming-${Date.now()}`}
+                    isStreaming={true}
+                    textStyle={{
+                      color: darkMode ? '#e5e7eb' : '#374151',
+                      fontSize: '14px',
+                      lineHeight: '1.6'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }, [streamingMessage, darkMode]);
+
+  // Combine completed and streaming messages
+  const memoizedMessages = useMemo(() => {
+    const completedElements = memoizedCompletedMessages;
+    const streamingElement = renderStreamingMessage();
+    
+    return streamingElement ? [...completedElements, streamingElement] : completedElements;
+  }, [memoizedCompletedMessages, renderStreamingMessage]);
 
   return (
       <div className="ChatPage flex h-screen overflow-hidden">
@@ -5662,9 +5679,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
             </AnimatePresence>
             
             {/* Main chat container - responsive to right panel state */}
-            <div className={`h-full w-full px-0 sm:px-4 pt-2 sm:pt-4 pb-0 flex flex-col transition-all duration-300 ${
-              isRightPanelOpen ? 'sm:max-w-4xl' : 'sm:max-w-6xl'
-            } sm:mx-auto`}>
+            <div className={`h-full w-full px-0 sm:px-4 pt-2 sm:pt-4 pb-0 flex flex-col transition-all duration-300`}>
               <div className="bg-opacity-80 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-xl overflow-hidden flex-1 flex flex-col">
                 {/* Chat interface */}
                 <div ref={chatContainerRef} className="flex flex-col h-full">
@@ -5804,7 +5819,11 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                           }`}>
                             {selectedRole.name && (
                               <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                                <FiCpu className="w-3 h-3 mr-1" />
+                                <img 
+                                  src={matrixLogo} 
+                                  alt="Matrix AI Logo" 
+                                  className="w-3 h-3 mr-1 rounded-full object-cover"
+                                />
                                 {selectedRole.name}
                               </span>
                             )}
@@ -5817,7 +5836,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                       {/* Loading indicator - only show when there are no messages */}
                       {isLoading && messages.length === 0 && (
                         <div className="flex justify-start">
-                          <div className="max-w-[90%] sm:max-w-[85%] flex flex-row">
+                          <div className="flex flex-row">
                             <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-2 sm:mr-3 ${darkMode ? 'bg-gradient-to-r from-blue-900 to-purple-900 text-white' : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'}`}>
                               <FiCpu />
                             </div>
@@ -6060,17 +6079,23 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                         </AuthRequiredButton>
                         <div className="relative">
                           <AuthRequiredButton
-                            onClick={handleSendMessage}
-                            disabled={(!inputMessage.trim() && !selectedFile && !selectedGenerationType && uploadedFiles.length === 0) || isMessageLimitReached || isSending}
+                            onClick={isStreaming ? pauseStreaming : handleSendMessage}
+                            disabled={(!isStreaming && ((!inputMessage.trim() && !selectedFile && !selectedGenerationType && uploadedFiles.length === 0) || isMessageLimitReached || isSending))}
                             className={`p-1.5 sm:p-2 rounded-full flex items-center ${
-                                (!inputMessage.trim() && !selectedFile && !selectedGenerationType && uploadedFiles.length === 0) || isMessageLimitReached
+                                isStreaming
+                                  ? (darkMode ? 'text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800' : 'text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700')
+                                  : (!inputMessage.trim() && !selectedFile && !selectedGenerationType && uploadedFiles.length === 0) || isMessageLimitReached
                                   ? (darkMode ? 'text-gray-500 bg-gray-800' : 'text-gray-400 bg-gray-100') 
                                   : (darkMode ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600')
                               }`}
-                            aria-label={t('chat.sendMessage')}
+                            aria-label={isStreaming ? 'Pause streaming' : t('chat.sendMessage')}
                           >
-                            <FiSend className="w-4 h-4 sm:w-5 sm:h-5" />
-                            {((inputMessage.trim() || selectedFile || selectedGenerationType || uploadedFiles.length > 0) && !isMessageLimitReached) && (
+                            {isStreaming ? (
+                              <FiSquare className="w-4 h-4 sm:w-5 sm:h-5" />
+                            ) : (
+                              <FiSend className="w-4 h-4 sm:w-5 sm:h-5" />
+                            )}
+                            {!isStreaming && ((inputMessage.trim() || selectedFile || selectedGenerationType || uploadedFiles.length > 0) && !isMessageLimitReached) && (
                               <span className="ml-1 text-xs bg-orange-500/20 px-1.5 py-0.5 rounded-full flex items-center">
                                 -{calculateCoinCost()}
                                 <img src={coinIcon} alt="coin" className="w-3 h-3 ml-1" />
