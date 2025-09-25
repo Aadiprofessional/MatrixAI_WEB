@@ -1073,9 +1073,21 @@ const TranscriptionPage: React.FC = () => {
   const [activeParagraph, setActiveParagraph] = useState<number>(0);
   const activeWordRef = useRef<HTMLSpanElement>(null);
 
-  // Translation state
-  const [isTranslationEnabled, setIsTranslationEnabled] = useState<boolean>(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('');
+  // Translation state - initialize from localStorage if available
+  const [isTranslationEnabled, setIsTranslationEnabled] = useState<boolean>(() => {
+    if (typeof window !== 'undefined' && audioid) {
+      const saved = localStorage.getItem(`translationEnabled-${audioid}`);
+      return saved ? JSON.parse(saved) : false;
+    }
+    return false;
+  });
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(() => {
+    if (typeof window !== 'undefined' && audioid) {
+      const saved = localStorage.getItem(`selectedLanguage-${audioid}`);
+      return saved ? JSON.parse(saved) : '';
+    }
+    return '';
+  });
   const [translations, setTranslations] = useState<string[]>([]);
   const [translatingIndex, setTranslatingIndex] = useState<number>(-1);
   const [isTranslationInProgress, setIsTranslationInProgress] = useState<boolean>(false);
@@ -1186,45 +1198,46 @@ const TranscriptionPage: React.FC = () => {
     if (selectedLanguage && selectedLanguage !== subtitleLanguage) {
       console.log('🔄 Synchronizing subtitleLanguage with selectedLanguage:', selectedLanguage);
       setSubtitleLanguage(selectedLanguage);
-      
-      // Check if translated data is available for the new language
-      const hasTranslatedData = translatedData && translatedData[selectedLanguage];
-      
-      // If translation is enabled but no saved data exists for the new language, disable translation
-      if (isTranslationEnabled && !hasTranslatedData) {
-        console.log('🔄 Auto-disabling translation - no saved data for:', selectedLanguage);
-        setIsTranslationEnabled(false);
-        setWordTranslations({});
-        setTranslations([]);
-        setTranslationProgress(0);
-        setSrtTranslations({}); // Clear SRT translations as well
-        return;
-      }
-      
-      // If translation is enabled and saved data exists, update translations
-      if (isTranslationEnabled && hasTranslatedData) {
-        console.log('🔄 Updating translations for new language:', selectedLanguage);
-        console.log('🔄 Loading pre-translated content for:', selectedLanguage);
-        
-        // Update video player word translations
-        const newWordTranslations: {[key: string]: string} = {};
-        translatedData[selectedLanguage].words.forEach((translatedWord: any) => {
-          if (translatedWord.original_word) {
-            newWordTranslations[translatedWord.original_word] = translatedWord.punctuated_word || translatedWord.word;
-          }
-        });
-        setWordTranslations(newWordTranslations);
-        
-        // Update transcript paragraph translations
-        const newParagraphTranslations = paragraphs.map((_, index) => 
-          getTranslatedParagraph(index, selectedLanguage)
-        );
-        setTranslations(newParagraphTranslations);
-        
-        console.log('🔄 All translations updated for:', selectedLanguage);
-      }
     }
-  }, [selectedLanguage, subtitleLanguage, isTranslationEnabled, translatedData, paragraphs]);
+  }, [selectedLanguage, subtitleLanguage]);
+
+  // Separate useEffect to handle translation updates when data changes
+  useEffect(() => {
+    // Check if translated data is available for the selected language
+    const hasTranslatedData = translatedData && translatedData[selectedLanguage];
+    
+    // If translation is enabled and saved data exists, update translations
+    if (isTranslationEnabled && hasTranslatedData) {
+      console.log('🔄 Updating translations for language:', selectedLanguage);
+      console.log('🔄 Loading pre-translated content for:', selectedLanguage);
+      
+      // Update video player word translations
+      const newWordTranslations: {[key: string]: string} = {};
+      translatedData[selectedLanguage].words.forEach((translatedWord: any) => {
+        if (translatedWord.original_word) {
+          newWordTranslations[translatedWord.original_word] = translatedWord.punctuated_word || translatedWord.word;
+        }
+      });
+      setWordTranslations(newWordTranslations);
+      
+      // Update transcript paragraph translations
+      const newParagraphTranslations = paragraphs.map((_, index) => 
+        getTranslatedParagraph(index, selectedLanguage)
+      );
+      setTranslations(newParagraphTranslations);
+      setTranslationProgress(100); // Set to 100% since translations are loaded
+      
+      console.log('🔄 All translations updated for:', selectedLanguage);
+    } else if (isTranslationEnabled && !hasTranslatedData) {
+      // Only disable translation if user manually changed to a language without data
+      // Don't disable during API translation process
+      console.log('🔄 No translated data available for:', selectedLanguage);
+      setWordTranslations({});
+      setTranslations([]);
+      setTranslationProgress(0);
+      setSrtTranslations({});
+    }
+  }, [selectedLanguage, isTranslationEnabled, translatedData, paragraphs]);
 
 
 
@@ -1275,6 +1288,20 @@ const TranscriptionPage: React.FC = () => {
       setTranscriptionLanguage(detectedLang);
     }
   }, [transcription]);
+
+  // Persist translation enabled state to localStorage
+  useEffect(() => {
+    if (audioid) {
+      localStorage.setItem(`translationEnabled-${audioid}`, JSON.stringify(isTranslationEnabled));
+    }
+  }, [isTranslationEnabled, audioid]);
+
+  // Persist selected language to localStorage
+  useEffect(() => {
+    if (audioid && selectedLanguage) {
+      localStorage.setItem(`selectedLanguage-${audioid}`, JSON.stringify(selectedLanguage));
+    }
+  }, [selectedLanguage, audioid]);
 
   // Handle SRT language changes and load translations automatically
   useEffect(() => {
@@ -2136,14 +2163,10 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
         const success = await translateAudioText(selectedLanguage);
         if (!success) return;
         
-        // After successful API translation, automatically enable translation display
+        // After successful API translation, enable translation display
+        // The useEffect will automatically load the translations when translatedData updates
         setIsTranslationEnabled(true);
         setShowTranslatedSubtitles(true);
-        const newTranslations = paragraphs.map((_, index) => 
-          getTranslatedParagraph(index, selectedLanguage)
-        );
-        setTranslations(newTranslations);
-        setTranslationProgress(100);
         return;
       }
       
@@ -2246,19 +2269,67 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
           processTranscription(data.transcription);
         }
         
-        // Cache the data with words_data, video_file, and translated_data
-        localStorage.setItem(`audioData-${audioid}`, JSON.stringify({
-          transcription: data.transcription || '',
-          audioUrl: data.audioUrl || '',
-          videoUrl: apiVideoUrl || '', // Cache video URL
-          audio_name: data.audio_name,
-          duration: audioDur,
-          paragraphs: paragraphs.length > 0 ? paragraphs : [],
-          wordTimings: wordTimings.length > 0 ? wordTimings : [],
-          words_data: data.words_data || [],
-          xmlData: data.xml_data || null,
-          translated_data: data.translated_data || null, // Cache translated_data
-        }));
+        // Cache the data with error handling for localStorage quota
+        try {
+          const cacheData = {
+            transcription: data.transcription || '',
+            audioUrl: data.audioUrl || '',
+            videoUrl: apiVideoUrl || '', // Cache video URL
+            audio_name: data.audio_name,
+            duration: audioDur,
+            paragraphs: paragraphs.length > 0 ? paragraphs : [],
+            wordTimings: wordTimings.length > 0 ? wordTimings : [],
+            words_data: data.words_data || [],
+            xmlData: data.xml_data || null,
+            translated_data: data.translated_data || null, // Cache translated_data
+          };
+          
+          localStorage.setItem(`audioData-${audioid}`, JSON.stringify(cacheData));
+        } catch (storageError) {
+          console.warn('Failed to cache audio data due to storage quota:', storageError);
+          
+          // Try to cache essential data only (without large arrays)
+          const essentialData = {
+            transcription: data.transcription || '',
+            audioUrl: data.audioUrl || '',
+            videoUrl: apiVideoUrl || '',
+            audio_name: data.audio_name,
+            duration: audioDur,
+            // Skip large data arrays to save space
+            translated_data: data.translated_data || null,
+          };
+          
+          try {
+            localStorage.setItem(`audioData-${audioid}`, JSON.stringify(essentialData));
+            console.log('Cached essential audio data only');
+          } catch (essentialStorageError) {
+            console.warn('Failed to cache even essential data:', essentialStorageError);
+            
+            // Clear some old cache entries to make space
+            try {
+              const keysToRemove = [];
+              for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('audioData-') && key !== `audioData-${audioid}`) {
+                  keysToRemove.push(key);
+                }
+              }
+              
+              // Remove oldest entries (keep only the 5 most recent)
+              if (keysToRemove.length > 5) {
+                const toRemove = keysToRemove.slice(0, keysToRemove.length - 5);
+                toRemove.forEach(key => localStorage.removeItem(key));
+                console.log(`Cleared ${toRemove.length} old cache entries`);
+                
+                // Try caching again after cleanup
+                localStorage.setItem(`audioData-${audioid}`, JSON.stringify(essentialData));
+                console.log('Successfully cached after cleanup');
+              }
+            } catch (cleanupError) {
+              console.error('Failed to cleanup and cache:', cleanupError);
+            }
+          }
+        }
       } else {
         // Log error but don't show toast for big audio files or when suppressed
         console.error(t('transcription.errors.audioMetadata'), data.error || data.message);
@@ -2274,14 +2345,29 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
             setDuration(parsed.duration || 0);
             setAudioUrl(parsed.audioUrl || '');
             setVideoUrl(parsed.videoUrl || '');
-            if (parsed.words_data) {
+            
+            if (parsed.words_data && Array.isArray(parsed.words_data) && parsed.words_data.length > 0) {
               setWordsData(parsed.words_data);
               setWordTimings(processWordTimings(parsed.words_data));
               const { paragraphs } = createParagraphsFromWordsData(parsed.words_data);
               setParagraphs(paragraphs);
+            } else if (parsed.paragraphs && Array.isArray(parsed.paragraphs) && parsed.paragraphs.length > 0) {
+              // Use cached paragraphs if available
+              setParagraphs(parsed.paragraphs);
+              if (parsed.wordTimings) {
+                setWordTimings(parsed.wordTimings);
+              }
+            } else {
+              // Fallback to simple text processing if no word data available
+              processTranscription(parsed.transcription || '');
             }
+            
             if (parsed.translated_data) {
               setTranslatedData(parsed.translated_data);
+            }
+            
+            if (parsed.xmlData) {
+              setXmlData(parsed.xmlData);
             }
           } catch (cacheError) {
             console.error('Failed to parse cached data:', cacheError);
@@ -2307,14 +2393,29 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
           setDuration(parsed.duration || 0);
           setAudioUrl(parsed.audioUrl || '');
           setVideoUrl(parsed.videoUrl || '');
-          if (parsed.words_data) {
+          
+          if (parsed.words_data && Array.isArray(parsed.words_data) && parsed.words_data.length > 0) {
             setWordsData(parsed.words_data);
             setWordTimings(processWordTimings(parsed.words_data));
             const { paragraphs } = createParagraphsFromWordsData(parsed.words_data);
             setParagraphs(paragraphs);
+          } else if (parsed.paragraphs && Array.isArray(parsed.paragraphs) && parsed.paragraphs.length > 0) {
+            // Use cached paragraphs if available
+            setParagraphs(parsed.paragraphs);
+            if (parsed.wordTimings) {
+              setWordTimings(parsed.wordTimings);
+            }
+          } else {
+            // Fallback to simple text processing if no word data available
+            processTranscription(parsed.transcription || '');
           }
+          
           if (parsed.translated_data) {
             setTranslatedData(parsed.translated_data);
+          }
+          
+          if (parsed.xmlData) {
+            setXmlData(parsed.xmlData);
           }
         } catch (cacheError) {
           console.error('Failed to parse cached data:', cacheError);
@@ -4487,25 +4588,50 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                               </svg>
                             </button>
                             {isLanguageDropdownOpen && (
-                              <div className="absolute top-full left-0 mt-1 w-full bg-gradient-to-br from-white via-cyan-100 to-teal-100 dark:from-gray-800 dark:via-cyan-800/80 dark:to-teal-800/80 border-2 border-cyan-300 dark:border-cyan-600 rounded-xl shadow-2xl z-50 max-h-64 overflow-hidden" style={{
-                                scrollbarWidth: 'thin',
-                                scrollbarColor: '#06b6d4 #e5e7eb'
-                              }}>
+                              <div className="absolute top-full left-0 mt-1 w-full bg-gradient-to-br from-white via-cyan-100 to-teal-100 dark:from-gray-800 dark:via-cyan-800/80 dark:to-teal-800/80 border-2 border-cyan-300 dark:border-cyan-600 rounded-xl shadow-2xl z-50 max-h-64 overflow-hidden">
                                 <style>{`
-                                  .language-dropdown-content::-webkit-scrollbar {
-                                    width: 8px;
+                                  /* Visible scrollbar with transparent track for desktop */
+                                  @media (min-width: 768px) {
+                                    .language-dropdown-content {
+                                      scrollbar-width: thin;
+                                      scrollbar-color: rgba(6, 182, 212, 0.7) transparent;
+                                    }
+                                    .language-dropdown-content::-webkit-scrollbar {
+                                      width: 6px;
+                                    }
+                                    .language-dropdown-content::-webkit-scrollbar-track {
+                                      background: transparent;
+                                      border-radius: 3px;
+                                    }
+                                    .language-dropdown-content::-webkit-scrollbar-thumb {
+                                      background: rgba(6, 182, 212, 0.7);
+                                      border-radius: 3px;
+                                      transition: background 0.2s ease;
+                                    }
+                                    .language-dropdown-content::-webkit-scrollbar-thumb:hover {
+                                      background: rgba(6, 182, 212, 0.9);
+                                    }
                                   }
-                                  .language-dropdown-content::-webkit-scrollbar-track {
-                                    background: linear-gradient(to bottom, #f0fdfa, #ccfbf1);
-                                    border-radius: 4px;
-                                  }
-                                  .language-dropdown-content::-webkit-scrollbar-thumb {
-                                    background: linear-gradient(to bottom, #06b6d4, #0891b2);
-                                    border-radius: 4px;
-                                    border: 1px solid #0e7490;
-                                  }
-                                  .language-dropdown-content::-webkit-scrollbar-thumb:hover {
-                                    background: linear-gradient(to bottom, #0891b2, #0e7490);
+                                  
+                                  /* Thin scrollbar for mobile */
+                                  @media (max-width: 767px) {
+                                    .language-dropdown-content {
+                                      scrollbar-width: thin;
+                                      scrollbar-color: rgba(6, 182, 212, 0.6) transparent;
+                                    }
+                                    .language-dropdown-content::-webkit-scrollbar {
+                                      width: 4px;
+                                    }
+                                    .language-dropdown-content::-webkit-scrollbar-track {
+                                      background: transparent;
+                                    }
+                                    .language-dropdown-content::-webkit-scrollbar-thumb {
+                                      background: rgba(6, 182, 212, 0.6);
+                                      border-radius: 2px;
+                                    }
+                                    .language-dropdown-content::-webkit-scrollbar-thumb:hover {
+                                      background: rgba(6, 182, 212, 0.8);
+                                    }
                                   }
                                 `}</style>
                                 <div className="p-2 border-b border-gray-200/50 dark:border-gray-600/50">
@@ -5337,25 +5463,50 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                     </svg>
                   </button>
                   {isSrtLanguageDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-full bg-gradient-to-br from-white via-cyan-100 to-teal-100 dark:from-gray-800 dark:via-cyan-800/80 dark:to-teal-800/80 border-2 border-cyan-300 dark:border-cyan-600 rounded-xl shadow-2xl z-50 max-h-64 overflow-hidden" style={{
-                       scrollbarWidth: 'thin',
-                       scrollbarColor: '#06b6d4 #e5e7eb'
-                     }}>
+                    <div className="absolute top-full left-0 mt-1 w-full bg-gradient-to-br from-white via-cyan-100 to-teal-100 dark:from-gray-800 dark:via-cyan-800/80 dark:to-teal-800/80 border-2 border-cyan-300 dark:border-cyan-600 rounded-xl shadow-2xl z-50 max-h-64 overflow-hidden">
                       <style>{`
-                        .srt-language-dropdown-content::-webkit-scrollbar {
-                          width: 8px;
+                        /* Visible scrollbar with transparent track for desktop */
+                        @media (min-width: 768px) {
+                          .srt-language-dropdown-content {
+                            scrollbar-width: thin;
+                            scrollbar-color: rgba(6, 182, 212, 0.7) transparent;
+                          }
+                          .srt-language-dropdown-content::-webkit-scrollbar {
+                            width: 6px;
+                          }
+                          .srt-language-dropdown-content::-webkit-scrollbar-track {
+                            background: transparent;
+                            border-radius: 3px;
+                          }
+                          .srt-language-dropdown-content::-webkit-scrollbar-thumb {
+                            background: rgba(6, 182, 212, 0.7);
+                            border-radius: 3px;
+                            transition: background 0.2s ease;
+                          }
+                          .srt-language-dropdown-content::-webkit-scrollbar-thumb:hover {
+                            background: rgba(6, 182, 212, 0.9);
+                          }
                         }
-                        .srt-language-dropdown-content::-webkit-scrollbar-track {
-                          background: linear-gradient(to bottom, #f0fdfa, #ccfbf1);
-                          border-radius: 4px;
-                        }
-                        .srt-language-dropdown-content::-webkit-scrollbar-thumb {
-                          background: linear-gradient(to bottom, #06b6d4, #0891b2);
-                          border-radius: 4px;
-                          border: 1px solid #0e7490;
-                        }
-                        .srt-language-dropdown-content::-webkit-scrollbar-thumb:hover {
-                          background: linear-gradient(to bottom, #0891b2, #0e7490);
+                        
+                        /* Thin scrollbar for mobile */
+                        @media (max-width: 767px) {
+                          .srt-language-dropdown-content {
+                            scrollbar-width: thin;
+                            scrollbar-color: rgba(6, 182, 212, 0.6) transparent;
+                          }
+                          .srt-language-dropdown-content::-webkit-scrollbar {
+                            width: 4px;
+                          }
+                          .srt-language-dropdown-content::-webkit-scrollbar-track {
+                            background: transparent;
+                          }
+                          .srt-language-dropdown-content::-webkit-scrollbar-thumb {
+                            background: rgba(6, 182, 212, 0.6);
+                            border-radius: 2px;
+                          }
+                          .srt-language-dropdown-content::-webkit-scrollbar-thumb:hover {
+                            background: rgba(6, 182, 212, 0.8);
+                          }
                         }
                       `}</style>
                       <div className="p-2 border-b border-gray-200/50 dark:border-gray-600/50">

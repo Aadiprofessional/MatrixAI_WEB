@@ -391,6 +391,95 @@
 
 /* HTML content rendering */
 
+/* Math rendering styles */
+.katex-block-container {
+  text-align: center;
+  margin: 1.5em 0;
+  padding: 0.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.katex-inline-container {
+  display: inline-block;
+  margin: 0 2px;
+  vertical-align: baseline;
+}
+
+/* KaTeX specific styling improvements */
+.katex {
+  font-size: 1.1em;
+}
+
+.katex-display {
+  margin: 1em 0;
+  text-align: center;
+}
+
+.katex-display > .katex {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Math error styling */
+.math-error {
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 0.5em;
+  margin: 0.5em 0;
+  border-radius: 0.375rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875em;
+  display: inline-block;
+}
+
+.dark .math-error {
+  background-color: #450a0a;
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+/* Responsive math display */
+@media (max-width: 640px) {
+  .katex-block-container {
+    font-size: 0.9em;
+    margin: 1em 0;
+    padding: 0.25em 0;
+  }
+  
+  .katex-inline-container {
+    font-size: 0.95em;
+  }
+}
+
+/* Ensure math doesn't break layout */
+.katex-block-container .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+
+/* Better spacing for math in lists */
+.markdown-content li .katex-inline-container {
+  margin: 0 1px;
+}
+
+.markdown-content li .katex-block-container {
+  margin: 0.75em 0;
+}
+
+/* Math in tables */
+.markdown-content td .katex-inline-container,
+.markdown-content th .katex-inline-container {
+  margin: 0;
+}
+
+.markdown-content td .katex-block-container,
+.markdown-content th .katex-block-container {
+  margin: 0.5em 0;
+}
+
 /* Streaming animation */
 .streaming-content {
   position: relative;

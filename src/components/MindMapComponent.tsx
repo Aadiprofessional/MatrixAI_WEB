@@ -4,7 +4,7 @@ import axios from '../utils/axiosInterceptor';
 import { XMLParser } from 'fast-xml-parser';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
-import { FiLoader, FiDownload, FiSave, FiRefreshCw, FiImage } from 'react-icons/fi';
+import { FiLoader, FiDownload, FiSave, FiRefreshCw, FiMaximize, FiMinimize } from 'react-icons/fi';
 import { userService } from '../services/userService';
 import coinIcon from '../assets/coin.png';
 
@@ -35,7 +35,7 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
   const [graphData, setGraphData] = useState<MindMapNode[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isDownloadingImage, setIsDownloadingImage] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentXmlData, setCurrentXmlData] = useState<string | null>(xmlData || null);
   const webViewRef = useRef<HTMLIFrameElement>(null);
 
@@ -349,68 +349,9 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
 
   // saveMindMap function removed - functionality merged with sendXmlGraphData
 
-  // New function to download mind map as image
-  const downloadAsImage = async () => {
-    if (!graphData || !webViewRef.current) {
-      alert('No mind map data available. Please generate a mind map first.');
-      return;
-    }
-
-    setIsDownloadingImage(true);
-    
-    try {
-      // Send message to iframe to get high-quality image with dynamic sizing
-      const iframe = webViewRef.current;
-      
-      // Set up message listener for the response
-      const messageHandler = (event: MessageEvent) => {
-        if (event.data && event.data.type === 'chartImageHighRes') {
-          try {
-            // Create download link
-            const link = document.createElement('a');
-            link.download = `mindmap_${audioid || Date.now()}.png`;
-            link.href = event.data.dataUrl;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            console.log('High-resolution mind map image downloaded successfully');
-          } catch (error) {
-            console.error('Error downloading image:', error);
-            alert('Failed to download image. Please try again.');
-          } finally {
-            setIsDownloadingImage(false);
-            window.removeEventListener('message', messageHandler);
-          }
-        } else if (event.data && event.data.type === 'chartError') {
-          console.error('Chart image generation error:', event.data.error);
-          alert('Failed to generate image. Please try again.');
-          setIsDownloadingImage(false);
-          window.removeEventListener('message', messageHandler);
-        }
-      };
-
-      window.addEventListener('message', messageHandler);
-
-      // Send message to iframe to generate high-resolution image
-      iframe.contentWindow?.postMessage({
-        action: 'getChartImageHighRes'
-      }, '*');
-
-      // Set timeout to prevent hanging (longer for high-res processing)
-      setTimeout(() => {
-        window.removeEventListener('message', messageHandler);
-        if (isDownloadingImage) {
-          setIsDownloadingImage(false);
-          alert('Image generation timed out. Please try again.');
-        }
-      }, 15000);
-
-    } catch (error) {
-      console.error('Error initiating image download:', error);
-      alert('Failed to download image. Please try again.');
-      setIsDownloadingImage(false);
-    }
+  // Function to toggle fullscreen mode
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
   };
 
   const regenerateMindMap = () => {
@@ -1505,7 +1446,11 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
+      className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden ${
+        isFullscreen 
+          ? 'fixed inset-0 z-50 rounded-none' 
+          : ''
+      }`}
     >
       <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t('mindmap.title')}</h2>
@@ -1532,26 +1477,29 @@ const MindMapComponent: React.FC<MindMapComponentProps> = ({
             {isDownloading ? <FiLoader className="animate-spin" /> : <FiDownload />}
           </button>
           <button 
-            onClick={downloadAsImage}
-            disabled={isDownloadingImage}
-            className={`p-2 ${
-              isDownloadingImage
-                ? 'text-gray-400 dark:text-gray-600'
-                : 'text-gray-500 hover:text-green-500 dark:text-gray-400 dark:hover:text-green-400'
-            } transition-colors`}
-            title="Download as Image"
+            onClick={toggleFullscreen}
+            className="p-2 text-gray-500 hover:text-purple-500 dark:text-gray-400 dark:hover:text-purple-400 transition-colors"
+            title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
           >
-            {isDownloadingImage ? <FiLoader className="animate-spin" /> : <FiImage />}
+            {isFullscreen ? <FiMinimize /> : <FiMaximize />}
           </button>
         </div>
       </div>
 
-      <div className="overflow-auto h-[calc(200vh-300px)] sm:h-[calc(100vh-300px)] lg:h-[calc(100vh-300px)] p-4">
+      <div className={`overflow-auto p-4 ${
+        isFullscreen 
+          ? 'h-[calc(100vh-80px)]' 
+          : 'h-[calc(200vh-300px)] sm:h-[calc(100vh-300px)] lg:h-[calc(100vh-300px)]'
+      }`}>
         <div className="p-4 min-h-[500px]">
           <iframe 
             ref={webViewRef}
             src={`data:text/html;charset=utf-8,${encodeURIComponent(chartHtml)}`}
-            style={{ width: '100%', height: '600px', border: 'none' }}
+            style={{ 
+              width: '100%', 
+              height: isFullscreen ? 'calc(100vh - 160px)' : '600px', 
+              border: 'none' 
+            }}
             title="Mind Map Visualization"
           />
         </div>

@@ -264,7 +264,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle, activeLink, isMobileMenuOpe
                   <img src={matrix} alt="MatrixAI Logo" className="h-12 w-12 object-contain rounded-lg" />
                   {(!collapsed || isMobile) ? (
                     <div className="flex items-center">
-                      <span className="ml-2 text-lg font-bold">matrixai</span>
+                      <span className="ml-2 text-lg font-bold">MatrixAI</span>
                       {isPro && (
                         <span className="ml-1 text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-transparent bg-clip-text border border-yellow-400 rounded-full px-2 py-0.5">
                           PRO

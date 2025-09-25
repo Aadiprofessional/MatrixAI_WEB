@@ -50,7 +50,7 @@ const HumaniseTextPage: React.FC = () => {
   const [showComparison, setShowComparison] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<{id: string, title: string, original_text: string, humanized_text: string, createdAt: string, tone?: string, mode?: string, detector?: string, coinCost?: number}[]>([]);
-  const [detector, setDetector] = useState('zerogpt');
+  const [detector, setDetector] = useState('turnitin');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -58,6 +58,75 @@ const HumaniseTextPage: React.FC = () => {
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
+
+  // Helper function to count words properly for different languages
+  const countWords = (text: string): number => {
+    if (!text.trim()) return 0;
+    
+    // Check if text contains CJK (Chinese, Japanese, Korean) characters
+    const cjkRegex = /[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/;
+    const hasCJK = cjkRegex.test(text);
+    
+    if (hasCJK) {
+      // For CJK languages, count characters (excluding spaces and punctuation)
+      const cjkChars = text.match(/[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/g) || [];
+      const nonCJKWords = text.replace(/[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/g, ' ')
+        .trim().split(/\s+/).filter(word => word.length > 0);
+      
+      return cjkChars.length + nonCJKWords.length;
+    } else {
+      // For non-CJK languages, count words normally
+      return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+    }
+  };
+
+  // Helper function to truncate text to word limit
+  const truncateToWordLimit = (text: string, limit: number): string => {
+    if (!text.trim()) return text;
+    
+    const cjkRegex = /[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/;
+    const hasCJK = cjkRegex.test(text);
+    
+    if (hasCJK) {
+      // For CJK text, we need to handle mixed content
+      let wordCount = 0;
+      let result = '';
+      
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        
+        if (cjkRegex.test(char)) {
+          // CJK character counts as 1 word
+          if (wordCount >= limit) break;
+          result += char;
+          wordCount++;
+        } else if (char.match(/\s/)) {
+          // Handle spaces
+          result += char;
+        } else {
+          // Non-CJK character, collect the whole word
+          let word = '';
+          while (i < text.length && !text[i].match(/\s/) && !cjkRegex.test(text[i])) {
+            word += text[i];
+            i++;
+          }
+          i--; // Adjust for the loop increment
+          
+          if (word.length > 0) {
+            if (wordCount >= limit) break;
+            result += word;
+            wordCount++;
+          }
+        }
+      }
+      
+      return result;
+    } else {
+      // For non-CJK languages, split by words and take first 'limit' words
+      const words = text.trim().split(/\s+/);
+      return words.slice(0, limit).join(' ');
+    }
+  };
 
   // StealthGPT Tone options
   const toneOptions = [
@@ -155,16 +224,14 @@ const HumaniseTextPage: React.FC = () => {
   }, [userData?.uid]);
 
   const handleTextChange = (value: string) => {
-    const words = value.trim().split(/\s+/).filter(word => word.length > 0);
-    const currentWordCount = value.trim() === '' ? 0 : words.length;
+    const currentWordCount = countWords(value);
     
     if (currentWordCount <= 2000) {
       setText(value);
       setWordCount(currentWordCount);
     } else {
-      // Truncate to 2000 words
-      const truncatedWords = words.slice(0, 2000);
-      const truncatedText = truncatedWords.join(' ');
+      // Truncate to 2000 words using the new truncation function
+      const truncatedText = truncateToWordLimit(value, 2000);
       setText(truncatedText);
       setWordCount(2000);
     }
@@ -317,7 +384,7 @@ const HumaniseTextPage: React.FC = () => {
   return (
     <div className="relative overflow-hidden">
      
-      <div className="container mx-auto max-w-6xl flex-1 md:p-6 relative z-10">
+      <div className="container mx-auto max-w-6xl flex-1 relative z-10">
       {showProAlert && (
         <ProFeatureAlert
           featureName="Text Humanizer"

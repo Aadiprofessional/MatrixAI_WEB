@@ -15,151 +15,198 @@ interface UserMessageAttachmentsProps {
   attachments: FileAttachment[];
   onRemove?: (index: number) => void;
   showRemove?: boolean;
+  darkMode?: boolean;
 }
 
-const getFileIcon = (fileType: string) => {
-  const iconClass = "w-5 h-5";
+const getFileIcon = (fileType: string, fileName: string, darkMode: boolean = false) => {
+  const iconClass = `w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`;
   
-  if (fileType.startsWith('image/')) {
+  // Check both MIME type and file extension
+  const isImage = fileType.startsWith('image/') || 
+                  fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)$/);
+  const isExcel = fileType.includes('excel') || fileType.includes('spreadsheet') || 
+                  fileType.includes('.xlsx') || fileName.toLowerCase().endsWith('.xlsx');
+  const isWord = fileType.includes('word') || fileType.includes('document') || 
+                 fileType.includes('.docx') || fileType.includes('doc') || 
+                 fileName.toLowerCase().match(/\.(doc|docx)$/);
+  const isPdf = fileType.includes('pdf') || fileName.toLowerCase().endsWith('.pdf');
+  const isCsv = fileType.includes('csv') || fileName.toLowerCase().endsWith('.csv');
+  
+  if (isImage) {
     return <FiImage className={`${iconClass} text-purple-500`} />;
-  } else if (fileType.includes('pdf')) {
-    return <FiFile className={`${iconClass} text-red-500`} />;
-  } else if (fileType.includes('doc') || fileType.includes('word')) {
-    return <FiFileText className={`${iconClass} text-blue-500`} />;
-  } else if (fileType.includes('excel') || fileType.includes('sheet')) {
+  } else if (isExcel) {
     return <FiGrid className={`${iconClass} text-green-500`} />;
-  } else if (fileType.includes('csv')) {
+  } else if (isWord) {
+    return <FiFileText className={`${iconClass} text-blue-500`} />;
+  } else if (isPdf) {
+    return <FiFile className={`${iconClass} text-red-500`} />;
+  } else if (isCsv) {
     return <FiBarChart className={`${iconClass} text-orange-500`} />;
   } else {
-    return <FiPaperclip className={`${iconClass} text-gray-500`} />;
+    return <FiPaperclip className={iconClass} />;
   }
 };
 
 const formatFileSize = (bytes?: number): string => {
   if (!bytes) return '';
+  const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   if (bytes === 0) return '0 Bytes';
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-const getFileTypeForPreview = (fileType: string): 'spreadsheet' | 'document' | 'image' | 'pdf' => {
-  if (fileType.startsWith('image/')) {
+const getFileTypeForPreview = (fileType: string, fileName: string): 'spreadsheet' | 'document' | 'image' | 'pdf' => {
+  // Check both MIME type and file extension
+  const isImage = fileType.startsWith('image/') || 
+                  !!fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)$/);
+  const isPdf = fileType.includes('pdf') || fileName.toLowerCase().endsWith('.pdf');
+  const isExcel = fileType.includes('excel') || fileType.includes('spreadsheet') || 
+                  fileType.includes('.xlsx') || fileName.toLowerCase().endsWith('.xlsx');
+  const isCsv = fileType.includes('csv') || fileName.toLowerCase().endsWith('.csv');
+  
+  if (isImage) {
     return 'image';
-  } else if (fileType.includes('excel') || fileType.includes('sheet') || fileType.includes('csv')) {
+  } else if (isExcel || isCsv) {
     return 'spreadsheet';
-  } else if (fileType.includes('pdf')) {
+  } else if (isPdf) {
     return 'pdf';
   } else {
     return 'document';
   }
 };
 
-const isPreviewable = (fileType: string): boolean => {
-  return fileType.startsWith('image/') || 
-         fileType.includes('pdf') || 
-         fileType.includes('doc') || 
-         fileType.includes('word') || 
-         fileType.includes('excel') || 
-         fileType.includes('sheet') || 
-         fileType.includes('csv');
+const isPreviewable = (fileType: string, fileName: string): boolean => {
+  // Check both MIME type and file extension
+  const isImage = fileType.startsWith('image/') || 
+                  !!fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)$/);
+  const isPdf = fileType.includes('pdf') || fileName.toLowerCase().endsWith('.pdf');
+  const isDoc = fileType.includes('doc') || fileType.includes('word') || 
+                !!fileName.toLowerCase().match(/\.(doc|docx)$/);
+  const isExcel = fileType.includes('excel') || fileType.includes('sheet') || 
+                  fileType.includes('.xlsx') || fileName.toLowerCase().endsWith('.xlsx');
+  const isCsv = fileType.includes('csv') || fileName.toLowerCase().endsWith('.csv');
+  
+  return isImage || isPdf || isDoc || isExcel || isCsv;
 };
 
 export const UserMessageAttachments: React.FC<UserMessageAttachmentsProps> = ({ 
   attachments, 
   onRemove, 
-  showRemove = false 
+  showRemove = false,
+  darkMode = false
 }) => {
-  const [previewModal, setPreviewModal] = useState<{
-    isOpen: boolean;
-    fileUrl: string;
+  const [previewFile, setPreviewFile] = useState<{
+    url: string;
     fileName: string;
     fileType: 'spreadsheet' | 'document' | 'image' | 'pdf';
-  }>({ isOpen: false, fileUrl: '', fileName: '', fileType: 'document' });
-
-  if (!attachments || attachments.length === 0) {
-    return null;
-  }
+  } | null>(null);
 
   const handlePreview = (attachment: FileAttachment) => {
-    setPreviewModal({
-      isOpen: true,
-      fileUrl: attachment.url,
-      fileName: attachment.originalName || attachment.fileName,
-      fileType: getFileTypeForPreview(attachment.fileType)
+    setPreviewFile({
+      url: attachment.url,
+      fileName: attachment.fileName,
+      fileType: getFileTypeForPreview(attachment.fileType, attachment.fileName)
     });
-  };
-
-  const handleClosePreview = () => {
-    setPreviewModal(prev => ({ ...prev, isOpen: false }));
   };
 
   const handleDownload = (attachment: FileAttachment) => {
     const link = document.createElement('a');
     link.href = attachment.url;
     link.download = attachment.originalName || attachment.fileName;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
+  if (!attachments || attachments.length === 0) {
+    return null;
+  }
+
   return (
-    <>
-      <div className="mb-3 flex flex-wrap gap-2">
-        {attachments.map((attachment, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-3 rounded-lg bg-blue-700/20 border border-blue-400/30 p-3 text-sm min-w-0 backdrop-blur-sm"
-          >
-            <span className="text-xl flex-shrink-0">{getFileIcon(attachment.fileType)}</span>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="font-medium text-white truncate">
+    <div className="mt-2 space-y-2">
+      {attachments.map((attachment, index) => (
+        <div 
+          key={index} 
+          className={`flex items-center justify-between p-3 rounded-lg border ${
+            darkMode 
+              ? 'bg-gray-800 border-gray-700' 
+              : 'bg-gray-50 border-gray-200'
+          }`}
+        >
+          <div className="flex items-center space-x-3 flex-1 min-w-0">
+            {getFileIcon(attachment.fileType, attachment.fileName, darkMode)}
+            <div className="flex-1 min-w-0">
+              <p className={`text-sm font-medium truncate ${
+                darkMode ? 'text-gray-100' : 'text-gray-900'
+              }`}>
                 {attachment.originalName || attachment.fileName}
-              </span>
+              </p>
               {attachment.size && (
-                <span className="text-xs text-blue-200">
+                <p className={`text-xs ${
+                  darkMode ? 'text-gray-400' : 'text-gray-500'
+                }`}>
                   {formatFileSize(attachment.size)}
-                </span>
-              )}
-            </div>
-            <div className="flex gap-1 flex-shrink-0">
-              {isPreviewable(attachment.fileType) && (
-                <button
-                  onClick={() => handlePreview(attachment)}
-                  className="rounded p-1.5 text-blue-200 hover:bg-blue-600/50 hover:text-white transition-colors"
-                  title="Preview file"
-                >
-                  <Eye className="h-4 w-4" />
-                </button>
-              )}
-              <button
-                onClick={() => handleDownload(attachment)}
-                className="rounded p-1.5 text-blue-200 hover:bg-blue-600/50 hover:text-white transition-colors"
-                title="Download file"
-              >
-                <Download className="h-4 w-4" />
-              </button>
-              {showRemove && onRemove && (
-                <button
-                  onClick={() => onRemove(index)}
-                  className="rounded p-1.5 text-gray-500 hover:bg-red-100 hover:text-red-700 dark:text-gray-400 dark:hover:bg-red-900 dark:hover:text-red-300 transition-colors"
-                  title="Remove file"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                </p>
               )}
             </div>
           </div>
-        ))}
-      </div>
+          
+          <div className="flex items-center space-x-2 ml-3">
+            {isPreviewable(attachment.fileType, attachment.fileName) && (
+              <button
+                onClick={() => handlePreview(attachment)}
+                className={`p-1.5 rounded transition-colors ${
+                  darkMode
+                    ? 'text-gray-400 hover:text-blue-400 hover:bg-gray-700'
+                    : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'
+                }`}
+                title="Preview file"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            )}
+            
+            <button
+              onClick={() => handleDownload(attachment)}
+              className={`p-1.5 rounded transition-colors ${
+                darkMode
+                  ? 'text-gray-400 hover:text-green-400 hover:bg-gray-700'
+                  : 'text-gray-500 hover:text-green-600 hover:bg-green-50'
+              }`}
+              title="Download file"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+            
+            {showRemove && onRemove && (
+              <button
+                onClick={() => onRemove(index)}
+                className={`p-1.5 rounded transition-colors ${
+                  darkMode
+                    ? 'text-gray-400 hover:text-red-400 hover:bg-gray-700'
+                    : 'text-gray-500 hover:text-red-600 hover:bg-red-50'
+                }`}
+                title="Remove file"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
       
-      <FilePreviewModal
-        isOpen={previewModal.isOpen}
-        onClose={handleClosePreview}
-        fileUrl={previewModal.fileUrl}
-        fileName={previewModal.fileName}
-        fileType={previewModal.fileType}
-      />
-    </>
+      {previewFile && (
+        <FilePreviewModal
+          isOpen={true}
+          onClose={() => setPreviewFile(null)}
+          fileUrl={previewFile.url}
+          fileName={previewFile.fileName}
+          fileType={previewFile.fileType}
+        />
+      )}
+    </div>
   );
 };

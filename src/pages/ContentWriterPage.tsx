@@ -1210,7 +1210,7 @@ Create content that is original, well-researched, and engaging for the target au
       </div>
       
       {/* Tab Navigation */}
-      <div className="mx-4 sm:mx-8 mb-4 sm:mb-6">
+      <div className="mx-4 sm:mx-8">
         <div className="flex space-x-1 sm:space-x-2 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
           <button
             onClick={() => setActiveTab('content-writer')}

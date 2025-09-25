@@ -291,36 +291,68 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
     const renderMathWithKaTeX = (text: string) => {
       let result = text;
       
+      // Preprocess common LaTeX commands to ensure proper rendering
+      const preprocessMath = (mathText: string) => {
+        return mathText
+          // Ensure proper spacing around operators
+          .replace(/([a-zA-Z])([=+\-*/])/g, '$1 $2')
+          .replace(/([=+\-*/])([a-zA-Z])/g, '$1 $2')
+          // Fix common symbol issues
+          .replace(/\\text\{([^}]+)\}/g, '\\mathrm{$1}')
+          // Ensure proper function formatting
+          .replace(/\\(sin|cos|tan|log|ln|exp|sec|csc|cot)([^a-zA-Z])/g, '\\$1 $2')
+          // Fix subscript/superscript spacing
+          .replace(/([a-zA-Z])_([a-zA-Z0-9]+)/g, '$1_{$2}')
+          .replace(/([a-zA-Z])\^([a-zA-Z0-9]+)/g, '$1^{$2}')
+          .trim();
+      };
+      
       // Handle block math expressions (display mode)
       // LaTeX-style block math \[...\]
       result = result.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
         try {
-          const rendered = katex.renderToString(math.trim(), {
+          const processedMath = preprocessMath(math);
+          const rendered = katex.renderToString(processedMath, {
             displayMode: true,
             throwOnError: false,
             strict: false,
-            trust: true
+            trust: true,
+            macros: {
+              "\\RR": "\\mathbb{R}",
+              "\\NN": "\\mathbb{N}",
+              "\\ZZ": "\\mathbb{Z}",
+              "\\QQ": "\\mathbb{Q}",
+              "\\CC": "\\mathbb{C}"
+            }
           });
-          return `<div class="katex-block-container">${rendered}</div>`;
+          return `<div class="katex-block-container" style="text-align: center; margin: 1em 0;">${rendered}</div>`;
         } catch (error) {
-          console.warn('KaTeX block render error:', error);
-          return `<div class="math-error">\\[${math}\\]</div>`;
+          console.warn('KaTeX block render error:', error, 'Math:', math);
+          return `<div class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 0.5em; margin: 0.5em 0; border-radius: 4px;">\\[${math}\\]</div>`;
         }
       });
       
       // Dollar sign block math $$...$$
       result = result.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
         try {
-          const rendered = katex.renderToString(math.trim(), {
+          const processedMath = preprocessMath(math);
+          const rendered = katex.renderToString(processedMath, {
             displayMode: true,
             throwOnError: false,
             strict: false,
-            trust: true
+            trust: true,
+            macros: {
+              "\\RR": "\\mathbb{R}",
+              "\\NN": "\\mathbb{N}",
+              "\\ZZ": "\\mathbb{Z}",
+              "\\QQ": "\\mathbb{Q}",
+              "\\CC": "\\mathbb{C}"
+            }
           });
-          return `<div class="katex-block-container">${rendered}</div>`;
+          return `<div class="katex-block-container" style="text-align: center; margin: 1em 0;">${rendered}</div>`;
         } catch (error) {
-          console.warn('KaTeX block render error:', error);
-          return `<div class="math-error">$$${math}$$</div>`;
+          console.warn('KaTeX block render error:', error, 'Math:', math);
+          return `<div class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 0.5em; margin: 0.5em 0; border-radius: 4px;">$$${math}$$</div>`;
         }
       });
       
@@ -328,32 +360,48 @@ const renderTextWithHTML = (text: string, darkMode: boolean, textStyle?: any) =>
       // LaTeX-style inline math \(...\)
       result = result.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
         try {
-          const rendered = katex.renderToString(math.trim(), {
+          const processedMath = preprocessMath(math);
+          const rendered = katex.renderToString(processedMath, {
             displayMode: false,
             throwOnError: false,
             strict: false,
-            trust: true
+            trust: true,
+            macros: {
+              "\\RR": "\\mathbb{R}",
+              "\\NN": "\\mathbb{N}",
+              "\\ZZ": "\\mathbb{Z}",
+              "\\QQ": "\\mathbb{Q}",
+              "\\CC": "\\mathbb{C}"
+            }
           });
-          return `<span class="katex-inline-container">${rendered}</span>`;
+          return `<span class="katex-inline-container" style="display: inline-block; margin: 0 2px;">${rendered}</span>`;
         } catch (error) {
-          console.warn('KaTeX inline render error:', error);
-          return `<span class="math-error">\\(${math}\\)</span>`;
+          console.warn('KaTeX inline render error:', error, 'Math:', math);
+          return `<span class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 2px 4px; border-radius: 3px;">\\(${math}\\)</span>`;
         }
       });
       
       // Dollar sign inline math $...$
       result = result.replace(/\$([^$\n]+)\$/g, (match, math) => {
         try {
-          const rendered = katex.renderToString(math.trim(), {
+          const processedMath = preprocessMath(math);
+          const rendered = katex.renderToString(processedMath, {
             displayMode: false,
             throwOnError: false,
             strict: false,
-            trust: true
+            trust: true,
+            macros: {
+              "\\RR": "\\mathbb{R}",
+              "\\NN": "\\mathbb{N}",
+              "\\ZZ": "\\mathbb{Z}",
+              "\\QQ": "\\mathbb{Q}",
+              "\\CC": "\\mathbb{C}"
+            }
           });
-          return `<span class="katex-inline-container">${rendered}</span>`;
+          return `<span class="katex-inline-container" style="display: inline-block; margin: 0 2px;">${rendered}</span>`;
         } catch (error) {
-          console.warn('KaTeX inline render error:', error);
-          return `<span class="math-error">$${math}$</span>`;
+          console.warn('KaTeX inline render error:', error, 'Math:', math);
+          return `<span class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 2px 4px; border-radius: 3px;">$${math}$</span>`;
         }
       });
       
@@ -586,67 +634,115 @@ const TextWithCharts: React.FC<{
       const renderMathWithKaTeX = (text: string) => {
         let mathResult = text;
         
+        // Preprocess common LaTeX commands to ensure proper rendering
+        const preprocessMath = (mathText: string) => {
+          return mathText
+            // Ensure proper spacing around operators
+            .replace(/([a-zA-Z])([=+\-*/])/g, '$1 $2')
+            .replace(/([=+\-*/])([a-zA-Z])/g, '$1 $2')
+            // Fix common symbol issues
+            .replace(/\\text\{([^}]+)\}/g, '\\mathrm{$1}')
+            // Ensure proper function formatting
+            .replace(/\\(sin|cos|tan|log|ln|exp|sec|csc|cot)([^a-zA-Z])/g, '\\$1 $2')
+            // Fix subscript/superscript spacing
+            .replace(/([a-zA-Z])_([a-zA-Z0-9]+)/g, '$1_{$2}')
+            .replace(/([a-zA-Z])\^([a-zA-Z0-9]+)/g, '$1^{$2}')
+            .trim();
+        };
+        
         // Handle block math expressions (display mode)
         mathResult = mathResult.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
           try {
-            const rendered = katex.renderToString(math.trim(), {
+            const processedMath = preprocessMath(math);
+            const rendered = katex.renderToString(processedMath, {
               displayMode: true,
               throwOnError: false,
               strict: false,
-              trust: true
+              trust: true,
+              macros: {
+                "\\RR": "\\mathbb{R}",
+                "\\NN": "\\mathbb{N}",
+                "\\ZZ": "\\mathbb{Z}",
+                "\\QQ": "\\mathbb{Q}",
+                "\\CC": "\\mathbb{C}"
+              }
             });
-            return `<div class="katex-block-container">${rendered}</div>`;
+            return `<div class="katex-block-container" style="text-align: center; margin: 1em 0;">${rendered}</div>`;
           } catch (error) {
-            console.warn('KaTeX block render error:', error);
-            return `<div class="math-error">\\[${math}\\]</div>`;
+            console.warn('KaTeX block render error:', error, 'Math:', math);
+            return `<div class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 0.5em; margin: 0.5em 0; border-radius: 4px;">\\[${math}\\]</div>`;
           }
         });
         
         // Dollar sign block math $$...$$
         mathResult = mathResult.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
           try {
-            const rendered = katex.renderToString(math.trim(), {
+            const processedMath = preprocessMath(math);
+            const rendered = katex.renderToString(processedMath, {
               displayMode: true,
               throwOnError: false,
               strict: false,
-              trust: true
+              trust: true,
+              macros: {
+                "\\RR": "\\mathbb{R}",
+                "\\NN": "\\mathbb{N}",
+                "\\ZZ": "\\mathbb{Z}",
+                "\\QQ": "\\mathbb{Q}",
+                "\\CC": "\\mathbb{C}"
+              }
             });
-            return `<div class="katex-block-container">${rendered}</div>`;
+            return `<div class="katex-block-container" style="text-align: center; margin: 1em 0;">${rendered}</div>`;
           } catch (error) {
-            console.warn('KaTeX block render error:', error);
-            return `<div class="math-error">$$${math}$$</div>`;
+            console.warn('KaTeX block render error:', error, 'Math:', math);
+            return `<div class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 0.5em; margin: 0.5em 0; border-radius: 4px;">$$${math}$$</div>`;
           }
         });
         
         // Handle inline math expressions
         mathResult = mathResult.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
           try {
-            const rendered = katex.renderToString(math.trim(), {
+            const processedMath = preprocessMath(math);
+            const rendered = katex.renderToString(processedMath, {
               displayMode: false,
               throwOnError: false,
               strict: false,
-              trust: true
+              trust: true,
+              macros: {
+                "\\RR": "\\mathbb{R}",
+                "\\NN": "\\mathbb{N}",
+                "\\ZZ": "\\mathbb{Z}",
+                "\\QQ": "\\mathbb{Q}",
+                "\\CC": "\\mathbb{C}"
+              }
             });
-            return `<span class="katex-inline-container">${rendered}</span>`;
+            return `<span class="katex-inline-container" style="display: inline-block; margin: 0 2px;">${rendered}</span>`;
           } catch (error) {
-            console.warn('KaTeX inline render error:', error);
-            return `<span class="math-error">\\(${math}\\)</span>`;
+            console.warn('KaTeX inline render error:', error, 'Math:', math);
+            return `<span class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 2px 4px; border-radius: 3px;">\\(${math}\\)</span>`;
           }
         });
         
         // Dollar sign inline math $...$
         mathResult = mathResult.replace(/\$([^$\n]+)\$/g, (match, math) => {
           try {
-            const rendered = katex.renderToString(math.trim(), {
+            const processedMath = preprocessMath(math);
+            const rendered = katex.renderToString(processedMath, {
               displayMode: false,
               throwOnError: false,
               strict: false,
-              trust: true
+              trust: true,
+              macros: {
+                "\\RR": "\\mathbb{R}",
+                "\\NN": "\\mathbb{N}",
+                "\\ZZ": "\\mathbb{Z}",
+                "\\QQ": "\\mathbb{Q}",
+                "\\CC": "\\mathbb{C}"
+              }
             });
-            return `<span class="katex-inline-container">${rendered}</span>`;
+            return `<span class="katex-inline-container" style="display: inline-block; margin: 0 2px;">${rendered}</span>`;
           } catch (error) {
-            console.warn('KaTeX inline render error:', error);
-            return `<span class="math-error">$${math}$</span>`;
+            console.warn('KaTeX inline render error:', error, 'Math:', math);
+            return `<span class="math-error" style="background: #fee; border: 1px solid #fcc; padding: 2px 4px; border-radius: 3px;">$${math}$</span>`;
           }
         });
         
@@ -2188,13 +2284,24 @@ HTML FORMATTING RULES:
 - Use <br> for line breaks when needed
 - Use <div> with appropriate classes for styling when needed
 
+MATHEMATICAL EXPRESSIONS FORMATTING:
+For mathematical expressions, use proper LaTeX syntax:
+- Inline math: Use \\( and \\) for inline expressions, e.g., \\(f = \\mu N\\)
+- Block math: Use \\[ and \\] for display equations, e.g., \\[F_{net} = \\sum F_i\\]
+- Common symbols: \\mu (mu), \\theta (theta), \\Delta (Delta), \\sum (sum), \\cos (cosine), \\sin (sine), \\int (integral)
+- Fractions: \\frac{numerator}{denominator}
+- Subscripts: Use _ for subscripts, e.g., F_{net}
+- Superscripts: Use ^ for superscripts, e.g., x^2
+- Greek letters: \\alpha, \\beta, \\gamma, \\delta, \\epsilon, \\theta, \\lambda, \\mu, \\pi, \\sigma, \\phi, \\omega
+- Functions: \\sin, \\cos, \\tan, \\log, \\ln, \\exp
+- Operators: \\sum, \\prod, \\int, \\partial, \\nabla
+
 CHART GENERATION RULES:
 When your response involves data visualization, mathematical functions, or charts/graphs, use chartjs code blocks instead of images:
 - Use this format for charts: \`\`\`chartjs followed by JSON configuration and closing \`\`\`
 - Include complete Chart.js configuration with type, data, and options
 - Supported chart types: line, bar, pie, doughnut, scatter, bubble, polarArea, radar
 - Example for mathematical functions: Use chartjs code block with complete JSON configuration including type, data with labels and datasets, and options for styling
-
 
 EXAMPLE HTML RESPONSE FORMAT:
 <h2>Response Title</h2>
@@ -2204,6 +2311,9 @@ EXAMPLE HTML RESPONSE FORMAT:
 <li>Second bullet point</li>
 </ul>
 <p>Example with inline code: <code>console.log('Hello World')</code></p>
+<p>Example with math: The friction force is \\(f = \\mu N\\) where \\(\\mu\\) is the coefficient of friction.</p>
+<p>Block equation example:</p>
+\\[F_{net} = \\sum F_i = ma\\]
 
 Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax like # or ** or *. Always use proper HTML tags.`;
         
@@ -5565,6 +5675,7 @@ Remember: Your ENTIRE response must be valid HTML. Do not use markdown syntax li
                               {processedMessage.role === 'user' && 'attachments' in processedMessage && processedMessage.attachments && processedMessage.attachments.length > 0 && (
                                 <UserMessageAttachments 
                                   attachments={processedMessage.attachments}
+                                  darkMode={darkMode}
                                 />
                               )}
 

@@ -67,8 +67,8 @@ const FooterLinks: React.FC<FooterLinksProps> = ({
             darkMode ? 'text-gray-500' : 'text-gray-600'
           }`}>
             <div className="flex items-center space-x-2">
-              <img src={matrixLogo} alt="Matrix AI" className="w-8 h-8 object-contain rounded-lg" />
-              <span className={`text-xl font-bold ${
+              <img src={matrixLogo} alt="Matrix AI" className="w-8 h-8 object-contain rounded-lg flex-shrink-0" />
+              <span className={`text-xl font-bold leading-none flex items-center ${
                 darkMode ? 'text-white' : 'text-gray-900'
               }`}>matrixai<span className="text-red-500">.</span>asia</span>
             </div>
